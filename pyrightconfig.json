@@ -1,0 +1,6 @@
+{
+  "extends": "./pyright.base.json",
+
+  "pythonVersion": "3.12"
+
+}

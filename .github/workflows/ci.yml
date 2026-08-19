@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ruff:
+    name: Ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+
+          version: "0.11.29"
+
+
+      - name: Install Python
+        run: uv python install
+
+
+      - name: Install Ruff
+        run: uv sync --locked --only-group lint
+
+      - name: Ruff check
+        run: uv run --no-sync ruff check --output-format=github .
+
+      - name: Ruff format check
+        run: uv run --no-sync ruff format --check .
+
+  basedpyright:
+    name: BasedPyright
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+
+          version: "0.11.29"
+
+
+      - name: Install Python
+        run: uv python install
+
+
+      - name: Install type-check dependencies
+        run: uv sync --locked --no-dev --group type
+
+      - name: BasedPyright
+        run: uv run --no-sync basedpyright
+
+  test:
+
+    name: Test
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+
+          version: "0.11.29"
+
+
+      - name: Install Python
+        run: uv python install
+
+
+      - name: Install test dependencies
+        run: uv sync --locked --no-dev --group test
+
+      - name: pytest
+        run: uv run --no-sync pytest

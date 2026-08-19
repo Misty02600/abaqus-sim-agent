@@ -1,0 +1,57 @@
+[project]
+name = "abaqus-sim-agent"
+version = "0.1.0"
+description = "A durable LangGraph multi-agent system for Abaqus simulation workflows"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = "==3.12.*"
+authors = [
+  { name = "Misty02600", email = "xiao02600@gmail.com" },
+]
+dependencies = [
+  "langchain-core>=1.2,<2",
+  "langgraph>=1.0.5,<2",
+  "pydantic>=2.12,<3",
+]
+
+[project.urls]
+Homepage = "https://github.com/Misty02600/abaqus-sim-agent"
+Issues = "https://github.com/Misty02600/abaqus-sim-agent/issues"
+Repository = "https://github.com/Misty02600/abaqus-sim-agent.git"
+
+[build-system]
+requires = [
+  "uv_build>=0.11.0,<0.12.0",
+]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "abaqus_sim_agent"
+
+[dependency-groups]
+dev = [
+  "commitizen>=4.16.0,<5.0.0",
+  "git-cliff>=2.11.0,<3.0.0",
+  "prek>=0.3.0,<1.0.0",
+  { include-group = "lint" },
+  { include-group = "test" },
+  { include-group = "type" },
+]
+lint = [
+  "ruff>=0.15.0,<1.0.0",
+]
+test = [
+  "pytest>=9.0.0,<10.0.0",
+  "pytest-asyncio>=1.3.0,<2.0.0",
+]
+type = [
+  "basedpyright>=1.39.0,<2.0.0",
+]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_provider = "uv"
+tag_format = "v$version"
+annotated_tag = true
+major_version_zero = true

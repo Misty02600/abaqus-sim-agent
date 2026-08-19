@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "automergeType": "pr",
+  "automergeStrategy": "rebase",
+  "platformAutomerge": false,
+  "pre-commit": {"enabled": true},
+  "packageRules": [
+    {
+      "description": "Keep Python runtime updates coordinated across project files",
+      "matchPackageNames": ["python"],
+      "enabled": false
+    },
+    {
+      "description": "Keep uv patch updates separate from compatibility migrations",
+      "matchPackageNames": ["astral-sh/uv"],
+      "separateMinorPatch": true
+    },
+    {
+      "description": "Automerge uv patch updates after required checks pass",
+      "matchPackageNames": ["astral-sh/uv"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    },
+    {
+      "description": "Require manual review for uv compatibility migrations",
+      "matchPackageNames": ["astral-sh/uv"],
+      "matchUpdateTypes": ["minor", "major"],
+      "automerge": false
+    },
+    {
+      "description": "Refresh existing uv locks for in-range updates and replace out-of-range PEP 621 constraints",
+      "matchManagers": ["pep621"],
+      "rangeStrategy": "update-lockfile"
+    }
+  ],
+  "dependencyDashboard": true,
+  "labels": ["dependencies"]
+}

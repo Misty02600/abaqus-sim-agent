@@ -1,0 +1,35 @@
+line-length = 88
+src = ["src", "tests"]
+
+[format]
+line-ending = "lf"
+
+[lint]
+select = [
+  "ASYNC",
+  "B",
+  "C4",
+  "E",
+  "F",
+  "I",
+  "PT",
+  "PYI",
+  "Q",
+  "RUF",
+  "T10",
+  "TID",
+  "UP",
+  "W",
+]
+ignore = [
+  "B008",
+  "E501",
+  "RUF001",
+  "RUF002",
+  "RUF003",
+  "TID252",
+  "UP037",
+]
+
+[lint.isort]
+extra-standard-library = ["typing_extensions"]

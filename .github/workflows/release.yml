@@ -1,0 +1,142 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions: {}
+
+jobs:
+  validate:
+    name: Validate release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: false
+
+          version: "0.11.29"
+
+
+      - name: Install Python
+        run: uv python install
+
+
+      - name: Verify release tag
+        shell: bash
+        run: |
+          project_version="$(uv version --short)"
+          tag_version="${GITHUB_REF_NAME#v}"
+          tag_object_type="$(git cat-file -t "refs/tags/$GITHUB_REF_NAME")"
+          test "$project_version" = "$tag_version"
+          test "$tag_object_type" = "tag"
+          git merge-base --is-ancestor "$GITHUB_SHA" "origin/main"
+
+      - name: Install validation dependencies
+        run: uv sync --locked --all-groups
+
+      - name: Ruff
+        run: |
+          uv run --no-sync ruff check --output-format=github .
+          uv run --no-sync ruff format --check .
+
+      - name: BasedPyright
+        run: uv run --no-sync basedpyright
+
+      - name: pytest
+        run: uv run --no-sync pytest
+
+      - name: Build distributions
+        run: uv build --no-sources
+
+      - name: Validate distribution artifacts
+        shell: bash
+        run: |
+          shopt -s nullglob
+          wheels=(dist/*.whl)
+          sdists=(dist/*.tar.gz)
+          distributions=(dist/*)
+          test "${#wheels[@]}" -eq 1
+          test "${#sdists[@]}" -eq 1
+          test "${#distributions[@]}" -eq 2
+          test -f "${wheels[0]}"
+          test -f "${sdists[0]}"
+          python - "${wheels[0]}" "${sdists[0]}" <<'PY'
+          import sys
+          import tarfile
+          import zipfile
+          from pathlib import PurePosixPath
+
+          wheel_path, sdist_path = sys.argv[1:]
+          with zipfile.ZipFile(wheel_path) as wheel:
+              bad_member = wheel.testzip()
+              if bad_member is not None:
+                  raise SystemExit(f"wheel 包含损坏成员: {bad_member}")
+
+          with tarfile.open(sdist_path, "r:gz") as sdist:
+              members = sdist.getmembers()
+              if not members:
+                  raise SystemExit("sdist 不能为空")
+              for member in members:
+                  path = PurePosixPath(member.name)
+                  if path.is_absolute() or ".." in path.parts:
+                      raise SystemExit(f"sdist 包含不安全路径: {member.name}")
+          PY
+
+      - name: Generate release notes
+        shell: bash
+        run: uv run --no-sync git-cliff --latest --strip header > release-notes.md
+
+      - name: Stage reviewed release artifact
+        shell: bash
+        run: |
+          mkdir release-artifact
+          cp release-notes.md dist/*.whl dist/*.tar.gz release-artifact/
+
+      - name: Upload reviewed release artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-${{ github.sha }}
+          path: release-artifact/
+          if-no-files-found: error
+          retention-days: 7
+
+
+  github-release:
+    name: Create GitHub release
+
+    needs: validate
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download reviewed release artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: release-${{ github.sha }}
+          path: release-artifact/
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TITLE: ${{ github.event.repository.name }} ${{ github.ref_name }}
+        run: >-
+          gh release create "$RELEASE_TAG"
+          release-artifact/*.tar.gz release-artifact/*.whl
+          --title "$RELEASE_TITLE"
+          --notes-file release-artifact/release-notes.md
+          --verify-tag

@@ -1,0 +1,28 @@
+# Project Instructions
+
+- 本项目明确服务于秋招准备。主目标岗位是 AI Agent / LLM 应用工程，其次是 Python AI 后端 / AI 平台，Abaqus 与有限元是 AI for Science / CAE 的领域落点；项目讲解需要同时覆盖 Python、SQL、API、状态机、外部副作用、Agent 编排、评测和工程交付。
+- 不以寻找“创新点”、堆叠技术栈或增强项目包装说服力为目标。优先把当前能做的功能做扎实，把采用的概念、框架行为、代码路径和工程取舍理解透彻。
+- 项目表达的目标是准确讲清问题、边界、设计、实现、验证结果和已知局限；不为了显得差异化而增加未经需要或未经验证的能力。
+- 技术调研用于理解已有方案、框架约束、招聘要求和可复用经验，不能仅因其他项目已经使用某项技术就刻意回避，也不能为了形成竞争亮点而引入额外复杂度。电商、旅游 Agent、Text2SQL 等常见求职项目用于提炼可迁移的工程问题，不在本仓库中拼接无关业务模块。
+- 对秋招常见技术可以有意识地覆盖，但每项技术必须对应本项目中的真实职责、调用路径、失败边界和验证证据。未实现的能力必须标为待实现或条件触发，不能把依赖、设计稿、Mock、README 描述或本地实验写成已完成的产品能力。
+- 本项目保持独立 Git 仓库、包结构和维护历史，不继承 `references/AbaqusAgent` 的 Git 历史；但可以在理解其行为、边界和缺陷后，大幅借鉴其设计并对已实现部分进行重构或复用。
+- 不为维持表面上的“独立实现”而重复低价值工作，也不整仓照搬。优先把上游的业务规则、提示词语义和 Abaqus 适配经验映射到本项目的 typed contract、确定性校验、Artifact Store 和执行器边界。
+- 复用必须可追溯：概念与设计借鉴在项目文档中注明来源；直接复制或实质性改编代码、提示词或资产时，记录上游仓库、基线提交、原文件、修改内容并履行许可证义务。案例库等第三方内容还要单独确认数据来源和再分发权。
+- `E:\Dev\Projects\abaqus-agent-workspace\references` 下的项目是各自独立、默认只读的研究快照，不是本项目源码或运行依赖；产品代码、测试和发布物不得依赖这些本地路径。需要实验性修改时保持参考基线可追溯，不在不知情的情况下污染其工作树。
+- 多 Agent 是产品要求。角色必须具有清晰的目标、结构化输入输出和工具权限边界，不能只给普通函数改名。
+- 首个完整实现固定为 5 个专业 Agent（Interpreter、Architect、Input Writer、Reviewer、Verifier）和 1 个只在失败分流时调用的受限 Supervisor。Runner/Job Service、Retriever、validator、renderer/preflight、Artifact publisher、ODB extractor、数值 checker、router/guard 和 Coordinator 都不是 Agent。
+- 一个 Agent 只有在 strict typed I/O、私有 per-invocation 上下文、显式工具白名单、独立失败语义、trace 与独立测试进入真实调用路径后才算实现；仅有 Protocol、prompt 或一次模型调用不算完成。
+- 首个 supported CAE envelope 是 Abaqus/Standard、单 `Static, General`、`NLGEOM=NO`、单 part/instance/material/section/step、线弹性各向同性小变形；只承诺 2D `CPS4R` 参数化矩形板与 3D `C3D8R` 参数化长方体/矩形梁、结构化网格和受控 BC/load/output。超范围需求必须返回 unsupported/clarification，不以通用 prompt 继续生成。
+- Input Writer 首版输出受限 `DeckDraft/ChangeSet`，由确定性 renderer、INP preflight 和 Artifact publisher 生成不可变 artifact；不得把自由文本 LLM 输出直接当作可提交 `.inp`。
+- RAG 和上游 104 条案例库不属于首个完成条件。Architect 首版只读版本化 capability/keyword registry；案例检索只有在来源、typed evidence 和消融验证具备后才能接入。
+- 使用 LangGraph 负责状态图、持久化、暂停恢复和多 Agent 编排；LangChain 只承担模型、消息和工具适配。
+- Graph State 只保存可序列化业务状态；模型客户端、执行器和存储等运行时依赖通过 Runtime Context 注入；大型仿真文件进入 Artifact Store。
+- Abaqus Job 属于外部副作用。提交必须支持幂等键，并逐步实现异步状态查询、取消、超时和崩溃恢复。
+- 整体框架采用模块化单体和端口适配器边界。FastAPI/CLI 只调用 Application Facade，不直接调用 Agent、Graph、ORM model 或 Executor；具体依赖只在 Composition Root 组装。
+- SQLite 首版让 FastAPI 与 Run Coordinator 在同一 Python 进程运行；Coordinator 以持久 run/checkpoint 为真相并负责恢复扫描。只有迁移 PostgreSQL 或等价并发持久化后，才把 API 与 Coordinator 启动成两个进程；不要用 FastAPI `BackgroundTasks` 或内存 task 冒充 durable worker。
+- 父图是确定性的业务状态机并独占全局 phase、interrupt、预算和终态。专业 Agent 使用 typed、per-invocation 子图；Supervisor 只可在确定性 guard 给出的安全候选中处理失败分流，不能绕过校验或审批、提交 Job、取消 Job 或宣告成功。
+- 人工澄清、提交审批、人工接管和机器 Job 等待均在父图使用独立 interrupt；图内不以长时间 `sleep` 占住 worker。interrupt 与外部副作用必须分节点，因为恢复会从节点开头重放。
+- Job Service 是 submit、poll、cancel、timeout 和 reconcile 的唯一所有者。Agent 只产出结构化意图；`UNKNOWN` 禁止自动重提，deadline 到达也不能在确认外部进程停止前写 `TIMED_OUT` 或 `CANCELLED`。
+- LangGraph checkpoint、应用数据库、Job ledger、Artifact Store 和 UI 投影各自拥有不同状态真相。首版使用独立的 `app.sqlite3` 与 `checkpoints.sqlite3`；Alembic 不迁移 LangGraph 内部表。
+- Python 环境使用 `uv`，虚拟环境放在项目内 `.venv`。
+- 不因任务复杂或跨会话自动创建 `docs/plans/`；只有用户明确要求计划、TODO 或稍后处理时才创建。
