@@ -106,11 +106,11 @@ Supervisor 不参与幸福路径，也不能：
 | verification | executable/fidelity/physics 三份报告与证据引用 |
 | control | phase、预算、计数器、last event sequence 和 terminal reason |
 
-模型客户端、Agent registry、Job Service、repository、Artifact Store、Retriever、Validator、Result Extractor、
-Clock、ID factory、Trace sink 和 Workflow policy 通过 `context_schema` 的 Runtime Context 注入。checkpointer
-是 graph compile-time 基础设施，不在 Context；任何 client、DB session、secret、INP、ODB、完整日志或
-原始 CoT 都不能进入 State。会影响结果的 model、prompt、graph、policy、executor 和 solver 配置只把版本或
-digest 固化进 run。
+`StructuredModelPort`、Agent registry、Job Service、repository、Artifact Store、Retriever、Validator、
+Result Extractor、Clock、ID factory、Trace sink 和 Workflow policy 通过 `context_schema` 的 Runtime Context
+注入；具体 provider client 封装在模型 adapter 内。checkpointer 是 graph compile-time 基础设施，不在
+Context；任何 client、DB session、secret、INP、ODB、完整日志或原始 CoT 都不能进入 State。会影响结果的
+model、prompt、graph、policy、executor 和 solver 配置只把版本或 digest 固化进 run。
 
 LangGraph 官方 [Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api) 将 model、数据库连接等
 run dependency 作为 Runtime Context 的用途；本项目按这一边界实现。

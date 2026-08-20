@@ -9,9 +9,10 @@ Abaqus Sim Agent 确定采用：**模块化单体控制面 + LangGraph 可恢复
 模块之间通过领域契约与端口协作。首版不拆微服务，不引入 Redis、Celery 或消息队列，也不把每个
 Agent 部署成独立服务。Abaqus Job 是长时间运行的外部副作用，只有无 LLM 的 Job Service 可以操作。
 
-这是目标框架，不是完成声明。截至 2026-08-19，仓库只有领域契约、Agent/Executor 协议、面向
-checkpoint 的 State 骨架和内存 Mock Executor；API、父图、持久 Job ledger、Artifact Store、真实
-Abaqus adapter 和物理验证仍待实现。
+这是目标框架，不是完成声明。截至 2026-08-19，仓库已有领域契约、Agent/Executor 协议、面向
+checkpoint 的 State 骨架、内存 Mock Executor，以及 `StructuredModelPort`、scripted fake 和 LangChain
+adapter 骨架；专业 Agent、API、父图、持久 Job ledger、Artifact Store、真实 Abaqus adapter 和物理验证
+仍待实现；真实模型 endpoint 尚未接入并完成合同验证。
 
 ## 系统拓扑
 
@@ -26,6 +27,8 @@ flowchart LR
     App --> Coordinator["Run Coordinator"]
     Coordinator --> Graph["LangGraph 父图"]
     Graph --> Subgraphs["专业 Agent 子图"]
+    Subgraphs --> ModelAccess["StructuredModelPort<br/>LangChain adapter 实现"]
+    ModelAccess --> ModelEndpoint["显式配置的模型 endpoint"]
     Graph --> Validators["确定性校验 / Verifier"]
     Graph --> JobService["确定性 Job Service"]
 
@@ -71,6 +74,7 @@ flowchart LR
 | Run Coordinator | 启动/恢复父图、投递人工响应、唤醒等待 Job 的 run、启动恢复扫描 | 不用内存 task 充当 durable queue，不在 HTTP 请求中等待 Abaqus | run 的调度投影；图游标仍由 checkpointer 拥有 |
 | LangGraph 父图 | 全局 phase、确定性路由、checkpoint、interrupt、预算和终止条件 | 不直接操作 SQL 表、任意路径或 Abaqus | 可序列化 Graph State |
 | 专业 Agent 子图 | Interpreter、Architect、Input Writer、Reviewer、Verifier 的受限领域判断 | 不改变全局终态，不提交 Job，不持有 DB session | typed outcome 与证据引用，不拥有全局状态 |
+| Model Port / provider adapter | Port 提供一次 typed structured invocation 并归一化 Profile、usage、响应身份和失败；adapter 封装 LangChain/provider client | 不编排、不自动 fallback、不拥有业务重试、不执行 Agent 工具或 Abaqus 副作用 | client 生命周期在 Runtime Context；不拥有 Graph State |
 | Supervisor | 只在失败后从 guard 生成的安全候选中选择修复、重设计、澄清、人工或停止 | 不负责幸福路径；不能绕过校验/审批、提交 Job或宣告成功 | 单次结构化路由建议 |
 | Job Service | 唯一负责 reserve、submit、poll、cancel、timeout 和 reconcile | 不做 LLM 推理，不判断物理正确性 | Job/attempt ledger |
 | SimulationExecutor | 将确定性命令映射到 Mock 或 Abaqus CLI/ODB | 不决定是否提交、重试或批准 | 外部进程句柄与原始观察事实 |
@@ -78,7 +82,7 @@ flowchart LR
 | Verification | INP preflight、需求忠实度和物理有效性三层检查 | 不静默修改模型，不以单一 LLM Judge 代替数值证据 | Verification report 与 evidence |
 | Event / Trace | append-only 产品事件、SSE 回放、节点/角色/Job/artifact 指纹 | 不充当图或 Job 的主事实来源；不保存原始 CoT | 应用数据库中的事件序列 |
 | Evaluation | Gold cases、故障注入、重复运行、消融、scorer 和 badcase | 生产 runtime 不反向依赖 benchmark 隐藏答案 | 版本化评测数据与实验结果 |
-| Composition Root | 加载配置并组装 Graph、Agent、数据库、Store、Executor 和 API | 不包含领域逻辑 | 运行时对象生命周期 |
+| Composition Root | 加载配置并组装 Graph、Agent、模型 Profile/Port/client、数据库、Store、Executor 和 API | 不包含领域逻辑，不根据偶然存在的凭据隐式选择 provider | 运行时对象生命周期 |
 
 ## 依赖规则
 
@@ -101,6 +105,7 @@ evaluation → 可以依赖产品核心；产品 runtime 不得反向依赖 eval
 - `application` 只依赖领域模型和 Protocol，不依赖具体数据库、模型 provider 或文件存储。
 - API 只调用 Application Facade，不直接查询 ORM model、恢复 Graph 或提交 Job。
 - Agent 不持有数据库 session，不写任意路径；工具按角色显式注入。
+- Agent 只依赖 `StructuredModelPort`，不得直接导入 `ChatOpenAI`、provider SDK 或第二套 Agent runtime。
 - LangGraph node 通过 Runtime Context 使用 Agent、Job Service、Store、Retriever 和 Validator。
 - 只有 Composition Root 可以集中依赖具体 adapter；不使用 import-time client 或全局 service locator。
 - checkpoint schema 与应用 schema 分开所有权；Alembic 不迁移 LangGraph 内部表。
@@ -115,6 +120,7 @@ src/abaqus_sim_agent/
 ├── application/            # 用例、端口、Runtime Context、Coordinator
 ├── orchestration/          # 父图、子图 wrapper、节点和路由 guard
 ├── agents/                 # 角色实现、prompts 和最小权限工具
+├── inference/              # StructuredModelPort、scripted fake 与 LangChain/provider adapter
 ├── execution/
 │   ├── base.py             # Executor 协议
 │   ├── service.py          # Job Service
@@ -235,3 +241,4 @@ checkpoint、澄清/审批/人工接管、幂等提交、异步等待、取消�
 - [Abaqus Job 生命周期](flows/job-lifecycle.md)
 - [技术栈与工程讲解点](technology-stack.md)
 - [ADR-0006：使用模块化单体和端口适配器组织控制平面](../adr/0006-modular-monolith-control-plane.md)
+- [ADR-0007：通过 StructuredModelPort 隔离模型提供方](../adr/0007-structured-model-port.md)

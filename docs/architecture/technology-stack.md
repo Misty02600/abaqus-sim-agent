@@ -16,8 +16,9 @@ AI for Science 的领域落点。技术选型既要完成这条纵向链路，�
 | 已确定、待实现 | 已由架构决定确定边界，当前还没有依赖或代码 |
 | 条件触发 | 只有出现明确容量、部署、数据或消费者需求后才选型 |
 
-截至 2026-08-19，仓库真正可运行的产品代码是 Python/Pydantic 领域契约、Agent 与执行器协议，以及
-单进程内存 Mock。LangGraph 编排、持久化、真实 Abaqus 执行和物理验证都还不能描述为已实现。
+截至 2026-08-19，仓库真正可运行的产品代码是 Python/Pydantic 领域契约、Agent 与执行器协议、单进程
+内存 Mock，以及 `StructuredModelPort`、scripted fake 和 LangChain adapter 骨架。LangGraph 编排、专业
+Agent、持久化、真实模型 endpoint 接入、真实 Abaqus 执行和物理验证都还不能描述为已实现。
 
 ## 秋招岗位定位与能力映射
 
@@ -67,9 +68,9 @@ Context 注入；`.inp`、`.odb`、日志和结果文件进入 Artifact Store。
 | 主运行时 | Python `3.12.*` | 已实现 | 业务服务、异步协议、状态机节点和确定性校验 | [pyproject.toml](../../pyproject.toml)、[.python-version](../../.python-version) |
 | 领域契约 | Pydantic 2；当前 lock 为 `2.13.4` | 已实现 | 严格、冻结的需求、方案、产物、诊断和验证模型 | [domain/models.py](../../src/abaqus_sim_agent/domain/models.py)、[领域模型测试](../../tests/test_domain_models.py) |
 | Agent 编排 | LangGraph 1.x；当前 lock 为 `1.2.11` | 骨架已实现 | 父图/子图、条件路由、循环预算、checkpoint、interrupt/resume | 依赖和 [SimulationState](../../src/abaqus_sim_agent/application/state.py) 已有；图尚未实现 |
-| 模型与工具适配 | LangChain Core 1.x；当前 lock 为 `1.5.6` | 只有依赖 | 消息、structured output、模型和工具 adapter；不承担第二套编排 | 尚无源码导入 |
-| 首个模型 provider | `langchain-openai` 的 `ChatOpenAI` 兼容接口 | 已确定、待实现 | 先接一个可配置 endpoint/model，验证 structured output、tool calling、超时和重试；CI 使用 fake model | 包尚未加入；不同时安装多家 SDK，其他 provider 只能在实际兼容性或评测需要出现后增加 adapter |
-| Agent 合同 | Python `Protocol` + Pydantic 输入输出 | 骨架已实现 | 区分 Interpreter、Architect、Input Writer、Reviewer、Verifier 和 Supervisor 的职责 | [agents/contracts.py](../../src/abaqus_sim_agent/agents/contracts.py)；尚无模型、prompt 和工具权限实现 |
+| 模型端口与适配 | 项目 `StructuredModelPort` + LangChain Core 1.x；当前 lock 为 `1.5.6` | 骨架已实现 | 一次 provider-neutral structured invocation、typed output、Profile、usage/response identity 和失败归一化；不承担第二套编排、自动重试或工具副作用 | [模型端口与 fake](../../src/abaqus_sim_agent/inference/base.py)、[LangChain adapter](../../src/abaqus_sim_agent/inference/langchain.py)、[离线测试](../../tests/test_langchain_inference.py)；尚未进入专业 Agent 调用链 |
+| 首个模型 provider | `langchain-openai` `1.5.2` 的 `ChatOpenAI` | 骨架已实现 | 显式 OpenAI Chat Completions、显式 endpoint/model、关闭首个 factory 的 SDK 隐藏重试；CI 只使用 scripted fake | 依赖与 factory 已加入；真实 endpoint 尚未接入/验证，也没有真实 Agent 调用、tool calling 或付费请求。其他 provider 只有在实际兼容性或评测需要出现后才增加 adapter |
+| Agent 合同 | Python `Protocol` + Pydantic 输入输出 | 骨架已实现 | 区分 Interpreter、Architect、Input Writer、Reviewer、Verifier 和 Supervisor 的职责 | [agents/contracts.py](../../src/abaqus_sim_agent/agents/contracts.py)；尚无角色 prompt、模型调用路径和工具权限实现 |
 | 本地恢复 | SQLite + `langgraph-checkpoint-sqlite` | 已确定、待实现 | LangGraph durable checkpoint | 当前只有为序列化设计的 State；SQLite checkpointer 包尚未加入依赖 |
 | 应用数据层 | SQLAlchemy 2 + Alembic；SQLite 开发/CI，PostgreSQL 服务化部署 | 已确定、待实现 | Job、attempt、artifact metadata、approval、event/audit 的关系模型、事务、唯一约束、索引和迁移 | 首版实现小型 repository 与显式 unit-of-work；LangGraph checkpoint 表不由 Alembic 管理，并与应用表保持独立所有权 |
 | 仿真产物 | 本地 content-addressed Artifact Store | 已确定、待实现 | 运行目录隔离、SHA-256、revision、manifest 和来源 | [ArtifactManifest](../../src/abaqus_sim_agent/domain/models.py) 只有契约，尚未计算或校验真实文件 |
@@ -80,10 +81,16 @@ Context 注入；`.inp`、`.odb`、日志和结果文件进入 Artifact Store。
 | 运行证据 | 结构化事件、JSON/JSONL Trace、版本与 artifact 指纹 | 已确定、待实现 | 记录节点、角色、工具、Job、检索证据、配置和评测结果 | State 只有通用 `events` 字段，尚无稳定事件模型和 Trace Store |
 | 交付 | Docker image + Docker Compose | 已确定、待实现 | 可复现运行 API、Mock demo 和可选 PostgreSQL profile | 真实 Abaqus runner 默认留在持证宿主机；没有验证官方支持前不宣称求解器可容器化 |
 
-具体模型名称不属于架构常量。首个实现使用 `langchain-openai` 的 `ChatOpenAI` 接口，以 Runtime Context
-注入 endpoint、model 和凭据；声称兼容 OpenAI API 的第三方 endpoint 仍需逐项验证 structured output、
-tool calling、错误类型和重试行为。固定 benchmark 决定默认模型，CI 使用 fake model，不同时安装多个模型
-SDK。
+具体模型名称不属于架构常量。首版由 Composition Root 明确选择一个默认 `ModelProfile`，通过 Runtime
+Context 注入绑定该 Profile 的 `StructuredModelPort`；Profile 只记录非秘密身份、连接/设置 revision 和
+structured-output 策略，URL、client 与凭据单独注入。系统不根据环境中碰巧存在的 key 选择 provider，
+不做隐式 fallback；首个 `ChatOpenAI` factory 关闭 SDK transport retry，其他 adapter 也必须显式配置并通过
+合同测试。结构修正和业务重试分别由专业 Agent 子图与父图拥有。
+
+首个 factory 固定使用 Chat Completions 并要求传入已解析的 `base_url`，避免 `ChatOpenAI` 从环境隐式改变
+endpoint。声称兼容 OpenAI API 的第三方服务仍需逐项验证 structured output、实际使用到的 tool calling、
+usage/response identity、超时和错误分类。固定 benchmark 决定默认模型是否合格；首版各角色共用一个
+Profile，CI 使用 scripted fake，不同时安装多家模型 SDK。
 
 ## 工程与验证工具链
 
@@ -92,10 +99,10 @@ SDK。
 | 用途 | 当前选择 | 当前证据边界 |
 |---|---|---|
 | 环境、依赖和构建 | uv、项目内 `.venv`、提交 `uv.lock`、`uv_build` | 本地命令可用；CI 固定 uv `0.11.29` |
-| 测试 | pytest `9.1.1`、pytest-asyncio `1.4.0` | 当前 7 项测试覆盖领域契约、包导入和内存 Mock；没有真实 Abaqus 或恢复测试 |
+| 测试 | pytest `9.1.1`、pytest-asyncio `1.4.0` | 当前测试覆盖领域契约、包导入、内存 Mock、模型 fake、结构化 adapter 与 client factory；没有真实模型、Abaqus 或恢复测试 |
 | Lint 与格式 | Ruff `0.16.3` | 本地配置和 GitHub Actions workflow 已有 |
 | 类型检查 | BasedPyright `1.39.10` | 检查 Python 3.12 的 `src`；不能替代运行时状态校验 |
-| 自动化 | GitHub Actions | CI/release workflow 已配置；仓库尚无提交，不能称为远端已运行通过 |
+| 自动化 | GitHub Actions | CI/release workflow 已配置且本地基线提交已建立；远端执行结果以 GitHub Actions 为准，本地检查不能替代远端证据 |
 | 仓库维护 | Prek、Commitizen、git-cliff、Copier、Renovate 配置 | 这些来自项目模板，属于维护基础设施，不是 Abaqus Agent 的产品能力 |
 
 普通 CI 始终使用 Mock，不依赖 Abaqus 许可证。真实集成测试在安装了目标 Abaqus 版本并能取得许可证的
@@ -128,7 +135,8 @@ SDK。
 | SQL、事务和索引在 Agent 项目里解决什么 | 幂等键依赖唯一约束而不是“先查再写”；合法状态转换需要带旧状态条件的更新；`run_id/job_id/status/created_at` 等访问路径决定组合索引；event/audit 与当前状态各有用途 | 数据模型尚未落地；实现后用并发提交、终态保护、迁移升级和 query plan 测试验证，不宣称不存在的高并发 |
 | 为什么 Runner 不应是有任意工具权限的 LLM Agent | LLM 可以提出运行意图，但 submit/poll/cancel/timeout 由确定性 Job Service 独占，审批 interrupt 必须发生在副作用节点之前 | `SimulationExecutor` 已定义边界；权限 enforcement、审批节点和真实 Job Service 尚未实现 |
 | 用户 RBAC、Agent 工具权限和 HITL 为什么不是一回事 | 用户 RBAC 决定谁能请求或批准操作；Agent capability 决定某个角色能调用什么；HITL 决定本次高风险副作用是否获批。三者要分别校验并写审计事件 | 当前只有角色 Protocol 和 executor 边界，尚无身份、capability middleware 或 approval persistence |
-| 多 Agent 如何避免只是给函数改名 | 每个角色需要不同目标、typed 输入输出、工具集合和成功/失败条件；全局阶段由父图拥有，角色只返回自己的产物 | Agent Protocol 和领域模型已经建立；模型实现、子图、局部上下文和工具白名单尚无，`next_role` 也尚未受枚举和路由守卫约束，不能称为多 Agent 已运行 |
+| 多 Agent 如何避免只是给函数改名 | 每个角色需要不同目标、typed 输入输出、工具集合和成功/失败条件；全局阶段由父图拥有，角色只返回自己的产物 | Agent Protocol、领域模型与通用模型端口已经建立；专业 Agent 实现、子图、局部上下文和工具白名单尚无，`next_role` 也尚未受枚举和路由守卫约束，不能称为多 Agent 已运行 |
+| 为什么不把 PydanticAI Agent 或 ChatOpenAI 直接嵌进角色 | LangGraph 必须独占持久编排与全局预算；专业 Agent 只看窄模型端口，provider adapter 只做一次调用。这样 fake、fallback、格式修正和业务重试的所有者都可见 | `StructuredModelPort`、scripted fake、LangChain adapter 与错误/usage 测试已实现；尚未接入专业 Agent 子图或真实 endpoint，因此当前只能证明边界和离线行为 |
 | 为什么分离 State、Runtime Context 和 Artifact | checkpoint 只保存可序列化业务事实；客户端与连接由运行上下文注入；大型文件只在 State 中留 URI/hash/metadata | State 和 manifest 形状已有；尚无 JSON round-trip、Runtime Context 或 Artifact Store 运行证据 |
 | 为什么 solver 成功不代表任务成功 | 要分别验证可执行、与用户规范一致、物理结果有效；Verifier 读取证据并判定，不能静默改模型 | VerificationReport 和 [ADR-0004](../adr/0004-evidence-first-physics-verification.md) 已定义合同；物理检查、参考解和 Gold cases 未实现 |
 | 失败修复怎样避免无限循环和同模型互相附和 | Reviewer 依据原始日志、结构化错误和可追溯知识给出 patch；相同错误或无进展达到预算后重新设计或交给人 | DiagnosisReport 与 Reviewer 协议已有；错误签名、进展判断、循环预算和修复实验未实现 |
@@ -151,8 +159,9 @@ SDK。
 6. FastAPI 将上述资源和事件投影为 REST/SSE；React 控制台不另建一套状态，断线后可以从持久事件恢复显示。
 7. 用 Mock 故障注入、真实 licensed runner、Gold cases 和消融分别验证工程可靠性与 Agent 收益。
 
-现在可以准确地说“已经完成类型契约、状态与执行边界，以及可测试的内存 Mock”；在父图、SQLite
-持久化、真实 Abaqus adapter 和 validator 完成以前，不说“已经实现可恢复多 Agent Abaqus 系统”。
+现在可以准确地说“已经完成类型契约、状态与执行边界、可测试的内存 Mock，以及结构化模型端口、离线
+fake 和 LangChain adapter 骨架”；在专业 Agent、父图、SQLite 持久化、专业 Agent 的真实模型调用链、
+真实 Abaqus adapter 和 validator 完成以前，不说“已经实现可恢复多 Agent Abaqus 系统”。
 
 ## 相关决定
 
@@ -163,6 +172,7 @@ SDK。
 - [ADR-0004：以证据和物理验证定义任务成功](../adr/0004-evidence-first-physics-verification.md)
 - [ADR-0005：有来源地吸收与重构 AbaqusAgent](../adr/0005-traceable-upstream-reuse.md)
 - [ADR-0006：使用模块化单体和端口适配器组织控制平面](../adr/0006-modular-monolith-control-plane.md)
+- [ADR-0007：通过 StructuredModelPort 隔离模型提供方](../adr/0007-structured-model-port.md)
 - [完整系统框架](system-framework.md)
 - [一次仿真 Run 的工作流](flows/simulation-run.md)
 - [Abaqus Job 生命周期](flows/job-lifecycle.md)

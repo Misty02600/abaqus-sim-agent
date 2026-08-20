@@ -3,8 +3,9 @@
 可恢复的 Abaqus 多 Agent 仿真系统。项目使用 LangGraph 编排专业 Agent，重点是把长任务状态管理、结构化协作、人工审批、外部副作用幂等、故障修复和分层验证真正做通，并能准确说明每项设计的行为、边界和已知局限。
 
 当前仓库处于工程地基阶段：已经建立独立仓库、核心领域契约、面向可序列化设计的 Graph State 骨架、
-执行器协议和可测试的幂等 Mock 执行器。LLM Agent、LangGraph 父图/子图、Abaqus 真实执行器和评测集
-尚未实现，README 不把这些目标描述成已完成功能。
+执行器协议、可测试的幂等 Mock 执行器，以及结构化模型端口、离线 fake 和 LangChain adapter 骨架。
+LLM Agent、LangGraph 父图/子图、真实模型 endpoint 接入与合同验证、Abaqus 真实执行器和评测集尚未
+完成，README 不把这些目标描述成已完成功能。
 
 项目明确面向秋招：主目标是 AI Agent / LLM 应用工程岗位，其次是 Python AI 后端 / AI 平台岗位，Abaqus/有限元提供 AI for Science 的领域场景。技术路线会有意识地覆盖 SQL 与事务、REST/SSE、长任务状态机、幂等与恢复、Agent 工具权限、结构化生成、评测和容器化交付，但不为简历关键词拼接无关的电商、旅游或 Text2SQL 功能。三类常见项目与本项目的能力映射见[技术栈与工程讲解点](docs/architecture/technology-stack.md#秋招岗位定位与能力映射)。
 

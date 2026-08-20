@@ -7,6 +7,7 @@
 - [ADR-0004：以证据和物理验证定义任务成功](0004-evidence-first-physics-verification.md) — 已采纳
 - [ADR-0005：有来源地吸收与重构 AbaqusAgent](0005-traceable-upstream-reuse.md) — 已采纳
 - [ADR-0006：使用模块化单体和端口适配器组织控制平面](0006-modular-monolith-control-plane.md) — 已采纳
+- [ADR-0007：通过 StructuredModelPort 隔离模型提供方](0007-structured-model-port.md) — 已采纳
 
 ## 已替代
 

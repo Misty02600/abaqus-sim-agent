@@ -9,8 +9,9 @@ Agent 工程链路要完整实现 typed contract、独立工具权限、子图�
 为 Abaqus/Standard、线弹性、小变形、单 `Static, General` step 的两个规则模型族。对超出范围的需求要
 返回 `unsupported` 或进入人工澄清，不能依靠一段通用 prompt 生成“看起来像能跑”的输入文件。
 
-这是已经确定的目标范围，不是当前完成声明。当前代码只有领域模型、Agent Protocol、State 和 Mock
-Executor 骨架，六个 Agent、确定性 renderer、Abaqus adapter 与 Gold cases 都尚未实现。
+这是已经确定的目标范围，不是当前完成声明。当前代码已有领域模型、Agent Protocol、State、Mock
+Executor，以及模型端口、离线 fake 和 LangChain adapter 骨架；这些尚未进入专业 Agent 调用链。六个
+Agent、确定性 renderer、Abaqus adapter 与 Gold cases 都尚未实现。
 
 ## 参考 AbaqusAgent 到底实现了什么
 
@@ -48,8 +49,8 @@ checkpointer、Supervisor、Verifier、HITL 或异步 Job 生命周期。
 - trace 中记录 role、prompt/model/profile、输入输出、evidence 与工具版本 hash；
 - 有独立 fixture、合同测试和评测，不只出现在一个端到端 smoke test 中。
 
-六个角色可以首版共用同一个模型 provider，但必须有各自的 prompt/policy 版本和合同；不为角色数量强行
-安装多个模型 SDK。
+六个角色首版共用一个由 Composition Root 显式选择的默认 model profile，但必须有各自的 prompt/policy
+版本和合同；只有固定 benchmark 提供证据后才按角色拆分模型，不为角色数量强行安装多个模型 SDK。
 
 ## 六个 Agent 的精确边界
 
