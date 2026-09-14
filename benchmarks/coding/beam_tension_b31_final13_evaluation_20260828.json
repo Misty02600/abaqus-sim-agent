@@ -1,0 +1,166 @@
+{
+  "schema_version": "1",
+  "experiment": "beam-tension-b31-final13-automatic-output-v1",
+  "date": "2026-08-28",
+  "question": "Does final13 automatic verified-note retrieval enter a real from-scratch B31 trajectory without changing the frozen request, Skill, budget, or host oracle?",
+  "frozen_configuration": {
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "prompt_version": "beam-tension-b31-v1",
+    "api_catalog_mode": "automatic_verified_only",
+    "api_catalog": "var/api-catalog/abaqus-2024-final13",
+    "api_catalog_cards_sha256": "f01e90a53107691c1e5abf82f219b1607a5294fb07e1ff069302a8ff284a2d87",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "coder_general_shell_policy": "coder-general-shell-disabled-v1",
+    "coding_decision_output_policy": "decision-output-tool-clarification-v1",
+    "budget": {
+      "max_model_requests": 40,
+      "max_api_lookup_calls": 4,
+      "max_abaqus_calls": 12,
+      "max_solver_calls": 3,
+      "wall_time_seconds": 2700.0
+    },
+    "repeat": 3,
+    "eval_retry": false
+  },
+  "raw_evidence": {
+    "run_root": "D:/abaqus-runs/beam-b31-final13-automatic-output-v1-20260828",
+    "evaluation_summary_sha256": "107ab9d445a13df5619d103373cbbf19f21d5029fa83e2b07eff9f0e7968fd14",
+    "gate_sha256": "fa19c670a4aea48b6ae56de52abbe1e9f10f04967b77194d7157a83452c534e2",
+    "evaluation_report_sha256": "59a2c44f774f50a59105c18d5fe557b0ba05e107462af384534bbaa847401318"
+  },
+  "result": {
+    "attempts": 3,
+    "passes": 1,
+    "required_passes": 2,
+    "gate_passed": false,
+    "attempts_detail": [
+      {
+        "ordinal": 1,
+        "run_id": "beam-b095a5d60501",
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out.",
+        "workspace_files": 0,
+        "abaqus_calls": 0,
+        "history_sha256": "63ba578eb17af40df8fdc6b07002b7a39aaf310f65b8d355ccbbccd6876ab3e5"
+      },
+      {
+        "ordinal": 2,
+        "run_id": "beam-7bb9037529f7",
+        "stage": "completed",
+        "oracle_passed": true,
+        "model_requests": 24,
+        "input_tokens": 280182,
+        "output_tokens": 17571,
+        "tool_calls": 26,
+        "api_lookup_calls": 1,
+        "abaqus_calls": 8,
+        "solver_calls": 1,
+        "task_duration_seconds": 605.9706608999986,
+        "abaqus_runtime_seconds": 25.896010000258684,
+        "history_sha256": "b7218e8aee3835cfaa1f75c981b1408edb77cabc0edd2cabf994dcdf88ade2bd"
+      },
+      {
+        "ordinal": 3,
+        "run_id": "beam-a73984de477f",
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out.",
+        "workspace_files": 0,
+        "abaqus_calls": 0,
+        "history_sha256": "5afdcc00926d4da940ab529d429c2b6136e8ed6ddb85a15e3b7718e56aac973e"
+      }
+    ]
+  },
+  "task_started_call_timeline": [
+    {
+      "call": 1,
+      "tool": "run_cae_script",
+      "result": "failed",
+      "error": "TypeError: keyword error: beamOrientation on Model.BeamSection",
+      "catalog": "No final13 note was scoped to beamOrientation."
+    },
+    {
+      "call": 2,
+      "tool": "run_cae_script",
+      "result": "failed",
+      "error": "Part.seedPartBySize does not exist",
+      "catalog": "Uncounted owner-aware miss suggested Part.seedPart."
+    },
+    {
+      "call": 3,
+      "tool": "run_cae_script",
+      "result": "passed",
+      "artifacts": ["beam_tension.cae", "beam_tension.inp"]
+    },
+    {
+      "call": 4,
+      "tool": "run_solver_job",
+      "result": "passed",
+      "artifact": "beam_tension.odb"
+    },
+    {
+      "call": 5,
+      "tool": "run_abaqus_python",
+      "result": "failed",
+      "error": "OdbInstance.nodeLabels does not exist",
+      "catalog": "Uncounted owner-aware miss had no alternatives."
+    },
+    {
+      "call": 6,
+      "tool": "run_abaqus_python",
+      "result": "failed",
+      "error": "FieldOutput.position does not exist",
+      "catalog": "Delivered runtime:2024:FieldOutput.getSubset:field-value-boundaries."
+    },
+    {
+      "call": 7,
+      "tool": "run_abaqus_python",
+      "result": "failed",
+      "error": "A second sf_field.position access remained after the first repair",
+      "catalog": "Duplicate FieldOutput.getSubset route; no additional lookup budget was consumed."
+    },
+    {
+      "call": 8,
+      "tool": "run_abaqus_python",
+      "result": "passed",
+      "artifact": "results.json"
+    }
+  ],
+  "lookup_adoption": {
+    "counted_lookups": 1,
+    "delivered_note_ids": [
+      "runtime:2024:FieldOutput.getSubset:field-value-boundaries"
+    ],
+    "uncounted_owner_aware_misses": [
+      "Part.seedPartBySize",
+      "OdbInstance.nodeLabels"
+    ],
+    "observed_adoption": "The Agent repaired u_field.position after the verified note but left sf_field.position before the next runtime call; it then removed the second invalid FieldOutput.position access and completed extraction.",
+    "boundary": "This proves note delivery and eventual adoption in one real B31 run. It does not prove call savings because there is no time-neighbor control under the same output policy and the Agent needed one repeated same-attribute failure."
+  },
+  "comparison_to_historical_v6": {
+    "historical_configuration": "full final9 plus no-Shell, before decision-output-tool-clarification-v1",
+    "historical_result": "2/3 with one pre-file timeout; task-started passes used 28/10 and 12/3 model/Abaqus calls",
+    "current_result": "1/3 with two pre-file timeouts; the one task-started pass used 24/8",
+    "interpretation": "The current gate is worse because two attempts timed out before files. The successful trajectory lies inside the historical cost range. Different Catalog mode, artifact, output policy, and run date prevent causal comparison."
+  },
+  "new_repeated_gaps": [
+    {
+      "gap": "Model.BeamSection.beamOrientation",
+      "evidence": "The real task spent one CAE call on a keyword adjacent to the already licensed orientation/geometricType boundary.",
+      "next_evidence_requirement": "Add beamOrientation to the licensed constructor probe before expanding the verified note."
+    },
+    {
+      "gap": "partial adoption of an absent attribute",
+      "evidence": "After receiving the FieldOutput boundary note, the Agent fixed u_field.position but left sf_field.position and spent another Abaqus Python call.",
+      "next_evidence_requirement": "Require a same-owner/same-attribute search before rerunning; validate with a regression before making a savings claim."
+    }
+  ],
+  "limits": [
+    "The batch failed the 2/3 smoke gate and cannot replace the accepted historical B31 v6 configuration.",
+    "Only one attempt entered the coding task, so no success-rate or aggregate cost conclusion is supported.",
+    "Transport failures occurred before files and cannot be attributed to Abaqus, the verifier, or final13 API cards.",
+    "The output-policy fix did not regress the one completed path, but one success is not stability evidence."
+  ]
+}

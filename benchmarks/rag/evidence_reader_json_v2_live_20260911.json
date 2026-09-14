@@ -1,0 +1,204 @@
+{
+  "profile": "evidence-reader-json-v2-live-qualification-v1",
+  "date": "2026-09-11",
+  "status": "json_qualification_passed_chain_stopped_on_false_sufficient",
+  "qualification": {
+    "passed": 3,
+    "total": 3,
+    "review": {
+      "qualification_summary_sha256": "d898e1c1887d32b063b77920d30791f73c0d333a39d2457e0d7fc2fbfbf4a006",
+      "all_three_passed": true,
+      "reviewer": "Primary assistant, source-grounded review of the three raw responses and expected scenario behavior; not independent human assessment or a general success-rate estimate.",
+      "cases": [
+        {
+          "trial": "q1-complete",
+          "passed": true,
+          "reason": "answered with the supplied unit-convention statement, including rotation/angle exception; citation is exact, no unresolved material issue and no added angular units."
+        },
+        {
+          "trial": "q2-missing-result",
+          "passed": true,
+          "reason": "insufficient with two cited background claims and explicit missing model/result; no numerical stress fabricated.",
+          "scope_note": "The load-case definition lists possible categories of inputs. The background statement must not be read as requiring temperature and base motion in every bracket model; this is a scope caveat, not a validated universal modeling requirement."
+        },
+        {
+          "trial": "q3-searchable-gap",
+          "passed": true,
+          "reason": "follow_up asks for the missing rotation/angle units, preserving uncertainty and original input/evidence anchors; no radians/degrees conclusion invented. Structured product/release/context remain host-owned."
+        }
+      ],
+      "checks": {
+        "one_http_attempt_each": true,
+        "json_object_response_format_each": true,
+        "no_output_or_function_tools": true,
+        "no_output_retries": true
+      },
+      "next_authorized_step": "One frozen Top1-first chain smoke, at most one new follow-up query and one final answer; no full A/B batch or Abaqus."
+    }
+  },
+  "chain": {
+    "status": "not_exercised",
+    "first_evidence_count": 1,
+    "initial_dense_queries": 1,
+    "initial_rerank_pairs": 64,
+    "second_retrievals": 0,
+    "final_answer_requests": 0,
+    "original_question": "Does Abaqus impose a built-in system of physical units, and in which units are prescribed rotations specified?",
+    "judgment": "False sufficient: the one true cited claim covers unit consistency, but the original question also asks the units of prescribed rotations. The retrieved paragraph names rotation/angle exceptions but never supplies those units. The returned unresolved list is empty; the second facet is omitted.",
+    "posthoc_source_check": {
+      "unit_id": "6a6cc351556956924797ecf266f4812c9963d96a137b7806a45ca6ea5f8a17f9",
+      "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-conventions.htm#simamod-c-conventions-t-RotationAndAngleMeasures-sma-topic8",
+      "source_sha256": "68b2f0a3a6681613e146a8ac4bf4c61bd1037be1d648e3906a69190133acaa65",
+      "body_sha256": "da5bfb798e844659260f19104b33c316e576f83a0e79392ecf4e887d525701ce",
+      "projection_status": "text",
+      "not_supplied_to_model": true,
+      "note": "The rotation/angle explanation exists in the stored document units. This is a post-hoc source check, not a successful second retrieval or a new gold metric."
+    }
+  },
+  "paired_visible_input": {
+    "same_decoded_http_json_body": true,
+    "request_json_sha256": "09a68bfb3f490b133c01077c4daafee1be91dfb3ac441c55a9a54d07f36b3ea7",
+    "same_messages_schema_evidence_settings": true,
+    "same_recorded_session_header": false,
+    "decisions": [
+      "follow_up",
+      "sufficient"
+    ],
+    "limitation": "One observed disagreement with identical visible JSON body and different anonymous session headers. No deterministic-output, success-rate, header-causality or identical hidden provider-routing claim. Server-reported input-token counts also differ (1222 vs1143); the cause is not established."
+  },
+  "calls": [
+    {
+      "trial": "q1-complete",
+      "kind": "answer",
+      "transport_status": "valid_output",
+      "decision": "answered",
+      "claims_count": 1,
+      "http_attempts": 1,
+      "input_tokens": 1170,
+      "output_tokens": 283,
+      "seconds": 2.5648304000496864,
+      "request_json_sha256": "9c94e89d86a60ce539bdbbcae6cd53870dc6756dbf1bf24247f2611da0612f33",
+      "response_bytes_sha256": "83d9a8e8e2c0998a3eed65e94cee637ac4132dfae65eebdea1503719a81c5d29",
+      "response_part_kinds": [
+        "thinking",
+        "text"
+      ],
+      "response_reasoning_content_characters": 582,
+      "requested_thinking": {
+        "type": "disabled"
+      },
+      "requested_reasoning_effort": "none"
+    },
+    {
+      "trial": "q2-missing-result",
+      "kind": "answer",
+      "transport_status": "valid_output",
+      "decision": "insufficient",
+      "claims_count": 2,
+      "http_attempts": 1,
+      "input_tokens": 1361,
+      "output_tokens": 634,
+      "seconds": 3.60971079999581,
+      "request_json_sha256": "5bfe8ca4017c67a3a7a037bdc7f7d6776dc77722c3bc73d77b4f8d1ef015f1ee",
+      "response_bytes_sha256": "f95cbabb0664bb8d6a9858dd038f43a7b8599ad99ba4be8d1b5486543edfeaff",
+      "response_part_kinds": [
+        "thinking",
+        "text"
+      ],
+      "response_reasoning_content_characters": 1474,
+      "requested_thinking": {
+        "type": "disabled"
+      },
+      "requested_reasoning_effort": "none"
+    },
+    {
+      "trial": "q3-searchable-gap",
+      "kind": "gap",
+      "transport_status": "valid_output",
+      "decision": "follow_up",
+      "claims_count": 1,
+      "http_attempts": 1,
+      "input_tokens": 1222,
+      "output_tokens": 760,
+      "seconds": 4.0913748000748456,
+      "request_json_sha256": "09a68bfb3f490b133c01077c4daafee1be91dfb3ac441c55a9a54d07f36b3ea7",
+      "response_bytes_sha256": "912d9b62968381c69e6ff2bce9389a8c8e7815ddb53f848c43f6d44913ea39e6",
+      "response_part_kinds": [
+        "thinking",
+        "text"
+      ],
+      "response_reasoning_content_characters": 2412,
+      "requested_thinking": {
+        "type": "disabled"
+      },
+      "requested_reasoning_effort": "none"
+    },
+    {
+      "trial": "chain-gap",
+      "kind": "gap",
+      "transport_status": "valid_output",
+      "decision": "sufficient",
+      "claims_count": 1,
+      "http_attempts": 1,
+      "input_tokens": 1143,
+      "output_tokens": 162,
+      "seconds": 3.216704099904746,
+      "request_json_sha256": "09a68bfb3f490b133c01077c4daafee1be91dfb3ac441c55a9a54d07f36b3ea7",
+      "response_bytes_sha256": "456f0873729f09299758d431ef24e907cce6016d01edcc0d21bee6cf4bfb8023",
+      "response_part_kinds": [
+        "text"
+      ],
+      "response_reasoning_content_characters": 0,
+      "requested_thinking": {
+        "type": "disabled"
+      },
+      "requested_reasoning_effort": "none"
+    }
+  ],
+  "totals": {
+    "real_model_requests": 4,
+    "http_attempts": 4,
+    "input_tokens": 4896,
+    "output_tokens": 1839,
+    "model_seconds": 13.482620100025088,
+    "monetary_cost": null,
+    "initial_retrievals": 1,
+    "second_retrievals": 0,
+    "abaqus_calls": 0
+  },
+  "limits": [
+    "All four requests declare thinking disabled, but the first three HTTP responses include nonempty reasoning_content and the chain response does not. Only presence/length is reported; no hidden reasoning text is published or causal explanation inferred.",
+    "Three individual API/behavior qualification scenarios, not general provider reliability or RAG efficacy.",
+    "One Top1-first branch smoke; failed to exercise follow-up. No replacement question, forced decision, retry, use of the earlier successful decision, or full A/B batch.",
+    "V1/v2 code and previous raw results stay unchanged. Default RAG and product CodingRun are not modified.",
+    "This turn changes only the qualification driver and evidence/report artifacts, not retrieval or reader algorithms. Reader regression tests are run separately."
+  ],
+  "frozen_sha256": {
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\qualify_evidence_reader_json_v2.py": "a36cbfdf1c0f38fa105ecf4f158e22903b577e122b530893524ff915a067dc7c",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\evidence-reader-json-v2-live\\preflight\\a36cbfdf1c0f38fa105ecf4f158e22903b577e122b530893524ff915a067dc7c\\summary.json": "9dda458a43044277b08761029cdadfebd3413da47c7c8f2e21e62173abe80442",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\evidence_followup_v2.py": "1c7a3a5d93b65463dc1c8741ccea73ca061cc6de0908a7a111070727315f1fca",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\evidence_followup.py": "034cae54639a72c98ea1b0c6edef701ea11c0d0832006de61d3a22cb1f422e7d",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\llm_response_recording.py": "dd419ba71e209de732d8f0a803d02fb9c7f1f2742419f310312cd2ffd73397af",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\coding\\model.py": "ba7c9f2a9f0f4b0b0bd2bc994dd30d7f5169982453367d24a465313af9dea7c0",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\unified_candidate_backend.py": "068559cd4301fd3b236ae323e71e3de6a887828d854c618c8890307e7035f4af",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\unified_retrieval.py": "25d6167823aec2facd2dee3a18eae4b566422d333c27b4aaccc6447d85a42e50",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\cross_encoder.py": "17e40fd5fda159e0131c039198a56582251aacb7a6fe6c7ae67f8fe0f8d2acfb",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\uv.lock": "6d8af39f4e6dfe7535f5610c0b85ed3ef023bc1ab2965ad320bc6ccc9713ca82",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\evidence-followup-v1\\initial\\c02-first.json": "b194bab1cccd55b83829f9a4b14ceed45b107300135fa0daf7c3b532f29805c3",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\evidence-followup-v1\\initial\\c06-first.json": "9f7c280b563508c76dd9542cee0417cb1674cc5de238fd1e5609e3c88d447f29",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\rag-headerless-pairs-v1\\manifest.json": "cdd92c955d96e93f21ed0d9a256976678337cf44eb99f13a6ed9cca57ae25e57",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\rag-headerless-pairs-v1\\prepared.json": "6ec20d960265f3f05690a7b71436d574ca97e84a02478782dd63ce84f43d9afd",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\rag-headerless-pairs-v1\\index-binding.json": "d28c3f29df45418a5c0056c6fdfc9ee2a247ddd679698212b64921edaf0d80a8",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\benchmarks\\rag\\unified_candidate_scope_rules_v1.json": "09ccf2cd932a9e61d9dca0dfd0559f59c3a20189e66c1c00f550c44c5b699ca5",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\models\\ms-marco-MiniLM-L6-v2\\233902d25c440f23af6f7d6e94d2946bac0bee0a\\acquisition.json": "b4787f727622d776e65cccc1ddf58b1753748dc662328104131874d7f64dbc17",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\.venv\\Lib\\site-packages\\pydantic_ai\\models\\openai.py": "87a7fec897cf713e4221d70d63416299545aa7661cb8b4df2a9f935e0a46e3bb",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\.venv\\Lib\\site-packages\\pydantic_ai\\providers\\deepseek.py": "0de3c953bf7a2b3925cfc845dbf66784e632bf1a2337bc33494b303fad2f7ec5"
+  },
+  "evidence_sha256": {
+    "var\\audits\\evidence-reader-json-v2-live\\manifest.json": "0b157e134c29938d3e5ce48f9ad5fa8ef4d195615e612e1d71760ac83103287b",
+    "var\\audits\\evidence-reader-json-v2-live\\qualification_summary.json": "d898e1c1887d32b063b77920d30791f73c0d333a39d2457e0d7fc2fbfbf4a006",
+    "var\\audits\\evidence-reader-json-v2-live\\qualification_review.json": "d52c09b9a01f065fcff97b93820574716dec058c783530c040bb3c25f7ea03a7",
+    "var\\audits\\evidence-reader-json-v2-live\\chain_summary.json": "170f211a387848a28d9a0c2b69f20d356716f6737774bdc6e6d1259aceeb5333",
+    "var\\audits\\summarize_evidence_reader_json_v2_live.py": "13d0fcb39cbd630aa15aed459005bf77c592dda402faa0980e8ec5d9efb8f438"
+  }
+}

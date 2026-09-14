@@ -1,0 +1,14 @@
+[
+  {
+    "type": "tool-ask_user",
+    "toolCallId": "q-thickness",
+    "state": "approval-requested",
+    "input": {
+      "question": "Plate thickness? Please include units."
+    },
+    "providerExecuted": false,
+    "approval": {
+      "id": "q-thickness"
+    }
+  }
+]

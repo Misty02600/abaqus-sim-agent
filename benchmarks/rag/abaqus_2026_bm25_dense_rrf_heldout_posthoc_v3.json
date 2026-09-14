@@ -1,0 +1,37 @@
+{
+  "schema_version": "1",
+  "dataset_id": "abaqus-2026-bm25-dense-rrf-heldout-v3",
+  "analysis_type": "posthoc_descriptive_no_tuning",
+  "source_report_sha256": "9bb5d7a6e688e0d5a3ecd598c1a252ca3234fb509514886228be9444623fd0a8",
+  "comparison": "hybrid_minus_dense",
+  "paired_cases": 30,
+  "bootstrap": {
+    "method": "paired_case_resampling_percentile",
+    "replicates": 20000,
+    "seed": 20260903,
+    "confidence_level": 0.95,
+    "complete_hit_rate_delta": {
+      "mean": 0.03333333333333333,
+      "lower": -0.1,
+      "upper": 0.16666666666666666
+    },
+    "requirement_recall_delta": {
+      "mean": 0.02777777777777778,
+      "lower": -0.05,
+      "upper": 0.12222222222222223
+    },
+    "mrr_delta": {
+      "mean": 0.04611111111111111,
+      "lower": -0.05,
+      "upper": 0.14333333333333334
+    }
+  },
+  "complete_hit_exact_sign_test": {
+    "hybrid_wins": 3,
+    "dense_wins": 2,
+    "ties": 25,
+    "two_sided_p_value": 1.0
+  },
+  "interpretation": "The held-out point estimate favors RRF, but all paired bootstrap intervals cross zero and only five complete-hit pairs are discordant. This is a small smoke result, not statistical evidence that Hybrid is generally better than Dense.",
+  "algorithm_or_dataset_changes_after_consumption": false
+}

@@ -1,0 +1,127 @@
+{
+  "schema_version": "docs-tool-behavior-review-v1",
+  "dataset_role": "development_behavior_smoke",
+  "review_status": "completed",
+  "review_method": "Primary assistant review against pre-recorded criteria, actual tool returns, final file changes, and local official HTML; no second human reviewer or LLM-as-judge score.",
+  "runtime_scope": "offline file inspection and editing; no Abaqus process was requested or executed",
+  "model": "opencode-go/deepseek-v4-flash",
+  "policy_version": "docs-tool-selective-v1",
+  "raw_run_root": "D:/abaqus-runs/docs-tool-behavior-20260905-v1",
+  "evidence": {
+    "cases_source": "benchmarks/coding/docs_tool_behavior_cases_v1.jsonl",
+    "cases_source_sha256": "512cdd10855a8dd9fe709190de37d3bb947ae7d835a82ed32525410cc69e119a",
+    "manifest_sha256": "cf520d473c8b73003a310be06b1e8c69ea3552251850e60005e8d3d5d94eb4b4",
+    "raw_report_sha256": "090ec502a8d99637e8bead63d0bf93c8ae5e3f269e135c4a1bac29673e32d71f",
+    "completion_sha256": "2b5dcfa09f3799e53b85842031cb11d5b3044061274c99c588cbb45e6959e7bf",
+    "attempts_sha256": "d69590a269646be161e59124ab1ed65b43904c4524131f6b00730b28b8305f16",
+    "bound_file_count": 126,
+    "bound_file_hash_mismatches": 0,
+    "retrieval_environment_verified_before_and_after": true,
+    "new_postrun_review_source": {
+      "relative_official_path": "SIMACAEKERRefMap/simaker-c-odbassemblypyc.htm",
+      "sha256": "97adf37b9933ac467e340251b4379d6096cce8306a4b45e1aa82371a6ec272bd",
+      "finding": "The Members section already defines nodeSets as a repository of OdbSet objects; the Catalog lookup surface did not expose that member. This source was inspected after the Agent run, not returned to the Agent."
+    }
+  },
+  "totals": {
+    "scenarios": 6,
+    "repeats_per_scenario": 1,
+    "model_requests": 36,
+    "tool_calls_including_final_decisions": 49,
+    "api_lookup_attempts": 4,
+    "api_lookup_found_counted": 1,
+    "document_lookup_attempts": 5,
+    "actual_abaqus_calls": 0,
+    "runtime_tool_requests": 0,
+    "provider_interruptions": 0,
+    "ready_for_verification_decisions": 5,
+    "appropriate_needs_input_decisions": 1
+  },
+  "cases": [
+    {
+      "case_id": "local-set-name",
+      "model_requests": 5,
+      "api_lookup_attempts": 0,
+      "document_lookup_attempts": 0,
+      "routing_assessment": "appropriate_local_inspection",
+      "technical_assessment": "correct_for_supplied_task",
+      "evidence_assessment": "local_script_supports_the_change",
+      "finding": "The model read the script and changed only the reference LeftEnd to the existing LeftSupport set. Boundary values and unrelated code were preserved.",
+      "evidence_files": ["local-set-name/state/history.json", "local-set-name/workspace/build_model.py", "local-set-name/workspace/analysis.json"]
+    },
+    {
+      "case_id": "missing-material-input",
+      "model_requests": 1,
+      "api_lookup_attempts": 0,
+      "document_lookup_attempts": 0,
+      "routing_assessment": "appropriate_clarification",
+      "technical_assessment": "correctly_waits_for_user_measurement",
+      "evidence_assessment": "missing_value_explicit_in_task",
+      "finding": "The model requested elastic_modulus and its unit, without creating a default material value. The host outcome is failed/clarification because the scripted provider supplies no answer; this is the expected behavior for this probe, not a failed clarification decision.",
+      "evidence_files": ["missing-material-input/state/events.jsonl", "missing-material-input/state/outcome.json"]
+    },
+    {
+      "case_id": "exact-api-region",
+      "model_requests": 9,
+      "api_lookup_attempts": 4,
+      "api_lookup_found_counted": 1,
+      "document_lookup_attempts": 1,
+      "routing_assessment": "api_first_then_unresolved_member_search",
+      "technical_assessment": "code_correct_explanation_overstates_evidence_scope",
+      "evidence_assessment": "api_signature_useful_document_fallback_did_not_answer_member_access",
+      "finding": "FieldOutput.getSubset was found; OdbAssembly.nodeSets, OdbAssembly and OdbSet were not found. The subsequent document query returned output-related pages without the requested repository-access explanation. The final region=odb.rootAssembly.nodeSets['LEFT'] patch was correct, but the answer treated a runtime note about one OdbMeshNode as support for OdbSet and used unqualified wording about the accepted region type despite multiple overloads.",
+      "retrieved_document_ids": ["simaout-c-std-nodalvariables", "simakey-r-nodeoutput", "simaout-c-output", "simaout-c-printfile"],
+      "evidence_files": ["exact-api-region/state/history.json", "exact-api-region/state/api_lookups.jsonl", "exact-api-region/state/concept_lookups.jsonl", "exact-api-region/workspace/extract_results.py", "exact-api-region/workspace/analysis.json"]
+    },
+    {
+      "case_id": "domain-procedure-applicability",
+      "model_requests": 8,
+      "api_lookup_attempts": 0,
+      "document_lookup_attempts": 2,
+      "routing_assessment": "relevant_domain_query_and_followup",
+      "technical_assessment": "core_correct_with_unsupported_extra_restrictions",
+      "evidence_assessment": "partially_supported_by_retrieved_passages",
+      "finding": "The queries addressed Riks/proportional loading and then prescribed-displacement loading. Retrieved passages supported proportional loading, unstable static problems, LPF, load examples and ignored amplitude references. The answer's arc-length explanation matches the complete official page. However, the follow-up did not return the Boundary Conditions section, and the answer generalized to force-type loads without mentioning documented thermal reference loads or constant dead loads. Its 2024 stability assertion was not independently established by the returned 2026 snippets.",
+      "evidence_files": ["domain-procedure-applicability/state/history.json", "domain-procedure-applicability/state/concept_lookups.jsonl", "domain-procedure-applicability/workspace/analysis.json"],
+      "reviewed_official_pages": ["SIMACAEANLRefMap/simaanl-c-static.htm", "SIMACAEANLRefMap/simaanl-c-postbuckling.htm"]
+    },
+    {
+      "case_id": "existing-evidence-sufficient",
+      "model_requests": 6,
+      "api_lookup_attempts": 0,
+      "document_lookup_attempts": 0,
+      "routing_assessment": "appropriate_reuse_of_local_evidence",
+      "technical_assessment": "correct_local_edit",
+      "evidence_assessment": "project_contract_supports_the_change",
+      "finding": "The model read output_contract.txt and changed history_variables from RF3 to RF1 while retaining CPS4R and field variables U/S/RF. It did not re-query an already specified project decision.",
+      "evidence_files": ["existing-evidence-sufficient/state/history.json", "existing-evidence-sufficient/workspace/output_config.json", "existing-evidence-sufficient/workspace/analysis.json"]
+    },
+    {
+      "case_id": "recorded-solver-diagnostic",
+      "model_requests": 7,
+      "api_lookup_attempts": 0,
+      "document_lookup_attempts": 2,
+      "routing_assessment": "relevant_question_but_retrieval_failed_to_supply_the_needed_explanation",
+      "technical_assessment": "core_conclusion_correct_with_procedure_specific_qualifications_needed",
+      "evidence_assessment": "main_explanation_not_grounded_by_this_retrieval",
+      "finding": "The model correctly distinguished the warning from proof of nonconvergence and preserved the requested output times. Both searches misidentified the English preposition AT in the uppercase warning as the nodal acceleration variable AT and pinned that unrelated record first. Neither returned the declared exact-time output chapter; one Standard query also returned an Explicit-only incrementation page because product filtering applies only to the exact branch. The final report cited only the original log. Its main increment-shortening explanation matches the complete official chapter, but blanket exact-time wording omits procedure-specific minimum-increment exceptions.",
+      "false_exact_symbol": "AT",
+      "declared_gold_document_id": "simaout-c-dboutput-frequency",
+      "declared_gold_page_hit": false,
+      "evidence_files": ["recorded-solver-diagnostic/state/history.json", "recorded-solver-diagnostic/state/concept_lookups.jsonl", "recorded-solver-diagnostic/workspace/analysis.json"],
+      "reviewed_official_pages": ["SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm"]
+    }
+  ],
+  "conclusions": [
+    "The real model used local evidence without retrieval in two cases and requested the missing user input in one case.",
+    "It initiated API/document retrieval in the other three cases; the selective tool is usable in real model calls, not only FunctionModel tests.",
+    "Successful offline artifacts do not establish fully grounded technical explanations or reliable knowledge-gap recognition.",
+    "The strongest observed coverage gap is Catalog member access, while the strongest automatic symbol-extraction defect is the ordinary word AT being treated as an output variable.",
+    "The data does not justify indexing an entire general scripting guide or claiming improved simulation success. No A/B comparison or licensed simulation was performed."
+  ],
+  "followups_not_implemented_in_this_batch": [
+    "Correct false exact-symbol extraction from uppercase diagnostic prose and check product scope across the semantic branch.",
+    "Evaluate member/attribute coverage in the existing Scripting Reference parser before adding broad new document sources.",
+    "Improve evidence-use guidance and tests for overload scope, unconfirmed constraints, and document/runtime version claims."
+  ]
+}

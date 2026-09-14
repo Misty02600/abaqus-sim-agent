@@ -1,0 +1,166 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-api-repair-regression-final8",
+  "date": "2026-08-24",
+  "last_updated": "2026-08-25",
+  "model": "opencode-go/deepseek-v4-flash",
+  "runtime": "Abaqus 2024",
+  "prompt_version": "api-repair-v1",
+  "configuration": {
+    "api_catalog_mode": "automatic_verified_only",
+    "catalog_card_count": 5481,
+    "catalog_cards_sha256": "b557c9cb79c2a593afbb0c6ed332c664001f880cc5667d465729252e3635fd5e",
+    "runtime_notes_sha256": "5cc3e88267457328aa75aa50a928a65a2ac7bc7d70cb3885da77f40da2ce22cb",
+    "case_manifest_sha256": "53d462498c74c794f1c4029b75f981535f988e32dc83b4c634fbbcacde5b669f",
+    "harness_version": "0.24.0",
+    "harness_windows_hash_patch": "harness-0.24.0-windows-newline-hash-v1",
+    "model_request_budget": 18,
+    "api_lookup_budget": 3,
+    "abaqus_call_budget": 5,
+    "solver_call_budget": 0,
+    "http_retries": 2
+  },
+  "result": {
+    "passes": 2,
+    "attempts": 2,
+    "gate_passed": true,
+    "stale_hash_conflicts": 0,
+    "cases": [
+      {
+        "case_id": "base_solid_box",
+        "run_id": "base_solid_box-39f444c91e",
+        "passed": true,
+        "model_requests": 8,
+        "input_tokens": 51639,
+        "output_tokens": 9685,
+        "tool_calls": 8,
+        "abaqus_calls": 2,
+        "failed_cae_calls": 1,
+        "abaqus_runtime_seconds": 2.1275944000226445,
+        "task_duration_seconds": 124.49631670000963,
+        "automatic_lookup": {
+          "query": "Part.BaseSolidBox",
+          "status": "not_found",
+          "counted": false,
+          "alternatives": [
+            "Part.BaseSolidExtrude",
+            "Part.BaseSolidRevolve",
+            "Part.BaseSolidSweep"
+          ],
+          "observed_adoption": "The model explicitly selected ConstrainedSketch plus Part.BaseSolidExtrude after receiving the alternatives."
+        },
+        "verified_result": {
+          "cell_count": 1,
+          "dimensions": [
+            10.0,
+            2.0,
+            1.0
+          ]
+        }
+      },
+      {
+        "case_id": "part_instance_set",
+        "run_id": "part_instance_set-ae16b4c1a9",
+        "passed": true,
+        "model_requests": 6,
+        "input_tokens": 35263,
+        "output_tokens": 1502,
+        "tool_calls": 6,
+        "abaqus_calls": 1,
+        "failed_cae_calls": 0,
+        "abaqus_runtime_seconds": 1.0727254000375979,
+        "task_duration_seconds": 37.9999748999835,
+        "automatic_lookup": null,
+        "observed_adoption": "The model corrected PartInstance.Set to an assembly-owned Set while inspecting the existing script, before the first CAE call.",
+        "verified_result": {
+          "edge_count": 1,
+          "repository": "rootAssembly"
+        }
+      }
+    ]
+  },
+  "automatic_exact_signature_result": {
+    "run_root": "D:/abaqus-runs/api-repair-beam-section-auto-signature-20260825-v2",
+    "case_manifest_sha256": "9dc667824492d46c3758c9a116b45522de4a63be7d173c67b60c14c177876bd3",
+    "skill_sha256": "5dffe84954008bec534179a85d97d448a1ad9647716cd3f8f33c5f02528bf374",
+    "case_id": "beam_section_invalid_orientation",
+    "split": "dev",
+    "runtime_note_available": false,
+    "passes": 1,
+    "attempts": 1,
+    "gate_passed": true,
+    "run_id": "beam_section_invalid_orientation-ee9c3b6c76",
+    "model_requests": 7,
+    "input_tokens": 44838,
+    "output_tokens": 3218,
+    "tool_calls": 8,
+    "api_lookup_calls": 1,
+    "delivered_runtime_notes": 0,
+    "abaqus_calls": 2,
+    "failed_cae_calls": 1,
+    "abaqus_runtime_seconds": 2.147,
+    "task_duration_seconds": 48.518,
+    "automatic_lookup": {
+      "query": "Model.BeamSection",
+      "status": "found",
+      "card_id": "api:2024:abaqus.Section.SectionModel.SectionModel.BeamSection",
+      "payload_bytes": 1299,
+      "delivered_note_ids": [],
+      "counted": true
+    },
+    "observed_adoption": "After the first CAE TypeError, the model explicitly removed only the unsupported orientation keyword and preserved material, profile, integration and poissonRatio.",
+    "verified_result": {
+      "case_id": "beam_section_invalid_orientation",
+      "section_name": "ProbeBeamSection",
+      "material": "Steel",
+      "profile": "RectProfile",
+      "integration": "DURING_ANALYSIS"
+    },
+    "summary_sha256": "47ffb36945eed058e0f0e915277c757111aa059897dfd24181366f42ba23cad9",
+    "gate_sha256": "0248ba7e3bf646e889ef2b1204f2cd4911a99e876925880923457b4e04d8e541"
+  },
+  "deterministic_and_licensed_coverage": {
+    "broken_fixtures_failed_as_expected": "3/3",
+    "external_minimal_repairs_passed": "3/3",
+    "catalog_query_benchmark": "12/12",
+    "existing_findat_and_geomsequence_cases_reused": true,
+    "faces_error_rejects_edge_only_note_before_budget": true,
+    "seed_edges_note_positive_path_preserved": true,
+    "part_instance_not_found_alternatives_tested": [
+      "Assembly.Set",
+      "Part.Set"
+    ],
+    "beam_section_signature_without_runtime_note_tested": true
+  },
+  "interpretation": {
+    "observed_result": "Both new Product-Agent regression cases passed once with the final8 automatic routing path.",
+    "base_solid_box_result": "The runtime AttributeError produced a compact owner-aware not-found hint. It returned names only, consumed no verified-note budget, and visibly changed the repair path.",
+    "part_instance_set_result": "The model repaired the owner mistake before runtime, so this Agent run did not exercise the automatic not-found payload; the exact automatic payload remains covered by deterministic tests.",
+    "automatic_exact_signature_result": "A new DEV regression reproduced the observed invalid Model.BeamSection orientation keyword. With the unchanged Skill and no runtime note, the exact runtime traceback injected one compact official signature; the Agent removed only the unsupported keyword and passed host verification on the second CAE call.",
+    "windows_hash_result": "Neither run produced a stale expected_hash conflict after enabling the version-scoped Harness newline hash patch.",
+    "limits": [
+      "Each Product-Agent case ran once; 2/2 is a smoke result, not a stable success-rate estimate.",
+      "The cases are development regressions derived from an observed failure, not untouched holdout cases.",
+      "The experiment validates repair routing and adoption, not broad Abaqus API coverage.",
+      "The BeamSection signature case ran once and is direct DEV evidence, not a stable success-rate estimate or B31 end-to-end benefit."
+    ]
+  },
+  "source_evidence": [
+    {
+      "path": "D:/abaqus-runs/api-repair-regression-20260824-v1/automatic-final8/evaluation_summary.json",
+      "sha256": "6d2a7953d1c3ba70ec00ff0dff9e77a597ea692d7f57baeaace1a30fdd77cdde"
+    },
+    {
+      "path": "var/api-catalog/abaqus-2024-final8/manifest.json",
+      "sha256": "7ba79ddc4dbf1ff242eb672604beff06af432e1a1be4dc10fdf6b33c3af22a7f"
+    },
+    {
+      "path": "benchmarks/coding/api_repair_regression_runtime_observations.json",
+      "sha256": "13918a915b13ba2d8d842f0c191bd16d546abf5f842e2f29261c6105bd1d759c"
+    },
+    {
+      "path": "D:/abaqus-runs/api-repair-beam-section-auto-signature-20260825-v2/evaluation_summary.json",
+      "sha256": "47ffb36945eed058e0f0e915277c757111aa059897dfd24181366f42ba23cad9"
+    }
+  ]
+}

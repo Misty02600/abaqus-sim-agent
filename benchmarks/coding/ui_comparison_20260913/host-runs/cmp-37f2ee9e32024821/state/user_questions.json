@@ -1,0 +1,24 @@
+{
+  "schema_version": "user-questions-v1",
+  "run_id": "cmp-37f2ee9e32024821",
+  "questions": [
+    {
+      "question_id": "cmp-37f2ee9e32024821-q1",
+      "question": "Plate thickness? Please include units.",
+      "task_revision": 0,
+      "turn": 1,
+      "abaqus_calls_before": 0,
+      "revision_had_runtime": false,
+      "goal_at_question": "UI-COMP agui FAIL",
+      "execution_count": 0,
+      "history_sha256": "7651d2b75b2693fa3e628ad1d354f8d1408f076506447fdfa7aca5e9bffef60f",
+      "workspace_sha256": "602e35a92eec4bc0a2ec6ae113f07bfc6933322fb69fe8dee416e5a67217e2a2",
+      "asked_at": "2026-09-13T15:40:09.926958Z",
+      "answer": "1 mm",
+      "source": "file",
+      "resolved_at": "2026-09-13T15:40:10.095464Z",
+      "cancelled": false,
+      "answer_revision": 0
+    }
+  ]
+}

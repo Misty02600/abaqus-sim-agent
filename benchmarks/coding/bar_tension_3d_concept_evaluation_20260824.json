@@ -1,0 +1,214 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-bar-tension-3d-concept-adoption",
+  "date": "2026-08-24",
+  "model": "opencode-go/deepseek-v4-flash",
+  "runtime": "Abaqus 2024",
+  "task_prompt_version": "bar-tension-3d-v1",
+  "shared_configuration": {
+    "http_retries": 2,
+    "planning_enabled": false,
+    "model_request_budget": 40,
+    "api_lookup_budget": 4,
+    "concept_lookup_budget": 2,
+    "abaqus_call_budget": 12,
+    "solver_call_budget": 3,
+    "wall_time_seconds": 1800.0,
+    "catalog_cards_sha256": "3e92f4d67e342bed9dd7d04be371f65ab76a31652fde15fb7cc55241970ce430",
+    "concept_manifest_sha256": "9671bd588940438ef1edfc067ac9bb8b26b96d6be57c0c4740b70bd2aafb5cc1",
+    "concept_index": "Abaqus 2026 FD02 HTML / 38913 documents / all-MiniLM-L6-v2"
+  },
+  "arms": {
+    "automatic_verified_only_control": {
+      "passes": 2,
+      "attempts": 3,
+      "gate_passed": true,
+      "model_requests_for_completed_cases": 45,
+      "input_tokens_for_completed_cases": 552634,
+      "output_tokens_for_completed_cases": 51385,
+      "tool_calls_for_completed_cases": 48,
+      "api_lookup_calls": 0,
+      "concept_lookup_calls": 0,
+      "abaqus_calls": 14,
+      "solver_calls": 2,
+      "task_duration_seconds_for_completed_cases": 586.8125809,
+      "infrastructure_failure_duration_seconds": 364.778077,
+      "abaqus_runtime_seconds": 43.17995,
+      "attempt_profiles": [
+        {
+          "run_id": "bar3d-9b7b378576ce",
+          "passed": true,
+          "model_requests": 29,
+          "abaqus_calls": 9,
+          "solver_calls": 1
+        },
+        {
+          "run_id": "bar3d-9f5980b4528f",
+          "passed": true,
+          "model_requests": 16,
+          "abaqus_calls": 5,
+          "solver_calls": 1
+        },
+        {
+          "run_id": "bar3d-13e7f6ac0439",
+          "passed": false,
+          "failure_stage": "infrastructure",
+          "failure": "ModelAPIError: Request timed out",
+          "abaqus_calls": 0,
+          "workspace_files": 0
+        }
+      ]
+    },
+    "concept_tool_available_without_preflight_policy": {
+      "passes": 3,
+      "attempts": 3,
+      "gate_passed": true,
+      "model_requests": 80,
+      "input_tokens": 1107981,
+      "output_tokens": 63920,
+      "tool_calls": 82,
+      "api_lookup_calls": 1,
+      "concept_lookup_calls": 0,
+      "abaqus_calls": 24,
+      "solver_calls": 4,
+      "task_duration_seconds": 904.3847054,
+      "abaqus_runtime_seconds": 83.7113741,
+      "first_request_input_token_delta_vs_control_median": 328,
+      "attempt_profiles": [
+        {
+          "run_id": "bar3d-9330211f0da0",
+          "passed": true,
+          "model_requests": 31,
+          "abaqus_calls": 10,
+          "solver_calls": 1,
+          "concept_lookup_calls": 0
+        },
+        {
+          "run_id": "bar3d-4a5642732e18",
+          "passed": true,
+          "model_requests": 35,
+          "abaqus_calls": 11,
+          "solver_calls": 2,
+          "api_note_queries": [
+            "Assembly.Set"
+          ],
+          "concept_lookup_calls": 0
+        },
+        {
+          "run_id": "bar3d-8331a731f974",
+          "passed": true,
+          "model_requests": 14,
+          "abaqus_calls": 3,
+          "solver_calls": 1,
+          "concept_lookup_calls": 0
+        }
+      ]
+    },
+    "concept_tool_with_from_scratch_preflight_v1": {
+      "policy_version": "concept-tool-from-scratch-preflight-v1",
+      "passes": 2,
+      "attempts": 3,
+      "gate_passed": true,
+      "model_requests": 85,
+      "input_tokens": 1413010,
+      "output_tokens": 74345,
+      "tool_calls": 86,
+      "api_lookup_calls": 2,
+      "concept_lookup_calls": 3,
+      "preflight_adoption": "3/3",
+      "abaqus_calls": 23,
+      "solver_calls": 3,
+      "task_duration_seconds": 1428.0949025,
+      "abaqus_runtime_seconds": 67.1712787,
+      "attempt_profiles": [
+        {
+          "run_id": "bar3d-e124f1eccea0",
+          "passed": true,
+          "model_requests": 32,
+          "abaqus_calls": 8,
+          "solver_calls": 2,
+          "concept_lookup_calls": 1,
+          "concept_lookup_duration_seconds": 1.136,
+          "seconds_before_first_cae": 359.261,
+          "concept_query": "C3D8R reduced integration solid element assigned with a homogeneous solid section in a Static General step",
+          "document_ids": [
+            "simaelm-r-3delem",
+            "simakey-r-solidsection",
+            "simaelm-c-solidcont",
+            "simamat-c-eos"
+          ]
+        },
+        {
+          "run_id": "bar3d-9e159ae7e5d3",
+          "passed": false,
+          "failure_stage": "model_budget",
+          "model_requests": 40,
+          "abaqus_calls": 12,
+          "solver_calls": 0,
+          "api_lookup_calls": 2,
+          "concept_lookup_calls": 1,
+          "concept_lookup_duration_seconds": 0.789,
+          "seconds_before_first_cae": 95.662,
+          "failure_summary": "Seven authoring failures and five probes exhausted the Abaqus budget before Solver; the failures concerned model lifecycle, nonexistent BaseSolidBox, findAt containers, and Assembly.Set rather than element-section semantics.",
+          "concept_query": "Assigning a solid homogeneous section to C3D8R reduced-integration elements for a 3D stress Static General analysis",
+          "document_ids": [
+            "simaelm-r-3delem",
+            "simakey-r-solidsection",
+            "simaelm-r-2delem",
+            "simaelm-c-dimension"
+          ]
+        },
+        {
+          "run_id": "bar3d-72b513f93f44",
+          "passed": true,
+          "model_requests": 13,
+          "abaqus_calls": 3,
+          "solver_calls": 1,
+          "concept_lookup_calls": 1,
+          "concept_lookup_duration_seconds": 0.722,
+          "seconds_before_first_cae": 207.971,
+          "concept_query": "C3D8R reduced-integration solid element section assignment for a 3D continuum part in a Static General step",
+          "document_ids": [
+            "simakey-r-solidsection",
+            "simaelm-r-3delem",
+            "simaelm-c-solidcont",
+            "simamat-c-eos"
+          ]
+        }
+      ]
+    }
+  },
+  "interpretation": {
+    "observed_result": "The automatic control and the prompted Concept-preflight arm both passed the 2/3 smoke gate. Merely exposing the Concept tool produced zero lookups in 3/3 runs; the prompt-only preflight policy produced one pre-CAE lookup in 3/3 runs.",
+    "retrieval_adoption_result": "The policy fixed tool adoption without a host-side task classifier or CAE blocker.",
+    "task_benefit_result": "No closed-loop success improvement was observed. The control's only failure was an infrastructure timeout before Abaqus, while the preflight arm's failure exhausted 40 model requests and 12 CAE calls on dynamic API authoring before Solver.",
+    "retrieval_quality_result": "All three queries returned exact C3D8R and *SOLID SECTION evidence. Semantic tail hits were sometimes weak or drifted to two-dimensional plane-stress pages, but the exact hits kept the core evidence relevant. No reranker was used, and the failed run was not blocked by retrieval ranking.",
+    "api_catalog_result": "One automatic Assembly.Set runtime note visibly influenced a successful container repair path in the availability-only arm, but runtime probes were still required and no counterfactual proves that the note was necessary.",
+    "observed_follow_up_issues": [
+      "The failed preflight attempt encountered four edit_file stale-hash conflicts; this is being treated as a Harness/tool-contract issue, not missing Abaqus documentation.",
+      "An edge-specific Assembly.Set runtime note was delivered for a faces keyword failure. Receiver-only note matching is broader than the verified parameter evidence."
+    ],
+    "product_decision": "Keep Concept retrieval off by default. In explicit tool mode, use one prompt-only preflight for a clearly from-scratch task and reserve a second query for genuine conceptual uncertainty after a CAE or Solver failure. Continue to use Exact API Catalog/runtime notes for API binding failures; do not treat Concept documents as an API debugger.",
+    "limits": [
+      "This is one simple 3D linear-solid-mechanics task with three stochastic attempts per arm.",
+      "The provider exposes no deterministic seed and one control attempt failed only because the model gateway timed out.",
+      "The availability-only and preflight treatments ran sequentially, not as paired seeded trials.",
+      "A 2/3 smoke gate is evidence of observed completion, not a stable success-rate estimate.",
+      "Relevant retrieved documents and 3/3 adoption do not by themselves establish task benefit."
+    ]
+  },
+  "source_summaries": [
+    {
+      "path": "D:/abaqus-runs/bar3d-concept-ablation-20260824-v1/automatic/evaluation_summary.json",
+      "sha256": "7d0df2ba7b8011f96c0f41c25e552f317d23260aad432c30c80eebe82112f2ff"
+    },
+    {
+      "path": "D:/abaqus-runs/bar3d-concept-ablation-20260824-v1/automatic-plus-concept/evaluation_summary.json",
+      "sha256": "811a85c6ecfd391eb84894869a818447f5174112bdd5221797e5ff5fa019d1e5"
+    },
+    {
+      "path": "D:/abaqus-runs/bar3d-concept-ablation-20260824-v2/automatic-plus-concept-preflight/evaluation_summary.json",
+      "sha256": "5bd5432149bd86c77d84315a79ef5425120b3d52b979fa200033f8437cea6313"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "schema_version": "1",
+  "observed_at": "2026-08-23",
+  "scope": "Minimal Abaqus/CAE 2024 noGUI geometry-container probe; no input write, job submission, or solve.",
+  "runtime": {
+    "release": "2024",
+    "launcher": "D:/SIMULIA/Commands/abq2024.bat",
+    "internal_version": "2023_09_21-20.55.25 RELr426 190762",
+    "python": "3.10.5"
+  },
+  "reproduction": {
+    "fixture": "tests/fixtures/abaqus2024/container_probe.py",
+    "fixture_sha256": "a1cb985d026f085904c1ac914be9be1a10074415a7d294ffe3acbae2f46973d5",
+    "pytest": "ABAQUS_LICENSED_TESTS=1 pytest tests/test_abaqus2024_container_probe.py -m abaqus",
+    "result_file": "container_probe_results.json"
+  },
+  "raw_evidence": {
+    "path": "D:/abaqus-runs/container-probe-20260823-v1/container_probe_results.json",
+    "sha256": "22e60ef1cb40ce23d1be4e9b9a6d79403858dd3b85b0f062d78f92c3aa4da090"
+  },
+  "observations": {
+    "Assembly.Set": {
+      "native_sequence": {
+        "status": "ok",
+        "created_edge_count": 2
+      },
+      "flat_edge_tuple": {
+        "status": "error",
+        "error_type": "AbaqusException"
+      },
+      "flat_edge_list": {
+        "status": "error",
+        "error_type": "AbaqusException"
+      }
+    },
+    "Part.seedEdgeByNumber": {
+      "native_sequence": {
+        "status": "ok",
+        "requested_number": 3,
+        "observed_edge_numbers": [3, 3]
+      },
+      "flat_edge_tuple": {
+        "status": "ok",
+        "requested_number": 4,
+        "observed_edge_numbers": [4, 4]
+      },
+      "flat_edge_list": {
+        "status": "ok",
+        "requested_number": 5,
+        "observed_edge_numbers": [5, 5]
+      },
+      "tuple_native_sequence": {
+        "status": "error",
+        "error_type": "TypeError"
+      }
+    },
+    "Part.setMeshControls": {
+      "direct_face_array": {
+        "status": "ok",
+        "elem_shape": "QUAD",
+        "technique": "STRUCTURED"
+      },
+      "tuple_face_array": {
+        "status": "error",
+        "error_type": "TypeError"
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "prompt_version": "beam-section-change-v1",
+  "agent_visible_seed_files": [
+    "build_model.py",
+    "extract_results.py"
+  ],
+  "goal": "当前工作区提供了一份已经在 Abaqus 2024 中完成物理验收的 B31 梁轴向拉伸脚本。请理解已有\nbuild_model.py，并把矩形梁截面从 a=10 mm、b=10 mm 改为 a=20 mm、b=10 mm。\n\n除此之外保持原合同不变：100 mm 长、沿全局 X 的三维 wire，mm-N-MPa，E=210000 MPa、泊松比0.3，\n有效且与梁轴线不平行的截面方向，Abaqus/Standard，唯一 Static, General，NLGEOM=OFF，20个B31单元、\n21个节点，左端 Encastre，右端只规定 U1=0.1 mm，以及 U、RF、SF 输出。不得增加载荷、分析步、约束、\n单元或节点。\n\n只允许修改 build_model.py；现有 extract_results.py 的结果合同没有变化，必须 byte-for-byte 保持不变。\n保持三阶段边界：build_model.py 经 CAE noGUI 生成 beam_tension.cae 与 beam_tension.inp 且不提交 Job；\nSolver 从 beam_tension.inp 启动 beam_tension；原 extract_results.py 经独立 Abaqus Python/odbAccess 读取\nbeam_tension.odb 并生成 results.json，字段仍为 right_mean_u1、left_sum_rf1、mean_sf1。\n\n所有物理输入已经给全，不要请求澄清，也不要把预期结果硬编码进 results.json。只有当前三阶段产物生成、\n运行证据和 results.json 均已检查后才请求验证。"
+}

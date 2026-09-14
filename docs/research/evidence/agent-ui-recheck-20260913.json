@@ -1,0 +1,468 @@
+{
+  "scope": "published-package source/declaration audit only; no package execution, build or integration tests",
+  "date": "2026-09-13",
+  "metadata": [
+    {
+      "name": "@assistant-ui/react",
+      "version": "0.15.19",
+      "license": "MIT",
+      "engines": null,
+      "peerDependencies": {
+        "react": "^18 || ^19",
+        "react-dom": "^18 || ^19",
+        "@types/react": "*",
+        "@types/react-dom": "*"
+      },
+      "dependencies": {
+        "zod": "^4.5.4",
+        "zustand": "^5.0.15",
+        "radix-ui": "^1.6.7",
+        "assistant-cloud": "^0.2.0",
+        "assistant-stream": "^0.3.42",
+        "@assistant-ui/tap": "^0.9.17",
+        "@assistant-ui/core": "^0.3.18",
+        "safe-content-frame": "^0.0.30",
+        "@assistant-ui/store": "^0.3.13",
+        "react-textarea-autosize": "^8.5.9"
+      },
+      "dist": {
+        "shasum": "051f84393ae74112537b25df57ca0b0f552a1f04",
+        "tarball": "https://registry.npmjs.org/@assistant-ui/react/-/react-0.15.19.tgz",
+        "fileCount": 1177,
+        "integrity": "sha512-+mEXA/ibBSoodj3LFUzRAdYZ+HvlrIg8uexPVjcY3ssksG1zHx8E9TpuwCDxg2h3XrYU8c/UZj/uFlI5tTWMoA==",
+        "signatures": [
+          {
+            "sig": "MEUCIBvti8NqbPT5zUVE/FuUDixKpryt0boMTixSTcl9J1LtAiEA3UDXGk2ugC7RLbhBg7BiIqsEP3rJ68cB5uhVdcShOXE=",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          },
+          {
+            "sig": "MEQCICi+3VjSO1uRcvwL8Xerqo39mgUnNi4QoDgO98BtCPkGAiAnsszZcLX/7tR7JBmpdJuh4xwCi97igUfzMx/4XfZQ2g==",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          }
+        ],
+        "attestations": {
+          "url": "https://registry.npmjs.org/-/npm/v1/attestations/@assistant-ui%2freact@0.15.19",
+          "provenance": {
+            "predicateType": "https://slsa.dev/provenance/v1"
+          }
+        },
+        "unpackedSize": 2403480
+      },
+      "source": {
+        "url": "git+https://github.com/assistant-ui/assistant-ui.git",
+        "type": "git",
+        "directory": "packages/react"
+      },
+      "metadata_sha256": "154b6b4962485c67583088b51f3f3740882c9a7089ac83c0d427536679412c23"
+    },
+    {
+      "name": "@assistant-ui/react-ag-ui",
+      "version": "0.0.59",
+      "license": "MIT",
+      "engines": null,
+      "peerDependencies": {
+        "react": "^18 || ^19",
+        "@types/react": "*"
+      },
+      "dependencies": {
+        "@ag-ui/client": "^0.0.59",
+        "fast-json-patch": "^3.1.1",
+        "assistant-stream": "^0.3.42",
+        "@assistant-ui/core": "^0.3.18",
+        "@assistant-ui/store": "^0.3.13",
+        "@assistant-ui/react-generative-ui": "^0.0.18"
+      },
+      "dist": {
+        "shasum": "aea6dffb44e0ed44c646604f6cbf5980412cbe18",
+        "tarball": "https://registry.npmjs.org/@assistant-ui/react-ag-ui/-/react-ag-ui-0.0.59.tgz",
+        "fileCount": 80,
+        "integrity": "sha512-99bjjsa7CTZvgLtQhjZKDY9Yyp0PUjxLYuMso9rPahke0yK9fG/SCLJFRGQk9APL99yNpYxr1mqabeA63Gu7VQ==",
+        "signatures": [
+          {
+            "sig": "MEQCIDMMPNu7GuU109rLyzJ0qPL+UlPpb6pEP0/fr8/HEkujAiBQd6/pAFaw1U6oLD8rw3v0S9y7hm6cIvFiu2ke7MLttw==",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          }
+        ],
+        "attestations": {
+          "url": "https://registry.npmjs.org/-/npm/v1/attestations/@assistant-ui%2freact-ag-ui@0.0.59",
+          "provenance": {
+            "predicateType": "https://slsa.dev/provenance/v1"
+          }
+        },
+        "unpackedSize": 827752
+      },
+      "source": {
+        "url": "git+https://github.com/assistant-ui/assistant-ui.git",
+        "type": "git",
+        "directory": "packages/react-ag-ui"
+      },
+      "metadata_sha256": "dc42e508cc320d3f921f90a0829b5e8b004f7e91d29e2e56d1915c44d1283bbf"
+    },
+    {
+      "name": "@ag-ui/client",
+      "version": "0.0.59",
+      "license": "MIT",
+      "engines": null,
+      "peerDependencies": null,
+      "dependencies": {
+        "zod": "^3.22.4",
+        "rxjs": "7.8.1",
+        "uuid": "^11.1.0",
+        "@ag-ui/core": "0.0.59",
+        "@types/uuid": "^10.0.0",
+        "@ag-ui/proto": "0.0.59",
+        "@ag-ui/encoder": "0.0.59",
+        "fast-json-patch": "^3.1.1",
+        "untruncate-json": "^0.0.1",
+        "compare-versions": "^6.1.1"
+      },
+      "dist": {
+        "shasum": "99cbe9392adb136b66d883f24819d858ff097791",
+        "tarball": "https://registry.npmjs.org/@ag-ui/client/-/client-0.0.59.tgz",
+        "fileCount": 11,
+        "integrity": "sha512-d7++r8sBAq6z9G/D/WKrMznQ1Mdvew14pCqOVATReFIvl06mCi1BPqTwmos3zCDGAIiSgcvxc/8m472rYQgFFQ==",
+        "signatures": [
+          {
+            "sig": "MEUCIQCphFnhDVtkMmDLrihwP2OIaOjsZhyBlA3y804I31+idAIgEykh9rmC0MyDHLSDtVXSwa9fvWDSI7X4RXFkJ0H07KA=",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          },
+          {
+            "sig": "MEUCIQDwf99Dxfe34oVqJmBHdW6UJ/suyw4COoUds6fj3yGPPQIgHjl1BGfdATGxjc86cLG/x41uBSsoWt8pO0XMi3w4wJc=",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          }
+        ],
+        "attestations": {
+          "url": "https://registry.npmjs.org/-/npm/v1/attestations/@ag-ui%2fclient@0.0.59",
+          "provenance": {
+            "predicateType": "https://slsa.dev/provenance/v1"
+          }
+        },
+        "unpackedSize": 855645
+      },
+      "source": {
+        "url": "git+https://github.com/ag-ui-protocol/ag-ui.git",
+        "type": "git"
+      },
+      "metadata_sha256": "69be1e9d146f1ec00937018901add303d44b84b2e423f6ce1f18859688d21d51"
+    },
+    {
+      "name": "@copilotkit/react-core",
+      "version": "1.71.1",
+      "license": "MIT",
+      "engines": null,
+      "peerDependencies": {
+        "zod": ">=3.25",
+        "react": "^18 || ^19 || ^19.0.0-rc",
+        "react-dom": "^18 || ^19 || ^19.0.0-rc",
+        "@modelcontextprotocol/sdk": "^1.29.0"
+      },
+      "dependencies": {
+        "lit": "^3.3.2",
+        "clsx": "^2.1.1",
+        "rxjs": "7.8.1",
+        "katex": "^0.16.22",
+        "streamdown": "^1.3.0",
+        "@ag-ui/core": "0.0.59",
+        "@scarf/scarf": "^1.3.0",
+        "lucide-react": "^0.525.0",
+        "@ag-ui/client": "0.0.59",
+        "react-markdown": "^8.0.7",
+        "tailwind-merge": "^3.3.1",
+        "tw-animate-css": "^1.3.5",
+        "untruncate-json": "^0.0.1",
+        "@copilotkit/core": "1.71.1",
+        "@copilotkit/shared": "1.71.1",
+        "zod-to-json-schema": "^3.24.5",
+        "use-stick-to-bottom": "^1.1.1",
+        "@radix-ui/react-slot": "^1.2.3",
+        "@jetbrains/websandbox": "^1.1.3",
+        "@radix-ui/react-tooltip": "^1.2.7",
+        "@tanstack/react-virtual": "^3.13.0",
+        "class-variance-authority": "^0.7.1",
+        "@copilotkit/a2ui-renderer": "1.71.1",
+        "@copilotkit/web-inspector": "1.71.1",
+        "@copilotkit/web-components": "1.71.1",
+        "@radix-ui/react-dropdown-menu": "^2.1.15",
+        "@copilotkit/runtime-client-gql": "1.71.1",
+        "@modelcontextprotocol/ext-apps": "^1.7.5"
+      },
+      "dist": {
+        "shasum": "80e6984f8fa725afa3f6f25268f7e356fb02fe67",
+        "tarball": "https://registry.npmjs.org/@copilotkit/react-core/-/react-core-1.71.1.tgz",
+        "fileCount": 44,
+        "integrity": "sha512-+9uXpGIQTNsVLWTR7qjlnBeOt4eY+/nG6V+mgI1X5ThROeyVm2NaSpNso/earOiVLgUQULxFV7KtudyAtGqzUQ==",
+        "signatures": [
+          {
+            "sig": "MEQCIAblnVQBSCl+Xy3YzHPEKhSor1tbbaisTo5O9bSpTMYAAiADrj91CzJOV5dIFLsBKcS+VfMwhK6ZYPMVCcAuS+n+cA==",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          },
+          {
+            "sig": "MEQCIGx/KuRUfhSppxe9a0z2QHsY6DFpNkRzKnq/ugalzNbKAiAo9CLHDII5gBgKClY8S9JGjfHd6mqPJKKm+q3elzxNLg==",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          }
+        ],
+        "attestations": {
+          "url": "https://registry.npmjs.org/-/npm/v1/attestations/@copilotkit%2freact-core@1.71.1",
+          "provenance": {
+            "predicateType": "https://slsa.dev/provenance/v1"
+          }
+        },
+        "unpackedSize": 7444945
+      },
+      "source": {
+        "url": "git+https://github.com/CopilotKit/CopilotKit.git",
+        "type": "git"
+      },
+      "metadata_sha256": "b0eb7d01961c566305f2661946ed772f7e1cf1aa1f7b31b2ae88ea7d0d65e14d"
+    },
+    {
+      "name": "@copilotkit/runtime",
+      "version": "1.71.1",
+      "license": "MIT",
+      "engines": null,
+      "peerDependencies": {
+        "openai": "^4.85.1 || >=5.0.0",
+        "groq-sdk": ">=0.3.0 <1.0.0",
+        "langchain": ">=0.3.3",
+        "@langchain/aws": ">=0.1.9",
+        "@langchain/core": ">=0.3.66",
+        "@anthropic-ai/sdk": ">=0.57.0",
+        "@langchain/openai": ">=0.4.2",
+        "@langchain/community": ">=0.3.58",
+        "@langchain/google-gauth": ">=0.1.0",
+        "@langchain/langgraph-sdk": ">=0.1.2"
+      },
+      "dependencies": {
+        "ai": "^6.0.104",
+        "ws": "^8.18.0",
+        "zod": "^3.23.3",
+        "cors": "^2.8.5",
+        "hono": "^4.11.4",
+        "pino": "^9.2.0",
+        "rxjs": "7.8.1",
+        "uuid": "^11.1.0",
+        "openai": "^4.85.1 || >=5.0.0",
+        "express": "^4.21.2",
+        "graphql": "^16.8.1",
+        "phoenix": "^1.8.4",
+        "clarinet": "^0.12.4",
+        "@ag-ui/core": "0.0.59",
+        "@ai-sdk/mcp": "^1.0.21",
+        "@types/cors": "^2.8.17",
+        "pino-pretty": "^11.2.1",
+        "@scarf/scarf": "^1.3.0",
+        "graphql-yoga": "^5.3.1",
+        "partial-json": "^0.1.7",
+        "type-graphql": "2.0.0-rc.1",
+        "@ag-ui/client": "0.0.59",
+        "@ag-ui/encoder": "0.0.59",
+        "@ai-sdk/google": "^3.0.33",
+        "@ai-sdk/openai": "^3.0.36",
+        "@types/express": "^4.17.21",
+        "class-validator": "^0.14.1",
+        "graphql-scalars": "^1.23.0",
+        "@ag-ui/langgraph": "0.0.43",
+        "reflect-metadata": "^0.2.2",
+        "@ai-sdk/anthropic": "^3.0.49",
+        "@hono/node-server": "^1.13.5",
+        "class-transformer": "^0.5.1",
+        "@copilotkit/shared": "1.71.1",
+        "@ag-ui/mcp-middleware": "0.0.2",
+        "@ai-sdk/google-vertex": "^3.0.97",
+        "@ag-ui/a2ui-middleware": "0.0.10",
+        "@segment/analytics-node": "^2.1.2",
+        "@copilotkit/channels-core": "^0.9.2",
+        "@modelcontextprotocol/sdk": "^1.18.2",
+        "@ag-ui/mcp-apps-middleware": "0.0.3",
+        "@copilotkit/license-verifier": "~0.5.0",
+        "@remix-run/node-fetch-server": "^0.13.0",
+        "@copilotkit/channels-intelligence": "0.9.2",
+        "@graphql-yoga/plugin-defer-stream": "^3.3.1"
+      },
+      "dist": {
+        "shasum": "ea8bc98de52673d2283522ce31f54544fc0786fa",
+        "tarball": "https://registry.npmjs.org/@copilotkit/runtime/-/runtime-1.71.1.tgz",
+        "fileCount": 852,
+        "integrity": "sha512-Pp+wj9ga5f2TnX5jNf6ywRnx8YOvZvuhh5YTkr9/FzqiavXctm1Q9VNXoRH02dycoTN3lqOagTgpfuEZvpJl4g==",
+        "signatures": [
+          {
+            "sig": "MEUCIQC0oV4pznuERauxHvczsq7drAsy6egBJPmgrnl0D9AODwIgIY9Aq/Si1UV56454pu6RUuKMhZaEMyqdyZVmcF7Tow8=",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          }
+        ],
+        "attestations": {
+          "url": "https://registry.npmjs.org/-/npm/v1/attestations/@copilotkit%2fruntime@1.71.1",
+          "provenance": {
+            "predicateType": "https://slsa.dev/provenance/v1"
+          }
+        },
+        "unpackedSize": 4252972
+      },
+      "source": {
+        "url": "git+https://github.com/CopilotKit/CopilotKit.git",
+        "type": "git"
+      },
+      "metadata_sha256": "19b116c7d6c2627ee707f7bb7e97d9565abdcd31b62cf95fb95c9fae3479a486"
+    },
+    {
+      "name": "@ai-sdk/react",
+      "version": "4.0.102",
+      "license": "Apache-2.0",
+      "engines": {
+        "node": ">=22"
+      },
+      "peerDependencies": {
+        "react": "^18 || ~19.0.1 || ~19.1.2 || ^19.2.1"
+      },
+      "dependencies": {
+        "ai": "7.0.99",
+        "swr": "^2.4.1",
+        "throttleit": "2.1.0",
+        "@ai-sdk/mcp": "2.0.49",
+        "@ai-sdk/provider": "4.0.14",
+        "@ai-sdk/provider-utils": "5.0.40"
+      },
+      "dist": {
+        "shasum": "d0b4e6f198add6b5c73ff905bb83bad4c317f1d9",
+        "tarball": "https://registry.npmjs.org/@ai-sdk/react/-/react-4.0.102.tgz",
+        "fileCount": 24,
+        "integrity": "sha512-KOTRsaVUr6QeisktVqm57KfBMqBpxK9f2ay+defGnYsfvXpFE277zg107Q27LSpiTsDpmk2GHMqNWdU9bKaJSw==",
+        "signatures": [
+          {
+            "sig": "MEQCIEfIaFMamHmu3qRr9+HpJpdGpbALjQgUu+58Ir2h4kpiAiBgbnD8bzMIEilLr0Yh1fkLmeonb0yeP0XuyiXWaHe/lA==",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          },
+          {
+            "sig": "MEQCIBiN8CrLvV4PWPOLD25HzlthvYmYeXKHkfDj1R0c5G4FAiB5pGpcevSmmJP31JcDjw6q0nm9o7CvhzU6IRsy9duicg==",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          }
+        ],
+        "attestations": {
+          "url": "https://registry.npmjs.org/-/npm/v1/attestations/@ai-sdk%2freact@4.0.102",
+          "provenance": {
+            "predicateType": "https://slsa.dev/provenance/v1"
+          }
+        },
+        "unpackedSize": 312353
+      },
+      "source": {
+        "url": "https://github.com/vercel/ai",
+        "type": "git",
+        "directory": "packages/react"
+      },
+      "metadata_sha256": "018452f91ac4e68906f1c9f5823009d29ebe7711d731f91fbbb1810c9235a64d"
+    },
+    {
+      "name": "ai",
+      "version": "7.0.99",
+      "license": "Apache-2.0",
+      "engines": {
+        "node": ">=22"
+      },
+      "peerDependencies": {
+        "zod": "^3.25.76 || ^4.1.8"
+      },
+      "dependencies": {
+        "@ai-sdk/gateway": "4.0.80",
+        "@ai-sdk/provider": "4.0.14",
+        "@ai-sdk/provider-utils": "5.0.40"
+      },
+      "dist": {
+        "shasum": "88e617908412f1f99595bd3b51ccee3d8ebaf89d",
+        "tarball": "https://registry.npmjs.org/ai/-/ai-7.0.99.tgz",
+        "fileCount": 649,
+        "integrity": "sha512-Ov+3j/nSajaVH5hO8C94wN9wisG5tAJ8HWsLV9d/+nlzrRGUh3oYO3Kp1fRyUNWjAWLSpGLHLPaHCdfxb307Vg==",
+        "signatures": [
+          {
+            "sig": "MEUCIDtsFf9ztjQ1znmwuTH6Jy+MppkvxNgoICMO6EtKaaVYAiEA3BIEz3AMgaOy8GIr9PfsiLZh4WOIn+OxypulNqxFQYM=",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          },
+          {
+            "sig": "MEUCICkTFvhJReA+8t9VoCKPjr52UmxWOu0pccd4ca1xkTo2AiEAjJs1+jWhfG9heJvEZxhMTX3/Gm2T2fyNBm4xAQCzSMU=",
+            "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+          }
+        ],
+        "attestations": {
+          "url": "https://registry.npmjs.org/-/npm/v1/attestations/ai@7.0.99",
+          "provenance": {
+            "predicateType": "https://slsa.dev/provenance/v1"
+          }
+        },
+        "unpackedSize": 7127486
+      },
+      "source": {
+        "url": "https://github.com/vercel/ai",
+        "type": "git",
+        "directory": "packages/ai"
+      },
+      "metadata_sha256": "8b7c2972bcf6e0b82bacaebc28bbe494ce1b34b16333a634401933bb01b56bef"
+    }
+  ],
+  "source_archives": [
+    {
+      "name": "@assistant-ui/react-ag-ui",
+      "version": "0.0.59",
+      "integrity_verified": true,
+      "tar_sha256": "c993716737a9fb879329d0e5907b4dadc5864f2258df744675a15a35a0db6c7f",
+      "bytes": 185679
+    },
+    {
+      "name": "@copilotkit/react-core",
+      "version": "1.71.1",
+      "integrity_verified": true,
+      "tar_sha256": "7d1f41345bb4baf08ee0356842bf7ecf45f458f9ebf02715235b8207d061507c",
+      "bytes": 1807629
+    }
+  ],
+  "source_checks": {
+    "assistant_agui_types": {
+      "file": "assistant-ui-react-ag-ui-0.0.59/package/src/runtime/types.ts",
+      "sha256": "e3fec1b637e5d2550291bc27fe7fd70a342d923a2c60125defc5ebe65e2653a0",
+      "markers": {
+        "input_required": 114,
+        "resumeTranscript?:": 88,
+        "autoCancelPendingToolCalls?:": 99,
+        "history?: ThreadHistoryAdapter": 52,
+        "@experimental": 19
+      }
+    },
+    "assistant_agui_hook": {
+      "file": "assistant-ui-react-ag-ui-0.0.59/package/src/useAgUiRuntime.ts",
+      "sha256": "f033defed927a9155dc23e2cdba90a015b4e23005dd96d14e37f55ef29771b70",
+      "markers": {
+        "onEdit:": 258,
+        "onReload:": 262,
+        "onCancel:": 80,
+        "submitInterruptResponses:": 54
+      }
+    },
+    "assistant_agui_core": {
+      "file": "assistant-ui-react-ag-ui-0.0.59/package/src/runtime/AgUiThreadRuntimeCore.ts",
+      "sha256": "f980629f240739a11bb12f4954546934e17721e3f1719858b4e83738c8dc54af",
+      "markers": {
+        "async resumeInFlightRun": 421,
+        "this.history?.resume?.bind(this.history)": 290,
+        "skipping resume after thread switch": 426
+      }
+    },
+    "copilot_interrupt": {
+      "file": "copilotkit-react-core-1.71.1/package/dist/v2/headless.d.mts",
+      "sha256": "941e3dd12dd695ba4ad35fec38749eea60b3b8227edbaa21a2e19c540a09335e",
+      "markers": {
+        "declare function useInterrupt": 530,
+        "RUN_FINISHED": 506,
+        "outcome.type === \"interrupt\"": 507,
+        "respond: (result: unknown) => Promise<void>": 406
+      }
+    },
+    "copilot_provider": {
+      "file": "copilotkit-react-core-1.71.1/package/dist/copilotkit-ChjzWqn6.d.mts",
+      "sha256": "b88cebc0e1a25a143cc7d4031d6411ac37457e669ecb87b8a65c41a0f8c33097",
+      "markers": {
+        "selfManagedAgents?: Record<string, AbstractAgent>": 3267,
+        "runtimeUrl?: string": 3240,
+        "publicLicenseKey?: string": 3249
+      }
+    }
+  }
+}

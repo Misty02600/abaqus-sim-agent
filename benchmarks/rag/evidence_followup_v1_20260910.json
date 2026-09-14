@@ -1,0 +1,1226 @@
+{
+  "profile": "evidence-driven-one-followup-v1",
+  "status": "inconclusive_no_executed_followup",
+  "date": "2026-09-10",
+  "conclusion": "The batch never executes a second retrieval. Four gap text responses fail the output-tool protocol and the three accepted gates all stop. Four additional final-answer responses fail status/claims consistency rules. This is not evidence for or against the efficacy of evidence-driven follow-up retrieval.",
+  "counts": {
+    "requests": 17,
+    "formal_valid_outputs": 9,
+    "text_only_outputs": 4,
+    "actual_second_retrievals": 0,
+    "input_tokens": 47944,
+    "output_tokens": 9837,
+    "model_seconds": 56.20396070042625,
+    "cost": null,
+    "text_json_schema_ok": 4,
+    "text_json_quote_contract_ok": 4,
+    "text_only_protocol_failures": 4,
+    "tool_argument_contract_failures": 4,
+    "valid_gap_decisions": 3,
+    "posthoc_false_sufficient_text_decisions": [
+      "c03-gap",
+      "c05-gap"
+    ],
+    "arms": {
+      "baseline": {
+        "model_requests": 7,
+        "valid_final_outputs": 4,
+        "input_tokens": 24991,
+        "output_tokens": 5313,
+        "model_seconds": 28.011491100070998,
+        "actual_reader_evidence_proxy_tokens": 24248,
+        "initial_rerank_pairs": 384,
+        "initial_dense_queries": 6,
+        "predeclared_requirement_hits": 5,
+        "predeclared_requirement_count": 8
+      },
+      "treatment": {
+        "model_requests": 10,
+        "valid_final_outputs": 2,
+        "input_tokens": 22953,
+        "output_tokens": 4524,
+        "model_seconds": 28.192469600355253,
+        "actual_reader_evidence_proxy_tokens": 16085,
+        "initial_rerank_pairs": 384,
+        "initial_dense_queries": 6,
+        "predeclared_requirement_hits": 4,
+        "predeclared_requirement_count": 8
+      }
+    }
+  },
+  "source_and_protocol_findings": {
+    "riks": "The existing BC target restricts amplitude variation, not directly LPF scaling of prescribed displacement. Preannotated sources leave the central relationship open.",
+    "history_precision": "The explicit history-only single-precision rule is in an execution-guide page outside the candidate source set.",
+    "thermal_reference": "The secant formula/initial-state subtraction explanation is a deferred_math unit with no searchable children; related temperature/import passages do not establish coefficient-reference/initial-temperature equivalence.",
+    "protocol": {
+      "network_calls": 0,
+      "mock_requests": 1,
+      "original_response_sha256": "7e74c0668b57be634e03da369beb9f61b1163aa6dacef14a992a560538596d10",
+      "original_response_parts": [
+        "text"
+      ],
+      "outgoing_tool_choice": "auto",
+      "output_tools": [
+        "emit_gap"
+      ],
+      "error_reproduced": {
+        "type": "UnexpectedModelBehavior",
+        "message": "Exceeded maximum output retries (0)"
+      },
+      "deepseek_v4_profile_supports_forcing": false,
+      "installed_versions": {
+        "pydantic-ai-slim": "2.33.0",
+        "openai": "3.3.0",
+        "pydantic": "2.13.4"
+      },
+      "posthoc_sdk_sha256": {
+        "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\.venv\\Lib\\site-packages\\pydantic_ai\\providers\\deepseek.py": "0de3c953bf7a2b3925cfc845dbf66784e632bf1a2337bc33494b303fad2f7ec5",
+        "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\.venv\\Lib\\site-packages\\pydantic_ai\\models\\openai.py": "87a7fec897cf713e4221d70d63416299545aa7661cb8b4df2a9f935e0a46e3bb",
+        "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\.venv\\Lib\\site-packages\\pydantic_ai\\models\\_tool_choice.py": "039b3d976ceb1010f2601cf28e0891ea660d7da5b3bcf7d3842df749153a3ec3"
+      },
+      "replay_driver_sha256": "433061dd2950ee787bd7e8b15d9f889ec7f6ca9103652fe28667cac4437d9003",
+      "request_sha256": "7aac5e638c9af67011b0b9c5261bdefa7d0a07968e43cbd00436148fdc678fa1",
+      "interpretation": "Current SDK inherits DeepSeek V4 profile that disables forced tool choice; implicit ToolOutput forcing becomes auto. Agent still disallows text and retries=0, so the recorded text JSON is rejected. Original batch stored normalized model requests, not raw HTTP bodies; auto is reproduced offline under the frozen repository inputs/current SDK, not claimed as a captured original HTTP byte attestation. No assertion that the Go server itself cannot support forced calls."
+    }
+  },
+  "cases": [
+    {
+      "case_id": "riks-loading-regression",
+      "slice": "exposed_multifaceted",
+      "source_audit_status": "central_relation_not_established_by_preannotated_sources",
+      "baseline": {
+        "initial_evidence_count": 8,
+        "initial_status": "found",
+        "predeclared_evidence_requirements": [
+          {
+            "id": "riks_load_scaling",
+            "hit": false
+          },
+          {
+            "id": "riks_bc_amplitude",
+            "hit": false
+          }
+        ],
+        "all_predeclared_requirements_hit": false,
+        "actual_model_requests": 1,
+        "actual_reader_evidence_proxy_tokens": 4070,
+        "input_tokens": 4100,
+        "output_tokens": 959,
+        "model_seconds": 4.991049099946395,
+        "initial_rerank_pairs": 64,
+        "initial_latency_seconds": {
+          "dense": 0.3334564999677241,
+          "lexical": 1.695837400155142,
+          "page_lexical": 1.8147828001528978,
+          "rerank": 1.6911180999595672,
+          "total": 5.618534999899566
+        },
+        "formal_final_status": "valid_output"
+      },
+      "treatment": {
+        "initial_evidence_count": 4,
+        "initial_status": "found",
+        "predeclared_evidence_requirements": [
+          {
+            "id": "riks_load_scaling",
+            "hit": false
+          },
+          {
+            "id": "riks_bc_amplitude",
+            "hit": false
+          }
+        ],
+        "all_predeclared_requirements_hit": false,
+        "actual_model_requests": 1,
+        "actual_reader_evidence_proxy_tokens": 2023,
+        "input_tokens": 2736,
+        "output_tokens": 700,
+        "model_seconds": 3.749802100006491,
+        "initial_rerank_pairs": 64,
+        "initial_latency_seconds": {
+          "dense": 0.33499259990639985,
+          "lexical": 1.7673951999749988,
+          "page_lexical": 1.8776704999618232,
+          "rerank": 1.7527003998402506,
+          "total": 5.811627699993551
+        },
+        "formal_final_status": "not_attempted_gap_failure"
+      }
+    },
+    {
+      "case_id": "consistent-unit-system",
+      "slice": "new_simple",
+      "source_audit_status": "direct_searchable_evidence_available",
+      "baseline": {
+        "initial_evidence_count": 8,
+        "initial_status": "found",
+        "predeclared_evidence_requirements": [
+          {
+            "id": "unit_convention",
+            "hit": true
+          }
+        ],
+        "all_predeclared_requirements_hit": true,
+        "actual_model_requests": 1,
+        "actual_reader_evidence_proxy_tokens": 4241,
+        "input_tokens": 4146,
+        "output_tokens": 845,
+        "model_seconds": 3.907466599950567,
+        "initial_rerank_pairs": 64,
+        "initial_latency_seconds": {
+          "dense": 0.5293495000805706,
+          "lexical": 1.6454098999965936,
+          "page_lexical": 1.6258021001704037,
+          "rerank": 1.5709585000295192,
+          "total": 5.465888999868184
+        },
+        "formal_final_status": "valid_output"
+      },
+      "treatment": {
+        "initial_evidence_count": 4,
+        "initial_status": "found",
+        "predeclared_evidence_requirements": [
+          {
+            "id": "unit_convention",
+            "hit": true
+          }
+        ],
+        "all_predeclared_requirements_hit": true,
+        "actual_model_requests": 2,
+        "actual_reader_evidence_proxy_tokens": 3908,
+        "input_tokens": 4912,
+        "output_tokens": 1243,
+        "model_seconds": 6.31904529989697,
+        "initial_rerank_pairs": 64,
+        "initial_latency_seconds": {
+          "dense": 0.32510609994642437,
+          "lexical": 1.563524299999699,
+          "page_lexical": 1.674517400097102,
+          "rerank": 1.5321903000585735,
+          "total": 5.148429800057784
+        },
+        "formal_final_status": "valid_output"
+      }
+    },
+    {
+      "case_id": "odb-history-precision",
+      "slice": "new_simple",
+      "source_audit_status": "direct_history_restriction_outside_candidate_page_set",
+      "baseline": {
+        "initial_evidence_count": 8,
+        "initial_status": "found",
+        "predeclared_evidence_requirements": [
+          {
+            "id": "odb_default_precision",
+            "hit": true
+          }
+        ],
+        "all_predeclared_requirements_hit": true,
+        "actual_model_requests": 1,
+        "actual_reader_evidence_proxy_tokens": 3596,
+        "input_tokens": 3661,
+        "output_tokens": 983,
+        "model_seconds": 4.950052100000903,
+        "initial_rerank_pairs": 64,
+        "initial_latency_seconds": {
+          "dense": 0.44402600009925663,
+          "lexical": 1.454749200027436,
+          "page_lexical": 1.5626137000508606,
+          "rerank": 1.4582511000335217,
+          "total": 5.001050799852237
+        },
+        "formal_final_status": "valid_output"
+      },
+      "treatment": {
+        "initial_evidence_count": 4,
+        "initial_status": "found",
+        "predeclared_evidence_requirements": [
+          {
+            "id": "odb_default_precision",
+            "hit": false
+          }
+        ],
+        "all_predeclared_requirements_hit": false,
+        "actual_model_requests": 1,
+        "actual_reader_evidence_proxy_tokens": 1839,
+        "input_tokens": 2503,
+        "output_tokens": 478,
+        "model_seconds": 2.760057199979201,
+        "initial_rerank_pairs": 64,
+        "initial_latency_seconds": {
+          "dense": 0.3281851001083851,
+          "lexical": 1.4814689999911934,
+          "page_lexical": 1.4484407000709325,
+          "rerank": 1.4632626997772604,
+          "total": 4.777507199905813
+        },
+        "formal_final_status": "not_attempted_gap_failure"
+      }
+    },
+    {
+      "case_id": "steady-transient-heat-properties",
+      "slice": "new_multifaceted",
+      "source_audit_status": "direct_searchable_evidence_available",
+      "baseline": {
+        "initial_evidence_count": 8,
+        "initial_status": "found",
+        "predeclared_evidence_requirements": [
+          {
+            "id": "steady_internal_energy",
+            "hit": true
+          },
+          {
+            "id": "transient_material_requirements",
+            "hit": true
+          }
+        ],
+        "all_predeclared_requirements_hit": true,
+        "actual_model_requests": 1,
+        "actual_reader_evidence_proxy_tokens": 4499,
+        "input_tokens": 4339,
+        "output_tokens": 822,
+        "model_seconds": 3.941937900148332,
+        "initial_rerank_pairs": 64,
+        "initial_latency_seconds": {
+          "dense": 0.5045310999266803,
+          "lexical": 1.6790120000950992,
+          "page_lexical": 1.5404350999742746,
+          "rerank": 1.735183299984783,
+          "total": 5.544182799989358
+        },
+        "formal_final_status": "failed"
+      },
+      "treatment": {
+        "initial_evidence_count": 4,
+        "initial_status": "found",
+        "predeclared_evidence_requirements": [
+          {
+            "id": "steady_internal_energy",
+            "hit": true
+          },
+          {
+            "id": "transient_material_requirements",
+            "hit": true
+          }
+        ],
+        "all_predeclared_requirements_hit": true,
+        "actual_model_requests": 1,
+        "actual_reader_evidence_proxy_tokens": 2077,
+        "input_tokens": 2756,
+        "output_tokens": 398,
+        "model_seconds": 3.349253899883479,
+        "initial_rerank_pairs": 64,
+        "initial_latency_seconds": {
+          "dense": 0.3213533000089228,
+          "lexical": 1.6651337000075728,
+          "page_lexical": 1.6224309999961406,
+          "rerank": 1.7668373000342399,
+          "total": 5.4325952001381665
+        },
+        "formal_final_status": "not_attempted_gap_failure"
+      }
+    },
+    {
+      "case_id": "temperature-thermal-expansion",
+      "slice": "new_multifaceted",
+      "source_audit_status": "partially_searchable_initial_reference_distinction_deferred",
+      "baseline": {
+        "initial_evidence_count": 8,
+        "initial_status": "found",
+        "predeclared_evidence_requirements": [
+          {
+            "id": "temperature_requires_expansion",
+            "hit": true
+          },
+          {
+            "id": "coefficient_reference",
+            "hit": false
+          }
+        ],
+        "all_predeclared_requirements_hit": false,
+        "actual_model_requests": 1,
+        "actual_reader_evidence_proxy_tokens": 4135,
+        "input_tokens": 4061,
+        "output_tokens": 1067,
+        "model_seconds": 4.829421600094065,
+        "initial_rerank_pairs": 64,
+        "initial_latency_seconds": {
+          "dense": 0.6045144000090659,
+          "lexical": 1.7449864000082016,
+          "page_lexical": 1.7548684000503272,
+          "rerank": 1.7881187999155372,
+          "total": 5.976959899999201
+        },
+        "formal_final_status": "failed"
+      },
+      "treatment": {
+        "initial_evidence_count": 4,
+        "initial_status": "found",
+        "predeclared_evidence_requirements": [
+          {
+            "id": "temperature_requires_expansion",
+            "hit": true
+          },
+          {
+            "id": "coefficient_reference",
+            "hit": false
+          }
+        ],
+        "all_predeclared_requirements_hit": false,
+        "actual_model_requests": 1,
+        "actual_reader_evidence_proxy_tokens": 1890,
+        "input_tokens": 2588,
+        "output_tokens": 534,
+        "model_seconds": 2.9827091000042856,
+        "initial_rerank_pairs": 64,
+        "initial_latency_seconds": {
+          "dense": 0.3213359999936074,
+          "lexical": 1.8802287001162767,
+          "page_lexical": 1.7562661999836564,
+          "rerank": 1.7182320998981595,
+          "total": 5.739462099969387
+        },
+        "formal_final_status": "not_attempted_gap_failure"
+      }
+    },
+    {
+      "case_id": "missing-project-stress-result",
+      "slice": "new_insufficient_input",
+      "source_audit_status": "missing_user_specific_input",
+      "baseline": {
+        "initial_evidence_count": 8,
+        "initial_status": "found",
+        "predeclared_evidence_requirements": [],
+        "all_predeclared_requirements_hit": null,
+        "actual_model_requests": 1,
+        "actual_reader_evidence_proxy_tokens": 3705,
+        "input_tokens": 3777,
+        "output_tokens": 457,
+        "model_seconds": 2.9635389000177383,
+        "initial_rerank_pairs": 64,
+        "initial_latency_seconds": {
+          "dense": 0.5215624000411481,
+          "lexical": 1.2943704000208527,
+          "page_lexical": 1.2188910997938365,
+          "rerank": 1.6151229001116008,
+          "total": 4.744195100152865
+        },
+        "formal_final_status": "failed"
+      },
+      "treatment": {
+        "initial_evidence_count": 4,
+        "initial_status": "found",
+        "predeclared_evidence_requirements": [],
+        "all_predeclared_requirements_hit": null,
+        "actual_model_requests": 2,
+        "actual_reader_evidence_proxy_tokens": 4344,
+        "input_tokens": 5436,
+        "output_tokens": 884,
+        "model_seconds": 5.306605800287798,
+        "initial_rerank_pairs": 64,
+        "initial_latency_seconds": {
+          "dense": 0.32290660007856786,
+          "lexical": 1.1454376999754459,
+          "page_lexical": 1.2563231999520212,
+          "rerank": 1.5454995001200587,
+          "total": 4.328849000157788
+        },
+        "formal_final_status": "failed"
+      }
+    },
+    {
+      "case_id": "unavailable-2024-release-evidence",
+      "slice": "new_insufficient_release",
+      "source_audit_status": "requested_release_unavailable",
+      "baseline": {
+        "initial_evidence_count": 0,
+        "initial_status": "not_found",
+        "predeclared_evidence_requirements": [],
+        "all_predeclared_requirements_hit": null,
+        "actual_model_requests": 1,
+        "actual_reader_evidence_proxy_tokens": 2,
+        "input_tokens": 907,
+        "output_tokens": 180,
+        "model_seconds": 2.428024899912998,
+        "initial_rerank_pairs": 0,
+        "initial_latency_seconds": {},
+        "formal_final_status": "valid_output"
+      },
+      "treatment": {
+        "initial_evidence_count": 0,
+        "initial_status": "not_found",
+        "predeclared_evidence_requirements": [],
+        "all_predeclared_requirements_hit": null,
+        "actual_model_requests": 2,
+        "actual_reader_evidence_proxy_tokens": 4,
+        "input_tokens": 2022,
+        "output_tokens": 287,
+        "model_seconds": 3.724996200297028,
+        "initial_rerank_pairs": 0,
+        "initial_latency_seconds": {},
+        "formal_final_status": "valid_output"
+      }
+    }
+  ],
+  "model_output_diagnostics": [
+    {
+      "trial": "c01-baseline",
+      "kind": "answer",
+      "formal_status": "valid_output",
+      "response_parts": [
+        "text",
+        "tool-call"
+      ],
+      "finish_reason": "tool_call",
+      "raw_input_tokens": 4100,
+      "raw_output_tokens": 959,
+      "raw_cost": null,
+      "seconds": 4.991049099946395,
+      "reader_evidence_proxy_tokens": 4070,
+      "evidence_ids": [
+        "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+        "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+        "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+        "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+        "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+        "501631c6c975b742543b8f6c27d7431858655c7e08418420903910c485fa8b95",
+        "d1c06627d150da447411ba6142d0973af50e7accc229078893b699aa75529c74",
+        "9304e3884f2dc97f5cc593fb08daeb2f79bbdd18db94e8411e6981f391534279"
+      ],
+      "posthoc_json_schema_ok": true,
+      "posthoc_quote_contract_ok": true,
+      "posthoc_diagnostic_error": null,
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c01-gap",
+      "kind": "gap",
+      "formal_status": "failed",
+      "response_parts": [
+        "text"
+      ],
+      "finish_reason": "stop",
+      "raw_input_tokens": 2736,
+      "raw_output_tokens": 700,
+      "raw_cost": null,
+      "seconds": 3.749802100006491,
+      "reader_evidence_proxy_tokens": 2023,
+      "evidence_ids": [
+        "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+        "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+        "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+        "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060"
+      ],
+      "posthoc_json_schema_ok": true,
+      "posthoc_quote_contract_ok": true,
+      "posthoc_diagnostic_error": null,
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c02-answer",
+      "kind": "answer",
+      "formal_status": "valid_output",
+      "response_parts": [
+        "tool-call"
+      ],
+      "finish_reason": "tool_call",
+      "raw_input_tokens": 2352,
+      "raw_output_tokens": 744,
+      "raw_cost": null,
+      "seconds": 3.5207555999513716,
+      "reader_evidence_proxy_tokens": 1954,
+      "evidence_ids": [
+        "c0cee566bb76c7f17644a9005c2715226ec5132f70b666bd040a43ab71ae6b50",
+        "ed88a1bd4209697567d0f4cf6a803be3f2a1879be142cd2d5a27604e683fa89f",
+        "87f02dd6735524775ba3624e2329740243fb061b624ab13b285c39cbfe5658de",
+        "b2f00b66845a4ee20c0d2c576279235b3b12b7911f94c1833916fc526defda38"
+      ],
+      "posthoc_json_schema_ok": true,
+      "posthoc_quote_contract_ok": true,
+      "posthoc_diagnostic_error": null,
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c02-baseline",
+      "kind": "answer",
+      "formal_status": "valid_output",
+      "response_parts": [
+        "tool-call"
+      ],
+      "finish_reason": "tool_call",
+      "raw_input_tokens": 4146,
+      "raw_output_tokens": 845,
+      "raw_cost": null,
+      "seconds": 3.907466599950567,
+      "reader_evidence_proxy_tokens": 4241,
+      "evidence_ids": [
+        "c0cee566bb76c7f17644a9005c2715226ec5132f70b666bd040a43ab71ae6b50",
+        "ed88a1bd4209697567d0f4cf6a803be3f2a1879be142cd2d5a27604e683fa89f",
+        "87f02dd6735524775ba3624e2329740243fb061b624ab13b285c39cbfe5658de",
+        "b2f00b66845a4ee20c0d2c576279235b3b12b7911f94c1833916fc526defda38",
+        "126d2dff9ec1c60a5076ded2c45268854261a8d4a2bf4bd19cb639872210ed95",
+        "3561d8ae3b899adc1b95b313b570134f917f99856775eb5addae7ca7a3ae1d0d",
+        "1859434287b4a2d855973ab191a54b3ea7d80f7d502b6b0828241a6525b584f0",
+        "93bf4f96869707068a386e8cf3f93f1777cedb15053fc439ece0cf8dda94301a"
+      ],
+      "posthoc_json_schema_ok": true,
+      "posthoc_quote_contract_ok": true,
+      "posthoc_diagnostic_error": null,
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c02-gap",
+      "kind": "gap",
+      "formal_status": "valid_output",
+      "response_parts": [
+        "tool-call"
+      ],
+      "finish_reason": "tool_call",
+      "raw_input_tokens": 2560,
+      "raw_output_tokens": 499,
+      "raw_cost": null,
+      "seconds": 2.798289699945599,
+      "reader_evidence_proxy_tokens": 1954,
+      "evidence_ids": [
+        "c0cee566bb76c7f17644a9005c2715226ec5132f70b666bd040a43ab71ae6b50",
+        "ed88a1bd4209697567d0f4cf6a803be3f2a1879be142cd2d5a27604e683fa89f",
+        "87f02dd6735524775ba3624e2329740243fb061b624ab13b285c39cbfe5658de",
+        "b2f00b66845a4ee20c0d2c576279235b3b12b7911f94c1833916fc526defda38"
+      ],
+      "posthoc_json_schema_ok": true,
+      "posthoc_quote_contract_ok": true,
+      "posthoc_diagnostic_error": null,
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c03-baseline",
+      "kind": "answer",
+      "formal_status": "valid_output",
+      "response_parts": [
+        "text",
+        "tool-call"
+      ],
+      "finish_reason": "tool_call",
+      "raw_input_tokens": 3661,
+      "raw_output_tokens": 983,
+      "raw_cost": null,
+      "seconds": 4.950052100000903,
+      "reader_evidence_proxy_tokens": 3596,
+      "evidence_ids": [
+        "f7f4e62c45efbd577f9eddc5c473a099d40b7c5fd15fef9de526805fcd942d6c",
+        "5591d04891dbfd8d5d0229c6e54b9693e2ec938a3b9b5ad6ac1a54dd5aff0111",
+        "d9287cff6d33b48622012ad969c13978d4163d4924d35f26e76009e5e9a484fa",
+        "8e378cbcbf579a7c13489e19c771fac0099b70c889c9bab41622882bb5c29078",
+        "75ff60e2cd0b9db8cb3b0ed2701e8ad942036f6ffb14185b3d8d87909be57056",
+        "75c5496178929b9fe98e5758ff5b84985acbfe4e20c9582cb703456efcbf3ee4",
+        "65badb1ceb3cb632b79ce3274707a0e28145d7a0af1b684e0c23d5b9f51cc901",
+        "d0ae4fc1075b134fdef1e7000de243701f9f050526986e3264349b2c3e6bb155"
+      ],
+      "posthoc_json_schema_ok": true,
+      "posthoc_quote_contract_ok": true,
+      "posthoc_diagnostic_error": null,
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c03-gap",
+      "kind": "gap",
+      "formal_status": "failed",
+      "response_parts": [
+        "text"
+      ],
+      "finish_reason": "stop",
+      "raw_input_tokens": 2503,
+      "raw_output_tokens": 478,
+      "raw_cost": null,
+      "seconds": 2.760057199979201,
+      "reader_evidence_proxy_tokens": 1839,
+      "evidence_ids": [
+        "f7f4e62c45efbd577f9eddc5c473a099d40b7c5fd15fef9de526805fcd942d6c",
+        "5591d04891dbfd8d5d0229c6e54b9693e2ec938a3b9b5ad6ac1a54dd5aff0111",
+        "d9287cff6d33b48622012ad969c13978d4163d4924d35f26e76009e5e9a484fa",
+        "8e378cbcbf579a7c13489e19c771fac0099b70c889c9bab41622882bb5c29078"
+      ],
+      "posthoc_json_schema_ok": true,
+      "posthoc_quote_contract_ok": true,
+      "posthoc_diagnostic_error": null,
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c04-baseline",
+      "kind": "answer",
+      "formal_status": "failed",
+      "response_parts": [
+        "tool-call"
+      ],
+      "finish_reason": "tool_call",
+      "raw_input_tokens": 4339,
+      "raw_output_tokens": 822,
+      "raw_cost": null,
+      "seconds": 3.941937900148332,
+      "reader_evidence_proxy_tokens": 4499,
+      "evidence_ids": [
+        "41b62d2766366b032da2c5884e8d5d288338be9d07ecca9fd799e7bbeb15809e",
+        "a32e837dd84d53266aea7f866dbe8f8b8e74f9d31cb9e2120f036e7a3ff960f5",
+        "45397bf8d67866860992d33bd1a06e7c8bd20cb81e380d25ee74c3d04c05a241",
+        "a0bf9425784497cff7ff8b83c0c261ffdc0a2ecb27850670d48c607a06c910db",
+        "74463f1af8cac52029ba5ba91d169c6ae2368be769e6cbdff8dadbfc729f9cc2",
+        "2d59c8ba95a3275d218c3ade07f0bf3b3eac489418040af79011d7af144200ea",
+        "0db326c6c8d96bf29ddcdad93645561fd075c54990263c29db692829de6cdf77",
+        "c7420019ae93db2d3495e2af586584a2e8fcba70a9670d562e753df8b2c7de90"
+      ],
+      "posthoc_json_schema_ok": false,
+      "posthoc_quote_contract_ok": false,
+      "posthoc_diagnostic_error": {
+        "type": "ValidationError",
+        "message": "1 validation error for EvidenceAnswer\n  Value error, complete decision needs claims and no unresolved questions [type=value_error, input_value={'status': 'answered', 'c...perties are selected.']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      },
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c04-gap",
+      "kind": "gap",
+      "formal_status": "failed",
+      "response_parts": [
+        "text"
+      ],
+      "finish_reason": "stop",
+      "raw_input_tokens": 2756,
+      "raw_output_tokens": 398,
+      "raw_cost": null,
+      "seconds": 3.349253899883479,
+      "reader_evidence_proxy_tokens": 2077,
+      "evidence_ids": [
+        "41b62d2766366b032da2c5884e8d5d288338be9d07ecca9fd799e7bbeb15809e",
+        "a32e837dd84d53266aea7f866dbe8f8b8e74f9d31cb9e2120f036e7a3ff960f5",
+        "45397bf8d67866860992d33bd1a06e7c8bd20cb81e380d25ee74c3d04c05a241",
+        "a0bf9425784497cff7ff8b83c0c261ffdc0a2ecb27850670d48c607a06c910db"
+      ],
+      "posthoc_json_schema_ok": true,
+      "posthoc_quote_contract_ok": true,
+      "posthoc_diagnostic_error": null,
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c05-baseline",
+      "kind": "answer",
+      "formal_status": "failed",
+      "response_parts": [
+        "text",
+        "tool-call"
+      ],
+      "finish_reason": "tool_call",
+      "raw_input_tokens": 4061,
+      "raw_output_tokens": 1067,
+      "raw_cost": null,
+      "seconds": 4.829421600094065,
+      "reader_evidence_proxy_tokens": 4135,
+      "evidence_ids": [
+        "31b79082e8bc7ad279ba1d9c0d44acbc9b01e2a259b8ed90117f4b9c2e5c80dc",
+        "6da7622f40a4422086dc95bf1973a29a42ae2c9fbb22a6d4aa1aece7f999aed2",
+        "207539a50bdefb805c3e8b68a5f0a021063af668ec49d63b37d4c32b3362a1b2",
+        "7af16dfba793a189ea08fb03ea2fa886dffc13dbdc2d178cc5030869eef879b4",
+        "cec0a62b39ece21cd8013591f01028ab457c815faeaa0609a1aae2f1acb3e8c6",
+        "455a3b84a7501dd8e03aea661797ff6037b6416d9e4cacd9800f41ced452388c",
+        "f5a978d0ada1ca7882ea0264eca6b1fa64ead02aad6bb65fb0ab7009ff2f3565",
+        "3e45c2c2d541ea7230f5a27ff4f4fb79367a16baf5d25496119d709ea1d476bc"
+      ],
+      "posthoc_json_schema_ok": false,
+      "posthoc_quote_contract_ok": false,
+      "posthoc_diagnostic_error": {
+        "type": "ValidationError",
+        "message": "1 validation error for EvidenceAnswer\n  Value error, complete decision needs claims and no unresolved questions [type=value_error, input_value={'status': 'answered', 'c... user's model inputs.\"]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      },
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c05-gap",
+      "kind": "gap",
+      "formal_status": "failed",
+      "response_parts": [
+        "text"
+      ],
+      "finish_reason": "stop",
+      "raw_input_tokens": 2588,
+      "raw_output_tokens": 534,
+      "raw_cost": null,
+      "seconds": 2.9827091000042856,
+      "reader_evidence_proxy_tokens": 1890,
+      "evidence_ids": [
+        "31b79082e8bc7ad279ba1d9c0d44acbc9b01e2a259b8ed90117f4b9c2e5c80dc",
+        "6da7622f40a4422086dc95bf1973a29a42ae2c9fbb22a6d4aa1aece7f999aed2",
+        "207539a50bdefb805c3e8b68a5f0a021063af668ec49d63b37d4c32b3362a1b2",
+        "7af16dfba793a189ea08fb03ea2fa886dffc13dbdc2d178cc5030869eef879b4"
+      ],
+      "posthoc_json_schema_ok": true,
+      "posthoc_quote_contract_ok": true,
+      "posthoc_diagnostic_error": null,
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c06-answer",
+      "kind": "answer",
+      "formal_status": "failed",
+      "response_parts": [
+        "tool-call"
+      ],
+      "finish_reason": "tool_call",
+      "raw_input_tokens": 2614,
+      "raw_output_tokens": 445,
+      "raw_cost": null,
+      "seconds": 2.587915300158784,
+      "reader_evidence_proxy_tokens": 2172,
+      "evidence_ids": [
+        "1d4f03ece48e4c61b5ad7fb0c9f3c0393667efc7ebf6932c9f8be31272fe1964",
+        "514179ed47485a480b3ef9512b19fa3db2d1b01c0aca74eb4e65d3ab00659cbf",
+        "49bffc036ba9104bd52e3c5c1be7151ae2a1c6b6f4c8a3cc0856b05d3b21b163",
+        "8fb890cdca3c95746882426d7dd42301afc2914eaf1748a06a31daa3f8a34dee"
+      ],
+      "posthoc_json_schema_ok": false,
+      "posthoc_quote_contract_ok": false,
+      "posthoc_diagnostic_error": {
+        "type": "ValidationError",
+        "message": "1 validation error for EvidenceAnswer\n  Value error, use partial when supported claims are available [type=value_error, input_value={'status': 'insufficient'...he supplied evidence.']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      },
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c06-baseline",
+      "kind": "answer",
+      "formal_status": "failed",
+      "response_parts": [
+        "tool-call"
+      ],
+      "finish_reason": "tool_call",
+      "raw_input_tokens": 3777,
+      "raw_output_tokens": 457,
+      "raw_cost": null,
+      "seconds": 2.9635389000177383,
+      "reader_evidence_proxy_tokens": 3705,
+      "evidence_ids": [
+        "1d4f03ece48e4c61b5ad7fb0c9f3c0393667efc7ebf6932c9f8be31272fe1964",
+        "514179ed47485a480b3ef9512b19fa3db2d1b01c0aca74eb4e65d3ab00659cbf",
+        "49bffc036ba9104bd52e3c5c1be7151ae2a1c6b6f4c8a3cc0856b05d3b21b163",
+        "8fb890cdca3c95746882426d7dd42301afc2914eaf1748a06a31daa3f8a34dee",
+        "077234ee668acee273d14c2f89fb30bf346862a65fef7b4a22c9ed600dabbe77",
+        "a39551eab99ce8cb18d0194d9955208630a8464b9c8ffd8673102ce09accfa54",
+        "3333350b37609214e02b19c1437b0938eadc5212260cde25650b3ea7e1aa7ace",
+        "7d8ef05ecb7e85126d992ab63209bd35b8689bbddb32ebb8261640129e9e7cf1"
+      ],
+      "posthoc_json_schema_ok": false,
+      "posthoc_quote_contract_ok": false,
+      "posthoc_diagnostic_error": {
+        "type": "ValidationError",
+        "message": "1 validation error for EvidenceAnswer\n  Value error, use partial when supported claims are available [type=value_error, input_value={'status': 'insufficient'...ified in the request.']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      },
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c06-gap",
+      "kind": "gap",
+      "formal_status": "valid_output",
+      "response_parts": [
+        "tool-call"
+      ],
+      "finish_reason": "tool_call",
+      "raw_input_tokens": 2822,
+      "raw_output_tokens": 439,
+      "raw_cost": null,
+      "seconds": 2.7186905001290143,
+      "reader_evidence_proxy_tokens": 2172,
+      "evidence_ids": [
+        "1d4f03ece48e4c61b5ad7fb0c9f3c0393667efc7ebf6932c9f8be31272fe1964",
+        "514179ed47485a480b3ef9512b19fa3db2d1b01c0aca74eb4e65d3ab00659cbf",
+        "49bffc036ba9104bd52e3c5c1be7151ae2a1c6b6f4c8a3cc0856b05d3b21b163",
+        "8fb890cdca3c95746882426d7dd42301afc2914eaf1748a06a31daa3f8a34dee"
+      ],
+      "posthoc_json_schema_ok": true,
+      "posthoc_quote_contract_ok": true,
+      "posthoc_diagnostic_error": null,
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c07-answer",
+      "kind": "answer",
+      "formal_status": "valid_output",
+      "response_parts": [
+        "tool-call"
+      ],
+      "finish_reason": "tool_call",
+      "raw_input_tokens": 907,
+      "raw_output_tokens": 164,
+      "raw_cost": null,
+      "seconds": 1.95714470022358,
+      "reader_evidence_proxy_tokens": 2,
+      "evidence_ids": [],
+      "posthoc_json_schema_ok": true,
+      "posthoc_quote_contract_ok": true,
+      "posthoc_diagnostic_error": null,
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c07-baseline",
+      "kind": "answer",
+      "formal_status": "valid_output",
+      "response_parts": [
+        "tool-call"
+      ],
+      "finish_reason": "tool_call",
+      "raw_input_tokens": 907,
+      "raw_output_tokens": 180,
+      "raw_cost": null,
+      "seconds": 2.428024899912998,
+      "reader_evidence_proxy_tokens": 2,
+      "evidence_ids": [],
+      "posthoc_json_schema_ok": true,
+      "posthoc_quote_contract_ok": true,
+      "posthoc_diagnostic_error": null,
+      "posthoc_json_adopted": false
+    },
+    {
+      "trial": "c07-gap",
+      "kind": "gap",
+      "formal_status": "valid_output",
+      "response_parts": [
+        "tool-call"
+      ],
+      "finish_reason": "tool_call",
+      "raw_input_tokens": 1115,
+      "raw_output_tokens": 123,
+      "raw_cost": null,
+      "seconds": 1.7678515000734478,
+      "reader_evidence_proxy_tokens": 2,
+      "evidence_ids": [],
+      "posthoc_json_schema_ok": true,
+      "posthoc_quote_contract_ok": true,
+      "posthoc_diagnostic_error": null,
+      "posthoc_json_adopted": false
+    }
+  ],
+  "individual_claim_quote_checks": [
+    {
+      "trial": "c01-baseline",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c01-gap",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c02-answer",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c02-baseline",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c02-gap",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c03-baseline",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c03-gap",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c04-baseline",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": false,
+      "error": "citation quote is not an exact body span",
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c04-gap",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c05-baseline",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": false,
+      "error": "citation quote is not an exact body span",
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c05-gap",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c06-answer",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c06-baseline",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c06-gap",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c07-answer",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c07-baseline",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    },
+    {
+      "trial": "c07-gap",
+      "individual_claim_schema_ok": true,
+      "citation_presence_ok": true,
+      "error": null,
+      "not_entailment_or_formal_acceptance": true
+    }
+  ],
+  "manual_semantic_review": {
+    "version": "evidence-followup-manual-semantic-review-v1",
+    "metrics_sha256": "7193281297070e0d57c2b9d5a2abd017d646724048b826c3bf5a600202caafc2",
+    "review_packet_sha256": "32b2bd9944695d6ebe3331a7e9670dcd04427fbdce17020f428e6feb801da607",
+    "reviewer": "primary assistant; one non-blind source-grounded review, not an independent human panel or inter-rater study",
+    "method": "Read all 17 decoded responses and their cited original passages, compare with the pre-frozen source audit and rubric. Claim verdict arrays use one-based claim order. Plain-text JSON and schema-rejected tool arguments are reviewed post-hoc only; no response is adopted, repaired, retried or used to launch a search. A format failure remains a formal pipeline failure regardless of readable useful content.",
+    "reviews": [
+      {
+        "trial": "c01-baseline",
+        "claim_verdicts": [
+          "supported",
+          "supported",
+          "supported_as_documented_list",
+          "supported",
+          "supported_uncertainty"
+        ],
+        "conclusion": "A bounded partial answer. It reports proportional loading and the documented force-type load list, but explicitly declines to infer that non-zero displacement loading is forbidden or LPF-scaled. The predeclared LPF-formula and BC-amplitude units are both absent. No complete answer to the central alternative.",
+        "scope_notes": "The exact-load/displacement statement is about the Riks algorithm itself; its source also describes restarting into a non-Riks step. The answer does not assert that no workflow can ever reach a target value."
+      },
+      {
+        "trial": "c01-gap",
+        "claim_verdicts": [
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "conclusion": "The raw text JSON correctly identifies the unresolved displacement-versus-force relationship and proposes follow_up, but the host never accepts or executes it. Its proposed question remains a near-paraphrase of the original full alternative, not a clearly narrower facet. No prediction of its retrieval performance is made.",
+        "adequacy_judgment": "justified_gap_but_unexecuted"
+      },
+      {
+        "trial": "c02-answer",
+        "claim_verdicts": [
+          "supported",
+          "supported",
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "conclusion": "The original unit-convention question is answered with its rotation/angle exception and self-consistency requirement. Other claims about physical constants, UNIT SYSTEM and density are supported by the returned passages. No second retrieval was needed or performed."
+      },
+      {
+        "trial": "c02-baseline",
+        "claim_verdicts": [
+          "supported",
+          "supported",
+          "supported",
+          "supported",
+          "supported_with_scope_caveat"
+        ],
+        "conclusion": "The original unit-convention question is answered. The final additional claim is a documented default in external-field import; that context should remain explicit and should not become a universal claim about every pair of unrelated analyses.",
+        "scope_notes": "The core answer does not claim that Abaqus automatically chooses or converts a unit system. Extra import-default detail is not needed to answer this question."
+      },
+      {
+        "trial": "c02-gap",
+        "claim_verdicts": [
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "conclusion": "Sufficient is justified for the unit-convention question; zero follow-up is appropriate.",
+        "adequacy_judgment": "appropriate_stop"
+      },
+      {
+        "trial": "c03-baseline",
+        "claim_verdicts": [
+          "supported",
+          "supported_with_scope_caveat",
+          "supported_with_scope_caveat",
+          "supported_uncertainty"
+        ],
+        "conclusion": "A bounded partial answer: the answer explicitly preserves the field-versus-history distinction and says that the returned evidence does not establish history-only precision or whether full changes it. It does not certify double-precision history output.",
+        "scope_notes": "General nodal-precision and submodeling statements must not be applied to history output. The answer's unresolved section supplies this qualification; the generic precision claim should ideally say field output explicitly."
+      },
+      {
+        "trial": "c03-gap",
+        "claim_verdicts": [
+          "supported_with_scope_caveat",
+          "supported_with_scope_caveat",
+          "supported_with_scope_caveat"
+        ],
+        "conclusion": "The raw decision incorrectly calls the context sufficient: all claims are about generic nodal precision, but the requested history-versus-field distinction is unresolved. Exact quotes do not justify that sufficiency judgment. This text JSON was formally rejected and did not cause an accepted stop.",
+        "adequacy_judgment": "false_sufficient_history_scope_not_resolved"
+      },
+      {
+        "trial": "c04-baseline",
+        "claim_verdicts": [
+          "supported",
+          "supported_with_qualification",
+          "supported",
+          "supported",
+          "supported_inference"
+        ],
+        "conclusion": "The returned text substantially supports the declared steady/transient comparison and does not invent properties. It nevertheless labels itself answered while listing the unresolved density-in-steady-state question; this violates the frozen answer contract. The missing numerical property values are also placed in unresolved even though the user asked only for a conceptual comparison.",
+        "scope_notes": "The source explicitly adds density/specific heat for transient problems and omits the specific-heat term in steady state. It is reasonable to state this contrast while avoiding a universal density-never-needed statement for all possible steady multiphysics cases."
+      },
+      {
+        "trial": "c04-gap",
+        "claim_verdicts": [
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "conclusion": "The two predeclared evidence requirements are covered and the principal material/procedure contrast is present. The extra latent-heat detail is not needed for the question. This is not counted as a successful gate because it was returned as text rather than the required output tool.",
+        "adequacy_judgment": "main_comparison_supported_but_formally_unaccepted"
+      },
+      {
+        "trial": "c05-baseline",
+        "claim_verdicts": [
+          "supported_for_coefficient_based_route",
+          "supported_for_coefficient_based_route",
+          "unsupported_reference_conflation",
+          "supported",
+          "supported"
+        ],
+        "conclusion": "The expansion-definition requirement is grounded, but claim 3 conflates the initial temperature with a general stress-free/coefficient-reference temperature and represents thermal strain as just a temperature difference. The cited import example is conditional on updating the reference configuration and importing material state; it does not establish that general equivalence. The response also says answered while listing missing optional numerical values, so the frozen schema rejects it.",
+        "scope_notes": "The pre-frozen secant formula distinguishes coefficient reference temperature from initial temperature and removes initial thermal strain; zero thermal strain is not a guarantee of zero total mechanical stress. The coefficient-based passages do not exhaust user-subroutine expansion alternatives."
+      },
+      {
+        "trial": "c05-gap",
+        "claim_verdicts": [
+          "supported_for_coefficient_based_route",
+          "supported",
+          "unsupported_reference_conflation",
+          "supported"
+        ],
+        "conclusion": "The raw sufficient decision is not justified: the coefficient-reference/initial-temperature distinction is missing, and claim 3 expands a conditional import example into a general equivalence. This text decision was not accepted and no downstream stop or answer is credited.",
+        "adequacy_judgment": "false_sufficient_reference_distinction_not_resolved"
+      },
+      {
+        "trial": "c06-answer",
+        "claim_verdicts": [
+          "supported_background_and_input_absence",
+          "supported_background_and_input_absence"
+        ],
+        "conclusion": "Appropriate substantive abstention: no bracket stress is invented. The useful explanation includes cited generic background, which conflicts with this experiment's requirement that insufficient have an empty claims list. This is a representational contract failure, not evidence of a fabricated physical result."
+      },
+      {
+        "trial": "c06-baseline",
+        "claim_verdicts": [
+          "supported_uncertainty",
+          "supported_background_and_input_absence"
+        ],
+        "conclusion": "Appropriate substantive abstention with no numerical stress invented. It is formally rejected for combining insufficient with cited background claims; this illustrates that the answer schema's status/claim policy excludes some otherwise safe explanatory responses."
+      },
+      {
+        "trial": "c06-gap",
+        "claim_verdicts": [
+          "supported_background_and_input_absence",
+          "supported_background_and_input_absence"
+        ],
+        "conclusion": "Correctly identifies missing user/model/result input rather than a searchable documentation gap. No follow-up is appropriate.",
+        "adequacy_judgment": "appropriate_missing_input_stop"
+      },
+      {
+        "trial": "c07-answer",
+        "claim_verdicts": [],
+        "conclusion": "Appropriate explicit abstention: no 2024 source is available and no cross-release compatibility is claimed. Empty evidence is not treated as proof of the material requirements."
+      },
+      {
+        "trial": "c07-baseline",
+        "claim_verdicts": [],
+        "conclusion": "Appropriate explicit abstention on the unavailable 2024 requirement; does not replace it with 2026 evidence."
+      },
+      {
+        "trial": "c07-gap",
+        "claim_verdicts": [],
+        "conclusion": "Correct missing_source decision; source_release remains 2024 and no futile follow-up is launched.",
+        "adequacy_judgment": "appropriate_missing_source_stop"
+      }
+    ],
+    "overall": "There is no executed follow-up and no valid comparison of iterative retrieval efficacy. Two formally rejected raw gates additionally show false sufficiency judgments; those content observations are not product behavior or accepted decisions. Both formal final-answer arms answer the simple unit case and abstain on unavailable-release evidence; baseline also produces cautious partial answers for Riks and history precision. Do not turn output validity counts, exact-unit hits, or post-hoc JSON readability into task success rates."
+  },
+  "verification": {
+    "new_contract_tests": 25,
+    "full_pytest_passed": 893,
+    "licensed_tests_skipped": 27,
+    "basedpyright_new_module_errors": 0,
+    "basedpyright_new_module_warnings": 0,
+    "abaqus_calls": 0,
+    "solver_calls": 0,
+    "model_retries": 0,
+    "new_default_product_behaviors": 0
+  },
+  "evidence_sha256": {
+    "var\\audits\\evidence-followup-v1\\manifest.json": "0955a4848083f624bad100c969cd1537ee3c5f60f74e4af681985a97a611c40e",
+    "var\\audits\\evidence-followup-v1\\question_freeze.json": "5e75d3caa9efc2ae8191bf5dbfac2b2e3052acd348a74fdd332c4a136bcabbad",
+    "var\\audits\\evidence-followup-v1\\source_audit.json": "78ee6fac13da403bb9e7a882ed3d828298bb283d71566b9601476990fd5f2a43",
+    "var\\audits\\evidence-followup-v1\\initial_summary.json": "2f126b294b5174d1aca69198c96d13f0223f16b871643861a6842af8636f6df4",
+    "var\\audits\\evidence-followup-v1\\batch_summary.json": "236691bd741fa8d370ceb1e2bda0bc447573e9ab58cca96dfc0c5eb809f65f90",
+    "var\\audits\\evidence-followup-v1\\transport_and_metrics_v2.json": "7193281297070e0d57c2b9d5a2abd017d646724048b826c3bf5a600202caafc2",
+    "var\\audits\\evidence-followup-v1\\manual_semantic_review.json": "7fa56d16e8b275afdd2e9bcb8e2c8ad2502fc8466db394cf13f00dfe95538044",
+    "var\\audits\\evidence-followup-v1\\offline_protocol_replay.json": "47ede10071d8e3d025884182273560ab2ae036ee25f2d2df97497090fa1effa7",
+    "var\\audits\\evidence-followup-v1\\offline_protocol_replay_request.json": "7aac5e638c9af67011b0b9c5261bdefa7d0a07968e43cbd00436148fdc678fa1",
+    "var\\audits\\audit_evidence_followup_v2.py": "09e754d86096052d3588160317cd701515e919775d9d4abd7229b2034bb8e25f",
+    "var\\audits\\replay_followup_output_protocol_v1.py": "433061dd2950ee787bd7e8b15d9f889ec7f6ca9103652fe28667cac4437d9003",
+    "var\\audits\\export_evidence_followup_v1.py": "3cd2151194258c83b46fa9fc5f525843957c0c83818824bb6c04b1ff27a79006"
+  },
+  "limitations": [
+    "Seven exploratory cases, six newly written but not family-disjoint held-out; exposed Riks evidence already known to the author.",
+    "Only shape-valid outputs belong to the formal pipeline. The four text JSON objects pass a post-hoc shape/quote check but are never adopted and their queries are not executed.",
+    "False sufficiency in two rejected raw decisions is a qualitative content finding, not accepted product behavior, a recovered run or an efficacy metric.",
+    "A shared upper bound is not equal realized context or compute; early failures and appropriate stops leave treatment with fewer source reads. All raw response tokens, including rejected outputs, are counted; monetary cost is unavailable.",
+    "The initial diagnostic audit treated mixed text+tool responses as unsupported. A separate v2 diagnostic audit corrects this by reading the actual output-tool arguments. Both diagnostic artifacts are retained; the original batch is unchanged.",
+    "The provider-profile tool_choice=auto behavior is reproduced with a mock HTTP transport and the current installed SDK. Original raw HTTP bytes were not captured; only normalized requests and raw ModelResponse objects were stored.",
+    "No retrieval defaults, source corpus, weights, CodingRun prompts/tools, physics oracle or product verifier were changed. No method adoption or new simulation capability is claimed."
+  ]
+}

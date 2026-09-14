@@ -1,0 +1,8 @@
+{
+  "prompt_version": "beam-bending-change-v2",
+  "agent_visible_seed_files": [
+    "build_model.py",
+    "extract_results.py"
+  ],
+  "goal": "当前工作区提供了一份已经在 Abaqus 2024 中完成物理验收的 B31 梁轴向拉伸脚本。请理解并修改已有\nbuild_model.py 与 extract_results.py，把右端 U1=0.1 mm 规定位移改为右端全局 +Y 方向 1000 N 集中力。\n\n删除右端位移边界，不得在右端增加任何位移或转角约束；左端 Encastre 保持不变。保留100 mm长、沿全局X\n的三维wire、10×10 mm矩形截面、E=210000 MPa、泊松比0.3、有效且与梁轴线不平行的截面方向、唯一\nStatic, General、NLGEOM=OFF、20个B31单元、21个节点，以及U、RF、SF输出。不得增加其他载荷、分析步、\n约束、单元或节点。\n\n结果消费合同随需求改变，因此 build_model.py 与 extract_results.py 都必须修改。保持三阶段边界：\nbuild_model.py 经 CAE noGUI 生成 beam_tension.cae 与 beam_tension.inp 且不提交 Job；Solver 从该INP生成\nbeam_tension.odb；extract_results.py 经独立Abaqus Python/odbAccess生成 results.json。results.json必须只用\nODB计算并包含数值字段 right_mean_u2、left_sum_rf2、left_sum_rm3、max_section_moment。\n\n所有物理输入已经给全，不要请求澄清，也不要把预期数值硬编码进脚本或results.json。只有当前三阶段产物、\n新结果提取和运行证据均已检查后才请求验证。\n\n结果字段的含义和作者/读取边界属于公开合同，不是隐藏物理答案：build_model.py 中的 field output request\n必须仍精确保持 U、RF、SF，不得把 RM 或 SM 增加为 CAE output-request variable。对这个 B31/Abaqus 2024\n结果，RF 请求在 ODB 中产生彼此独立的 RF 与 RM FieldOutput，SF 请求产生彼此独立的 SF 与 SM\nFieldOutput；因此分别从 U 读取 U2、从 RF 读取 RF2、从 RM 读取 RM3。max_section_moment 定义为全部 SM\nFieldValue 中 sqrt(SM1^2 + SM2^2 + SM3^2) 的最大值。通过各 FieldOutput 的 componentLabels 解析分量，\n写 JSON 前把 vendor 数值转成 Python float。"
+}

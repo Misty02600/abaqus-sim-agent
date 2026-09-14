@@ -1,0 +1,55 @@
+- generic [ref=f1e2]:
+  - generic [ref=f1e3]:
+    - generic [ref=f1e73]:
+      - generic [ref=f1e74]:
+        - button "Toggle Sidebar" [ref=f1e75] [cursor=pointer]
+        - heading "Pydantic AI" [level=1] [ref=f1e78]
+      - generic [ref=f1e81]:
+        - list [ref=f1e82]:
+          - listitem [ref=f1e83]:
+            - link "New conversation" [ref=f1e84] [cursor=pointer]:
+              - /url: ./
+        - list [ref=f1e89]:
+          - listitem [ref=f1e90]:
+            - generic [ref=f1e91]:
+              - 'link "NATIVE: ask for the missing pl... 2026/9/13 21:23:03"':
+                - /url: ./b14hN8H7CeREmSfHlt8Gu
+                - generic:
+                  - generic: "NATIVE: ask for the missing pl..."
+                  - generic: 2026/9/13 21:23:03
+              - button [ref=f1e92] [cursor=pointer]
+      - button "Toggle theme" [ref=f1e94] [cursor=pointer]
+    - generic [ref=f1e30]:
+      - log [ref=f1e31]:
+        - generic [ref=f1e33]:
+          - generic [ref=f1e35]:
+            - paragraph [ref=f1e68]: "NATIVE: ask for the missing plate thickness"
+            - button "Edit message" [ref=f1e97] [cursor=pointer]
+          - generic [ref=f1e43]:
+            - button "Hide this tool" [ref=f1e44] [cursor=pointer]
+            - button "ask_user Running" [ref=f1e50] [cursor=pointer]:
+              - generic [ref=f1e51]:
+                - generic [ref=f1e54]: ask_user
+                - generic [ref=f1e55]: Running
+          - generic [ref=f1e100]:
+            - paragraph [ref=f1e104]: 1 mm
+            - button "Edit message" [ref=f1e107] [cursor=pointer]
+          - generic [ref=f1e110]:
+            - button "Hide this tool" [ref=f1e111] [cursor=pointer]
+            - button "ask_user Running" [ref=f1e117] [cursor=pointer]:
+              - generic [ref=f1e118]:
+                - generic [ref=f1e121]: ask_user
+                - generic [ref=f1e122]: Running
+      - generic [ref=f1e60]:
+        - textbox "What would you like to know?" [active] [ref=f1e61]
+        - generic [ref=f1e62]:
+          - generic [ref=f1e63]:
+            - button "Hidden tools" [ref=f1e64] [cursor=pointer]
+            - combobox [ref=f1e69] [cursor=pointer]:
+              - generic: Ui Probe
+            - combobox [aria-hidden] [ref=f1e70]
+            - combobox [ref=f1e65] [cursor=pointer]:
+              - generic: "Effort: Medium"
+            - combobox [aria-hidden] [ref=f1e66]
+          - button [disabled]
+  - region "Notifications alt+T"

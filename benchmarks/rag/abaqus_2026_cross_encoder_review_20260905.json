@@ -1,0 +1,68 @@
+{
+  "schema_version": "cross-encoder-offline-review-v1",
+  "review_status": "completed",
+  "experiment_report": "benchmarks/rag/abaqus_2026_cross_encoder_experiment_20260905.json",
+  "experiment_report_sha256": "226c94e1f2c1b9872f3ec2b512bec0b7ef1f64249c90a05f4a03b90aa978d538",
+  "review_method": "Primary assistant content inspection of new-index control/reranked Top-4 and old-index observed cases. Evidence-probe hits are not treated as exhaustive relevance labels or answer correctness. No independent human judge or generative LLM judge.",
+  "model": {
+    "repository": "cross-encoder/ms-marco-MiniLM-L6-v2",
+    "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+    "source": "https://huggingface.co/cross-encoder/ms-marco-MiniLM-L6-v2/tree/233902d25c440f23af6f7d6e94d2946bac0bee0a",
+    "license_from_official_model_card": "Apache-2.0",
+    "onnx_sha256": "5d3e70fd0c9ff14b9b5169a51e957b7a9c74897afd0a35ce4bd318150c1d4d4a",
+    "onnx_bytes": 91011230,
+    "inference": "Existing ONNX Runtime CPU backend, no PyTorch or new dependency installation; local files only, no remote Python code execution.",
+    "model_card_smoke": "Official Berlin example logits reproduced within 0.1 tolerance: 8.60714054107666 and -4.320079326629639. This verifies a basic ONNX/tokenizer pairing, not equivalence on every input."
+  },
+  "comparison_scope": {
+    "observed_queries": "Five previously diagnosed queries on both unchanged index versions, ten ranking runs.",
+    "transfer_queries": "Eight newly authored query-first development questions on context-v2, with source-section probes recorded before ranking. They are not family-disjoint, unseen-domain, or independent held-out data.",
+    "baseline": "Actual augmented-control record IDs, displayed with the same body-first 600-character formatter as the reranked records. This separates selection from formatter changes; neither is a new Agent tool invocation.",
+    "treatment": "Unchanged raw question/context, raw Dense Top-20 plus raw BM25 Top-20 plus existing exact-prefix candidates; record-ID union; fixed cross-encoder logit order; Top-4. Exact candidates receive no automatic precedence.",
+    "not_isolated": "The experiment compares the combined candidate-union plus reranking profile to product control, not only a reranker change on identical product Top-4. Existing RRF results are a same-dense/sparse-pool comparator but lack the exact candidates."
+  },
+  "observed_query_review_new_index": [
+    {"id":"exact-api-region-1","assessment":"unresolved_coverage_gap","finding":"The OdbAssembly reference target is absent from the candidate pool. Reranking finds INP assembly/node-set definitions, not ODB scripting member access; it cannot answer the API question."},
+    {"id":"domain-procedure-applicability-1","assessment":"more_direct_method_evidence_with_incomplete_details","finding":"The Riks Method body rises to rank 1 (old-index rank 2), explaining load magnitude as an unknown and simultaneous load/displacement solution. Unstable Response and Incrementation supply related context. The dedicated LPF output card falls outside Top-4, and 600-character excerpts still omit some method and dead/reference-load details."},
+    {"id":"domain-procedure-applicability-2","assessment":"better_context_but_missing_required_BC_evidence","finding":"Proportional Loading, Loads and The Riks Method replace generic material, but the Boundary Conditions body is not in the candidate pool. The result still cannot establish the prescribed-BC restriction or justify a blanket force-only claim."},
+    {"id":"recorded-solver-diagnostic-1","assessment":"alternative_valid_explanation_recovered","finding":"New rank 1 is the body of Time Domain Analysis: Specifying Output Frequency in Time Points. It explicitly explains adjusting increments to reach exact time points and contrasts writing after each point. This is useful even though it is not the predeclared Time Incrementation target, whose first record is only rank 5. Full procedure-specific exceptions are not delivered. The old-index target hit at rank 3 is the performance-consequence chunk, not the main increment-adjustment explanation; a section-only hit would overstate that result."},
+    {"id":"recorded-solver-diagnostic-2","assessment":"main_explanation_recovered_with_scope_risk","finding":"The main Standard increment-adjustment paragraph is rank 3, preserving the BM25-only evidence that fixed RRF dropped. AT is not in Top-4. However, rank 1 is a Direct Cyclic special-case warning, and rank 4 is an Explicit output chapter. Neither is established as applicable to the supplied context. Correct evidence in Top-4 does not make the whole bundle safe or sufficient."}
+  ],
+  "transfer_content_review": [
+    {"id":"tie-separation","assessment":"both_incomplete_top_rank_regression","finding":"The tie permanence introduction is absent from the candidate pool. Control supplies some ordinary finite-sliding contact information, while reranking places a 2025 Explicit no-separation/sliding feature first. This is not evidence about ordinary tie permanence and may mislead version/scope interpretation."},
+    {"id":"coupling-deformation","assessment":"useful_alternative_section_but_mixed_bundle","finding":"Surface-Based Coupling Definitions moves from control rank 2 to rank 1 and contrasts rigidity with distributing coupling. This valid alternative lies outside the narrowly declared section probes, so zero probe hits is not zero useful evidence. The 600-character passage ends mid-word in the distributing comparison, and unrelated limitations displace a useful applications passage."},
+    {"id":"mass-scaling-inertia","assessment":"clear_body_evidence_improvement","finding":"Quasi-Static Analysis is rank 1 and explicitly connects added mass to inertial forces and possible solution changes. Control mainly supplies a scale-factor example and generic warnings. Remaining passages include a scoped rolling example and Standard quasi-static summary; they must not override the Explicit context."},
+    {"id":"hybrid-pressure","assessment":"primary_rank_improves_answer_still_partial","finding":"The regular-versus-hybrid explanation moves from control rank 2 to rank 1. The delivered excerpt explains pressure indeterminacy but truncates before the general independent-pressure-variable explanation. UMAT-specific passages fill two slots, so the full requested general explanation is not cleanly delivered."},
+    {"id":"plane-strain-meaning","assessment":"correct_idealization_recovered_but_stress_clause_truncated","finding":"Plane Strain Elements becomes rank 1 and states zero out-of-plane normal/shear strain, replacing a control dominated by generalized plane strain. The later thickness-stress example is outside the 600-character excerpt; other Top-4 items still discuss generalized strain or plane stress."},
+    {"id":"reduced-integration-hourglass","assessment":"useful_mechanism_with_ranking_tradeoffs","finding":"Methods for Suppressing Hourglass Modes at rank 2 supplies deformation without resisting stress, improving the mechanism evidence over truncated control. The first result is a detailed control approach rather than the mechanism; a target-section hit at rank 4 is a continuation about mitigation/second-order elements, not proof that the first-order origin was fully answered there."},
+    {"id":"nodal-stress-extrapolation","assessment":"clear_body_evidence_improvement","finding":"Rank 2 explicitly relates shape-function extrapolation to lower accuracy at steep stress gradients; rank 4 distinguishes calculated integration-point values from extrapolated/averaged nodal values. Control is dominated by fracture-mechanics and initial-stress material. Rank 1 starts mid-sentence, so the selected bundle still has chunk-boundary issues."},
+    {"id":"explicit-stable-increment","assessment":"useful_alternative_evidence_not_full_derivation","finding":"Stable Time Increment Report and Dynamic Analysis explain how a few small elements control the increment. These are valid alternate sections not counted by the predeclared probe, which ranks 31. The wave-transit explanation is not directly delivered; other scoped thermal-mechanical or impact examples remain in the bundle."}
+  ],
+  "timing": {
+    "ranking_runs": 18,
+    "scored_pairs": 634,
+    "pair_truncations_over_512_tokens": 0,
+    "warm_rerank_seconds_min": 0.6378775000339374,
+    "warm_rerank_seconds_median": 0.9854947500862181,
+    "warm_rerank_seconds_max": 1.697010700008832,
+    "model_load_seconds": 0.33866619993932545,
+    "scope": "One local CPU run per query, four intra-op threads; tokenizer, inference and sorting only. Not production end-to-end or p95 latency; acquisition, corpus/hash checks and candidate retrieval are excluded."
+  },
+  "decisions": [
+    "The experiment supports keeping a content-aware reranking candidate: it recovers useful evidence lost by raw ranks/RRF on several queries.",
+    "Do not switch the default index or register a new product reranking profile yet. Scope discrimination, retrieval coverage, near-duplicate passages and excerpt completeness remain unresolved, with concrete regressions.",
+    "Keep exact symbols as ordinary candidates in this experiment, not mandatory answers. LPF loss shows that eliminating an AT false positive does not by itself establish preservation of all useful symbolic evidence.",
+    "Do not equate a predefined section hit, a positive logit, or a correctly retrieved paragraph with an answered engineering question.",
+    "No new generator Agent, query-rewrite agent, physics-default rule, global Skill, Catalog update or knowledge-memory pipeline was added."
+  ],
+  "verification": {
+    "new_cross_encoder_unit_tests_passed": 5,
+    "targeted_tests_total_passed": 63,
+    "ruff_and_format": "passed for new module and tests",
+    "basedpyright": "0 errors, 0 warnings",
+    "old_new_index_and_original_product_source_hashes_unchanged": true,
+    "model_hashes_verified_before_and_after": true,
+    "generative_model_calls": 0,
+    "abaqus_calls": 0
+  }
+}

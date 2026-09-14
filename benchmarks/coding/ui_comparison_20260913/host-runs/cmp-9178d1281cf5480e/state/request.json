@@ -1,0 +1,32 @@
+{
+  "api_catalog": null,
+  "budget": {
+    "max_abaqus_calls": 0,
+    "max_api_lookup_calls": 4,
+    "max_clarifications": 2,
+    "max_concept_lookup_calls": 2,
+    "max_diagnostic_retrieval_calls": 2,
+    "max_model_requests": 8,
+    "max_solver_calls": 0,
+    "max_static_preflight_calls": 12,
+    "wall_time_seconds": 60.0
+  },
+  "clarification_policy_version": "physics-materiality-clarification-v1",
+  "concept_index": null,
+  "edit_scope": null,
+  "goal": "UI-COMP official FAIL",
+  "run_id": "cmp-9178d1281cf5480e",
+  "runtime": {
+    "launcher_path": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\ui-comparison-20260913\\host-runs\\cmp-9178d1281cf5480e\\state\\never-run.bat",
+    "name": "abaqus-2024",
+    "version": "2024"
+  },
+  "runtime_script_policy": {
+    "allowed_abaqus_python_scripts": null,
+    "allowed_cae_scripts": null,
+    "allowed_solver_inputs": null
+  },
+  "state_dir": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\ui-comparison-20260913\\host-runs\\cmp-9178d1281cf5480e\\state",
+  "static_preflight": null,
+  "workspace": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\ui-comparison-20260913\\host-runs\\cmp-9178d1281cf5480e\\workspace"
+}

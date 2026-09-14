@@ -1,0 +1,235 @@
+{
+  "schema_version": "1",
+  "experiment": "verified-plate-model-change-suite-v1",
+  "date": "2026-08-25",
+  "runtime": "Abaqus 2024",
+  "model": "opencode-go/deepseek-v4-flash",
+  "suite_contract": {
+    "source_run_id": "eval-2cf5159c427e",
+    "source_request_sha256": "29c928fdf7fddf1eddaf12eec016ee00644eda934b555dc7ec0b9676e0bc16d1",
+    "source_outcome_sha256": "0e7e33f5a6131bd7c5eda5503303bf9266560bc5db8cf8a9f37fec6d0ef01d60",
+    "source_verification_sha256": "8d88741cdbb69151578c742b9c94e2cc40424e94b3b2edc1041a7fff6b26f22a",
+    "agent_visible_seed_files": [
+      "build_model.py",
+      "extract_results.py"
+    ],
+    "seed_bytes_cached_after_validation": true,
+    "api_catalog_mode": "off",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "skill_sha256": "5dffe84954008bec534179a85d97d448a1ad9647716cd3f8f33c5f02528bf374",
+    "model_request_budget": 36,
+    "abaqus_call_budget": 12,
+    "solver_call_budget": 3,
+    "verify_on_budget_exhaustion": true,
+    "eval_task_retry": false,
+    "repeat_until_pass": false
+  },
+  "cases": {
+    "center_hole": {
+      "request_path": "benchmarks/coding/plate_hole_change_request.json",
+      "prior_evidence_path": "benchmarks/coding/plate_hole_change_evaluation_20260825.json",
+      "prior_evidence_sha256": "2b1bf306520a10777890a0aa97ae62891d649d5ee9941b23e77e24906071a04b",
+      "deterministic_reference": "1/1",
+      "product_agent_complete_smoke": "1/1",
+      "formal_gate": "not passed",
+      "capability": "geometry and mesh-topology change"
+    },
+    "dual_material": {
+      "request_path": "benchmarks/coding/plate_dual_material_change_request.json",
+      "request_sha256": "4a22d25e3be5b0621ce48a0c7697bc0f09426da435ddfe3aa96861e39c6e3910",
+      "capability": "partition, two section assignments, and conforming shared-node interface",
+      "deterministic_reference": {
+        "run_root": "D:/abaqus-runs/plate-material-reference-20260825-v2",
+        "result": "1/1",
+        "measurements": {
+          "element_type_counts": {
+            "CPS4R": 80
+          },
+          "node_count": 105,
+          "left_element_count": 40,
+          "right_element_count": 40,
+          "interface_node_count": 5,
+          "interface_is_shared": true,
+          "left_properties": [[210000.0, 0.3, 1.0]],
+          "right_properties": [[70000.0, 0.3, 1.0]],
+          "right_mean_u1": 0.10000000149011612,
+          "interface_mean_u1": 0.02526366673409939,
+          "left_mean_s11": 105.09175720214844,
+          "right_mean_s11": 105.09175720214844,
+          "left_sum_rf1": -2101.8351440429688
+        },
+        "oracle_results_sha256": "934982bad2c3284ce2f702141591d517710a458e4ee94de6bdae797a04b16594",
+        "verification_sha256": "1b6baade1cbe609b55ac1c2cf2f48a6bf93a41805df24089146456fdb5c57fc0"
+      },
+      "single_smoke": {
+        "run_root": "D:/abaqus-runs/plate-material-change-go-flash-20260825-v1",
+        "run_id": "plate-material-33deab1d3a",
+        "result": "1/1",
+        "model_requests": 15,
+        "input_tokens": 195200,
+        "output_tokens": 13926,
+        "tool_calls": 17,
+        "abaqus_calls": 5,
+        "solver_calls": 1,
+        "abaqus_runtime_seconds": 20.796,
+        "task_duration_seconds": 140.698,
+        "summary_sha256": "b2cfbf9724637c654d458803737b5e832b8a0c4a4abc86f23da7f909ff951578",
+        "gate_sha256": "f024a7087029c53c76d9f61ac147f5c5c633f11a04286762b3f1d835d6280bcf"
+      },
+      "formal_result": {
+        "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260825-v1",
+        "result": "2/3",
+        "gate_passed": true,
+        "attempts": [
+          {
+            "run_id": "plate-material-32cfbfe5d2",
+            "stage": "infrastructure",
+            "error": "ModelAPIError: Request timed out",
+            "abaqus_calls": 0
+          },
+          {
+            "run_id": "plate-material-ba066cb454",
+            "status": "passed",
+            "model_requests": 20,
+            "abaqus_calls": 7,
+            "solver_calls": 1
+          },
+          {
+            "run_id": "plate-material-438ced2b06",
+            "status": "passed",
+            "model_requests": 17,
+            "abaqus_calls": 5,
+            "solver_calls": 1
+          }
+        ],
+        "task_started_result": "2/2"
+      }
+    },
+    "load_mode": {
+      "request_path": "benchmarks/coding/plate_load_mode_change_request.json",
+      "request_sha256": "5b25b70562f89c4fe16896bd6e79b6c80ee3fe00c7b14804d4c4b64550f0af76",
+      "capability": "replace right-edge prescribed displacement with one uniform +X general surface traction while preserving the extractor",
+      "deterministic_reference": {
+        "run_root": "D:/abaqus-runs/plate-load-reference-20260825-v2",
+        "result": "1/1",
+        "generated_inp": "*Dsload, follower=NO; TRVEC, 210., 1., 0., 0.",
+        "measurements": {
+          "element_type_counts": {
+            "CPS4R": 80
+          },
+          "surface_unique_node_count": 5,
+          "surface_element_count": 4,
+          "surface_is_full_right_edge": true,
+          "right_mean_u1": 0.10000000149011612,
+          "mean_s11": 210.0,
+          "left_sum_rf1": -4200.0,
+          "right_sum_rf1": 0.0
+        },
+        "oracle_results_sha256": "a453ae35fe6e1c2a3d5349f43183b5e8a4d496f05cd7120d5554ff78c2f95f10",
+        "verification_sha256": "06f58ab34f3013f68f228fe8c9479042ca08ec46b4e5b968fbf680ca02334192"
+      },
+      "single_smoke": {
+        "run_root": "D:/abaqus-runs/plate-load-change-go-flash-20260825-v1",
+        "result": "0/1",
+        "failure_stage": "model_budget",
+        "model_requests": 36,
+        "abaqus_calls": 10,
+        "solver_calls": 0,
+        "summary_sha256": "973e2a2dfe883de51e3d9a38e9ddee7c2052338ae5b7ebf690fbec2a15e5725d",
+        "gate_sha256": "2fe725f637108cf7cfed7fbb3cc40b594fba281fd8b94ac08614d8fc4356f938"
+      },
+      "suite_v1_raw": {
+        "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260825-v1",
+        "result": "0/3",
+        "attempts": [
+          {
+            "run_id": "plate-load-7d55a074ba",
+            "stage": "model_budget",
+            "model_requests": 36,
+            "abaqus_calls": 10,
+            "solver_calls": 0
+          },
+          {
+            "run_id": "plate-load-3ad94dcb7b",
+            "stage": "oracle",
+            "raw_status": "failed",
+            "model_requests": 36,
+            "abaqus_calls": 10,
+            "solver_calls": 1,
+            "verifier_bug": "INP SurfRight and ODB SURFRIGHT were compared case-sensitively",
+            "agent_artifacts_complete": true
+          },
+          {
+            "run_id": "plate-load-67f28ef4eb",
+            "stage": "model_budget",
+            "model_requests": 36,
+            "abaqus_calls": 11,
+            "solver_calls": 0
+          }
+        ],
+        "posthoc_corrected_result": "1/3",
+        "agent_script_replay": {
+          "run_root": "D:/abaqus-runs/plate-load-agent-replay-20260825-v1",
+          "passed": true,
+          "replay_attempt_sha256": "d8f1f2e926c7eaafb4ebe943c90a7dcf123a1571348bdc046bf313cbff990535"
+        },
+        "summary_sha256": "763193474664c8ca54c29047cddb24fea427c113edff05f287e847b7a4afd20e",
+        "gate_sha256": "19d6dc32aaed1e3633c57fec58bc97ea489e7a50f7744a6eb1d9d9e441a3e03f"
+      },
+      "corrected_formal_result": {
+        "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260825-v2-load-corrected",
+        "result": "0/3",
+        "gate_passed": false,
+        "attempts": [
+          {
+            "run_id": "plate-load-b50c76f406",
+            "stage": "model_budget",
+            "model_requests": 36,
+            "abaqus_calls": 10,
+            "solver_calls": 0
+          },
+          {
+            "run_id": "plate-load-52625afe33",
+            "stage": "infrastructure",
+            "error": "UnexpectedModelBehavior: run_command exceeded max retries",
+            "task_started": true,
+            "abaqus_execution_records": 8
+          },
+          {
+            "run_id": "plate-load-6162baa0b0",
+            "stage": "model_budget",
+            "model_requests": 36,
+            "abaqus_calls": 3,
+            "solver_calls": 0
+          }
+        ],
+        "summary_sha256": "d3d33cd7807a3ed8b092c3297b55d68eadfe974e571838e7bc39f330832c5a05",
+        "gate_sha256": "526d7eeea223492e3641778937e06763d97830a59d41f45ee9b332bce6b760aa"
+      }
+    }
+  },
+  "suite_result": {
+    "implemented_cases": 3,
+    "per_case_gate": {
+      "center_hole": "not passed",
+      "dual_material": "passed 2/3",
+      "load_mode": "not passed; corrected formal 0/3"
+    },
+    "suite_passed": false,
+    "interpretation": "L1 now spans geometry/topology, material/section, and load/control changes. Only the dual-material case currently satisfies repeated reliability."
+  },
+  "engineering_findings": [
+    "Verified seed scripts are cached as validated bytes before any attempt, closing the validation-to-copy race.",
+    "Workspace diff preserves CRLF bytes, so an unchanged extractor no longer appears as a full-file patch.",
+    "Per-case gates prevent successful geometry/material cases from hiding a failed load-mode case.",
+    "Abaqus ODB repository names are matched case-insensitively because CAE may uppercase surface names.",
+    "No case-specific solution or new ODB container recipe was added to the Agent Skill or Catalog."
+  ],
+  "limits": [
+    "The suite is a fixed linear-static plate change benchmark, not arbitrary model-change support.",
+    "The load-mode Agent can produce a correct script, but repeated reliability remains below gate because most attempts spend the budget on CAE API probes.",
+    "The first load suite raw result contains one verifier false negative; the original result and the corrected replay are both retained.",
+    "OpenCode Go transport and tool-loop infrastructure failures remain part of end-to-end reliability."
+  ]
+}

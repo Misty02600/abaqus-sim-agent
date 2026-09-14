@@ -1,0 +1,124 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-multi-api-repair-catalog-vs-skill",
+  "date": "2026-08-23",
+  "model": "opencode-go/deepseek-v4-flash",
+  "prompt_version": "api-repair-v1",
+  "runtime": "Abaqus 2024",
+  "case_manifest_sha256": "b33e17c3bf9311cea471c244bb6c06d8d33a40b807b70f13d25f7ae992727d6b",
+  "skill_sha256": "5dffe84954008bec534179a85d97d448a1ad9647716cd3f8f33c5f02528bf374",
+  "catalog_cards_sha256": "3e92f4d67e342bed9dd7d04be371f65ab76a31652fde15fb7cc55241970ce430",
+  "first_round_six_cases": {
+    "skill_only": {
+      "passes": 5,
+      "attempts": 6,
+      "model_requests": 57,
+      "input_tokens": 420768,
+      "output_tokens": 29417,
+      "tool_calls": 60,
+      "abaqus_calls": 15,
+      "task_duration_seconds": 283.92118870001286
+    },
+    "catalog_full": {
+      "passes": 6,
+      "attempts": 6,
+      "model_requests": 45,
+      "input_tokens": 314356,
+      "output_tokens": 20762,
+      "tool_calls": 48,
+      "api_lookup_calls": 6,
+      "delivered_runtime_notes": 3,
+      "abaqus_calls": 11,
+      "task_duration_seconds": 218.57949540004483
+    },
+    "automatic_verified_only": {
+      "passes": 6,
+      "attempts": 6,
+      "model_requests": 42,
+      "input_tokens": 264517,
+      "output_tokens": 15569,
+      "tool_calls": 45,
+      "api_lookup_calls": 3,
+      "delivered_runtime_notes": 3,
+      "abaqus_calls": 11,
+      "task_duration_seconds": 132.71110069999122
+    }
+  },
+  "holdout_three_rounds": {
+    "cases": [
+      "field_output_missing_step_import",
+      "section_assignment_raw_faces",
+      "face_findat_keyword_multi"
+    ],
+    "runtime_notes_available": false,
+    "skill_only": {
+      "passes": 8,
+      "attempts": 9,
+      "model_requests": 79,
+      "input_tokens": 536050,
+      "output_tokens": 27142,
+      "tool_calls": 81,
+      "abaqus_calls": 18,
+      "task_duration_seconds": 254.5517158000439,
+      "passes_by_case": {
+        "field_output_missing_step_import": "2/3",
+        "section_assignment_raw_faces": "3/3",
+        "face_findat_keyword_multi": "3/3"
+      }
+    },
+    "catalog_full": {
+      "passes": 9,
+      "attempts": 9,
+      "model_requests": 70,
+      "input_tokens": 484415,
+      "output_tokens": 24626,
+      "tool_calls": 70,
+      "api_lookup_calls": 9,
+      "delivered_runtime_notes": 0,
+      "abaqus_calls": 17,
+      "task_duration_seconds": 233.14102380003897,
+      "passes_by_case": {
+        "field_output_missing_step_import": "3/3",
+        "section_assignment_raw_faces": "3/3",
+        "face_findat_keyword_multi": "3/3"
+      }
+    },
+    "catalog_minus_skill": {
+      "passes": 1,
+      "pass_rate_percentage_points": 11.11111111111111,
+      "model_requests": -9,
+      "model_requests_percent": -11.39240506329114,
+      "input_tokens": -51635,
+      "input_tokens_percent": -9.632682585579705,
+      "output_tokens": -2516,
+      "output_tokens_percent": -9.269766413676221,
+      "tool_calls": -11,
+      "tool_calls_percent": -13.580246913580247,
+      "abaqus_calls": -1,
+      "task_duration_seconds": -21.41069200000493,
+      "task_duration_percent": -8.4111354415954
+    }
+  },
+  "interpretation": {
+    "observed_general_catalog_benefit": true,
+    "evidence": "Catalog-full passed 9/9 holdout repairs versus Skill-only 8/9. Every Catalog holdout made one exact found lookup and received no runtime note, so the comparison exercises official/abqpy cards rather than memorized per-case patches.",
+    "cost_tradeoff": "On ordinary successful trajectories, the 1.7-3.0 KB card often increased input context. Aggregate token use was lower because Catalog avoided one long FieldOutput failure. The observed value is primarily reduced tail risk, not guaranteed per-call token savings.",
+    "limits": [
+      "Only three API families and three stochastic repeats per arm were used.",
+      "The provider exposes no deterministic seed, so attempts are interleaved same-configuration groups rather than identical trajectories.",
+      "Two holdout rules are also represented in the Skill; this deliberately tests incremental value over the current Skill, but narrows domain breadth.",
+      "These are repair tasks with minimal CAE models, not evidence that Catalog improves every from-scratch simulation task."
+    ],
+    "product_decision": "Keep Skill as the default compact baseline. Enable exact Catalog for repair/debug tasks, with one qualified lookup per failing API and payload compaction as the next optimization. Keep automatic_verified_only for sparse known runtime incompatibilities."
+  },
+  "source_summaries": [
+    {"path":"D:/abaqus-runs/api-repair-general-20260823-v1/skill-only/evaluation_summary.json","sha256":"2fd215e93a8153634ce4e559ac7d0d607e185eb3c52aa93ea9aee7e04c477efa"},
+    {"path":"D:/abaqus-runs/api-repair-general-20260823-v1/catalog-full/evaluation_summary.json","sha256":"ae71a829b0d199f04242126d237d5acb18077ba44c0983d203803f211bf4a693"},
+    {"path":"D:/abaqus-runs/api-repair-general-20260823-v1/automatic-verified/evaluation_summary.json","sha256":"856c172203283435183a7beae3ff6515df0618d438c5e8301316c5150ff83b0a"},
+    {"path":"D:/abaqus-runs/api-repair-general-20260823-v1/holdout-r2/skill-only/evaluation_summary.json","sha256":"d4eaabb716a9d736f11dacae0cbbb4c4059113442dd7d300a17f707c0f198b9d"},
+    {"path":"D:/abaqus-runs/api-repair-general-20260823-v1/holdout-r2/catalog-full/evaluation_summary.json","sha256":"7a77ca58fca1b970d740f8eac3b9264781a55c50d5f6c9556f8b908ecb57d5fc"},
+    {"path":"D:/abaqus-runs/api-repair-general-20260823-v1/holdout-r3/skill-only/evaluation_summary.json","sha256":"1e5d5e4d6e1275e304a95a74fb7bfe22a993bcf7591bf41893769ff2efc481c2"},
+    {"path":"D:/abaqus-runs/api-repair-general-20260823-v1/holdout-r3/catalog-full/evaluation_summary.json","sha256":"7faa6c4624d66af32ac64dc7c3621cf3f00138d16b6332368362f84e095a29e5"}
+  ]
+}
+

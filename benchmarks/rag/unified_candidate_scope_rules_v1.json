@@ -1,0 +1,51 @@
+{
+  "version": "reviewed-source-scope-v1",
+  "policy": "Only reviewed section declarations plus source official Products; no generic heading mention inference. Unknown sections remain eligible.",
+  "sections": [
+    {
+      "source": "SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm",
+      "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+      "anchor": "simaout-c-dboutput-freq-std",
+      "heading": "Controlling the Output Frequency in Abaqus/Standard",
+      "products": [
+        "Abaqus/Standard"
+      ]
+    },
+    {
+      "source": "SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm",
+      "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+      "anchor": "simaout-c-dboutput-t-ControllingTheOutputFrequencyForFieldOutputInAEXP-sma-topic6",
+      "heading": "Controlling the Output Frequency for Field Output in Abaqus/Explicit",
+      "products": [
+        "Abaqus/Explicit"
+      ]
+    },
+    {
+      "source": "SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm",
+      "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+      "anchor": "simaout-c-dboutput-freq-exp-hist",
+      "heading": "Controlling the Output Frequency for History Output in Abaqus/Explicit",
+      "products": [
+        "Abaqus/Explicit"
+      ]
+    },
+    {
+      "source": "SIMACAEKEYRefMap/simakey-r-output.htm",
+      "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+      "anchor": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1",
+      "heading": "Defining output requests in an Abaqus/Standard analysis",
+      "products": [
+        "Abaqus/Standard"
+      ]
+    },
+    {
+      "source": "SIMACAEKEYRefMap/simakey-r-output.htm",
+      "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+      "anchor": "simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2",
+      "heading": "Defining output requests in an Abaqus/Explicit analysis",
+      "products": [
+        "Abaqus/Explicit"
+      ]
+    }
+  ]
+}

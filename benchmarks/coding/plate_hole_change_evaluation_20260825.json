@@ -1,0 +1,192 @@
+{
+  "schema_version": "1",
+  "experiment": "verified-plate-seed-add-center-hole",
+  "date": "2026-08-25",
+  "runtime": "Abaqus 2024",
+  "model": "opencode-go/deepseek-v4-flash",
+  "prompt_version": "plate-hole-change-v1",
+  "objective": "Modify scripts from an independently verified from-scratch plate CodingRun, add a centered radius-3 mm hole, and pass both the new requirement and preserved-contract gates.",
+  "frozen_request": {
+    "path": "benchmarks/coding/plate_hole_change_request.json",
+    "sha256": "04769fbcb32018ffb07b79bda15335631215ef96264247d050a4f98d37f30b25"
+  },
+  "source_run": {
+    "run_id": "eval-2cf5159c427e",
+    "path": "D:/abaqus-runs/plate-catalog-corrected-20260823-v4/automatic-verified/eval-2cf5159c427e",
+    "status": "completed",
+    "verification_passed": true,
+    "request_sha256": "29c928fdf7fddf1eddaf12eec016ee00644eda934b555dc7ec0b9676e0bc16d1",
+    "outcome_sha256": "0e7e33f5a6131bd7c5eda5503303bf9266560bc5db8cf8a9f37fec6d0ef01d60",
+    "verification_sha256": "8d88741cdbb69151578c742b9c94e2cc40424e94b3b2edc1041a7fff6b26f22a",
+    "agent_visible_files": [
+      "build_model.py",
+      "extract_results.py"
+    ],
+    "binary_artifacts_copied_to_change_workspace": false
+  },
+  "configuration": {
+    "skill_sha256": "5dffe84954008bec534179a85d97d448a1ad9647716cd3f8f33c5f02528bf374",
+    "api_catalog_mode": "off",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "eval_task_retry": false,
+    "repeat_until_pass": false,
+    "initial_budget": {
+      "model_requests": 30,
+      "abaqus_calls": 9,
+      "solver_calls": 3
+    },
+    "bounded_v4_treatment": {
+      "model_requests": 36,
+      "abaqus_calls": 12,
+      "solver_calls": 3,
+      "verify_on_budget_exhaustion": true,
+      "other_changes": "none"
+    }
+  },
+  "deterministic_reference": {
+    "run_root": "D:/abaqus-runs/plate-hole-reference-20260825-v2",
+    "result": "1/1",
+    "licensed": true,
+    "measurements": {
+      "element_type_counts": {
+        "CPS4R": 250
+      },
+      "boundary_loop_count": 2,
+      "hole_boundary_edge_count": 24,
+      "hole_center": [
+        50.0,
+        10.0
+      ],
+      "hole_min_node_radius": 2.9999988528392962,
+      "mesh_area": 1972.0475458629282,
+      "right_mean_u1": 0.10000000149011612,
+      "left_sum_rf1": -4014.5416564941406,
+      "right_sum_rf1": 4014.5415954589844,
+      "far_field_mean_s11": 200.73289360434322,
+      "hole_boundary_max_s11": 517.0113525390625
+    },
+    "oracle_results_sha256": "bd3ce7f6cb1c986c82c8feb1809fd2e19d85cb7081935e859ff9e61098490ebb",
+    "verification_sha256": "65e0a829c522dce8242322b4e57021069c57033a1c42fda62fda4f58c53b3708"
+  },
+  "agent_smokes": {
+    "v1_transport": {
+      "run_root": "D:/abaqus-runs/plate-hole-change-go-flash-20260825-v1",
+      "result": "0/1",
+      "task_started": false,
+      "failure": "ModelAPIError: Request timed out",
+      "summary_sha256": "6d368afb6aadf1157ad48d357a8d5b1b545700db48fecfce2042e29a73482ac6",
+      "gate_sha256": "2fe725f637108cf7cfed7fbb3cc40b594fba281fd8b94ac08614d8fc4356f938"
+    },
+    "v2_complete": {
+      "run_root": "D:/abaqus-runs/plate-hole-change-go-flash-20260825-v2",
+      "run_id": "plate-hole-6e073b8264",
+      "result": "1/1",
+      "model_requests": 19,
+      "input_tokens": 242901,
+      "output_tokens": 10336,
+      "tool_calls": 24,
+      "abaqus_calls": 7,
+      "solver_calls": 1,
+      "abaqus_runtime_seconds": 21.408,
+      "task_duration_seconds": 577.991,
+      "observed_repairs": [
+        "Removed an invalid ConstrainedSketch.cut call after a real CAE traceback; the inner sketch circle already defined the hole.",
+        "Converted Abaqus float32 values to native float after results.json serialization failed."
+      ],
+      "verified_measurements": {
+        "element_type_counts": {
+          "CPS4R": 1390
+        },
+        "boundary_loop_count": 2,
+        "hole_boundary_edge_count": 36,
+        "mesh_area": 1971.8689995219302,
+        "right_mean_u1": 0.10000000149011612,
+        "left_sum_rf1": -4011.562057495117,
+        "right_sum_rf1": 4011.56201171875,
+        "far_field_mean_s11": 200.5875135096108,
+        "hole_boundary_max_s11": 564.2509155273438
+      },
+      "summary_sha256": "a85a768564c25cb19c520a41b16647f51bc534fbe7c0ed9f221bdcae8fe02a02",
+      "gate_sha256": "f024a7087029c53c76d9f61ac147f5c5c633f11a04286762b3f1d835d6280bcf",
+      "verification_sha256": "1a157dff1760ce2059074fe9ecb66f22ba231ba42d53aba4fd3121c6400a18ca"
+    }
+  },
+  "formal_batches": {
+    "v3_initial_budget": {
+      "run_root": "D:/abaqus-runs/plate-hole-change-go-flash-20260825-v3",
+      "result": "0/3",
+      "gate_passed": false,
+      "attempts": [
+        {
+          "run_id": "plate-hole-9fe9c26a38",
+          "stage": "infrastructure",
+          "error": "ModelAPIError: Request timed out",
+          "workspace_files": 2,
+          "abaqus_calls": 0
+        },
+        {
+          "run_id": "plate-hole-37b33c93b8",
+          "stage": "model_budget",
+          "model_requests": 30,
+          "abaqus_calls": 8,
+          "solver_calls": 0
+        },
+        {
+          "run_id": "plate-hole-f8d09cbe8b",
+          "stage": "runtime_budget",
+          "model_requests": 26,
+          "abaqus_calls": 9,
+          "solver_calls": 1,
+          "note": "CAE, INP, ODB and results.json existed, but the pre-treatment service did not invoke terminal verification."
+        }
+      ],
+      "summary_sha256": "4e399dfefd94240c1997af999431267dfb0b88ec5a5c5b011cfeb0881bb2f5c8",
+      "gate_sha256": "8fc4410a4ab8c700147fa2dbc52d435885a50c4487f64246a5c7d4b0b8872164"
+    },
+    "v4_bounded_treatment": {
+      "run_root": "D:/abaqus-runs/plate-hole-change-go-flash-20260825-v4",
+      "result": "0/3",
+      "gate_passed": false,
+      "attempts": [
+        {
+          "run_id": "plate-hole-d0a4e2ea69",
+          "stage": "infrastructure",
+          "error": "ModelAPIError: Request timed out",
+          "abaqus_calls": 0
+        },
+        {
+          "run_id": "plate-hole-715e724494",
+          "stage": "infrastructure",
+          "error": "ModelAPIError: Request timed out",
+          "abaqus_calls": 0
+        },
+        {
+          "run_id": "plate-hole-686b2f7b1e",
+          "stage": "model_budget",
+          "model_requests": 36,
+          "abaqus_calls": 12,
+          "solver_calls": 1,
+          "terminal_verification_invoked": true,
+          "terminal_verification_accepted": false,
+          "failure": "results.json was missing after extraction code used unsupported OdbMeshElement.nodeLabels semantics and spent the remaining calls on probes."
+        }
+      ],
+      "summary_sha256": "ede26093b86ffb37cb2fb87898dc660660f5caae291de8ae51ea05af7ae50177",
+      "gate_sha256": "8fc4410a4ab8c700147fa2dbc52d435885a50c4487f64246a5c7d4b0b8872164",
+      "failed_workspace_diff_sha256": "3ab3cf550b446c0432c1a199c36c29b2eb5e4c4557be6512c8be23a1222787ad"
+    }
+  },
+  "interpretation": {
+    "implemented_capability": "The product now accepts a verified source CodingRun, seeds only its two scripts, records initial/final snapshots and readable patches, executes the existing-model change through the same three typed tools, and independently checks both the new hole and preserved baseline contract.",
+    "observed_result": "The deterministic reference and one Product-Agent attempt passed completely. Neither formal three-repeat batch passed the 2/3 gate.",
+    "mixed_diagnostic_total": "Across v1-v4 there were 8 attempts: 4 failed before task start, and 1 of 4 task-started attempts passed. These attempts span two budget treatments and are not a controlled stable-rate estimate.",
+    "semantic_stop": "No hole solution, ODB container recipe, or new runtime note was added to the Skill or Catalog. The final OdbMeshElement failure is retained as a known limitation rather than another semantic patch.",
+    "limits": [
+      "The single successful Product-Agent run is direct capability evidence, not stable reliability evidence.",
+      "OpenCode Go transport failures materially affect end-to-end success and latency.",
+      "The first change Gold covers one full-plate linear-static center-hole task, not arbitrary Abaqus model changes.",
+      "The terminal-verification treatment prevents complete verified artifacts from being discarded at a budget boundary, but it does not accept missing or invalid artifacts."
+    ]
+  }
+}

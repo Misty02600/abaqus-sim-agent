@@ -1,0 +1,3081 @@
+{
+  "schema_version": "document-candidate-failure-localization-v1",
+  "dataset_role": "Post-hoc diagnostic inspection of five previously observed queries, two unchanged index versions; not held-out, no model/solver calls.",
+  "raw_directory": "D:/Projects/abaqus-agent/abaqus-sim-agent/var/audits/document-candidate-diagnosis-v1",
+  "evidence": {
+    "old": {
+      "completion_sha256": "ef6d34a0d954dee6669d33d03dd786a05f8e90949ae011bfa29c48af99d764c5",
+      "index_binding_unchanged": true,
+      "source_unchanged": true,
+      "files_sha256": {
+        "old-domain-procedure-applicability-1.json": "ef5329be98c71827fcb107386665d227126df5a7e22ae3ad24b87faf62d55450",
+        "old-domain-procedure-applicability-2.json": "18c17b60ce6d4996e93fbc03f471cd2a85b93a1cc6b32daad2731341eff12c43",
+        "old-exact-api-region-1.json": "bebf091790ed19a7fd9ccdfd897c9e4832d8c7c29fd08d9e9f692e7152f37022",
+        "old-recorded-solver-diagnostic-1.json": "545e2064162a601dfe21254290efe222047592540f8a1d29b591fe72eda948fb",
+        "old-recorded-solver-diagnostic-2.json": "4afd5e4463fd52e0d9e76ac20a7604fad3c77f7d98d769d6af962ac144d72f06",
+        "old-start.json": "2be4d90d65121f47123200e5e8fd5e71ad0169b5a40578d96c3f321ac0bd6144"
+      },
+      "script_sha256": "aa7fb919a5e4538abcc6cf1580bbefd0bddeff8c7d0c5e84f8b10820155fa4ba"
+    },
+    "new": {
+      "completion_sha256": "e4c1567668195f6f0d67bdc13b882511e1b3714a83532c09f863ae6877f4a858",
+      "index_binding_unchanged": true,
+      "source_unchanged": true,
+      "files_sha256": {
+        "new-domain-procedure-applicability-1.json": "12f8abe44310f6f47d1d0878f35087cbd7d8abf4080d1fc882671753cc111575",
+        "new-domain-procedure-applicability-2.json": "24c294b2681e3cd395803030e47d3ec2e0de59ec5f248f221fe38cfbc5e847a3",
+        "new-exact-api-region-1.json": "d638cf1512eeef5592e52f39892e399a08fffea4de985d4c290d49d344d26bbd",
+        "new-recorded-solver-diagnostic-1.json": "ca50cfefcbf9663666267e9b839840a50f6a1463bc7781419ce31159f0135074",
+        "new-recorded-solver-diagnostic-2.json": "0dfe0d894a0da76af414ab94eb0061adefd7e59caf977a2b781c1b8f9158b747",
+        "new-start.json": "8666410c20e5cba11868b7fc023bf132f540ac867eb004146ec533723f946da4"
+      },
+      "script_sha256": "aa7fb919a5e4538abcc6cf1580bbefd0bddeff8c7d0c5e84f8b10820155fa4ba"
+    }
+  },
+  "summary_script_sha256": "0305007d8a4a0f05e6e52109944c6927ed4a61c8fadc7dfc4828179478260d16",
+  "parent_report": "benchmarks/rag/abaqus_2026_document_context_v2_replay_20260905.json",
+  "parent_report_sha256": "ade59848bf8b02419a9086131484775b23f418da3d4c3816f393a2732ac73017",
+  "method": [
+    "Capture actual production Chroma semantic calls without changing arguments or returned values; all ten used k=16 and reproduce prior final record IDs.",
+    "Separately inspect raw Dense k=100 on the unchanged query. These are approximate HNSW ranks in that diagnostic call, not exact global vector ranks.",
+    "Observe BM25DocumentIndex.search return-frame scores with a process-local profiler, then sort by the existing (-score, chunk_id) order. Reconstructed page Top-20 equals the real method return in all ten calls.",
+    "Inspect predeclared target page/section bodies, excluding heading-only records. Targets are necessary evidence probes, not an exhaustive set of all valid answer passages.",
+    "Replay the page-selection loop over captured candidates and assert identical plain-Dense Top-4; distinguish actually skipped duplicates from candidates never scanned after the early stop.",
+    "Compare actual augmented returns with plain-Dense and inspect target excerpts only counterfactually. Do not count unreturned target text as delivered evidence.",
+    "Verify old/new index, implementation, source and previous artifact bindings before/after; no product code, index, prompt or default modified."
+  ],
+  "cases": [
+    {
+      "id": "exact-api-region-1",
+      "old": {
+        "query_tokens": 148,
+        "actual_candidate_k": [
+          16
+        ],
+        "source_page_records": 0,
+        "targets": [],
+        "actual_dense_candidate_actions": [
+          {
+            "rank": 1,
+            "record_id": "simakey-r-nodeoutput#simakey-r-nodeoutput:chunk-008",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 2,
+            "record_id": "simaout-c-output#simaout-c-output-t-TheResultsFile-sma-topic10:chunk-038",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 3,
+            "record_id": "simaout-c-printfile#simaout-c-printfile-nodaloutput:chunk-068",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 4,
+            "record_id": "simaout-c-output#simaout-c-output-t-TheDataFile-sma-topic1:chunk-012",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 5,
+            "record_id": "simaout-c-stdoutindex#simaout-c-stdoutindex:chunk-033",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 6,
+            "record_id": "simaanl-c-superelementdef#simaanl-c-superelementdef-t-SubstructureDatabase-sma-topic1:chunk-011",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 7,
+            "record_id": "simakey-r-importnset#summary",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 8,
+            "record_id": "simaanl-c-submodeldisp#simaanl-c-submodeldisp-t-SavingTheResultsFromTheGlobalModel-sma-topic3:chunk-029",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 9,
+            "record_id": "simaout-c-printfile#simaout-c-printfile-nodaloutput:chunk-055",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 10,
+            "record_id": "simaanl-c-studyoutput#simaanl-c-studyoutput:chunk-005",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 11,
+            "record_id": "simakey-r-nodeoutput#simakey-r-nodeoutput:chunk-012",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 12,
+            "record_id": "simaitn-c-contactgeneralstd#simaitn-c-contactgeneralstd-t-outputsect1:chunk-089",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 13,
+            "record_id": "simaanl-c-superelements#simaanl-c-superelements-output:chunk-106",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 14,
+            "record_id": "simaanl-c-scriptparstudies#simaanl-c-scriptparstudies-t-ParametricStudyResults-sma-topic13:chunk-066",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 15,
+            "record_id": "simamod-c-node#simamod-c-node-t-GroupingNodesIntoNodeSets-sma-topic8:chunk-034",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 16,
+            "record_id": "simakey-r-nodeprint#simakey-r-nodeprint:chunk-007",
+            "action": "not_scanned_after_four_unique_pages"
+          }
+        ],
+        "exact_prefix_replacements": [
+          {
+            "dense_candidate": {
+              "record_id": "simaout-c-stdoutindex#simaout-c-stdoutindex:chunk-033",
+              "document_id": "simaout-c-stdoutindex",
+              "section_title": "O",
+              "section_id": "simaout-c-stdoutindex",
+              "heading_path": [],
+              "heading_only": false,
+              "score": 0.9200137257575989,
+              "content_sha256": "6cf1585f2ff81f605b7ed648e69b3d0adb40ae63279e19b9d61f61152a2d3a13"
+            },
+            "reason": "final_top4_capacity_after_exact_prefix"
+          }
+        ],
+        "dense_plain_top4": [
+          {
+            "record_id": "simakey-r-nodeoutput#simakey-r-nodeoutput:chunk-008",
+            "document_id": "simakey-r-nodeoutput",
+            "section_title": "Optional parameter when the option is used in conjunction with the , option",
+            "section_id": "simakey-r-nodeoutput",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.8054521679878235,
+            "content_sha256": "e7e58495d93afe1b28f7a71ce7ba0454f8e877e98a73ca238267f50805f75e98"
+          },
+          {
+            "record_id": "simaout-c-output#simaout-c-output-t-TheResultsFile-sma-topic10:chunk-038",
+            "document_id": "simaout-c-output",
+            "section_title": "Part and Assembly Information",
+            "section_id": "simaout-c-output-t-TheResultsFile-sma-topic10",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.8588540554046631,
+            "content_sha256": "33ea37758964e2eb368f69911ac28c3c9c021fb5f9469af6270c7d80a9e91881"
+          },
+          {
+            "record_id": "simaout-c-printfile#simaout-c-printfile-nodaloutput:chunk-068",
+            "document_id": "simaout-c-printfile",
+            "section_title": "Specifying the Directions for Nodal Output",
+            "section_id": "simaout-c-printfile-nodaloutput",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.8945233821868896,
+            "content_sha256": "bf43722ae1a6276a1fb5c3435bb3cd734d97e25be9560c929d9b4d7ff88e3b7c"
+          },
+          {
+            "record_id": "simaout-c-stdoutindex#simaout-c-stdoutindex:chunk-033",
+            "document_id": "simaout-c-stdoutindex",
+            "section_title": "O",
+            "section_id": "simaout-c-stdoutindex",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.9200137257575989,
+            "content_sha256": "6cf1585f2ff81f605b7ed648e69b3d0adb40ae63279e19b9d61f61152a2d3a13"
+          }
+        ],
+        "bm25_parent_top4": [
+          {
+            "record_id": "simamod-c-node#simamod-c-node-t-GroupingNodesIntoNodeSets-sma-topic8:chunk-034",
+            "document_id": "simamod-c-node",
+            "section_title": "Defining Part and Assembly Sets",
+            "section_id": "simamod-c-node-t-GroupingNodesIntoNodeSets-sma-topic8",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 44.58043336400259,
+            "content_sha256": "17bf50f518f55d88d37b2a65e0b70ae49c2a422a2819f2197141ad1a7f031fa1"
+          },
+          {
+            "record_id": "simamod-c-element#simamod-c-element-t-GroupingElementsIntoElementSets-sma-topic9:chunk-036",
+            "document_id": "simamod-c-element",
+            "section_title": "Defining Part and Assembly Sets",
+            "section_id": "simamod-c-element-t-GroupingElementsIntoElementSets-sma-topic9",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 40.29180390629892,
+            "content_sha256": "6b3bb74307850747442f50eec1cbf770f5a0c13e2f98a2c2587da17ba186614d"
+          },
+          {
+            "record_id": "simaanl-c-scriptparstudies#simaanl-c-scriptparstudies-t-ParametricStudyResults-sma-topic13:chunk-065",
+            "document_id": "simaanl-c-scriptparstudies",
+            "section_title": "Gathering Results",
+            "section_id": "simaanl-c-scriptparstudies-t-ParametricStudyResults-sma-topic13",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 39.304697920556414,
+            "content_sha256": "07dbd4dbd3b8fd275f0e37219edd9f843a3a446ba5b73d5aece312d39eb928e3"
+          },
+          {
+            "record_id": "simamod-c-partassy#simamod-c-partassy-t-RulesForDefiningAnAssembly-sma-topic10:chunk-039",
+            "document_id": "simamod-c-partassy",
+            "section_title": "Sets and Surfaces",
+            "section_id": "simamod-c-partassy-t-RulesForDefiningAnAssembly-sma-topic10",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 37.99543249503413,
+            "content_sha256": "2b0c26ce37d340e015cf6197adfc689cd51dc274561fb8e8be3798cc7da46fc3"
+          }
+        ],
+        "bm25_scored_records": 26835
+      },
+      "new": {
+        "query_tokens": 148,
+        "actual_candidate_k": [
+          16
+        ],
+        "source_page_records": 0,
+        "targets": [],
+        "actual_dense_candidate_actions": [
+          {
+            "rank": 1,
+            "record_id": "simakey-r-nodeoutput#simakey-r-nodeoutput:chunk-008",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 2,
+            "record_id": "simaout-c-output#simaout-c-output-t-TheResultsFile-sma-topic10:chunk-038",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 3,
+            "record_id": "simaout-c-output#simaout-c-output-t-TheDataFile-sma-topic1:chunk-012",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 4,
+            "record_id": "simaout-c-printfile#simaout-c-printfile-nodaloutput:chunk-068",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 5,
+            "record_id": "simaanl-c-submodeldisp#simaanl-c-submodeldisp-t-SavingTheResultsFromTheGlobalModel-sma-topic3:chunk-029",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 6,
+            "record_id": "simaout-c-stdoutindex#simaout-c-stdoutindex:chunk-033",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 7,
+            "record_id": "simakey-r-nodeoutput#simakey-r-nodeoutput:chunk-012",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 8,
+            "record_id": "simakey-r-importnset#summary",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 9,
+            "record_id": "simaanl-c-studyoutput#simaanl-c-studyoutput:chunk-005",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 10,
+            "record_id": "simaout-c-printfile#simaout-c-printfile-nodaloutput:chunk-055",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 11,
+            "record_id": "simaitn-c-contactgeneralstd#simaitn-c-contactgeneralstd-t-outputsect1:chunk-089",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 12,
+            "record_id": "simakey-r-nodeprint#simakey-r-nodeprint:chunk-007",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 13,
+            "record_id": "simaprc-c-fields#simaprc-c-fields-readvalues:chunk-053",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 14,
+            "record_id": "simaanl-c-superelements#simaanl-c-superelements-t-VisualizingSubstructureResults-sma-topic31:chunk-126",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 15,
+            "record_id": "simamod-c-node#simamod-c-node-t-GroupingNodesIntoNodeSets-sma-topic8:chunk-034",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 16,
+            "record_id": "simakey-r-nodefile#simakey-r-nodefile:chunk-003",
+            "action": "not_scanned_after_four_unique_pages"
+          }
+        ],
+        "exact_prefix_replacements": [
+          {
+            "dense_candidate": {
+              "record_id": "simaanl-c-submodeldisp#simaanl-c-submodeldisp-t-SavingTheResultsFromTheGlobalModel-sma-topic3:chunk-029",
+              "document_id": "simaanl-c-submodeldisp",
+              "section_title": "Saving the Results to the Output Database",
+              "section_id": "simaanl-c-submodeldisp-t-SavingTheResultsFromTheGlobalModel-sma-topic3",
+              "heading_path": [
+                "Node-Based Submodeling",
+                "Saving the Results from the Global Model",
+                "Saving the Results to the Output Database"
+              ],
+              "heading_only": false,
+              "score": 0.9030837416648865,
+              "content_sha256": "b46d6acfc4e5c3570f8accebd2ed03d802dcd8a9b2c714b3b99674d62e4522d2"
+            },
+            "reason": "final_top4_capacity_after_exact_prefix"
+          }
+        ],
+        "dense_plain_top4": [
+          {
+            "record_id": "simakey-r-nodeoutput#simakey-r-nodeoutput:chunk-008",
+            "document_id": "simakey-r-nodeoutput",
+            "section_title": "Optional parameter when the NODE OUTPUT option is used in conjunction with the OUTPUT, HISTORY option",
+            "section_id": "simakey-r-nodeoutput",
+            "heading_path": [
+              "*NODE OUTPUT",
+              "Optional parameter when the NODE OUTPUT option is used in conjunction with the OUTPUT, HISTORY option"
+            ],
+            "heading_only": false,
+            "score": 0.8294892311096191,
+            "content_sha256": "75ceda93ecb9634f9baace073bb82430549c07aa5043ba2a9afdaa516480bc11"
+          },
+          {
+            "record_id": "simaout-c-output#simaout-c-output-t-TheResultsFile-sma-topic10:chunk-038",
+            "document_id": "simaout-c-output",
+            "section_title": "Part and Assembly Information",
+            "section_id": "simaout-c-output-t-TheResultsFile-sma-topic10",
+            "heading_path": [
+              "About Output",
+              "The Results File",
+              "Part and Assembly Information"
+            ],
+            "heading_only": false,
+            "score": 0.8692449331283569,
+            "content_sha256": "562e450dc0067a004452bedd6c130f77abb0047796907f289cdbdd566a85698d"
+          },
+          {
+            "record_id": "simaout-c-printfile#simaout-c-printfile-nodaloutput:chunk-068",
+            "document_id": "simaout-c-printfile",
+            "section_title": "Specifying the Directions for Nodal Output",
+            "section_id": "simaout-c-printfile-nodaloutput",
+            "heading_path": [
+              "Output to the Data and Results Files",
+              "Node Output",
+              "Specifying the Directions for Nodal Output"
+            ],
+            "heading_only": false,
+            "score": 0.8777549266815186,
+            "content_sha256": "db3d4c3f7ffc9a3b8f6ed0806fe5ed10b4027f868731635ccfd4e7205bc720e6"
+          },
+          {
+            "record_id": "simaanl-c-submodeldisp#simaanl-c-submodeldisp-t-SavingTheResultsFromTheGlobalModel-sma-topic3:chunk-029",
+            "document_id": "simaanl-c-submodeldisp",
+            "section_title": "Saving the Results to the Output Database",
+            "section_id": "simaanl-c-submodeldisp-t-SavingTheResultsFromTheGlobalModel-sma-topic3",
+            "heading_path": [
+              "Node-Based Submodeling",
+              "Saving the Results from the Global Model",
+              "Saving the Results to the Output Database"
+            ],
+            "heading_only": false,
+            "score": 0.9030837416648865,
+            "content_sha256": "b46d6acfc4e5c3570f8accebd2ed03d802dcd8a9b2c714b3b99674d62e4522d2"
+          }
+        ],
+        "bm25_parent_top4": [
+          {
+            "record_id": "simamod-c-node#simamod-c-node-t-GroupingNodesIntoNodeSets-sma-topic8:chunk-034",
+            "document_id": "simamod-c-node",
+            "section_title": "Defining Part and Assembly Sets",
+            "section_id": "simamod-c-node-t-GroupingNodesIntoNodeSets-sma-topic8",
+            "heading_path": [
+              "Node Definition",
+              "Grouping Nodes into Node Sets",
+              "Defining Part and Assembly Sets"
+            ],
+            "heading_only": false,
+            "score": 45.21306243110135,
+            "content_sha256": "ccc3fbc9458a420bb450e38fbd892c75a29090876fa79cfac0cdae347c36edea"
+          },
+          {
+            "record_id": "simaanl-c-scriptparstudies#simaanl-c-scriptparstudies-t-ParametricStudyResults-sma-topic13:chunk-065",
+            "document_id": "simaanl-c-scriptparstudies",
+            "section_title": "Gathering Results",
+            "section_id": "simaanl-c-scriptparstudies-t-ParametricStudyResults-sma-topic13",
+            "heading_path": [
+              "Scripting Parametric Studies",
+              "Parametric Study Results",
+              "Gathering Results"
+            ],
+            "heading_only": false,
+            "score": 42.43725415393571,
+            "content_sha256": "db965ecb73134b82fbf5079206a244da6ac2378a7e0bb49292ccdf7d2e6f7eef"
+          },
+          {
+            "record_id": "simamod-c-element#simamod-c-element-t-GroupingElementsIntoElementSets-sma-topic9:chunk-036",
+            "document_id": "simamod-c-element",
+            "section_title": "Defining Part and Assembly Sets",
+            "section_id": "simamod-c-element-t-GroupingElementsIntoElementSets-sma-topic9",
+            "heading_path": [
+              "Element Definition",
+              "Grouping Elements into Element Sets",
+              "Defining Part and Assembly Sets"
+            ],
+            "heading_only": false,
+            "score": 40.72167210018216,
+            "content_sha256": "574dde4373be4ec8196da686f4c67aba730973204de5e1d0de0d4f8901272b0f"
+          },
+          {
+            "record_id": "simamod-c-partassy#simamod-c-partassy-t-RulesForDefiningAnAssembly-sma-topic10:chunk-039",
+            "document_id": "simamod-c-partassy",
+            "section_title": "Sets and Surfaces",
+            "section_id": "simamod-c-partassy-t-RulesForDefiningAnAssembly-sma-topic10",
+            "heading_path": [
+              "Assembly Definition",
+              "Rules for Defining an Assembly",
+              "Sets and Surfaces"
+            ],
+            "heading_only": false,
+            "score": 39.29292227654555,
+            "content_sha256": "c9dbed0a519f1c216ce6de9691e5cda8bdef9b974c51cddbc5becdf4045dfc6d"
+          }
+        ],
+        "bm25_scored_records": 27427
+      }
+    },
+    {
+      "id": "domain-procedure-applicability-1",
+      "old": {
+        "query_tokens": 99,
+        "actual_candidate_k": [
+          16
+        ],
+        "source_page_records": 40,
+        "targets": [
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-005",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "The Riks Method",
+            "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+            "heading_path": [],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "8ba4c5d5825904c63a5e704c5290099d10959c61da53a9f05e94bd4bf61126eb",
+            "production_candidates": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-matsect1:chunk-033",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Material Options",
+                "section_id": "simaanl-c-postbuckling-t-matsect1",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "fc9663f9d7809828da8a31c887d6ecb0f7846ee687b8aad7c679914370ebb3eb",
+                "rank": 4
+              },
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": 17,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-matsect1:chunk-033",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Material Options",
+                "section_id": "simaanl-c-postbuckling-t-matsect1",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "fc9663f9d7809828da8a31c887d6ecb0f7846ee687b8aad7c679914370ebb3eb",
+                "rank": 4
+              },
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 8,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1:chunk-003",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Unstable Response",
+                "section_id": "simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "02d10dad0a61fdf1461319eca5144600dd09c70384831234dd86166a0ade6c22",
+                "rank": 1
+              },
+              "in_final_top4": false
+            },
+            "token_count_without_padding_or_truncation": 178,
+            "actual_selection_action": "not_in_actual_candidate_batch",
+            "candidate_delivered_excerpt_characters": 600,
+            "candidate_delivered_excerpt_sha256": "a30c4097190cadbf8a68640b5184fb9b85b59b5006e23ac98e0e54680914951a",
+            "full_normalized_characters": 887,
+            "minimum_increment_exception_marker_in_full": false,
+            "minimum_increment_exception_marker_in_excerpt": false,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          },
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-007",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "Proportional Loading",
+            "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+            "heading_path": [],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "02d55fa53982b7e087c55a9780deb3d6e800c8cc0be357d8346a712550bfd1ee",
+            "production_candidates": {
+              "rank_before_page_dedupe": 15,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-matsect1:chunk-033",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Material Options",
+                "section_id": "simaanl-c-postbuckling-t-matsect1",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "fc9663f9d7809828da8a31c887d6ecb0f7846ee687b8aad7c679914370ebb3eb",
+                "rank": 4
+              },
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": 15,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-matsect1:chunk-033",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Material Options",
+                "section_id": "simaanl-c-postbuckling-t-matsect1",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "fc9663f9d7809828da8a31c887d6ecb0f7846ee687b8aad7c679914370ebb3eb",
+                "rank": 4
+              },
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 5,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1:chunk-003",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Unstable Response",
+                "section_id": "simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "02d10dad0a61fdf1461319eca5144600dd09c70384831234dd86166a0ade6c22",
+                "rank": 1
+              },
+              "in_final_top4": false
+            },
+            "token_count_without_padding_or_truncation": 196,
+            "actual_selection_action": "not_scanned_after_four_unique_pages",
+            "candidate_delivered_excerpt_characters": 599,
+            "candidate_delivered_excerpt_sha256": "35becdea0581962757d28908ce4f53f6e7e15ec6e22ae5cf8fb38058b27db013",
+            "full_normalized_characters": 877,
+            "minimum_increment_exception_marker_in_full": false,
+            "minimum_increment_exception_marker_in_excerpt": false,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          }
+        ],
+        "actual_dense_candidate_actions": [
+          {
+            "rank": 1,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-016",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 2,
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 3,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-015",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 4,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-matsect1:chunk-033",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 5,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-014",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 6,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1:chunk-003",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 7,
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-009",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 8,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-009",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 9,
+            "record_id": "simaanl-c-postbuckling#summary",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 10,
+            "record_id": "simaanl-c-over#simaanl-c-over-incrementation:chunk-033",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 11,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-Restrictions-sma-topic10:chunk-023",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 12,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-ObtainingASolutionAtAParticularLoadOrDisplacementValue-sma-topic9:chunk-021",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 13,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 14,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-008",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 15,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-007",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 16,
+            "record_id": "simaout-c-std-solutiondependentamplitudevariables#simaout-c-std-solutiondependentamplitudevariables:chunk-001",
+            "action": "not_scanned_after_four_unique_pages"
+          }
+        ],
+        "exact_prefix_replacements": [
+          {
+            "dense_candidate": {
+              "record_id": "simakey-r-static#simakey-r-static:chunk-016",
+              "document_id": "simakey-r-static",
+              "section_title": "Data line for the Riks method",
+              "section_id": "simakey-r-static",
+              "heading_path": [],
+              "heading_only": false,
+              "score": 0.5862396955490112,
+              "content_sha256": "e78a478f0eebe66a391c1794d338749c8568898c8d95d7aec6601dc926aaf391"
+            },
+            "reason": "same_page_as_exact_prefix"
+          },
+          {
+            "dense_candidate": {
+              "record_id": "simaanl-c-over#simaanl-c-over-incrementation:chunk-033",
+              "document_id": "simaanl-c-over",
+              "section_title": "Incrementation in",
+              "section_id": "simaanl-c-over-incrementation",
+              "heading_path": [],
+              "heading_only": false,
+              "score": 0.8445033431053162,
+              "content_sha256": "ad01e45711da54f16c7a1465c1ff40666f4299644c85514ccff4e6161b59cf18"
+            },
+            "reason": "final_top4_capacity_after_exact_prefix"
+          }
+        ],
+        "dense_plain_top4": [
+          {
+            "record_id": "simakey-r-static#simakey-r-static:chunk-016",
+            "document_id": "simakey-r-static",
+            "section_title": "Data line for the Riks method",
+            "section_id": "simakey-r-static",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.5862396955490112,
+            "content_sha256": "e78a478f0eebe66a391c1794d338749c8568898c8d95d7aec6601dc926aaf391"
+          },
+          {
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "document_id": "simaanl-c-static",
+            "section_title": "Unstable Problems",
+            "section_id": "simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.6853064298629761,
+            "content_sha256": "d97a0c4997aa12a910d5720c6b954b5df5bf3b4fc5770e3ae7adebed897c5325"
+          },
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-matsect1:chunk-033",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "Material Options",
+            "section_id": "simaanl-c-postbuckling-t-matsect1",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.7811453342437744,
+            "content_sha256": "fc9663f9d7809828da8a31c887d6ecb0f7846ee687b8aad7c679914370ebb3eb"
+          },
+          {
+            "record_id": "simaanl-c-over#simaanl-c-over-incrementation:chunk-033",
+            "document_id": "simaanl-c-over",
+            "section_title": "Incrementation in",
+            "section_id": "simaanl-c-over-incrementation",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.8445033431053162,
+            "content_sha256": "ad01e45711da54f16c7a1465c1ff40666f4299644c85514ccff4e6161b59cf18"
+          }
+        ],
+        "bm25_parent_top4": [
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1:chunk-003",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "Unstable Response",
+            "section_id": "simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 57.41632379509939,
+            "content_sha256": "02d10dad0a61fdf1461319eca5144600dd09c70384831234dd86166a0ade6c22"
+          },
+          {
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "document_id": "simaanl-c-static",
+            "section_title": "Unstable Problems",
+            "section_id": "simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 55.074017111486434,
+            "content_sha256": "d97a0c4997aa12a910d5720c6b954b5df5bf3b4fc5770e3ae7adebed897c5325"
+          },
+          {
+            "record_id": "simakey-r-static#simakey-r-static:chunk-015",
+            "document_id": "simakey-r-static",
+            "section_title": "Data line for the Riks method",
+            "section_id": "simakey-r-static",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 51.38958112151121,
+            "content_sha256": "825819dd264dc6791398ceda7c32dc24d3f1c066696623ab7ffc871ec8f9fb5e"
+          },
+          {
+            "record_id": "simaout-c-std-solutiondependentamplitudevariables#simaout-c-std-solutiondependentamplitudevariables:chunk-001",
+            "document_id": "simaout-c-std-solutiondependentamplitudevariables",
+            "section_title": "Solution-Dependent Amplitude Variables",
+            "section_id": "simaout-c-std-solutiondependentamplitudevariables",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 42.4553508483456,
+            "content_sha256": "90dd5bf180607f3f738240fecb49145c056e339b55e87c8931082801d418f52b"
+          }
+        ],
+        "bm25_scored_records": 28303
+      },
+      "new": {
+        "query_tokens": 99,
+        "actual_candidate_k": [
+          16
+        ],
+        "source_page_records": 40,
+        "targets": [
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-005",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "The Riks Method",
+            "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+            "heading_path": [
+              "Unstable Collapse and Postbuckling Analysis",
+              "The Riks Method"
+            ],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "71c7663c1c22f1c7b26fec78f6f1c588aa5dd4b6bdfd8d275e5b299e31b71f20",
+            "production_candidates": {
+              "rank_before_page_dedupe": 12,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-009",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Incrementation",
+                "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+                "heading_path": [
+                  "Unstable Collapse and Postbuckling Analysis",
+                  "The Riks Method",
+                  "Incrementation"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "7ecfccf7903e628ff40920d7cbb18a4fc70b3a65514197a3ee3c906ba92350cc",
+                "rank": 3
+              },
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": 12,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-009",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Incrementation",
+                "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+                "heading_path": [
+                  "Unstable Collapse and Postbuckling Analysis",
+                  "The Riks Method",
+                  "Incrementation"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "7ecfccf7903e628ff40920d7cbb18a4fc70b3a65514197a3ee3c906ba92350cc",
+                "rank": 3
+              },
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 9,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1:chunk-003",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Unstable Response",
+                "section_id": "simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+                "heading_path": [
+                  "Unstable Collapse and Postbuckling Analysis",
+                  "Unstable Response"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "c890f1a198a6bb0bae7166494deb8e66420af6559a744a0547eeb1596cb7a720",
+                "rank": 1
+              },
+              "in_final_top4": false
+            },
+            "token_count_without_padding_or_truncation": 186,
+            "actual_selection_action": "not_scanned_after_four_unique_pages",
+            "candidate_delivered_excerpt_characters": 600,
+            "candidate_delivered_excerpt_sha256": "9dad41d45c2218cf27cd25452f0d2478b63da16d80fccaa733d7c816e2b67c3b",
+            "full_normalized_characters": 933,
+            "minimum_increment_exception_marker_in_full": false,
+            "minimum_increment_exception_marker_in_excerpt": false,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          },
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-007",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "Proportional Loading",
+            "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+            "heading_path": [
+              "Unstable Collapse and Postbuckling Analysis",
+              "The Riks Method",
+              "Proportional Loading"
+            ],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "44e799fc1c4f93af42c7827f025a9b98b9fa85873857747e82b257b7baa3a4a2",
+            "production_candidates": {
+              "rank_before_page_dedupe": 6,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-009",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Incrementation",
+                "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+                "heading_path": [
+                  "Unstable Collapse and Postbuckling Analysis",
+                  "The Riks Method",
+                  "Incrementation"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "7ecfccf7903e628ff40920d7cbb18a4fc70b3a65514197a3ee3c906ba92350cc",
+                "rank": 3
+              },
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": 6,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-009",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Incrementation",
+                "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+                "heading_path": [
+                  "Unstable Collapse and Postbuckling Analysis",
+                  "The Riks Method",
+                  "Incrementation"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "7ecfccf7903e628ff40920d7cbb18a4fc70b3a65514197a3ee3c906ba92350cc",
+                "rank": 3
+              },
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 5,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1:chunk-003",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Unstable Response",
+                "section_id": "simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+                "heading_path": [
+                  "Unstable Collapse and Postbuckling Analysis",
+                  "Unstable Response"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "c890f1a198a6bb0bae7166494deb8e66420af6559a744a0547eeb1596cb7a720",
+                "rank": 1
+              },
+              "in_final_top4": false
+            },
+            "token_count_without_padding_or_truncation": 209,
+            "actual_selection_action": "skipped_same_page",
+            "candidate_delivered_excerpt_characters": 600,
+            "candidate_delivered_excerpt_sha256": "1e97749aad1c0afdd93236f3a4f615b56572871496f9ce588e63c1e104877567",
+            "full_normalized_characters": 941,
+            "minimum_increment_exception_marker_in_full": false,
+            "minimum_increment_exception_marker_in_excerpt": false,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          }
+        ],
+        "actual_dense_candidate_actions": [
+          {
+            "rank": 1,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-016",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 2,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-015",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 3,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-009",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 4,
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 5,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-014",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 6,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-007",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 7,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 8,
+            "record_id": "simaanl-c-over#simaanl-c-over-incrementation:chunk-033",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 9,
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-009",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 10,
+            "record_id": "simaanl-c-postbuckling#summary",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 11,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-matsect1:chunk-033",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 12,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-005",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 13,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-ObtainingASolutionAtAParticularLoadOrDisplacementValue-sma-topic9:chunk-021",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 14,
+            "record_id": "simakey-r-step#simakey-r-step-t-BeginningAStepInAnASAnalysis-abqkeysubsection1:chunk-004",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 15,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1:chunk-003",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 16,
+            "record_id": "simaanl-c-nonlineareqns#simaanl-c-nonlineareqns-solutionmethod:chunk-017",
+            "action": "not_scanned_after_four_unique_pages"
+          }
+        ],
+        "exact_prefix_replacements": [
+          {
+            "dense_candidate": {
+              "record_id": "simakey-r-static#simakey-r-static:chunk-016",
+              "document_id": "simakey-r-static",
+              "section_title": "Data line for the Riks method",
+              "section_id": "simakey-r-static",
+              "heading_path": [
+                "*STATIC",
+                "Data line for the Riks method"
+              ],
+              "heading_only": false,
+              "score": 0.5594238638877869,
+              "content_sha256": "89752057a02bbb0415c43e76905e3b898dc15da3e89dcbd75f8140cc2708b400"
+            },
+            "reason": "same_page_as_exact_prefix"
+          },
+          {
+            "dense_candidate": {
+              "record_id": "simaanl-c-over#simaanl-c-over-incrementation:chunk-033",
+              "document_id": "simaanl-c-over",
+              "section_title": "Incrementation in Abaqus/Standard",
+              "section_id": "simaanl-c-over-incrementation",
+              "heading_path": [
+                "Defining an Analysis",
+                "Incrementation",
+                "Incrementation in Abaqus/Standard"
+              ],
+              "heading_only": false,
+              "score": 0.8069546222686768,
+              "content_sha256": "3f8836363eec5d15b6bbe2b8dd8cdb3426f95f9c0685318af6f37cadbd656c8b"
+            },
+            "reason": "final_top4_capacity_after_exact_prefix"
+          }
+        ],
+        "dense_plain_top4": [
+          {
+            "record_id": "simakey-r-static#simakey-r-static:chunk-016",
+            "document_id": "simakey-r-static",
+            "section_title": "Data line for the Riks method",
+            "section_id": "simakey-r-static",
+            "heading_path": [
+              "*STATIC",
+              "Data line for the Riks method"
+            ],
+            "heading_only": false,
+            "score": 0.5594238638877869,
+            "content_sha256": "89752057a02bbb0415c43e76905e3b898dc15da3e89dcbd75f8140cc2708b400"
+          },
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-009",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "Incrementation",
+            "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+            "heading_path": [
+              "Unstable Collapse and Postbuckling Analysis",
+              "The Riks Method",
+              "Incrementation"
+            ],
+            "heading_only": false,
+            "score": 0.7118776440620422,
+            "content_sha256": "7ecfccf7903e628ff40920d7cbb18a4fc70b3a65514197a3ee3c906ba92350cc"
+          },
+          {
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "document_id": "simaanl-c-static",
+            "section_title": "Unstable Problems",
+            "section_id": "simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+            "heading_path": [
+              "Static Stress Analysis",
+              "Nonlinear Static Analysis",
+              "Unstable Problems"
+            ],
+            "heading_only": false,
+            "score": 0.7346349954605103,
+            "content_sha256": "655627877cfd8bc97b15a7b1aed63998db3234fecef8cbea093dc831c185833a"
+          },
+          {
+            "record_id": "simaanl-c-over#simaanl-c-over-incrementation:chunk-033",
+            "document_id": "simaanl-c-over",
+            "section_title": "Incrementation in Abaqus/Standard",
+            "section_id": "simaanl-c-over-incrementation",
+            "heading_path": [
+              "Defining an Analysis",
+              "Incrementation",
+              "Incrementation in Abaqus/Standard"
+            ],
+            "heading_only": false,
+            "score": 0.8069546222686768,
+            "content_sha256": "3f8836363eec5d15b6bbe2b8dd8cdb3426f95f9c0685318af6f37cadbd656c8b"
+          }
+        ],
+        "bm25_parent_top4": [
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1:chunk-003",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "Unstable Response",
+            "section_id": "simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+            "heading_path": [
+              "Unstable Collapse and Postbuckling Analysis",
+              "Unstable Response"
+            ],
+            "heading_only": false,
+            "score": 57.84747240059816,
+            "content_sha256": "c890f1a198a6bb0bae7166494deb8e66420af6559a744a0547eeb1596cb7a720"
+          },
+          {
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "document_id": "simaanl-c-static",
+            "section_title": "Unstable Problems",
+            "section_id": "simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+            "heading_path": [
+              "Static Stress Analysis",
+              "Nonlinear Static Analysis",
+              "Unstable Problems"
+            ],
+            "heading_only": false,
+            "score": 57.02723182342448,
+            "content_sha256": "655627877cfd8bc97b15a7b1aed63998db3234fecef8cbea093dc831c185833a"
+          },
+          {
+            "record_id": "simakey-r-static#simakey-r-static:chunk-015",
+            "document_id": "simakey-r-static",
+            "section_title": "Data line for the Riks method",
+            "section_id": "simakey-r-static",
+            "heading_path": [
+              "*STATIC",
+              "Data line for the Riks method"
+            ],
+            "heading_only": false,
+            "score": 56.2883727520331,
+            "content_sha256": "9a344052167277c7fbf2e5e23687ddd429536723b43c940e89bb8bf78a484670"
+          },
+          {
+            "record_id": "simaout-c-std-solutiondependentamplitudevariables#simaout-c-std-solutiondependentamplitudevariables:chunk-001",
+            "document_id": "simaout-c-std-solutiondependentamplitudevariables",
+            "section_title": "Solution-Dependent Amplitude Variables",
+            "section_id": "simaout-c-std-solutiondependentamplitudevariables",
+            "heading_path": [
+              "Solution-Dependent Amplitude Variables"
+            ],
+            "heading_only": false,
+            "score": 43.32269818585989,
+            "content_sha256": "90dd5bf180607f3f738240fecb49145c056e339b55e87c8931082801d418f52b"
+          }
+        ],
+        "bm25_scored_records": 29171
+      }
+    },
+    {
+      "id": "domain-procedure-applicability-2",
+      "old": {
+        "query_tokens": 107,
+        "actual_candidate_k": [
+          16
+        ],
+        "source_page_records": 40,
+        "targets": [
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-bcsect1:chunk-027",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "Boundary Conditions",
+            "section_id": "simaanl-c-postbuckling-t-bcsect1",
+            "heading_path": [],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "689b919714eb06af2097cd1ae2d730cbe19e99429e013ab49075cb1c9395f0a5",
+            "production_candidates": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Loads",
+                "section_id": "simaanl-c-postbuckling-t-loadsect1",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "4d6b8c0465eb13e7995165f664c7e3bbcadfd707e4624f808773756d9b326245",
+                "rank": 4
+              },
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Loads",
+                "section_id": "simaanl-c-postbuckling-t-loadsect1",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "4d6b8c0465eb13e7995165f664c7e3bbcadfd707e4624f808773756d9b326245",
+                "rank": 4
+              },
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 697,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-007",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Proportional Loading",
+                "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "02d55fa53982b7e087c55a9780deb3d6e800c8cc0be357d8346a712550bfd1ee",
+                "rank": 1
+              },
+              "in_final_top4": false
+            },
+            "token_count_without_padding_or_truncation": 78,
+            "actual_selection_action": "not_in_actual_candidate_batch",
+            "candidate_delivered_excerpt_characters": 409,
+            "candidate_delivered_excerpt_sha256": "5bd727adb04c5610460f66a05a933f3d194c879d0b2047b72e271d270caf5f49",
+            "full_normalized_characters": 409,
+            "minimum_increment_exception_marker_in_full": false,
+            "minimum_increment_exception_marker_in_excerpt": false,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          }
+        ],
+        "actual_dense_candidate_actions": [
+          {
+            "rank": 1,
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 2,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-016",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 3,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-015",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 4,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 5,
+            "record_id": "simaanl-c-visco#simaanl-c-visco-t-loadsect1:chunk-017",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 6,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-008",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 7,
+            "record_id": "simaanl-c-expdynamic#simaanl-c-expdynamic-t-loadsect1:chunk-101",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 8,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-matsect1:chunk-033",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 9,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1:chunk-003",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 10,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-007",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 11,
+            "record_id": "simaprc-c-loadgeneral#simaprc-c-loadgeneral-t-ConcentratedLoads-sma-topic1:chunk-004",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 12,
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-009",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 13,
+            "record_id": "simaanl-c-steadystatetransport#simaanl-c-steadystatetransport-t-loadsect1:chunk-085",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 14,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-Restrictions-sma-topic10:chunk-023",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 15,
+            "record_id": "simaprc-c-loadgeneral#simaprc-c-loadgeneral-t-ConcentratedLoads-sma-topic1:chunk-002",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 16,
+            "record_id": "simaanl-c-stdtostd#simaanl-c-stdtostd-t-loadsect1:chunk-025",
+            "action": "not_scanned_after_four_unique_pages"
+          }
+        ],
+        "exact_prefix_replacements": [
+          {
+            "dense_candidate": {
+              "record_id": "simakey-r-static#simakey-r-static:chunk-016",
+              "document_id": "simakey-r-static",
+              "section_title": "Data line for the Riks method",
+              "section_id": "simakey-r-static",
+              "heading_path": [],
+              "heading_only": false,
+              "score": 0.7260681986808777,
+              "content_sha256": "e78a478f0eebe66a391c1794d338749c8568898c8d95d7aec6601dc926aaf391"
+            },
+            "reason": "same_page_as_exact_prefix"
+          }
+        ],
+        "dense_plain_top4": [
+          {
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "document_id": "simaanl-c-static",
+            "section_title": "Unstable Problems",
+            "section_id": "simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.7247772216796875,
+            "content_sha256": "d97a0c4997aa12a910d5720c6b954b5df5bf3b4fc5770e3ae7adebed897c5325"
+          },
+          {
+            "record_id": "simakey-r-static#simakey-r-static:chunk-016",
+            "document_id": "simakey-r-static",
+            "section_title": "Data line for the Riks method",
+            "section_id": "simakey-r-static",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.7260681986808777,
+            "content_sha256": "e78a478f0eebe66a391c1794d338749c8568898c8d95d7aec6601dc926aaf391"
+          },
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "Loads",
+            "section_id": "simaanl-c-postbuckling-t-loadsect1",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.7850450277328491,
+            "content_sha256": "4d6b8c0465eb13e7995165f664c7e3bbcadfd707e4624f808773756d9b326245"
+          },
+          {
+            "record_id": "simaanl-c-visco#simaanl-c-visco-t-loadsect1:chunk-017",
+            "document_id": "simaanl-c-visco",
+            "section_title": "Loads",
+            "section_id": "simaanl-c-visco-t-loadsect1",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.8344067335128784,
+            "content_sha256": "6a438c767845b82efc89af88d49233d58883ecd8f9dbcfa5cf292b9c07b2ce42"
+          }
+        ],
+        "bm25_parent_top4": [
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-007",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "Proportional Loading",
+            "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 58.154030184875346,
+            "content_sha256": "02d55fa53982b7e087c55a9780deb3d6e800c8cc0be357d8346a712550bfd1ee"
+          },
+          {
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "document_id": "simaanl-c-static",
+            "section_title": "Unstable Problems",
+            "section_id": "simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 57.794897574135454,
+            "content_sha256": "d97a0c4997aa12a910d5720c6b954b5df5bf3b4fc5770e3ae7adebed897c5325"
+          },
+          {
+            "record_id": "simakey-r-static#simakey-r-static:chunk-015",
+            "document_id": "simakey-r-static",
+            "section_title": "Data line for the Riks method",
+            "section_id": "simakey-r-static",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 52.501848016167074,
+            "content_sha256": "825819dd264dc6791398ceda7c32dc24d3f1c066696623ab7ffc871ec8f9fb5e"
+          },
+          {
+            "record_id": "simamod-c-model#simamod-c-model-history:chunk-021",
+            "document_id": "simamod-c-model",
+            "section_title": "Optional History Data",
+            "section_id": "simamod-c-model-history",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 43.88753653738154,
+            "content_sha256": "4805802c99a1f651a4516a0c2688eeb7a7869121493c820eb7339a4af37556c6"
+          }
+        ],
+        "bm25_scored_records": 28136
+      },
+      "new": {
+        "query_tokens": 107,
+        "actual_candidate_k": [
+          16
+        ],
+        "source_page_records": 40,
+        "targets": [
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-bcsect1:chunk-027",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "Boundary Conditions",
+            "section_id": "simaanl-c-postbuckling-t-bcsect1",
+            "heading_path": [
+              "Unstable Collapse and Postbuckling Analysis",
+              "Boundary Conditions"
+            ],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "729acb8b850b1c44358a96bc24bb9ec728330dfa0817d04dfacedfa337fcb314",
+            "production_candidates": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Loads",
+                "section_id": "simaanl-c-postbuckling-t-loadsect1",
+                "heading_path": [
+                  "Unstable Collapse and Postbuckling Analysis",
+                  "Loads"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "c9744322b6d889baa303f418191fb071b91feaccd0933890b7646a967fabab5d",
+                "rank": 3
+              },
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Loads",
+                "section_id": "simaanl-c-postbuckling-t-loadsect1",
+                "heading_path": [
+                  "Unstable Collapse and Postbuckling Analysis",
+                  "Loads"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "c9744322b6d889baa303f418191fb071b91feaccd0933890b7646a967fabab5d",
+                "rank": 3
+              },
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 777,
+              "earlier_same_page_representative": {
+                "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-007",
+                "document_id": "simaanl-c-postbuckling",
+                "section_title": "Proportional Loading",
+                "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+                "heading_path": [
+                  "Unstable Collapse and Postbuckling Analysis",
+                  "The Riks Method",
+                  "Proportional Loading"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "44e799fc1c4f93af42c7827f025a9b98b9fa85873857747e82b257b7baa3a4a2",
+                "rank": 2
+              },
+              "in_final_top4": false
+            },
+            "token_count_without_padding_or_truncation": 86,
+            "actual_selection_action": "not_in_actual_candidate_batch",
+            "candidate_delivered_excerpt_characters": 455,
+            "candidate_delivered_excerpt_sha256": "dc610c82da4449ddf93629344d6981563c5e364c8b94e86ddd849771fcd9f409",
+            "full_normalized_characters": 455,
+            "minimum_increment_exception_marker_in_full": false,
+            "minimum_increment_exception_marker_in_excerpt": false,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          }
+        ],
+        "actual_dense_candidate_actions": [
+          {
+            "rank": 1,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-016",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 2,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-015",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 3,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 4,
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 5,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-007",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 6,
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-009",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 7,
+            "record_id": "simaanl-c-visco#simaanl-c-visco-t-loadsect1:chunk-017",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 8,
+            "record_id": "simaanl-c-steadystatetransport#simaanl-c-steadystatetransport-t-loadsect1:chunk-085",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 9,
+            "record_id": "simaprc-c-loadgeneral#simaprc-c-loadgeneral-t-ConcentratedLoads-sma-topic1:chunk-004",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 10,
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-009",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 11,
+            "record_id": "simaanl-c-expdynamic#simaanl-c-expdynamic-t-loadsect1:chunk-101",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 12,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-008",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 13,
+            "record_id": "simaprc-c-loadgeneral#simaprc-c-loadgeneral-t-ConcentratedLoads-sma-topic1:chunk-002",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 14,
+            "record_id": "simaanl-c-stdtostd#simaanl-c-stdtostd-t-loadsect1:chunk-025",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 15,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-014",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 16,
+            "record_id": "simaanl-c-static#simaanl-c-static-t-loadsect1:chunk-022",
+            "action": "not_scanned_after_four_unique_pages"
+          }
+        ],
+        "exact_prefix_replacements": [
+          {
+            "dense_candidate": {
+              "record_id": "simakey-r-static#simakey-r-static:chunk-016",
+              "document_id": "simakey-r-static",
+              "section_title": "Data line for the Riks method",
+              "section_id": "simakey-r-static",
+              "heading_path": [
+                "*STATIC",
+                "Data line for the Riks method"
+              ],
+              "heading_only": false,
+              "score": 0.6882454752922058,
+              "content_sha256": "89752057a02bbb0415c43e76905e3b898dc15da3e89dcbd75f8140cc2708b400"
+            },
+            "reason": "same_page_as_exact_prefix"
+          }
+        ],
+        "dense_plain_top4": [
+          {
+            "record_id": "simakey-r-static#simakey-r-static:chunk-016",
+            "document_id": "simakey-r-static",
+            "section_title": "Data line for the Riks method",
+            "section_id": "simakey-r-static",
+            "heading_path": [
+              "*STATIC",
+              "Data line for the Riks method"
+            ],
+            "heading_only": false,
+            "score": 0.6882454752922058,
+            "content_sha256": "89752057a02bbb0415c43e76905e3b898dc15da3e89dcbd75f8140cc2708b400"
+          },
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "Loads",
+            "section_id": "simaanl-c-postbuckling-t-loadsect1",
+            "heading_path": [
+              "Unstable Collapse and Postbuckling Analysis",
+              "Loads"
+            ],
+            "heading_only": false,
+            "score": 0.7172660827636719,
+            "content_sha256": "c9744322b6d889baa303f418191fb071b91feaccd0933890b7646a967fabab5d"
+          },
+          {
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "document_id": "simaanl-c-static",
+            "section_title": "Unstable Problems",
+            "section_id": "simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+            "heading_path": [
+              "Static Stress Analysis",
+              "Nonlinear Static Analysis",
+              "Unstable Problems"
+            ],
+            "heading_only": false,
+            "score": 0.7652134895324707,
+            "content_sha256": "655627877cfd8bc97b15a7b1aed63998db3234fecef8cbea093dc831c185833a"
+          },
+          {
+            "record_id": "simaanl-c-visco#simaanl-c-visco-t-loadsect1:chunk-017",
+            "document_id": "simaanl-c-visco",
+            "section_title": "Loads",
+            "section_id": "simaanl-c-visco-t-loadsect1",
+            "heading_path": [
+              "Quasi-Static Analysis",
+              "Loads"
+            ],
+            "heading_only": false,
+            "score": 0.8361732363700867,
+            "content_sha256": "01dde9263a42f87d872a82f091588fa5ef7752637b281ed8e84bf6a0378d24b7"
+          }
+        ],
+        "bm25_parent_top4": [
+          {
+            "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "document_id": "simaanl-c-static",
+            "section_title": "Unstable Problems",
+            "section_id": "simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+            "heading_path": [
+              "Static Stress Analysis",
+              "Nonlinear Static Analysis",
+              "Unstable Problems"
+            ],
+            "heading_only": false,
+            "score": 60.28870440330849,
+            "content_sha256": "655627877cfd8bc97b15a7b1aed63998db3234fecef8cbea093dc831c185833a"
+          },
+          {
+            "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-007",
+            "document_id": "simaanl-c-postbuckling",
+            "section_title": "Proportional Loading",
+            "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+            "heading_path": [
+              "Unstable Collapse and Postbuckling Analysis",
+              "The Riks Method",
+              "Proportional Loading"
+            ],
+            "heading_only": false,
+            "score": 59.4288465976037,
+            "content_sha256": "44e799fc1c4f93af42c7827f025a9b98b9fa85873857747e82b257b7baa3a4a2"
+          },
+          {
+            "record_id": "simakey-r-static#simakey-r-static:chunk-015",
+            "document_id": "simakey-r-static",
+            "section_title": "Data line for the Riks method",
+            "section_id": "simakey-r-static",
+            "heading_path": [
+              "*STATIC",
+              "Data line for the Riks method"
+            ],
+            "heading_only": false,
+            "score": 57.54270450646733,
+            "content_sha256": "9a344052167277c7fbf2e5e23687ddd429536723b43c940e89bb8bf78a484670"
+          },
+          {
+            "record_id": "simakey-r-step#simakey-r-step-t-BeginningAStepInAnASAnalysis-abqkeysubsection1:chunk-004",
+            "document_id": "simakey-r-step",
+            "section_title": "Optional parameters",
+            "section_id": "simakey-r-step-t-BeginningAStepInAnASAnalysis-abqkeysubsection1",
+            "heading_path": [
+              "*STEP",
+              "Beginning a step in an Abaqus/Standard analysis",
+              "Optional parameters"
+            ],
+            "heading_only": false,
+            "score": 44.84327851939009,
+            "content_sha256": "02467413570cb5c44e21798a93012b438823ab64fa4c4d901544d8a7f205f10c"
+          }
+        ],
+        "bm25_scored_records": 28717
+      }
+    },
+    {
+      "id": "recorded-solver-diagnostic-1",
+      "old": {
+        "query_tokens": 124,
+        "actual_candidate_k": [
+          16
+        ],
+        "source_page_records": 48,
+        "targets": [
+          {
+            "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+            "document_id": "simaout-c-dboutput-frequency",
+            "section_title": "Time Domain Analysis: Time Incrementation",
+            "section_id": "simaout-c-dboutput-freq-std",
+            "heading_path": [],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "9cfcf115142cb1371bd3fbb2a6f44899fa2a84ac64b88b9fd27b3662d4536ccd",
+            "production_candidates": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-023",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Time Domain Analysis: Specifying Output Frequency in Time Points",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "1ed0638f12a35a71961cc142eaa543739437e84ff6441773e635a0b0ecd62ea8",
+                "rank": 16
+              },
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": 44,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-023",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Time Domain Analysis: Specifying Output Frequency in Time Points",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "1ed0638f12a35a71961cc142eaa543739437e84ff6441773e635a0b0ecd62ea8",
+                "rank": 16
+              },
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 14,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-024",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Time Domain Analysis: Specifying Output Frequency in Time Points",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "045afd51011a50eeb5f0793957ae8ef10a181b39b6e74dad758b305eaae2ec4a",
+                "rank": 3
+              },
+              "in_final_top4": false
+            },
+            "token_count_without_padding_or_truncation": 210,
+            "actual_selection_action": "not_in_actual_candidate_batch",
+            "candidate_delivered_excerpt_characters": 599,
+            "candidate_delivered_excerpt_sha256": "04e9ed672c4dbe56740cac91e2ef55f9525b04d7a46293ea1207de5249a49d67",
+            "full_normalized_characters": 1025,
+            "minimum_increment_exception_marker_in_full": true,
+            "minimum_increment_exception_marker_in_excerpt": true,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          },
+          {
+            "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-027",
+            "document_id": "simaout-c-dboutput-frequency",
+            "section_title": "Time Domain Analysis: Time Incrementation",
+            "section_id": "simaout-c-dboutput-freq-std",
+            "heading_path": [],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "b1e1e25119956e69e938486098a1c72bbb8dff11ac53247726f97c22b2e95734",
+            "production_candidates": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-023",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Time Domain Analysis: Specifying Output Frequency in Time Points",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "1ed0638f12a35a71961cc142eaa543739437e84ff6441773e635a0b0ecd62ea8",
+                "rank": 16
+              },
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": 37,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-023",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Time Domain Analysis: Specifying Output Frequency in Time Points",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "1ed0638f12a35a71961cc142eaa543739437e84ff6441773e635a0b0ecd62ea8",
+                "rank": 16
+              },
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 9,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-024",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Time Domain Analysis: Specifying Output Frequency in Time Points",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "045afd51011a50eeb5f0793957ae8ef10a181b39b6e74dad758b305eaae2ec4a",
+                "rank": 3
+              },
+              "in_final_top4": false
+            },
+            "token_count_without_padding_or_truncation": 96,
+            "actual_selection_action": "not_in_actual_candidate_batch",
+            "candidate_delivered_excerpt_characters": 457,
+            "candidate_delivered_excerpt_sha256": "92d27167bdd1b90ebcc2a5efa3d70e5ca7dcf5ad96d656b9f030d9d57d128eca",
+            "full_normalized_characters": 457,
+            "minimum_increment_exception_marker_in_full": false,
+            "minimum_increment_exception_marker_in_excerpt": false,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          }
+        ],
+        "actual_dense_candidate_actions": [
+          {
+            "rank": 1,
+            "record_id": "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83:chunk-005",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 2,
+            "record_id": "simaout-c-output#simaout-c-output-message:chunk-054",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 3,
+            "record_id": "simaout-c-ov#simaout-c-ov:chunk-002",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 4,
+            "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-024",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 5,
+            "record_id": "simaout-c-errorindicatoroutput#simaout-c-errorindicatoroutput-t-ErrorIndicatorAndBaseSolutionVariablesAvailableInAS-sma-topic3:chunk-010",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 6,
+            "record_id": "simakey-r-geostatic#simakey-r-geostatic:chunk-007",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 7,
+            "record_id": "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-SelectingTheIncrementationOutputVariables-sma-topic81:chunk-001",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 8,
+            "record_id": "simakey-r-incrementationoutput#simakey-r-incrementationoutput:chunk-005",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 9,
+            "record_id": "simaout-c-dboutput-incrementation#summary",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 10,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-013",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 11,
+            "record_id": "simaout-c-output#simaout-c-output-message:chunk-063",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 12,
+            "record_id": "simaout-c-dboutput-defaultoutput#simaout-c-dboutput-termination:chunk-006",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 13,
+            "record_id": "simaout-c-output#simaout-c-output-t-RequestingOutputInMultipleSteps-sma-topic25:chunk-078",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 14,
+            "record_id": "simaanl-c-exptostd#simaanl-c-exptostd-t-outputsect1:chunk-067",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 15,
+            "record_id": "simaout-c-printfile#simaout-c-printfile-t-RequestingOutputToTheDataAndResultsFiles-sma-topic1:chunk-009",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 16,
+            "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-023",
+            "action": "not_scanned_after_four_unique_pages"
+          }
+        ],
+        "exact_prefix_replacements": [
+          {
+            "dense_candidate": {
+              "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-024",
+              "document_id": "simakey-r-output",
+              "section_title": "The following parameters are optional and valid only if the parameter is included",
+              "section_id": "simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2",
+              "heading_path": [],
+              "heading_only": false,
+              "score": 0.6678937077522278,
+              "content_sha256": "b58269552737d854df2d14b27c4c34c9fd22f7b93bd8e3d7063d94f58afac21d"
+            },
+            "reason": "final_top4_capacity_after_exact_prefix"
+          }
+        ],
+        "dense_plain_top4": [
+          {
+            "record_id": "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83:chunk-005",
+            "document_id": "simaout-c-dboutput-incrementation",
+            "section_title": "Requesting Preselected Output",
+            "section_id": "simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83",
+            "heading_path": [],
+            "heading_only": true,
+            "score": 0.6300475597381592,
+            "content_sha256": "21d76b17efa1b3ce2f6d9aaeca08c3dfe621a5b85d7581228ceadb97d2851188"
+          },
+          {
+            "record_id": "simaout-c-output#simaout-c-output-message:chunk-054",
+            "document_id": "simaout-c-output",
+            "section_title": "The Message File",
+            "section_id": "simaout-c-output-message",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.6551544666290283,
+            "content_sha256": "d9afbf535632ce8b4d7562dbdd6d483f7cb5a003a071ea8f7df635a95d47600e"
+          },
+          {
+            "record_id": "simaout-c-ov#simaout-c-ov:chunk-002",
+            "document_id": "simaout-c-ov",
+            "section_title": "Abaqus Output Guide",
+            "section_id": "simaout-c-ov",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.6611375212669373,
+            "content_sha256": "a6927656cecd0529a400091167b53e59f198e917161692865fea95669b43fefb"
+          },
+          {
+            "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-024",
+            "document_id": "simakey-r-output",
+            "section_title": "The following parameters are optional and valid only if the parameter is included",
+            "section_id": "simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.6678937077522278,
+            "content_sha256": "b58269552737d854df2d14b27c4c34c9fd22f7b93bd8e3d7063d94f58afac21d"
+          }
+        ],
+        "bm25_parent_top4": [
+          {
+            "record_id": "simakey-r-controls#simakey-r-controls:chunk-032",
+            "document_id": "simakey-r-controls",
+            "section_title": "Data lines for =",
+            "section_id": "simakey-r-controls",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 48.089967027416954,
+            "content_sha256": "cde566e1ccf01b74b8cfd42ff5d5cf3a6981b6b694b90b65d18ac0ccd8403c52"
+          },
+          {
+            "record_id": "simakey-r-coupledthermal-electrochemical#simakey-r-coupledthermal-electrochemical:chunk-005",
+            "document_id": "simakey-r-coupledthermal-electrochemical",
+            "section_title": "Data line to define incrementation",
+            "section_id": "simakey-r-coupledthermal-electrochemical",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 45.91915996174204,
+            "content_sha256": "686f807a9a5c271713d1559291dcc62af9521e87303ef271bc0de9c1242dbec2"
+          },
+          {
+            "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-024",
+            "document_id": "simaout-c-dboutput-frequency",
+            "section_title": "Time Domain Analysis: Specifying Output Frequency in Time Points",
+            "section_id": "simaout-c-dboutput-freq-std",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 45.34506282975942,
+            "content_sha256": "045afd51011a50eeb5f0793957ae8ef10a181b39b6e74dad758b305eaae2ec4a"
+          },
+          {
+            "record_id": "simaanl-r-wn#simaanl-r-wn:chunk-107",
+            "document_id": "simaanl-r-wn",
+            "section_title": "What's New",
+            "section_id": "simaanl-r-wn",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 45.14598158066794,
+            "content_sha256": "db8fdf7c062f175e0855ea82b88e37826ff9db243f68338ffe324abf2f4d8c89"
+          }
+        ],
+        "bm25_scored_records": 27406
+      },
+      "new": {
+        "query_tokens": 124,
+        "actual_candidate_k": [
+          16
+        ],
+        "source_page_records": 48,
+        "targets": [
+          {
+            "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+            "document_id": "simaout-c-dboutput-frequency",
+            "section_title": "Time Domain Analysis: Time Incrementation",
+            "section_id": "simaout-c-dboutput-freq-std",
+            "heading_path": [
+              "Controlling the Frequency of Output to the Output Database",
+              "Controlling the Output Frequency in Abaqus/Standard",
+              "Time Domain Analysis: Time Incrementation"
+            ],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "a8df2c35939b40737b8b5952e29eeb3f22295d47ff18f8d728e0a00607348562",
+            "production_candidates": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": null,
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-020",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Time Domain Analysis: Specifying Output Frequency in Regular Time Interval Size",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [
+                  "Controlling the Frequency of Output to the Output Database",
+                  "Controlling the Output Frequency in Abaqus/Standard",
+                  "Time Domain Analysis: Specifying Output Frequency in Regular Time Interval Size"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "ce770151957cc17f425dc6bb194f0d9d9be65c0f6d8c9d09e0f7af6cc1844405",
+                "rank": 23
+              },
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 13,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-024",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Time Domain Analysis: Specifying Output Frequency in Time Points",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [
+                  "Controlling the Frequency of Output to the Output Database",
+                  "Controlling the Output Frequency in Abaqus/Standard",
+                  "Time Domain Analysis: Specifying Output Frequency in Time Points"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "ecdd4eb00a498401d769c1367f2ec891ba5dac61221b3ab191af1204723f8d63",
+                "rank": 2
+              },
+              "in_final_top4": false
+            },
+            "token_count_without_padding_or_truncation": 231,
+            "actual_selection_action": "not_in_actual_candidate_batch",
+            "candidate_delivered_excerpt_characters": 600,
+            "candidate_delivered_excerpt_sha256": "6118dd3ad4d74ddceb127508a2baf0964ddd6e47b142b4a397bd4456b1d054bb",
+            "full_normalized_characters": 1140,
+            "minimum_increment_exception_marker_in_full": true,
+            "minimum_increment_exception_marker_in_excerpt": false,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          },
+          {
+            "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-027",
+            "document_id": "simaout-c-dboutput-frequency",
+            "section_title": "Time Domain Analysis: Time Incrementation",
+            "section_id": "simaout-c-dboutput-freq-std",
+            "heading_path": [
+              "Controlling the Frequency of Output to the Output Database",
+              "Controlling the Output Frequency in Abaqus/Standard",
+              "Time Domain Analysis: Time Incrementation"
+            ],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "8da3f8fa11582f5bf8c75316e566bc4d011afad6597c221a56ac19e4e374f13f",
+            "production_candidates": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": null,
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-020",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Time Domain Analysis: Specifying Output Frequency in Regular Time Interval Size",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [
+                  "Controlling the Frequency of Output to the Output Database",
+                  "Controlling the Output Frequency in Abaqus/Standard",
+                  "Time Domain Analysis: Specifying Output Frequency in Regular Time Interval Size"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "ce770151957cc17f425dc6bb194f0d9d9be65c0f6d8c9d09e0f7af6cc1844405",
+                "rank": 23
+              },
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 12,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-024",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Time Domain Analysis: Specifying Output Frequency in Time Points",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [
+                  "Controlling the Frequency of Output to the Output Database",
+                  "Controlling the Output Frequency in Abaqus/Standard",
+                  "Time Domain Analysis: Specifying Output Frequency in Time Points"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "ecdd4eb00a498401d769c1367f2ec891ba5dac61221b3ab191af1204723f8d63",
+                "rank": 2
+              },
+              "in_final_top4": false
+            },
+            "token_count_without_padding_or_truncation": 117,
+            "actual_selection_action": "not_in_actual_candidate_batch",
+            "candidate_delivered_excerpt_characters": 572,
+            "candidate_delivered_excerpt_sha256": "d275b532694955a827017cf0df4e4f07344af1f8e349ef26d13b0d65b4dfd401",
+            "full_normalized_characters": 572,
+            "minimum_increment_exception_marker_in_full": false,
+            "minimum_increment_exception_marker_in_excerpt": false,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          }
+        ],
+        "actual_dense_candidate_actions": [
+          {
+            "rank": 1,
+            "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-023",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 2,
+            "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-022",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 3,
+            "record_id": "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83:chunk-005",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 4,
+            "record_id": "simaout-c-ov#simaout-c-ov:chunk-002",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 5,
+            "record_id": "simaout-c-output#simaout-c-output-message:chunk-054",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 6,
+            "record_id": "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-SelectingTheIncrementationOutputVariables-sma-topic81:chunk-001",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 7,
+            "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-018",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 8,
+            "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1:chunk-003",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 9,
+            "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-028",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 10,
+            "record_id": "simaout-c-dboutput-incrementation#summary",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 11,
+            "record_id": "simaout-c-output#simaout-c-output-t-RequestingOutputInMultipleSteps-sma-topic25:chunk-078",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 12,
+            "record_id": "simaout-c-errorindicatoroutput#simaout-c-errorindicatoroutput-t-ErrorIndicatorAndBaseSolutionVariablesAvailableInAS-sma-topic3:chunk-010",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 13,
+            "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1:chunk-007",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 14,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-013",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 15,
+            "record_id": "simaout-c-output#simaout-c-output-message:chunk-063",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 16,
+            "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-025",
+            "action": "not_scanned_after_four_unique_pages"
+          }
+        ],
+        "exact_prefix_replacements": [
+          {
+            "dense_candidate": {
+              "record_id": "simaout-c-output#simaout-c-output-message:chunk-054",
+              "document_id": "simaout-c-output",
+              "section_title": "The Abaqus/Standard Message File",
+              "section_id": "simaout-c-output-message",
+              "heading_path": [
+                "About Output",
+                "The Message File in Abaqus/Standard and Abaqus/Explicit",
+                "The Abaqus/Standard Message File"
+              ],
+              "heading_only": false,
+              "score": 0.6890052556991577,
+              "content_sha256": "86c5ace0c9bb1dbcae942c3c8df8e72b9dbbf498756a2f4a9bc41ffe098fe920"
+            },
+            "reason": "final_top4_capacity_after_exact_prefix"
+          }
+        ],
+        "dense_plain_top4": [
+          {
+            "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-023",
+            "document_id": "simakey-r-output",
+            "section_title": "The following parameters are optional and valid only if the FIELD parameter is included",
+            "section_id": "simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2",
+            "heading_path": [
+              "*OUTPUT",
+              "Defining output requests in an Abaqus/Explicit analysis",
+              "The following parameters are optional and valid only if the FIELD parameter is included"
+            ],
+            "heading_only": false,
+            "score": 0.5504167079925537,
+            "content_sha256": "10e3e108fea9acf7a157610e42546eef7da520b9d541ab59e40533184204f68b"
+          },
+          {
+            "record_id": "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83:chunk-005",
+            "document_id": "simaout-c-dboutput-incrementation",
+            "section_title": "Requesting Preselected Output",
+            "section_id": "simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83",
+            "heading_path": [
+              "Time Incrementation Output in Abaqus/Explicit",
+              "Requesting Preselected Output"
+            ],
+            "heading_only": true,
+            "score": 0.6099982261657715,
+            "content_sha256": "f87dbc20ca5dae96107d1e7cddc56a121861786c3ae1d2fd64786818cc583527"
+          },
+          {
+            "record_id": "simaout-c-ov#simaout-c-ov:chunk-002",
+            "document_id": "simaout-c-ov",
+            "section_title": "Abaqus Output Guide",
+            "section_id": "simaout-c-ov",
+            "heading_path": [
+              "Abaqus Output Guide"
+            ],
+            "heading_only": false,
+            "score": 0.6611375212669373,
+            "content_sha256": "a6927656cecd0529a400091167b53e59f198e917161692865fea95669b43fefb"
+          },
+          {
+            "record_id": "simaout-c-output#simaout-c-output-message:chunk-054",
+            "document_id": "simaout-c-output",
+            "section_title": "The Abaqus/Standard Message File",
+            "section_id": "simaout-c-output-message",
+            "heading_path": [
+              "About Output",
+              "The Message File in Abaqus/Standard and Abaqus/Explicit",
+              "The Abaqus/Standard Message File"
+            ],
+            "heading_only": false,
+            "score": 0.6890052556991577,
+            "content_sha256": "86c5ace0c9bb1dbcae942c3c8df8e72b9dbbf498756a2f4a9bc41ffe098fe920"
+          }
+        ],
+        "bm25_parent_top4": [
+          {
+            "record_id": "simakey-r-controls#simakey-r-controls:chunk-032",
+            "document_id": "simakey-r-controls",
+            "section_title": "Data lines for PARAMETERS=TIME INCREMENTATION",
+            "section_id": "simakey-r-controls",
+            "heading_path": [
+              "*CONTROLS",
+              "Data lines for PARAMETERS=TIME INCREMENTATION"
+            ],
+            "heading_only": false,
+            "score": 53.051632459835204,
+            "content_sha256": "f7753e0a5fe91bcff4fd2a4822a9f579b893e78b9afee2eb84cf70b9535cbf7c"
+          },
+          {
+            "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-024",
+            "document_id": "simaout-c-dboutput-frequency",
+            "section_title": "Time Domain Analysis: Specifying Output Frequency in Time Points",
+            "section_id": "simaout-c-dboutput-freq-std",
+            "heading_path": [
+              "Controlling the Frequency of Output to the Output Database",
+              "Controlling the Output Frequency in Abaqus/Standard",
+              "Time Domain Analysis: Specifying Output Frequency in Time Points"
+            ],
+            "heading_only": false,
+            "score": 46.49508083066486,
+            "content_sha256": "ecdd4eb00a498401d769c1367f2ec891ba5dac61221b3ab191af1204723f8d63"
+          },
+          {
+            "record_id": "simakey-r-coupledthermal-electrochemical#simakey-r-coupledthermal-electrochemical:chunk-005",
+            "document_id": "simakey-r-coupledthermal-electrochemical",
+            "section_title": "Data line to define incrementation",
+            "section_id": "simakey-r-coupledthermal-electrochemical",
+            "heading_path": [
+              "*COUPLED THERMAL-ELECTROCHEMICAL",
+              "Data line to define incrementation"
+            ],
+            "heading_only": false,
+            "score": 46.231355609990395,
+            "content_sha256": "6a2c722e9480527ac095272bcdbc87fff1d8179532cec2fcd42c479a39384b8c"
+          },
+          {
+            "record_id": "simaout-c-dboutput-requestingoutput-odb#simaout-c-dboutput-requestingoutput-odb:chunk-002",
+            "document_id": "simaout-c-dboutput-requestingoutput-odb",
+            "section_title": "Requesting Output to the Output Database",
+            "section_id": "simaout-c-dboutput-requestingoutput-odb",
+            "heading_path": [
+              "Requesting Output to the Output Database"
+            ],
+            "heading_only": false,
+            "score": 44.83596626314908,
+            "content_sha256": "df5841ac78469c98ed8035d76b87665619f0a7089554e1a39c2258590afa5867"
+          }
+        ],
+        "bm25_scored_records": 28086
+      }
+    },
+    {
+      "id": "recorded-solver-diagnostic-2",
+      "old": {
+        "query_tokens": 143,
+        "actual_candidate_k": [
+          16
+        ],
+        "source_page_records": 48,
+        "targets": [
+          {
+            "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+            "document_id": "simaout-c-dboutput-frequency",
+            "section_title": "Time Domain Analysis: Time Incrementation",
+            "section_id": "simaout-c-dboutput-freq-std",
+            "heading_path": [],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "9cfcf115142cb1371bd3fbb2a6f44899fa2a84ac64b88b9fd27b3662d4536ccd",
+            "production_candidates": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": null,
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": 52,
+              "earlier_same_page_representative": null,
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 1,
+              "earlier_same_page_representative": null,
+              "in_final_top4": true
+            },
+            "token_count_without_padding_or_truncation": 210,
+            "actual_selection_action": "not_in_actual_candidate_batch",
+            "candidate_delivered_excerpt_characters": 599,
+            "candidate_delivered_excerpt_sha256": "04e9ed672c4dbe56740cac91e2ef55f9525b04d7a46293ea1207de5249a49d67",
+            "full_normalized_characters": 1025,
+            "minimum_increment_exception_marker_in_full": true,
+            "minimum_increment_exception_marker_in_excerpt": true,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          },
+          {
+            "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-027",
+            "document_id": "simaout-c-dboutput-frequency",
+            "section_title": "Time Domain Analysis: Time Incrementation",
+            "section_id": "simaout-c-dboutput-freq-std",
+            "heading_path": [],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "b1e1e25119956e69e938486098a1c72bbb8dff11ac53247726f97c22b2e95734",
+            "production_candidates": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": null,
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Time Domain Analysis: Time Incrementation",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "9cfcf115142cb1371bd3fbb2a6f44899fa2a84ac64b88b9fd27b3662d4536ccd",
+                "rank": 52
+              },
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 19,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Time Domain Analysis: Time Incrementation",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "9cfcf115142cb1371bd3fbb2a6f44899fa2a84ac64b88b9fd27b3662d4536ccd",
+                "rank": 1
+              },
+              "in_final_top4": false
+            },
+            "token_count_without_padding_or_truncation": 96,
+            "actual_selection_action": "not_in_actual_candidate_batch",
+            "candidate_delivered_excerpt_characters": 457,
+            "candidate_delivered_excerpt_sha256": "92d27167bdd1b90ebcc2a5efa3d70e5ca7dcf5ad96d656b9f030d9d57d128eca",
+            "full_normalized_characters": 457,
+            "minimum_increment_exception_marker_in_full": false,
+            "minimum_increment_exception_marker_in_excerpt": false,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          }
+        ],
+        "actual_dense_candidate_actions": [
+          {
+            "rank": 1,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-013",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 2,
+            "record_id": "simakey-r-geostatic#simakey-r-geostatic:chunk-007",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 3,
+            "record_id": "simaout-c-errorindicatoroutput#simaout-c-errorindicatoroutput-t-ErrorIndicatorAndBaseSolutionVariablesAvailableInAS-sma-topic3:chunk-010",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 4,
+            "record_id": "simamod-c-model#simamod-c-model-history:chunk-017",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 5,
+            "record_id": "simaanl-c-convergencechecktype#summary",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 6,
+            "record_id": "simakey-r-import#simakey-r-import:chunk-010",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 7,
+            "record_id": "simakey-r-steadystatetransport#simakey-r-steadystatetransport:chunk-012",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 8,
+            "record_id": "simaanl-c-linearnonlinear#simaanl-c-linearnonlinear-t-GeneralAnalysisSteps-sma-topic1:chunk-014",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 9,
+            "record_id": "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83:chunk-005",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 10,
+            "record_id": "simakey-r-soils#simakey-r-soils:chunk-013",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 11,
+            "record_id": "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-SelectingTheIncrementationOutputVariables-sma-topic81:chunk-001",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 12,
+            "record_id": "simaanl-c-over#sma-topic_m3q_nnp_hyb:chunk-042",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 13,
+            "record_id": "simaout-c-dboutput-incrementation#summary",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 14,
+            "record_id": "simaout-c-recordswrittenonceperincrement#simaout-c-format-t-RecordsWrittenOncePerIncrement-recordlist3:chunk-002",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 15,
+            "record_id": "simaanl-c-exptostd#simaanl-c-exptostd-t-outputsect1:chunk-067",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 16,
+            "record_id": "simaanl-c-visco#simaanl-c-visco-t-Incrementation-sma-topic1:chunk-004",
+            "action": "not_scanned_after_four_unique_pages"
+          }
+        ],
+        "exact_prefix_replacements": [
+          {
+            "dense_candidate": {
+              "record_id": "simamod-c-model#simamod-c-model-history:chunk-017",
+              "document_id": "simamod-c-model",
+              "section_title": "History Data",
+              "section_id": "simamod-c-model-history",
+              "heading_path": [],
+              "heading_only": false,
+              "score": 0.7442829608917236,
+              "content_sha256": "cc79279659a495cf416ab5007992f870ad831de9d97dc7ea260b87f66389d97e"
+            },
+            "reason": "final_top4_capacity_after_exact_prefix"
+          }
+        ],
+        "dense_plain_top4": [
+          {
+            "record_id": "simakey-r-static#simakey-r-static:chunk-013",
+            "document_id": "simakey-r-static",
+            "section_title": "Data line for a general static analysis",
+            "section_id": "simakey-r-static",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.6959986090660095,
+            "content_sha256": "d1c9affa0aa2c87b46a47d274e145c6acd7f1e846cab1c1708a472d664aad2ab"
+          },
+          {
+            "record_id": "simakey-r-geostatic#simakey-r-geostatic:chunk-007",
+            "document_id": "simakey-r-geostatic",
+            "section_title": "Data line to define automatic time incrementation",
+            "section_id": "simakey-r-geostatic",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.7032934427261353,
+            "content_sha256": "00b35d1d5e2aa4c457fec406eee5c7b71302eb753c7a8a2ed5ba72468e22d8ce"
+          },
+          {
+            "record_id": "simaout-c-errorindicatoroutput#simaout-c-errorindicatoroutput-t-ErrorIndicatorAndBaseSolutionVariablesAvailableInAS-sma-topic3:chunk-010",
+            "document_id": "simaout-c-errorindicatoroutput",
+            "section_title": "Effect of Error Indicator Output Requests on Solution Time",
+            "section_id": "simaout-c-errorindicatoroutput-t-ErrorIndicatorAndBaseSolutionVariablesAvailableInAS-sma-topic3",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.7414064407348633,
+            "content_sha256": "389539aba6ecdbb68412ae5a175180c6ae5d43ff870080924ba634bfb0b51a1f"
+          },
+          {
+            "record_id": "simamod-c-model#simamod-c-model-history:chunk-017",
+            "document_id": "simamod-c-model",
+            "section_title": "History Data",
+            "section_id": "simamod-c-model-history",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 0.7442829608917236,
+            "content_sha256": "cc79279659a495cf416ab5007992f870ad831de9d97dc7ea260b87f66389d97e"
+          }
+        ],
+        "bm25_parent_top4": [
+          {
+            "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+            "document_id": "simaout-c-dboutput-frequency",
+            "section_title": "Time Domain Analysis: Time Incrementation",
+            "section_id": "simaout-c-dboutput-freq-std",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 58.20415863983144,
+            "content_sha256": "9cfcf115142cb1371bd3fbb2a6f44899fa2a84ac64b88b9fd27b3662d4536ccd"
+          },
+          {
+            "record_id": "simakey-r-coupledthermal-electrochemical#simakey-r-coupledthermal-electrochemical:chunk-005",
+            "document_id": "simakey-r-coupledthermal-electrochemical",
+            "section_title": "Data line to define incrementation",
+            "section_id": "simakey-r-coupledthermal-electrochemical",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 56.74927169380682,
+            "content_sha256": "686f807a9a5c271713d1559291dcc62af9521e87303ef271bc0de9c1242dbec2"
+          },
+          {
+            "record_id": "simakey-r-coupledthermal-electrical#simakey-r-coupledthermal-electrical:chunk-006",
+            "document_id": "simakey-r-coupledthermal-electrical",
+            "section_title": "Data line to define incrementation and steady state",
+            "section_id": "simakey-r-coupledthermal-electrical",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 55.22463996648064,
+            "content_sha256": "1a9c3523f867cb5a5943a5e2993d737746470cc1a47e3db3c13fbc8f67eb1bc9"
+          },
+          {
+            "record_id": "simakey-r-heattransfer#simakey-r-heattransfer:chunk-007",
+            "document_id": "simakey-r-heattransfer",
+            "section_title": "Data line to control incrementation and steady-state conditions in a pure heat transfer analysis",
+            "section_id": "simakey-r-heattransfer",
+            "heading_path": [],
+            "heading_only": false,
+            "score": 55.00080111592716,
+            "content_sha256": "09bb9ca5ababe6ccd57fc680b2481f8136191c46292ca999ae0014a2a92b2eb1"
+          }
+        ],
+        "bm25_scored_records": 28254
+      },
+      "new": {
+        "query_tokens": 143,
+        "actual_candidate_k": [
+          16
+        ],
+        "source_page_records": 48,
+        "targets": [
+          {
+            "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+            "document_id": "simaout-c-dboutput-frequency",
+            "section_title": "Time Domain Analysis: Time Incrementation",
+            "section_id": "simaout-c-dboutput-freq-std",
+            "heading_path": [
+              "Controlling the Frequency of Output to the Output Database",
+              "Controlling the Output Frequency in Abaqus/Standard",
+              "Time Domain Analysis: Time Incrementation"
+            ],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "a8df2c35939b40737b8b5952e29eeb3f22295d47ff18f8d728e0a00607348562",
+            "production_candidates": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": null,
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-012",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Controlling Output Frequency in a Time Domain Analysis",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [
+                  "Controlling the Frequency of Output to the Output Database",
+                  "Controlling the Output Frequency in Abaqus/Standard",
+                  "Controlling Output Frequency in a Time Domain Analysis"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "604dfca0804ebea9998d03c58b7fa69c565de2b0f84ee04b808fb1e61e0ff921",
+                "rank": 60
+              },
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 1,
+              "earlier_same_page_representative": null,
+              "in_final_top4": true
+            },
+            "token_count_without_padding_or_truncation": 231,
+            "actual_selection_action": "not_in_actual_candidate_batch",
+            "candidate_delivered_excerpt_characters": 600,
+            "candidate_delivered_excerpt_sha256": "6118dd3ad4d74ddceb127508a2baf0964ddd6e47b142b4a397bd4456b1d054bb",
+            "full_normalized_characters": 1140,
+            "minimum_increment_exception_marker_in_full": true,
+            "minimum_increment_exception_marker_in_excerpt": false,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          },
+          {
+            "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-027",
+            "document_id": "simaout-c-dboutput-frequency",
+            "section_title": "Time Domain Analysis: Time Incrementation",
+            "section_id": "simaout-c-dboutput-freq-std",
+            "heading_path": [
+              "Controlling the Frequency of Output to the Output Database",
+              "Controlling the Output Frequency in Abaqus/Standard",
+              "Time Domain Analysis: Time Incrementation"
+            ],
+            "heading_only": false,
+            "score": null,
+            "content_sha256": "8da3f8fa11582f5bf8c75316e566bc4d011afad6597c221a56ac19e4e374f13f",
+            "production_candidates": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": null,
+              "in_final_top4": false
+            },
+            "dense_top100": {
+              "rank_before_page_dedupe": null,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-012",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Controlling Output Frequency in a Time Domain Analysis",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [
+                  "Controlling the Frequency of Output to the Output Database",
+                  "Controlling the Output Frequency in Abaqus/Standard",
+                  "Controlling Output Frequency in a Time Domain Analysis"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "604dfca0804ebea9998d03c58b7fa69c565de2b0f84ee04b808fb1e61e0ff921",
+                "rank": 60
+              },
+              "in_final_top4": false
+            },
+            "bm25_all_scored": {
+              "rank_before_page_dedupe": 24,
+              "earlier_same_page_representative": {
+                "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+                "document_id": "simaout-c-dboutput-frequency",
+                "section_title": "Time Domain Analysis: Time Incrementation",
+                "section_id": "simaout-c-dboutput-freq-std",
+                "heading_path": [
+                  "Controlling the Frequency of Output to the Output Database",
+                  "Controlling the Output Frequency in Abaqus/Standard",
+                  "Time Domain Analysis: Time Incrementation"
+                ],
+                "heading_only": false,
+                "score": null,
+                "content_sha256": "a8df2c35939b40737b8b5952e29eeb3f22295d47ff18f8d728e0a00607348562",
+                "rank": 1
+              },
+              "in_final_top4": false
+            },
+            "token_count_without_padding_or_truncation": 117,
+            "actual_selection_action": "not_in_actual_candidate_batch",
+            "candidate_delivered_excerpt_characters": 572,
+            "candidate_delivered_excerpt_sha256": "d275b532694955a827017cf0df4e4f07344af1f8e349ef26d13b0d65b4dfd401",
+            "full_normalized_characters": 572,
+            "minimum_increment_exception_marker_in_full": false,
+            "minimum_increment_exception_marker_in_excerpt": false,
+            "delivery_scope": "Hypothetical rendering of inspected target, not sent to an Agent in this audit"
+          }
+        ],
+        "actual_dense_candidate_actions": [
+          {
+            "rank": 1,
+            "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-023",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 2,
+            "record_id": "simakey-r-static#simakey-r-static:chunk-013",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 3,
+            "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-022",
+            "action": "skipped_same_page"
+          },
+          {
+            "rank": 4,
+            "record_id": "simaanl-c-convergencechecktype#summary",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 5,
+            "record_id": "simamod-c-model#simamod-c-model-history:chunk-017",
+            "action": "selected_as_page_representative"
+          },
+          {
+            "rank": 6,
+            "record_id": "simaanl-c-over#sma-topic_m3q_nnp_hyb:chunk-042",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 7,
+            "record_id": "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83:chunk-005",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 8,
+            "record_id": "simakey-r-import#simakey-r-import:chunk-010",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 9,
+            "record_id": "simakey-r-dynamic#simakey-r-hexpdynamic:chunk-034",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 10,
+            "record_id": "simaout-c-recordswrittenonceperincrement#simaout-c-format-t-RecordsWrittenOncePerIncrement-recordlist3:chunk-002",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 11,
+            "record_id": "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-SelectingTheIncrementationOutputVariables-sma-topic81:chunk-001",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 12,
+            "record_id": "simaout-c-dboutput-incrementation#summary",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 13,
+            "record_id": "simakey-r-soils#simakey-r-soils:chunk-013",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 14,
+            "record_id": "simaanl-c-linearnonlinear#simaanl-c-linearnonlinear-t-GeneralAnalysisSteps-sma-topic1:chunk-014",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 15,
+            "record_id": "simaanl-c-over#simaanl-c-over-incrementation:chunk-032",
+            "action": "not_scanned_after_four_unique_pages"
+          },
+          {
+            "rank": 16,
+            "record_id": "simaanl-c-over#simaanl-c-over-incrementation:chunk-029",
+            "action": "not_scanned_after_four_unique_pages"
+          }
+        ],
+        "exact_prefix_replacements": [
+          {
+            "dense_candidate": {
+              "record_id": "simamod-c-model#simamod-c-model-history:chunk-017",
+              "document_id": "simamod-c-model",
+              "section_title": "History Data",
+              "section_id": "simamod-c-model-history",
+              "heading_path": [
+                "Abaqus Model Definition",
+                "History Data"
+              ],
+              "heading_only": false,
+              "score": 0.7597090601921082,
+              "content_sha256": "2878e9fa075ff5673559243e77c3b90c31be202b8c25b7de6dbaf42af5f64ed3"
+            },
+            "reason": "final_top4_capacity_after_exact_prefix"
+          }
+        ],
+        "dense_plain_top4": [
+          {
+            "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-023",
+            "document_id": "simakey-r-output",
+            "section_title": "The following parameters are optional and valid only if the FIELD parameter is included",
+            "section_id": "simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2",
+            "heading_path": [
+              "*OUTPUT",
+              "Defining output requests in an Abaqus/Explicit analysis",
+              "The following parameters are optional and valid only if the FIELD parameter is included"
+            ],
+            "heading_only": false,
+            "score": 0.6821082234382629,
+            "content_sha256": "10e3e108fea9acf7a157610e42546eef7da520b9d541ab59e40533184204f68b"
+          },
+          {
+            "record_id": "simakey-r-static#simakey-r-static:chunk-013",
+            "document_id": "simakey-r-static",
+            "section_title": "Data line for a general static analysis",
+            "section_id": "simakey-r-static",
+            "heading_path": [
+              "*STATIC",
+              "Data line for a general static analysis"
+            ],
+            "heading_only": false,
+            "score": 0.7250378131866455,
+            "content_sha256": "6a3b6568f4f3c9c55f1be1b51257a0259e26460e67096df7466e5530867b5708"
+          },
+          {
+            "record_id": "simaanl-c-convergencechecktype#summary",
+            "document_id": "simaanl-c-convergencechecktype",
+            "section_title": "Modifying the Default Convergence Checks",
+            "section_id": "simaanl-c-convergencechecktype",
+            "heading_path": [
+              "Modifying the Default Convergence Checks"
+            ],
+            "heading_only": false,
+            "score": 0.7444924116134644,
+            "content_sha256": "1808efe84d632e304b444ee944d1935ec17c6c55972a486a66f142cda9c99f03"
+          },
+          {
+            "record_id": "simamod-c-model#simamod-c-model-history:chunk-017",
+            "document_id": "simamod-c-model",
+            "section_title": "History Data",
+            "section_id": "simamod-c-model-history",
+            "heading_path": [
+              "Abaqus Model Definition",
+              "History Data"
+            ],
+            "heading_only": false,
+            "score": 0.7597090601921082,
+            "content_sha256": "2878e9fa075ff5673559243e77c3b90c31be202b8c25b7de6dbaf42af5f64ed3"
+          }
+        ],
+        "bm25_parent_top4": [
+          {
+            "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+            "document_id": "simaout-c-dboutput-frequency",
+            "section_title": "Time Domain Analysis: Time Incrementation",
+            "section_id": "simaout-c-dboutput-freq-std",
+            "heading_path": [
+              "Controlling the Frequency of Output to the Output Database",
+              "Controlling the Output Frequency in Abaqus/Standard",
+              "Time Domain Analysis: Time Incrementation"
+            ],
+            "heading_only": false,
+            "score": 58.718583924344564,
+            "content_sha256": "a8df2c35939b40737b8b5952e29eeb3f22295d47ff18f8d728e0a00607348562"
+          },
+          {
+            "record_id": "simakey-r-coupledthermal-electrochemical#simakey-r-coupledthermal-electrochemical:chunk-005",
+            "document_id": "simakey-r-coupledthermal-electrochemical",
+            "section_title": "Data line to define incrementation",
+            "section_id": "simakey-r-coupledthermal-electrochemical",
+            "heading_path": [
+              "*COUPLED THERMAL-ELECTROCHEMICAL",
+              "Data line to define incrementation"
+            ],
+            "heading_only": false,
+            "score": 57.24103074337979,
+            "content_sha256": "6a2c722e9480527ac095272bcdbc87fff1d8179532cec2fcd42c479a39384b8c"
+          },
+          {
+            "record_id": "simakey-r-heattransfer#simakey-r-heattransfer:chunk-007",
+            "document_id": "simakey-r-heattransfer",
+            "section_title": "Data line to control incrementation and steady-state conditions in a pure heat transfer analysis",
+            "section_id": "simakey-r-heattransfer",
+            "heading_path": [
+              "*HEAT TRANSFER",
+              "Data line to control incrementation and steady-state conditions in a pure heat transfer analysis"
+            ],
+            "heading_only": false,
+            "score": 55.82535128663198,
+            "content_sha256": "c04805dcd14d16e5d92617428932c19ed696dc8aa843fbe544ef724ec7efe130"
+          },
+          {
+            "record_id": "simakey-r-coupledthermal-electrical#simakey-r-coupledthermal-electrical:chunk-006",
+            "document_id": "simakey-r-coupledthermal-electrical",
+            "section_title": "Data line to define incrementation and steady state",
+            "section_id": "simakey-r-coupledthermal-electrical",
+            "heading_path": [
+              "*COUPLED THERMAL-ELECTRICAL",
+              "Data line to define incrementation and steady state"
+            ],
+            "heading_only": false,
+            "score": 55.82360672087535,
+            "content_sha256": "e4fada5e3a5fce36357bd1e8034bf8944d995a5ae1a4ae2526cffbfd7376f0c1"
+          }
+        ],
+        "bm25_scored_records": 28751
+      }
+    }
+  ],
+  "conclusions": [
+    {
+      "id": "coverage",
+      "finding": "The targeted Scripting Reference OdbAssembly page has zero records in both general indices. None of the current Top-4 snippets answers member access. This is an entrypoint/source-coverage gap; changing same-page deduplication cannot create the absent reference.",
+      "scope": "Does not claim every possible document mentioning an ODB set is absent."
+    },
+    {
+      "id": "riks_selection",
+      "finding": "For the new Riks main query, Proportional Loading is raw Dense rank 6 and is actually skipped as a duplicate of the postbuckling page whose Incrementation chunk was selected at rank 3. The Riks Method body is rank 12 but the loop has already stopped after four unique pages. Its absence is not solely an embedding-recall failure.",
+      "scope": "Removing page deduplication alone while keeping raw Top-4 would still not return ranks 6 and 12; a candidate-level passage selection change must be tested."
+    },
+    {
+      "id": "exact_prefix",
+      "finding": "For both Riks queries, plain Dense selects a STATIC Data line for the Riks method passage. The augmented path replaces it with the exact keyword overview from the same page. Thus the weakness is broader than AT: even a genuinely mentioned symbol can replace a more useful passage with a generic cover record.",
+      "scope": "Selection behavior confirmed; no Agent benefit or harm measured."
+    },
+    {
+      "id": "bc_recall",
+      "finding": "The Boundary Conditions body exists, but is absent from raw Dense Top-100 in both indices. Its complete BM25 score ranks are 697 old and 777 new, well outside a useful candidate budget. This is an upstream retrieval failure, not removal of an already-good Top-16 candidate.",
+      "scope": "The relative contributions of question wording, chunk representation and encoder limitations are not yet isolated. The targeted paragraph is evidence, not a complete answer to every aspect of the BC question."
+    },
+    {
+      "id": "warning_bm25_complement",
+      "finding": "For the second warning query, the main Standard exact-time increment-adjustment body is raw and page-deduplicated BM25 rank 1 in both indices. It is absent from the actual Dense Top-16; old diagnostic Dense Top-100 places it at 52, while new Top-100 does not contain it. This is a concrete observed BM25 complement to Dense.",
+      "scope": "One development query, not general Hybrid superiority; RRF was not executed in this audit."
+    },
+    {
+      "id": "warning_first_page_selection",
+      "finding": "For the first warning query, the main adjustment body is BM25 raw rank 14 old / 13 new. BM25 instead selects a same-page Time Points request-definition passage at raw rank 2; the adjustment explanation is discarded by page-level deduplication. BM25 page-hit is not a precise-section answer hit.",
+      "scope": "The second chunk of the target section ranks 9 old / 12 new, but chiefly contains performance consequences. It must not be counted as the complete increment-adjustment explanation solely by section title."
+    },
+    {
+      "id": "at_not_sufficient",
+      "finding": "AT consumes rank 1 in both warning augmented queries. Direct plain-Dense Top-4 in this audit still lacks the exact-time target in both indices. Removing AT would remove an unrelated hit but is not sufficient to solve these warning queries.",
+      "scope": "No AT blacklist or routing change applied."
+    },
+    {
+      "id": "delivery",
+      "finding": "The main exact-time target contains procedure-specific minimum-increment exceptions in its full text. Its hypothetical 600-character return includes the beginning of the However exception clause in the old version, but truncates before that clause in the new version; neither delivers the entire exception list. Rich heading prefixes use body budget; even BM25 rank 1 would not deliver the entire qualified explanation through that formatter.",
+      "scope": "This is a return-format finding, not a claim that the unexecuted Agent actually received or misused it."
+    },
+    {
+      "id": "token_limit_excluded",
+      "finding": "Actual cached MiniLM tokenizer measurements give 99-148 tokens for all five queries, below its 256-token truncation limit. All inspected body-bearing target records are also below 256 tokens. Query/target truncation at the embedding-tokenizer limit does not explain these selected failures.",
+      "scope": "Not an audit of every corpus record; 600-character output truncation is a separate layer."
+    }
+  ],
+  "next_step_recommendation_not_implemented": "Test passage-level candidate selection before irreversible page deduplication, keeping sparse/dense candidates distinguishable and exact mentions non-authoritative. Separately verify a body-first evidence formatter. Do not assume removing AT, adding RRF or increasing K alone solves all needs; the BC query still needs upstream query/representation diagnosis and API members need their own coverage work."
+}

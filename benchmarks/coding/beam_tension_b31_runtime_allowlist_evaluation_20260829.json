@@ -1,0 +1,148 @@
+{
+  "schema_version": "1",
+  "experiment": "beam-tension-b31-v7-runtime-production-allowlist",
+  "date": "2026-08-29",
+  "question": "Can a host-enforced production runtime-file allowlist prevent B31 diagnostic-script drift while preserving the existing dynamic Python, budget, and oracle contract?",
+  "frozen_configuration": {
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "prompt_version": "beam-tension-b31-v1",
+    "api_catalog_mode": "automatic_verified_only",
+    "api_catalog": "var/api-catalog/abaqus-2024-final15",
+    "api_catalog_cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "coder_general_shell_policy": "coder-general-shell-disabled-v1",
+    "coding_decision_output_policy": "decision-output-tool-clarification-v1",
+    "evidence_repair_convergence_policy": "same-api-occurrence-scan-v1",
+    "runtime_script_policy_mode": "production_allowlist",
+    "runtime_script_policy": {
+      "allowed_cae_scripts": ["build_model.py"],
+      "allowed_abaqus_python_scripts": ["extract_results.py"],
+      "allowed_solver_inputs": ["beam_tension.inp"]
+    },
+    "budget": {
+      "max_model_requests": 40,
+      "max_api_lookup_calls": 4,
+      "max_abaqus_calls": 12,
+      "max_solver_calls": 3,
+      "wall_time_seconds": 2700.0
+    },
+    "repeat": 3,
+    "eval_retry": false
+  },
+  "raw_evidence": {
+    "run_root": "D:/abaqus-runs/beam-b31-final15-runtime-allowlist-v1-20260829",
+    "evaluation_summary_sha256": "56e1d42301e642d0774b748d89118f8f1dd77ea4042d51ab2b38ec17b04998c0",
+    "gate_sha256": "ae8ff61d0716674028080f0375ad08a83fd1613edc365ec258edf6ed31110069",
+    "evaluation_report_sha256": "2834a1f59ce8f1971f68180a3607bd70349965412aef6515debfdfc9e6b2ddac"
+  },
+  "result": {
+    "attempts": 3,
+    "passes": 2,
+    "required_passes": 2,
+    "gate_passed": true,
+    "attempts_detail": [
+      {
+        "ordinal": 1,
+        "run_id": "beam-fb15ba29f6a5",
+        "stage": "runtime_budget",
+        "model_requests": 31,
+        "input_tokens": 492940,
+        "output_tokens": 60021,
+        "tool_calls": 34,
+        "api_lookup_calls": 2,
+        "abaqus_calls": 12,
+        "solver_calls": 0,
+        "task_duration_seconds": 807.8309088000024,
+        "history_sha256": "689dd1c2af8bab4c1357af1a76181ee990cadd1e50066bee19a31690521ab922",
+        "runtime_policy_denials": 0,
+        "run_command_calls": 0
+      },
+      {
+        "ordinal": 2,
+        "run_id": "beam-34fbf0b903e5",
+        "stage": "completed",
+        "oracle_passed": true,
+        "model_requests": 9,
+        "input_tokens": 72392,
+        "output_tokens": 11560,
+        "tool_calls": 11,
+        "api_lookup_calls": 0,
+        "abaqus_calls": 3,
+        "solver_calls": 1,
+        "task_duration_seconds": 501.96858530000463,
+        "history_sha256": "b760666fe230743e92586c2f6b5b963a292071ca4db097ae6bc3ab8d05b99cb3",
+        "runtime_policy_denials": 0,
+        "run_command_calls": 0
+      },
+      {
+        "ordinal": 3,
+        "run_id": "beam-e7025a9fc776",
+        "stage": "completed",
+        "oracle_passed": true,
+        "model_requests": 11,
+        "input_tokens": 98098,
+        "output_tokens": 16236,
+        "tool_calls": 14,
+        "api_lookup_calls": 0,
+        "abaqus_calls": 4,
+        "solver_calls": 1,
+        "task_duration_seconds": 145.390573699995,
+        "history_sha256": "e3e4dfd2a65f123948e2221293abea10613d52441b61b77c35f3c1797092fdb6",
+        "runtime_policy_denials": 0,
+        "run_command_calls": 0
+      }
+    ]
+  },
+  "host_policy_behavior": {
+    "enforcement_point": "The Agent tool wrapper compares the requested relative runtime file with the strict request policy before probe handling, budget reservation, or runner execution.",
+    "denial_contract": {
+      "error_type": "RuntimeScriptPolicyDenied",
+      "blocked": true,
+      "budget_consumed": false
+    },
+    "default_compatibility": "All three allowlists default to null, preserving the existing workspace-scoped runtime behavior unless a task explicitly selects a policy.",
+    "observed_batch": "All attempts followed the allowlist without a denial. The two passing attempts executed only build_model.py, beam_tension.inp, and extract_results.py and created no diagnostic vendor-runtime scripts.",
+    "failure_boundary": "The first attempt still exhausted all 12 calls on production build_model.py repairs, proving the policy removes diagnostic drift but cannot make poor production code converge."
+  },
+  "physics_result": {
+    "passing_attempts": 2,
+    "element_type": "B31",
+    "element_count": 20,
+    "node_count": 21,
+    "profile": "10x10 mm rectangle",
+    "right_mean_u1": 0.10000000149011612,
+    "left_sum_rf1": -21000.0,
+    "right_sum_rf1": 21000.0,
+    "mean_sf1": 21000.0,
+    "oracle_findings": []
+  },
+  "comparison": {
+    "historical_v6": "full-final9/no-Shell passed 2/3; task-started passes used 28/10 and 12/3 model/Abaqus calls, with one pre-file timeout",
+    "final13_automatic": "1/3; one 24/8 task-started pass and two pre-file timeouts",
+    "final15_without_allowlist": "0/3; one 31/12/0 runtime-budget failure plus HTTP 500 and timeout",
+    "v7_allowlist": "2/3; all three attempts entered the task, passing attempts used 9/3 and 11/4, and the failed attempt used 31/12/0",
+    "interpretation": "The v7 profile passes the formal B31 smoke gate and demonstrates normal-path compatibility plus absence of diagnostic runtime drift. Stochastic model/gateway variation and multiple policy changes prevent attributing the success-rate or call-count difference solely to the allowlist."
+  },
+  "decision": {
+    "accepted_b31_profile": "beam-tension-b31-v1 with automatic final15, no Planning/Concept, no general Shell, same-api-occurrence-scan-v1, and production_allowlist",
+    "status": "Passes the B31 Product smoke gate at 2/3.",
+    "claims_allowed": [
+      "The host can enforce task-owned runtime filenames without consuming Abaqus budget on denied calls.",
+      "The v7 profile passed two complete B31 host-oracle runs with 3 and 4 Abaqus calls.",
+      "The failed attempt remained visible and shows the allowlist is not a convergence guarantee."
+    ],
+    "claims_forbidden": [
+      "The allowlist alone caused the 0/3 to 2/3 improvement.",
+      "B31 is stable across models, gateways, or arbitrary beam tasks.",
+      "Every task should use the B31 runtime allowlist."
+    ]
+  },
+  "limits": [
+    "Three stochastic attempts are a smoke result, not a stable success-rate estimate.",
+    "The two passing attempts did not trigger a policy denial, so enforcement is proven by deterministic tests while Product evidence proves compliant normal paths.",
+    "The profile is task-specific and does not change the default unrestricted-within-workspace policy.",
+    "The first attempt's production API error chain remains a high-cost failure mode."
+  ]
+}

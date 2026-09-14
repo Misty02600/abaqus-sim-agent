@@ -1,0 +1,878 @@
+{
+  "profile": "explicit-scoped-parent-retrieval-v1",
+  "status": "integrated_explicit_offline_candidate_not_default_promoted",
+  "reports": {
+    "dense": {
+      "manifest": {
+        "profile": "explicit-scoped-parent-retrieval-v1",
+        "requests_sha256": "0e410c1da1ec26a666459394db86016f59229cd5df26e4d236f2a27b1b11807b",
+        "scope_rules_sha256": "09ccf2cd932a9e61d9dca0dfd0559f59c3a20189e66c1c00f550c44c5b699ca5",
+        "dataset": {
+          "prepared": "6ec20d960265f3f05690a7b71436d574ca97e84a02478782dd63ce84f43d9afd",
+          "index": "d28c3f29df45418a5c0056c6fdfc9ee2a247ddd679698212b64921edaf0d80a8",
+          "scope_rules": "09ccf2cd932a9e61d9dca0dfd0559f59c3a20189e66c1c00f550c44c5b699ca5",
+          "known_units": 31294,
+          "unknown_units": 5603,
+          "verified_section_units": 68
+        },
+        "candidate_manifest": "cdd92c955d96e93f21ed0d9a256976678337cf44eb99f13a6ed9cca57ae25e57",
+        "model": {
+          "repo": "cross-encoder/ms-marco-MiniLM-L6-v2",
+          "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+          "files": {
+            "config.json": {
+              "sha256": "380e02c93f431831be65d99a4e7e5f67c133985bf2e77d9d4eba46847190bacc",
+              "bytes": 794
+            },
+            "tokenizer.json": {
+              "sha256": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66",
+              "bytes": 711396
+            },
+            "tokenizer_config.json": {
+              "sha256": "a5c2e5a7b1a29a0702cd28c08a399b5ecc110c263009d17f7e3b415f25905fd8",
+              "bytes": 1330
+            },
+            "special_tokens_map.json": {
+              "sha256": "3c3507f36dff57bce437223db3b3081d1e2b52ec3e56ee55438193ecb2c94dd6",
+              "bytes": 132
+            },
+            "README.md": {
+              "sha256": "7c0ec39941d0d1d766ccde671f592971d82fe45b7eea550a80d1ea864ebc3baa",
+              "bytes": 3673
+            },
+            "onnx/model.onnx": {
+              "sha256": "5d3e70fd0c9ff14b9b5169a51e957b7a9c74897afd0a35ce4bd318150c1d4d4a",
+              "bytes": 91011230
+            }
+          },
+          "source_url": "https://huggingface.co/cross-encoder/ms-marco-MiniLM-L6-v2/tree/233902d25c440f23af6f7d6e94d2946bac0bee0a"
+        },
+        "budgets": {
+          "candidates": 64,
+          "output_units": 4,
+          "embedding_tokens": 256,
+          "reranker_pair_tokens": 512,
+          "unit_body_tokens": 1200,
+          "context_tokens": 4000
+        },
+        "delivery_tokenizer": "MiniLM WordPiece proxy, NOT DeepSeek billing tokenizer",
+        "retrieval_mode": "dense",
+        "implementation": {
+          "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\unified_candidate_cli.py": "ac321699bfc2b161f79ca704d68867826df4a259de8aa8ea7bfdfd11ec12ceb2",
+          "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\unified_retrieval.py": "15e237b47085a9fb4a1264961c510fc89537422350eac2e89e7fa3d38d25ca51",
+          "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\unified_candidate_backend.py": "18074d7b2b5baabdb5bfb73a7fb0ca611cbf28bc15b61c9ecb2ea0c37fb3971e"
+        },
+        "cases": [
+          {
+            "id": "exact-api-region-1",
+            "request": {
+              "kind": "question",
+              "question": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?\nextract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT.",
+              "product": null
+            },
+            "requirements": []
+          },
+          {
+            "id": "domain-procedure-applicability-1",
+            "request": {
+              "kind": "question",
+              "question": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?\nAbaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation.",
+              "product": "Abaqus/Standard"
+            },
+            "requirements": []
+          },
+          {
+            "id": "domain-procedure-applicability-2",
+            "request": {
+              "kind": "question",
+              "question": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?\nAbaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step.",
+              "product": "Abaqus/Standard"
+            },
+            "requirements": [
+              {
+                "need": "boundary_condition_magnitude",
+                "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d"
+              }
+            ]
+          },
+          {
+            "id": "recorded-solver-diagnostic-1",
+            "request": {
+              "kind": "question",
+              "question": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?\nrecorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+              "product": "Abaqus/Standard"
+            },
+            "requirements": [
+              {
+                "need": "complete_time_adjustment",
+                "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc"
+              }
+            ]
+          },
+          {
+            "id": "recorded-solver-diagnostic-2",
+            "request": {
+              "kind": "question",
+              "question": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?\nAbaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt.",
+              "product": "Abaqus/Standard"
+            },
+            "requirements": [
+              {
+                "need": "complete_time_adjustment",
+                "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc"
+              }
+            ]
+          },
+          {
+            "id": "explicit-at",
+            "request": {
+              "kind": "symbol",
+              "symbol": "AT",
+              "symbol_kind": "output_variable"
+            },
+            "expected_status": "found"
+          },
+          {
+            "id": "explicit-static",
+            "request": {
+              "kind": "symbol",
+              "symbol": "*STATIC",
+              "symbol_kind": "keyword",
+              "product": "Abaqus/Standard"
+            },
+            "expected_status": "found"
+          },
+          {
+            "id": "unknown-symbol",
+            "request": {
+              "kind": "symbol",
+              "symbol": "NOT_A_REAL_ABAQUS_SYMBOL",
+              "symbol_kind": "output_variable"
+            },
+            "expected_status": "not_found"
+          },
+          {
+            "id": "unavailable-release",
+            "request": {
+              "kind": "question",
+              "question": "Explain exact output timing",
+              "source_release": "2024"
+            },
+            "expected_status": "not_found"
+          },
+          {
+            "id": "query-over-encoder-budget",
+            "request": {
+              "kind": "question",
+              "question": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word "
+            },
+            "expected_status": "query_too_long"
+          }
+        ],
+        "startup_seconds": 14.44270370004233,
+        "scope": "fixed development batch; integrated profile, not single-factor causal evidence; default product unchanged"
+      },
+      "results": [
+        {
+          "id": "exact-api-region-1",
+          "kind": "question",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 2020,
+          "evidence_units": 4,
+          "unknown_scope_units": 1,
+          "rejected": [],
+          "elapsed_seconds": 3.0114711000351235,
+          "selected_ids": [
+            "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+            "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad",
+            "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+            "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2"
+          ]
+        },
+        {
+          "id": "domain-procedure-applicability-1",
+          "kind": "question",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 2075,
+          "evidence_units": 4,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 3.001210100017488,
+          "selected_ids": [
+            "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+            "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+            "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+            "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b"
+          ]
+        },
+        {
+          "id": "domain-procedure-applicability-2",
+          "kind": "question",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [
+            {
+              "need": "boundary_condition_magnitude",
+              "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+              "delivered_complete": false
+            }
+          ],
+          "context_tokens": 2036,
+          "evidence_units": 4,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 2.8149887999752536,
+          "selected_ids": [
+            "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+            "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+            "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+            "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0"
+          ]
+        },
+        {
+          "id": "recorded-solver-diagnostic-1",
+          "kind": "question",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [
+            {
+              "need": "complete_time_adjustment",
+              "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "delivered_complete": false
+            }
+          ],
+          "context_tokens": 3010,
+          "evidence_units": 4,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 2.5665659999940544,
+          "selected_ids": [
+            "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+            "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+            "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370",
+            "f277b3516da47ec6947e76efdeade6a9e3bd15b9a9e51e7b28ffae6b568f77b7"
+          ]
+        },
+        {
+          "id": "recorded-solver-diagnostic-2",
+          "kind": "question",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [
+            {
+              "need": "complete_time_adjustment",
+              "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "delivered_complete": true
+            }
+          ],
+          "context_tokens": 2582,
+          "evidence_units": 4,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 3.07252950000111,
+          "selected_ids": [
+            "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+            "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+            "aa62bbef9ec829bffb3a59ab06f77dda935987360fb1a1ba7d7d61d06e5cbc57",
+            "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896"
+          ]
+        },
+        {
+          "id": "explicit-at",
+          "kind": "symbol",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 669,
+          "evidence_units": 2,
+          "unknown_scope_units": 2,
+          "rejected": [],
+          "elapsed_seconds": 1.0007321999873966,
+          "selected_ids": [
+            "simaout-c-exp-nodalvariables#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+            "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016"
+          ]
+        },
+        {
+          "id": "explicit-static",
+          "kind": "symbol",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 287,
+          "evidence_units": 1,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 0.02052429993636906,
+          "selected_ids": [
+            "simakey-r-static#keyword"
+          ]
+        },
+        {
+          "id": "unknown-symbol",
+          "kind": "symbol",
+          "status": "not_found",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 2,
+          "evidence_units": 0,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 0.001437600003555417,
+          "selected_ids": []
+        },
+        {
+          "id": "unavailable-release",
+          "kind": "question",
+          "status": "not_found",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 0,
+          "evidence_units": 0,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 0.03962000005412847,
+          "selected_ids": []
+        },
+        {
+          "id": "query-over-encoder-budget",
+          "kind": "question",
+          "status": "query_too_long",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 0,
+          "evidence_units": 0,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 0.0007854000432416797,
+          "selected_ids": []
+        }
+      ],
+      "contract_passes": 10,
+      "cases": 10,
+      "status_counts": {
+        "found": 7,
+        "not_found": 2,
+        "query_too_long": 1
+      },
+      "required_complete": 1,
+      "required_checks": 3,
+      "symbol_index_binding": {
+        "manifest": "9671bd588940438ef1edfc067ac9bb8b26b96d6be57c0c4740b70bd2aafb5cc1",
+        "vector": {
+          "algorithm": "chroma-target-hnsw-segment-bytes-v1",
+          "collection_name": "abaqus_docs_2026_fd02",
+          "collection_id": "5cda2820-ae05-4933-898b-1786a70027c5",
+          "dimension": 384,
+          "collection_config_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "collection_schema_sha256": "b85d10d97d51bc1d762491b6db52ee8e9702c642f66fe151742f859dbdd92fc2",
+          "segment_ids": [
+            "964893cf-0a0b-4d3c-acca-486e1e4516d1"
+          ],
+          "sha256": "6a4d1d016d4371ddf0016ef6812853369a0225c3ce656fd8ab6c9c2af8c42896",
+          "files": [
+            {
+              "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/data_level0.bin",
+              "size_bytes": 65218188,
+              "sha256": "5bbbcde364205b92c85db002d142efb04e4bd36dd9e89c40859ff43027e26f35"
+            },
+            {
+              "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/header.bin",
+              "size_bytes": 100,
+              "sha256": "46879b16337e25659bd133bd1887bad8917397111084e440c382848c64b179dd"
+            },
+            {
+              "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/index_metadata.pickle",
+              "size_bytes": 7360282,
+              "sha256": "2a6e1843f2725e2ece3eb86ca163f89195d29b3fe6df8adef891e40ab0d679b2"
+            },
+            {
+              "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/length.bin",
+              "size_bytes": 155652,
+              "sha256": "7e566e5c154c3abdf4ba6bbbd08ba36cdf8a221b0921b84d4e60517234091f1b"
+            },
+            {
+              "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/link_lists.bin",
+              "size_bytes": 334968,
+              "sha256": "378171af8e4133830ea79a75dc6ffb79709e37d8fc42046daac46d6d93729f28"
+            }
+          ]
+        }
+      },
+      "raw_sha256": {
+        "domain-procedure-applicability-1.json": "5ac178b8fc09485b6cffa4d4b417415fd4283a0901cb5a20e1b62bdfbdb65c0e",
+        "domain-procedure-applicability-2.json": "66395d21d9a6bbe7d3734b3fba70b0e75db52cb21cb32e928304854557f2cc02",
+        "exact-api-region-1.json": "60a063b998321ba337dfafe11c17f87de4c5677902e5a98e11d1e5ed86c7d284",
+        "explicit-at.json": "42f6112484c0fa7ea904b9af6e8215c66c6d6ece3ca34709d208d58e247347b8",
+        "explicit-static.json": "a17f0701bb5b405248d60cfdea0847e655cd846d065aed1000c617fe5c0bf691",
+        "manifest.json": "dc795641f95547d43c6eb54057b64e84614a73f8ac2b0d2bff0f8eecc7b4733b",
+        "query-over-encoder-budget.json": "a44b90d7d7ce393af2edefb26a824f540b9b80b2ec6d971979b40fc473fd202e",
+        "recorded-solver-diagnostic-1.json": "03b8bbea7d03f45f33c1e68480f2382d4081de13d5998fbe59021165992efb25",
+        "recorded-solver-diagnostic-2.json": "5dd043a2803c3a136d4d8fd6ce85f0f997074cc7986a606118eb2cd27ec2f03c",
+        "unavailable-release.json": "2a670481b64923551207636b1bb150ba6932cc792bacc3bb734d2493910ec4b1",
+        "unknown-symbol.json": "bdc2a782194a609732c47c2052060fe9aa8a160f9fb3e9272e160efa4cd8abd5"
+      }
+    },
+    "hybrid": {
+      "manifest": {
+        "profile": "explicit-scoped-parent-retrieval-v1",
+        "requests_sha256": "0e410c1da1ec26a666459394db86016f59229cd5df26e4d236f2a27b1b11807b",
+        "scope_rules_sha256": "09ccf2cd932a9e61d9dca0dfd0559f59c3a20189e66c1c00f550c44c5b699ca5",
+        "dataset": {
+          "prepared": "6ec20d960265f3f05690a7b71436d574ca97e84a02478782dd63ce84f43d9afd",
+          "index": "d28c3f29df45418a5c0056c6fdfc9ee2a247ddd679698212b64921edaf0d80a8",
+          "scope_rules": "09ccf2cd932a9e61d9dca0dfd0559f59c3a20189e66c1c00f550c44c5b699ca5",
+          "known_units": 31294,
+          "unknown_units": 5603,
+          "verified_section_units": 68
+        },
+        "candidate_manifest": "cdd92c955d96e93f21ed0d9a256976678337cf44eb99f13a6ed9cca57ae25e57",
+        "model": {
+          "repo": "cross-encoder/ms-marco-MiniLM-L6-v2",
+          "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+          "files": {
+            "config.json": {
+              "sha256": "380e02c93f431831be65d99a4e7e5f67c133985bf2e77d9d4eba46847190bacc",
+              "bytes": 794
+            },
+            "tokenizer.json": {
+              "sha256": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66",
+              "bytes": 711396
+            },
+            "tokenizer_config.json": {
+              "sha256": "a5c2e5a7b1a29a0702cd28c08a399b5ecc110c263009d17f7e3b415f25905fd8",
+              "bytes": 1330
+            },
+            "special_tokens_map.json": {
+              "sha256": "3c3507f36dff57bce437223db3b3081d1e2b52ec3e56ee55438193ecb2c94dd6",
+              "bytes": 132
+            },
+            "README.md": {
+              "sha256": "7c0ec39941d0d1d766ccde671f592971d82fe45b7eea550a80d1ea864ebc3baa",
+              "bytes": 3673
+            },
+            "onnx/model.onnx": {
+              "sha256": "5d3e70fd0c9ff14b9b5169a51e957b7a9c74897afd0a35ce4bd318150c1d4d4a",
+              "bytes": 91011230
+            }
+          },
+          "source_url": "https://huggingface.co/cross-encoder/ms-marco-MiniLM-L6-v2/tree/233902d25c440f23af6f7d6e94d2946bac0bee0a"
+        },
+        "budgets": {
+          "candidates": 64,
+          "output_units": 4,
+          "embedding_tokens": 256,
+          "reranker_pair_tokens": 512,
+          "unit_body_tokens": 1200,
+          "context_tokens": 4000
+        },
+        "delivery_tokenizer": "MiniLM WordPiece proxy, NOT DeepSeek billing tokenizer",
+        "retrieval_mode": "hybrid",
+        "implementation": {
+          "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\unified_candidate_cli.py": "ac321699bfc2b161f79ca704d68867826df4a259de8aa8ea7bfdfd11ec12ceb2",
+          "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\unified_retrieval.py": "15e237b47085a9fb4a1264961c510fc89537422350eac2e89e7fa3d38d25ca51",
+          "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\unified_candidate_backend.py": "18074d7b2b5baabdb5bfb73a7fb0ca611cbf28bc15b61c9ecb2ea0c37fb3971e"
+        },
+        "cases": [
+          {
+            "id": "exact-api-region-1",
+            "request": {
+              "kind": "question",
+              "question": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?\nextract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT.",
+              "product": null
+            },
+            "requirements": []
+          },
+          {
+            "id": "domain-procedure-applicability-1",
+            "request": {
+              "kind": "question",
+              "question": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?\nAbaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation.",
+              "product": "Abaqus/Standard"
+            },
+            "requirements": []
+          },
+          {
+            "id": "domain-procedure-applicability-2",
+            "request": {
+              "kind": "question",
+              "question": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?\nAbaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step.",
+              "product": "Abaqus/Standard"
+            },
+            "requirements": [
+              {
+                "need": "boundary_condition_magnitude",
+                "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d"
+              }
+            ]
+          },
+          {
+            "id": "recorded-solver-diagnostic-1",
+            "request": {
+              "kind": "question",
+              "question": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?\nrecorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+              "product": "Abaqus/Standard"
+            },
+            "requirements": [
+              {
+                "need": "complete_time_adjustment",
+                "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc"
+              }
+            ]
+          },
+          {
+            "id": "recorded-solver-diagnostic-2",
+            "request": {
+              "kind": "question",
+              "question": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?\nAbaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt.",
+              "product": "Abaqus/Standard"
+            },
+            "requirements": [
+              {
+                "need": "complete_time_adjustment",
+                "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc"
+              }
+            ]
+          },
+          {
+            "id": "explicit-at",
+            "request": {
+              "kind": "symbol",
+              "symbol": "AT",
+              "symbol_kind": "output_variable"
+            },
+            "expected_status": "found"
+          },
+          {
+            "id": "explicit-static",
+            "request": {
+              "kind": "symbol",
+              "symbol": "*STATIC",
+              "symbol_kind": "keyword",
+              "product": "Abaqus/Standard"
+            },
+            "expected_status": "found"
+          },
+          {
+            "id": "unknown-symbol",
+            "request": {
+              "kind": "symbol",
+              "symbol": "NOT_A_REAL_ABAQUS_SYMBOL",
+              "symbol_kind": "output_variable"
+            },
+            "expected_status": "not_found"
+          },
+          {
+            "id": "unavailable-release",
+            "request": {
+              "kind": "question",
+              "question": "Explain exact output timing",
+              "source_release": "2024"
+            },
+            "expected_status": "not_found"
+          },
+          {
+            "id": "query-over-encoder-budget",
+            "request": {
+              "kind": "question",
+              "question": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word "
+            },
+            "expected_status": "query_too_long"
+          }
+        ],
+        "startup_seconds": 16.990215600002557,
+        "scope": "fixed development batch; integrated profile, not single-factor causal evidence; default product unchanged"
+      },
+      "results": [
+        {
+          "id": "exact-api-region-1",
+          "kind": "question",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 2020,
+          "evidence_units": 4,
+          "unknown_scope_units": 1,
+          "rejected": [],
+          "elapsed_seconds": 5.378353500040248,
+          "selected_ids": [
+            "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+            "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad",
+            "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+            "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2"
+          ]
+        },
+        {
+          "id": "domain-procedure-applicability-1",
+          "kind": "question",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 2075,
+          "evidence_units": 4,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 4.826705100014806,
+          "selected_ids": [
+            "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+            "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+            "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+            "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b"
+          ]
+        },
+        {
+          "id": "domain-procedure-applicability-2",
+          "kind": "question",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [
+            {
+              "need": "boundary_condition_magnitude",
+              "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+              "delivered_complete": false
+            }
+          ],
+          "context_tokens": 2036,
+          "evidence_units": 4,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 4.4235941000515595,
+          "selected_ids": [
+            "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+            "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+            "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+            "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0"
+          ]
+        },
+        {
+          "id": "recorded-solver-diagnostic-1",
+          "kind": "question",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [
+            {
+              "need": "complete_time_adjustment",
+              "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "delivered_complete": false
+            }
+          ],
+          "context_tokens": 2344,
+          "evidence_units": 4,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 4.348680600058287,
+          "selected_ids": [
+            "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+            "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+            "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+            "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896"
+          ]
+        },
+        {
+          "id": "recorded-solver-diagnostic-2",
+          "kind": "question",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [
+            {
+              "need": "complete_time_adjustment",
+              "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "delivered_complete": true
+            }
+          ],
+          "context_tokens": 1989,
+          "evidence_units": 4,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 5.0024133999831975,
+          "selected_ids": [
+            "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+            "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+            "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+            "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce"
+          ]
+        },
+        {
+          "id": "explicit-at",
+          "kind": "symbol",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 669,
+          "evidence_units": 2,
+          "unknown_scope_units": 2,
+          "rejected": [],
+          "elapsed_seconds": 0.8852744000032544,
+          "selected_ids": [
+            "simaout-c-exp-nodalvariables#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+            "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016"
+          ]
+        },
+        {
+          "id": "explicit-static",
+          "kind": "symbol",
+          "status": "found",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 287,
+          "evidence_units": 1,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 0.01607239991426468,
+          "selected_ids": [
+            "simakey-r-static#keyword"
+          ]
+        },
+        {
+          "id": "unknown-symbol",
+          "kind": "symbol",
+          "status": "not_found",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 2,
+          "evidence_units": 0,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 0.001094199949875474,
+          "selected_ids": []
+        },
+        {
+          "id": "unavailable-release",
+          "kind": "question",
+          "status": "not_found",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 0,
+          "evidence_units": 0,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 0.030264999950304627,
+          "selected_ids": []
+        },
+        {
+          "id": "query-over-encoder-budget",
+          "kind": "question",
+          "status": "query_too_long",
+          "contract_ok": true,
+          "required_units": [],
+          "context_tokens": 0,
+          "evidence_units": 0,
+          "unknown_scope_units": 0,
+          "rejected": [],
+          "elapsed_seconds": 0.0006479000439867377,
+          "selected_ids": []
+        }
+      ],
+      "contract_passes": 10,
+      "cases": 10,
+      "status_counts": {
+        "found": 7,
+        "not_found": 2,
+        "query_too_long": 1
+      },
+      "required_complete": 1,
+      "required_checks": 3,
+      "symbol_index_binding": {
+        "manifest": "9671bd588940438ef1edfc067ac9bb8b26b96d6be57c0c4740b70bd2aafb5cc1",
+        "vector": {
+          "algorithm": "chroma-target-hnsw-segment-bytes-v1",
+          "collection_name": "abaqus_docs_2026_fd02",
+          "collection_id": "5cda2820-ae05-4933-898b-1786a70027c5",
+          "dimension": 384,
+          "collection_config_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "collection_schema_sha256": "b85d10d97d51bc1d762491b6db52ee8e9702c642f66fe151742f859dbdd92fc2",
+          "segment_ids": [
+            "964893cf-0a0b-4d3c-acca-486e1e4516d1"
+          ],
+          "sha256": "6a4d1d016d4371ddf0016ef6812853369a0225c3ce656fd8ab6c9c2af8c42896",
+          "files": [
+            {
+              "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/data_level0.bin",
+              "size_bytes": 65218188,
+              "sha256": "5bbbcde364205b92c85db002d142efb04e4bd36dd9e89c40859ff43027e26f35"
+            },
+            {
+              "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/header.bin",
+              "size_bytes": 100,
+              "sha256": "46879b16337e25659bd133bd1887bad8917397111084e440c382848c64b179dd"
+            },
+            {
+              "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/index_metadata.pickle",
+              "size_bytes": 7360282,
+              "sha256": "2a6e1843f2725e2ece3eb86ca163f89195d29b3fe6df8adef891e40ab0d679b2"
+            },
+            {
+              "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/length.bin",
+              "size_bytes": 155652,
+              "sha256": "7e566e5c154c3abdf4ba6bbbd08ba36cdf8a221b0921b84d4e60517234091f1b"
+            },
+            {
+              "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/link_lists.bin",
+              "size_bytes": 334968,
+              "sha256": "378171af8e4133830ea79a75dc6ffb79709e37d8fc42046daac46d6d93729f28"
+            }
+          ]
+        }
+      },
+      "raw_sha256": {
+        "domain-procedure-applicability-1.json": "ad6709030374dfd34862af51ff6c701943fdb6144c58223ae7351921d13c6884",
+        "domain-procedure-applicability-2.json": "b0771d4b3259f879a96298b955511644fc2fa05f356bd035d7eb564d46326838",
+        "exact-api-region-1.json": "769912d98dd410001b5671e87b0a161e82e99f4f170fe1454cdd1a0168825a79",
+        "explicit-at.json": "35fd43d51b6777028e3aa721a314342a52e5d057f1f3120d6ce545ae7fb8c43f",
+        "explicit-static.json": "fa76a18d5c14faf30244f4e1682baf5307d67c03c419ffb832bdf38ca93cd3ad",
+        "manifest.json": "cd052a78709c22131a235be685f6d0ddd979242d1d4a096ac57293e49c824548",
+        "query-over-encoder-budget.json": "a51fbd87516ff52157abd6509ae84270d2be3c1d91bd85a8942049ca5b478d92",
+        "recorded-solver-diagnostic-1.json": "a806d5f51836951785a78fd1b4d220f1c86ea078f10ee5892d8f12a85c123cad",
+        "recorded-solver-diagnostic-2.json": "8a430cd0502c8ac88b4fe7e626ecba329eb595418b3a967a3211823424df3019",
+        "unavailable-release.json": "5f320a30d7f6c43d092e2e45c60edf037f897d675a2ea724911f841da03cf70f",
+        "unknown-symbol.json": "193305acfec016047d635b47c23f3b9a2fc38aa11292597b356bee353b40d852"
+      }
+    }
+  },
+  "raw_sha256": {
+    "var\\audits\\unified-candidate-v1-verified-dense\\domain-procedure-applicability-1.json": "5ac178b8fc09485b6cffa4d4b417415fd4283a0901cb5a20e1b62bdfbdb65c0e",
+    "var\\audits\\unified-candidate-v1-verified-dense\\domain-procedure-applicability-2.json": "66395d21d9a6bbe7d3734b3fba70b0e75db52cb21cb32e928304854557f2cc02",
+    "var\\audits\\unified-candidate-v1-verified-dense\\exact-api-region-1.json": "60a063b998321ba337dfafe11c17f87de4c5677902e5a98e11d1e5ed86c7d284",
+    "var\\audits\\unified-candidate-v1-verified-dense\\explicit-at.json": "42f6112484c0fa7ea904b9af6e8215c66c6d6ece3ca34709d208d58e247347b8",
+    "var\\audits\\unified-candidate-v1-verified-dense\\explicit-static.json": "a17f0701bb5b405248d60cfdea0847e655cd846d065aed1000c617fe5c0bf691",
+    "var\\audits\\unified-candidate-v1-verified-dense\\manifest.json": "dc795641f95547d43c6eb54057b64e84614a73f8ac2b0d2bff0f8eecc7b4733b",
+    "var\\audits\\unified-candidate-v1-verified-dense\\query-over-encoder-budget.json": "a44b90d7d7ce393af2edefb26a824f540b9b80b2ec6d971979b40fc473fd202e",
+    "var\\audits\\unified-candidate-v1-verified-dense\\recorded-solver-diagnostic-1.json": "03b8bbea7d03f45f33c1e68480f2382d4081de13d5998fbe59021165992efb25",
+    "var\\audits\\unified-candidate-v1-verified-dense\\recorded-solver-diagnostic-2.json": "5dd043a2803c3a136d4d8fd6ce85f0f997074cc7986a606118eb2cd27ec2f03c",
+    "var\\audits\\unified-candidate-v1-verified-dense\\summary.json": "860788fc5b2779164022afacd75d1f1165233ee58abfcbaad1d9fe5482d94c8d",
+    "var\\audits\\unified-candidate-v1-verified-dense\\unavailable-release.json": "2a670481b64923551207636b1bb150ba6932cc792bacc3bb734d2493910ec4b1",
+    "var\\audits\\unified-candidate-v1-verified-dense\\unknown-symbol.json": "bdc2a782194a609732c47c2052060fe9aa8a160f9fb3e9272e160efa4cd8abd5",
+    "var\\audits\\unified-candidate-v1-verified-hybrid\\domain-procedure-applicability-1.json": "ad6709030374dfd34862af51ff6c701943fdb6144c58223ae7351921d13c6884",
+    "var\\audits\\unified-candidate-v1-verified-hybrid\\domain-procedure-applicability-2.json": "b0771d4b3259f879a96298b955511644fc2fa05f356bd035d7eb564d46326838",
+    "var\\audits\\unified-candidate-v1-verified-hybrid\\exact-api-region-1.json": "769912d98dd410001b5671e87b0a161e82e99f4f170fe1454cdd1a0168825a79",
+    "var\\audits\\unified-candidate-v1-verified-hybrid\\explicit-at.json": "35fd43d51b6777028e3aa721a314342a52e5d057f1f3120d6ce545ae7fb8c43f",
+    "var\\audits\\unified-candidate-v1-verified-hybrid\\explicit-static.json": "fa76a18d5c14faf30244f4e1682baf5307d67c03c419ffb832bdf38ca93cd3ad",
+    "var\\audits\\unified-candidate-v1-verified-hybrid\\manifest.json": "cd052a78709c22131a235be685f6d0ddd979242d1d4a096ac57293e49c824548",
+    "var\\audits\\unified-candidate-v1-verified-hybrid\\query-over-encoder-budget.json": "a51fbd87516ff52157abd6509ae84270d2be3c1d91bd85a8942049ca5b478d92",
+    "var\\audits\\unified-candidate-v1-verified-hybrid\\recorded-solver-diagnostic-1.json": "a806d5f51836951785a78fd1b4d220f1c86ea078f10ee5892d8f12a85c123cad",
+    "var\\audits\\unified-candidate-v1-verified-hybrid\\recorded-solver-diagnostic-2.json": "8a430cd0502c8ac88b4fe7e626ecba329eb595418b3a967a3211823424df3019",
+    "var\\audits\\unified-candidate-v1-verified-hybrid\\summary.json": "7bdda14134d7bb0259e52ca62038c3acf9329f0db60e30efee3fadf4e2a9c86c",
+    "var\\audits\\unified-candidate-v1-verified-hybrid\\unavailable-release.json": "5f320a30d7f6c43d092e2e45c60edf037f897d675a2ea724911f841da03cf70f",
+    "var\\audits\\unified-candidate-v1-verified-hybrid\\unknown-symbol.json": "193305acfec016047d635b47c23f3b9a2fc38aa11292597b356bee353b40d852"
+  },
+  "checks": {
+    "related_tests_passed": 102,
+    "new_tests": 22,
+    "basedpyright_errors": 0,
+    "ruff": "passed",
+    "postrun_bm25_and_stores_unchanged": true
+  },
+  "limits": [
+    "Ten cases are five previously observed development queries plus five routing/budget probes, not ten task successes or a new held-out set.",
+    "Dense and Hybrid both deliver only one of three predeclared required units; no retrieval quality or Agent benefit claim.",
+    "Official page Products and five source-reviewed section declarations are used; remaining unknown scope is retained, not guessed.",
+    "Unit1200/context4000 budgets use a declared MiniLM WordPiece proxy, not DeepSeek billing or runtime memory guarantee.",
+    "Dense/Hybrid final query processes overlapped; observed latency is not a controlled performance benchmark.",
+    "Preliminary dense run preceded extra source-card reconstruction validation; preserved separately, final reports use verified runs.",
+    "Default product CLI and its historical AT extraction remain unchanged; corrected routing applies only to this explicit candidate."
+  ]
+}

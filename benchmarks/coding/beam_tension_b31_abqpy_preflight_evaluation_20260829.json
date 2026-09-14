@@ -1,0 +1,123 @@
+{
+  "schema_version": "1",
+  "experiment_id": "beam-tension-b31-abqpy-static-preflight-20260829",
+  "frozen_task": {
+    "request": "beam-tension-b31-v1",
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "api_catalog_mode": "automatic_verified_only",
+    "api_catalog_cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+    "concept_retrieval_mode": "off",
+    "runtime_script_policy_mode": "production_allowlist",
+    "budget": {
+      "model_requests": 40,
+      "api_lookups": 4,
+      "static_preflights": 12,
+      "abaqus_calls": 12,
+      "solver_calls": 3,
+      "wall_time_seconds": 2700
+    }
+  },
+  "static_source": {
+    "engine": "basedpyright",
+    "engine_version": "1.39.10",
+    "api_source": "abqpy",
+    "api_source_version": "2024.10",
+    "api_source_sha256": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504"
+  },
+  "accepted_no_preflight_reference": {
+    "profile": "B31 v7 automatic final15 plus production allowlist",
+    "attempts": 3,
+    "passes": 2,
+    "passed_gate": true,
+    "task_started_attempts": 3,
+    "attempt_usage": [
+      {
+        "result": "runtime_budget_failure",
+        "model_requests": 31,
+        "abaqus_calls": 12,
+        "solver_calls": 0
+      },
+      {
+        "result": "pass",
+        "model_requests": 9,
+        "abaqus_calls": 3,
+        "solver_calls": 1
+      },
+      {
+        "result": "pass",
+        "model_requests": 11,
+        "abaqus_calls": 4,
+        "solver_calls": 1
+      }
+    ],
+    "evidence": "beam_tension_b31_runtime_allowlist_evaluation_20260829.json",
+    "evidence_sha256": "aaa3359fc1ae321a75c3eaa8e2b0258fd0b9940f16642bb339fdfbbbe7f25ed5"
+  },
+  "advisory_v1": {
+    "policy_version": "abqpy-advisory-high-confidence-v1",
+    "attempts": 3,
+    "passes": 2,
+    "passed_gate": true,
+    "infrastructure_failures": 1,
+    "summary_sha256": "00155821460eed747c04b158a6063eaf818f311874bc9cbf1104ed597c6b68bc",
+    "gate_sha256": "ae8ff61d0716674028080f0375ad08a83fd1613edc365ec258edf6ed31110069",
+    "static_totals": {
+      "reports": 11,
+      "actionable_reports": 5,
+      "filtered_raw_diagnostics": 25,
+      "duration_seconds": 15.6350118999835
+    },
+    "task_started_attempts": [
+      {
+        "run_id": "beam-d9eae392189d",
+        "result": "pass",
+        "model_requests": 32,
+        "static_preflight_calls": 8,
+        "actionable_reports": 5,
+        "abaqus_calls": 9,
+        "solver_calls": 1,
+        "static_duration_seconds": 11.57,
+        "reported_high_confidence_diagnostics": [
+          "BeamSection.createStepName",
+          "BeamSection.orientation",
+          "Part.seedPartByNumber",
+          "Model.writeInput"
+        ],
+        "v2_promoted_filtered_diagnostic": "assignBeamSectionOrientation missing method and n1; the next licensed runtime call confirmed required parameters were missing",
+        "adoption_result": "The Agent repeated every actionable script hash unchanged, so all five calls proceeded to Abaqus. Abaqus 2024 then confirmed the same error family before the Agent edited the script. No Abaqus-call saving was observed."
+      },
+      {
+        "run_id": "beam-0b0e75164183",
+        "result": "pass",
+        "model_requests": 11,
+        "static_preflight_calls": 3,
+        "actionable_reports": 0,
+        "abaqus_calls": 4,
+        "solver_calls": 1,
+        "static_duration_seconds": 4.07,
+        "adoption_result": "Raw abqpy diagnostics were filtered; the clean path proceeded without an advisory pause."
+      }
+    ],
+    "conclusion": "v1 showed real pre-runtime detection and clean-path compatibility, but did not reduce runtime calls because unchanged retry was used as the normal path. The 2/3 gate must not be attributed to the preflight."
+  },
+  "advisory_v2": {
+    "policy_version": "abqpy-advisory-high-confidence-v2",
+    "change": "Adds missing-required-parameter diagnostics and asks the Agent to batch all supported repairs; unchanged retry is described only as an evidence-backed false-positive escape hatch.",
+    "attempts": 3,
+    "passes": 0,
+    "passed_gate": false,
+    "infrastructure_failures": 3,
+    "task_started_attempts": 0,
+    "static_preflight_calls": 0,
+    "abaqus_calls": 0,
+    "summary_sha256": "90bf05c1c89f42a882a59fee99ef1819e149c574d89b91cc2fbc80a8abc26d1f",
+    "gate_sha256": "8fc4410a4ab8c700147fa2dbc52d435885a50c4487f64246a5c7d4b0b8872164",
+    "conclusion": "All three attempts ended with ModelAPIError: Request timed out before any production file. This batch is infrastructure-invalid for judging v2 Product behavior and does not supersede the accepted no-preflight B31 v7 profile."
+  },
+  "offline_policy_evidence": [
+    "abqpy_static_preflight_policy_v1_20260829.json",
+    "abqpy_static_preflight_policy_v2_20260829.json"
+  ],
+  "current_status": "v2 is an explicit opt-in candidate. It is not the default or accepted B31 Product profile until a task-started repeated treatment demonstrates adoption and no regression."
+}

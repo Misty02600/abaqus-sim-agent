@@ -1,0 +1,1434 @@
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -1,39 +1,26 @@
+-import { useEffect, useState } from 'react'
+ import Chat from './Chat.tsx'
+ import { AppSidebar } from './components/app-sidebar.tsx'
+ import { ThemeProvider } from './components/theme-provider.tsx'
+ import { SidebarProvider } from './components/ui/sidebar.tsx'
+ import { Toaster } from './components/ui/sonner.tsx'
+ import { cn } from './lib/utils.ts'
+-import { migrateFromLocalStorage } from './lib/chat-db.ts'
++import { useHostRun } from './host-api.ts'
++import { HostPanel } from './components/host-panel.tsx'
+ 
+ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+ 
+ const queryClient = new QueryClient()
+ 
+ export default function App() {
+-  const [ready, setReady] = useState(false)
+-
+-  useEffect(() => {
+-    migrateFromLocalStorage()
+-      .then((migrated) => {
+-        if (migrated) {
+-          window.dispatchEvent(new Event('conversations-changed'))
+-        }
+-      })
+-      .catch((err: unknown) => {
+-        console.error('Migration failed:', err)
+-      })
+-      .finally(() => {
+-        setReady(true)
+-      })
+-  }, [])
++  const route = /^\/official\/([^/]+)\/?$/.exec(window.location.pathname)
++  const runId = route ? decodeURIComponent(route[1]) : null
++  const host = useHostRun(runId)
+ 
+   return (
+     <QueryClientProvider client={queryClient}>
+       <ThemeProvider defaultTheme="system" storageKey="pydantic-chat-ui-theme">
+         <SidebarProvider defaultOpen>
+-          <AppSidebar />
++          <AppSidebar runs={host.runs} runId={runId} />
+ 
+           <div className="flex flex-col justify-center flex-1 h-screen overflow-hidden">
+             <div
+@@ -42,7 +29,14 @@
+                 'has-[.stick-to-bottom:empty]:overflow-visible has-[.stick-to-bottom:empty]:basis-[0px] transition-[flex-basis] duration-200',
+               )}
+             >
+-              {ready && <Chat />}
++              <HostPanel
++                snapshot={host.snapshot}
++                runId={runId}
++                refresh={host.refresh}
++                loadError={host.error}
++                connection={host.connection}
++              />
++              <Chat messages={host.snapshot?.messages.vercel ?? []} />
+             </div>
+           </div>
+         </SidebarProvider>
+--- a/src/Chat.tsx
++++ b/src/Chat.tsx
+@@ -1,507 +1,71 @@
+ import { Conversation, ConversationContent, ConversationScrollButton } from '@/components/ai-elements/conversation'
+-import { Loader } from '@/components/ai-elements/loader'
+-import {
+-  PromptInput,
+-  PromptInputButton,
+-  PromptInputModelSelect,
+-  PromptInputModelSelectContent,
+-  PromptInputModelSelectItem,
+-  PromptInputModelSelectTrigger,
+-  PromptInputModelSelectValue,
+-  PromptInputSubmit,
+-  PromptInputTextarea,
+-  PromptInputToolbar,
+-  PromptInputTools,
+-} from '@/components/ai-elements/prompt-input'
+ import { Source, Sources, SourcesContent, SourcesTrigger } from '@/components/ai-elements/sources'
+-import { EffortSelect } from '@/components/effort-select'
+-import { EditMessageDialog } from '@/components/edit-message-dialog'
+ import { HiddenToolsGroup } from '@/components/hidden-tools-group'
+ import { ToolCallGroup } from '@/components/tool-call-group'
+-import { ToolFiltersDialog } from '@/components/tool-filters-dialog'
+-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+-import { Switch } from '@/components/ui/switch'
+-import { ToolFiltersProvider, useToolFilters } from '@/contexts/tool-filters'
+-import { useChat } from '@ai-sdk/react'
+-import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai'
++import { ToolFiltersProvider } from '@/contexts/tool-filters'
+ import type { UIDataTypes, UIMessage, UIMessagePart, UITools } from 'ai'
+-import { ArrowRightIcon, FilterIcon, RefreshCcwIcon, Settings2Icon } from 'lucide-react'
+-import { Button } from '@/components/ui/button'
+-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type SyntheticEvent } from 'react'
++import type { ReactNode } from 'react'
++import { Part } from './Part'
++import { toolNameOfPart } from '@/lib/tool-filters'
++import { groupParts } from '@/lib/tool-grouping'
+ 
+-import { useQuery } from '@tanstack/react-query'
+-import { useThrottle } from '@uidotdev/usehooks'
+-import { nanoid } from 'nanoid'
+-import { useConversationIdFromUrl } from './hooks/useConversationIdFromUrl'
+-import { Part } from './Part'
+-import type { ConversationEntry } from './types'
+-import { getToolIcon } from '@/lib/tool-icons'
+-import { toolNameOfPart } from '@/lib/tool-filters'
+-import { COMPLETE_TOOL_STATES, groupParts } from '@/lib/tool-grouping'
+-import { getMessages, saveMessages, saveConversation } from '@/lib/chat-db'
+-import { stripBasePath, withBasePath } from '@/lib/base-path'
+-
+-interface ModelConfig {
+-  id: string
+-  name: string
+-  builtinTools: string[]
+-}
+-
+-interface BuiltinTool {
+-  name: string
+-  id: string
+-}
+-
+-// TODO: if just a single model, don't show model selector, just a label.
+-interface RemoteConfig {
+-  models: ModelConfig[]
+-  builtinTools: BuiltinTool[]
+-}
+-
+-async function getModels() {
+-  const res = await fetch('/api/configure')
+-  return (await res.json()) as RemoteConfig
+-}
+-
+-const ChatInner = () => {
+-  const { isFiltered } = useToolFilters()
+-  const [filtersDialogOpen, setFiltersDialogOpen] = useState(false)
+-  const [input, setInput] = useState('')
+-  const [model, setModel] = useState('')
+-  const [effort, setEffort] = useState<string>(() => {
+-    const stored = localStorage.getItem('effort')
+-    // Empty string was the old "Default" sentinel; migrate it to an explicit level.
+-    return stored && stored !== '' ? stored : 'medium'
+-  })
+-  const [enabledTools, setEnabledTools] = useState<string[]>([])
+-  const modelRef = useRef(model)
+-  modelRef.current = model
+-  const effortRef = useRef(effort)
+-  effortRef.current = effort
+-  const enabledToolsRef = useRef(enabledTools)
+-  enabledToolsRef.current = enabledTools
+-
+-  const [transport] = useState(
+-    () =>
+-      new DefaultChatTransport({
+-        body: () => ({ model: modelRef.current, builtinTools: enabledToolsRef.current, effort: effortRef.current }),
+-      }),
+-  )
+-  const { messages, sendMessage, status, setMessages, regenerate, error, clearError, addToolApprovalResponse } =
+-    useChat({
+-      transport,
+-      sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
+-    })
+-  const throttledMessages = useThrottle(messages, 500)
+-  const [conversationId, setConversationId] = useConversationIdFromUrl()
+-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+-
+-  // Edit state
+-  const [editingMessageId, setEditingMessageId] = useState<string | null>(null)
+-  const editDraftsRef = useRef(new Map<string, string>())
+-  const [pendingEdit, setPendingEdit] = useState<{ messageId: string; text: string } | null>(null)
+-  // Deferred send: set this ref, then call setMessages. The useEffect below
+-  // will fire sendMessage after the messages state has been committed.
+-  const pendingSendRef = useRef<{ text: string; model: string; builtinTools: string[] } | null>(null)
+-  const [sendTrigger, setSendTrigger] = useState(0)
+-
+-  const configQuery = useQuery({
+-    queryFn: getModels,
+-    queryKey: ['models'],
+-  })
+-
+-  useEffect(() => {
+-    if (configQuery.data) {
+-      setModel(configQuery.data.models[0].id)
+-    }
+-  }, [configQuery.data])
+-
+-  useEffect(() => {
+-    setEditingMessageId(null)
+-    if (conversationId === '/') {
+-      setMessages([])
+-    } else {
+-      getMessages(conversationId)
+-        .then((storedMessages) => {
+-          if (storedMessages) {
+-            setMessages(storedMessages)
+-
+-            // Auto-send pending fork message after loading forked conversation
+-            // Uses deferred send to ensure setMessages is committed first
+-            if (pendingSendRef.current) {
+-              setSendTrigger((n) => n + 1)
+-            }
+-          }
+-        })
+-        .catch((err: unknown) => {
+-          console.error('Failed to load messages:', err)
+-        })
+-    }
+-    textareaRef.current?.focus()
+-  }, [conversationId])
+-
+-  const handleSubmit = (e: SyntheticEvent) => {
+-    e.preventDefault()
+-    if (input.trim()) {
+-      const theCurrentUrl = new URL(window.location.toString())
+-
+-      // we're starting a new conversation
+-      if (stripBasePath(theCurrentUrl.pathname) === '/') {
+-        const newConversationId = `/${nanoid()}`
+-        setConversationId(newConversationId)
+-
+-        saveConversationEntry(newConversationId, input)
+-
+-        theCurrentUrl.pathname = withBasePath(newConversationId)
+-        window.history.pushState({}, '', theCurrentUrl.toString())
+-      }
+-
+-      sendMessage({ text: input }).catch((error: unknown) => {
+-        console.error('Error sending message:', error)
+-      })
+-      setInput('')
+-    }
+-  }
+-
+-  // Fires deferred sendMessage after setMessages has been committed
+-  useEffect(() => {
+-    if (!pendingSendRef.current) return
+-    const pending = pendingSendRef.current
+-    pendingSendRef.current = null
+-    sendMessage({ text: pending.text }).catch((error: unknown) => {
+-      console.error('Error sending deferred message:', error)
+-    })
+-  }, [sendTrigger])
+-
+-  useEffect(() => {
+-    if (conversationId && conversationId !== '/' && throttledMessages.length > 0) {
+-      saveMessages(conversationId, throttledMessages).catch((err: unknown) => {
+-        console.error('Failed to save messages:', err)
+-      })
+-    }
+-  }, [throttledMessages, conversationId])
+-
+-  const handleStartEdit = useCallback((messageId: string) => {
+-    setEditingMessageId(messageId)
+-  }, [])
+-
+-  const handleCancelEdit = useCallback((messageId: string, draft: string) => {
+-    editDraftsRef.current.set(messageId, draft)
+-    setEditingMessageId(null)
+-  }, [])
+-
+-  const handleSubmitEdit = useCallback(
+-    (messageId: string, newText: string) => {
+-      const original = messages.find((m) => m.id === messageId)
+-      const originalText = original?.parts.find((p) => p.type === 'text')
+-      const unchanged = originalText && 'text' in originalText && originalText.text === newText
+-
+-      editDraftsRef.current.delete(messageId)
+-      setEditingMessageId(null)
+-
+-      if (unchanged) return
+-
+-      setPendingEdit({ messageId, text: newText })
+-    },
+-    [messages],
+-  )
+-
+-  const handleModify = useCallback(() => {
+-    if (!pendingEdit) return
+-    const messageIndex = messages.findIndex((m) => m.id === pendingEdit.messageId)
+-    if (messageIndex === -1) return
+-
+-    pendingSendRef.current = { text: pendingEdit.text, model, builtinTools: enabledTools }
+-    setMessages(messages.slice(0, messageIndex))
+-    setPendingEdit(null)
+-    // Defer to next macrotask so setMessages commits before the send effect fires
+-    setTimeout(() => {
+-      setSendTrigger((n) => n + 1)
+-    }, 0)
+-  }, [pendingEdit, messages, setMessages, model, enabledTools])
+-
+-  // Retry: re-run the last user message, discarding everything generated after
+-  // it (partial assistant text, in-progress tool parts, whole tool-loop turns).
+-  const handleRetry = useCallback(() => {
+-    let i = messages.length - 1
+-    while (i >= 0 && messages[i].role !== 'user') i--
+-    if (i === -1) return
+-
+-    const userMessage = messages[i]
+-    const textPart = userMessage.parts.find((p) => p.type === 'text')
+-    const text = textPart && 'text' in textPart ? textPart.text : ''
+-
+-    clearError()
+-    pendingSendRef.current = { text, model, builtinTools: enabledTools }
+-    // Drop the user message too; the deferred send re-adds it cleanly.
+-    setMessages(messages.slice(0, i))
+-    setTimeout(() => {
+-      setSendTrigger((n) => n + 1)
+-    }, 0)
+-  }, [messages, clearError, setMessages, model, enabledTools])
+-
+-  // Continue: append a `continue` user message to a valid history. If the run
+-  // errored mid-tool-call, the trailing assistant message may hold a tool part
+-  // with no output; pydantic-ai rejects an orphaned tool call, so drop that
+-  // trailing assistant message first.
+-  const handleContinue = useCallback(() => {
+-    const lastMessage = messages.at(-1)
+-    if (lastMessage?.role === 'assistant' && hasIncompleteToolPart(lastMessage.parts)) {
+-      clearError()
+-      pendingSendRef.current = { text: 'continue', model, builtinTools: enabledTools }
+-      setMessages(messages.slice(0, -1))
+-      setTimeout(() => {
+-        setSendTrigger((n) => n + 1)
+-      }, 0)
+-      return
+-    }
+-
+-    clearError()
+-    sendMessage({ text: 'continue' }).catch((error: unknown) => {
+-      console.error('Error continuing message:', error)
+-    })
+-  }, [messages, clearError, setMessages, sendMessage, model, enabledTools])
+-
+-  const handleFork = useCallback(() => {
+-    if (!pendingEdit) return
+-    if (conversationId === '/') return
+-    const messageIndex = messages.findIndex((m) => m.id === pendingEdit.messageId)
+-    if (messageIndex === -1) return
+-
+-    const newConversationId = `/${nanoid()}`
+-    const forkedMessages = messages.slice(0, messageIndex)
+-
+-    // Determine first message text for the sidebar entry
+-    // If editing the first user message, use the new text; otherwise use the original
+-    const firstUserMessage = forkedMessages.find((m) => m.role === 'user')
+-    const firstMessageText = firstUserMessage?.parts.find((p) => p.type === 'text')
+-    const originalText = firstMessageText && 'text' in firstMessageText ? firstMessageText.text : undefined
+-    const firstMessage = originalText ?? pendingEdit.text
+-
+-    // Save fork to IndexedDB
+-    saveConversationEntry(newConversationId, firstMessage, { conversationId, messageIndex })
+-    saveMessages(newConversationId, forkedMessages).catch((err: unknown) => {
+-      console.error('Failed to save forked messages:', err)
+-    })
+-
+-    // Set up pending message to auto-send after navigation
+-    pendingSendRef.current = { text: pendingEdit.text, model, builtinTools: enabledTools }
+-
+-    setPendingEdit(null)
+-    setConversationId(newConversationId)
+-  }, [pendingEdit, messages, conversationId, model, enabledTools, setConversationId])
+-
+-  const handleNavigateToFork = useCallback(
+-    (targetConversationId: string) => {
+-      setConversationId(targetConversationId)
+-    },
+-    [setConversationId],
+-  )
+-
+-  function regen(messageId: string) {
+-    regenerate({ messageId }).catch((error: unknown) => {
+-      console.error('Error regenerating message:', error)
+-    })
+-  }
+-
+-  const availableTools = useMemo(() => {
+-    const enabledToolIds = configQuery.data?.models.find((entry) => entry.id === model)?.builtinTools ?? []
+-    return configQuery.data?.builtinTools.filter((tool) => enabledToolIds.includes(tool.id)) ?? []
+-  }, [configQuery.data, model])
+-
++const ChatInner = ({ messages }: { messages: UIMessage[] }) => {
+   return (
+-    <>
+-      <Conversation className="h-full">
+-        <ConversationContent>
+-          {messages.map((message, messageIndex) => (
+-            <div key={message.id} className={message.role === 'user' ? 'group/user-message' : undefined}>
+-              {message.role === 'assistant' &&
+-                message.parts.filter((part) => part.type === 'source-url').length > 0 && (
+-                  <Sources>
+-                    <SourcesTrigger count={message.parts.filter((part) => part.type === 'source-url').length} />
+-                    {message.parts
+-                      .filter((part) => part.type === 'source-url')
+-                      .map((part, i) => (
+-                        <SourcesContent key={`${message.id}-${i}`}>
+-                          <Source key={`${message.id}-${i}`} href={part.url} title={part.url} />
+-                        </SourcesContent>
+-                      ))}
+-                  </Sources>
+-                )}
+-              {renderMessageParts(
+-                message,
+-                (part, i) => (
+-                  <Part
+-                    key={`${message.id}-${i}`}
+-                    part={part}
+-                    message={message}
+-                    status={status}
+-                    index={i}
+-                    regen={regen}
+-                    lastMessage={message.id === messages.at(-1)?.id}
+-                    onApprovalResponse={addToolApprovalResponse}
+-                    isEditing={editingMessageId === message.id}
+-                    editDraft={editDraftsRef.current.get(message.id)}
+-                    onStartEdit={handleStartEdit}
+-                    onCancelEdit={handleCancelEdit}
+-                    onSubmitEdit={handleSubmitEdit}
+-                    conversationId={conversationId}
+-                    messageIndex={messageIndex}
+-                    onNavigateToFork={handleNavigateToFork}
+-                  />
+-                ),
+-                isFiltered,
+-              )}
+-            </div>
+-          ))}
+-          {status === 'submitted' && <Loader />}
+-          {status === 'error' && error && (
+-            <div className="px-4 py-3 mx-4 my-2 bg-destructive/10 border border-destructive/20 rounded-md text-destructive text-sm">
+-              <div>
+-                <strong>Error:</strong> {error.message}
+-              </div>
+-              <div className="flex gap-2 mt-3">
+-                <Button variant="outline" size="sm" onClick={handleRetry}>
+-                  <RefreshCcwIcon className="size-4" />
+-                  Retry
+-                </Button>
+-                <Button variant="outline" size="sm" onClick={handleContinue}>
+-                  <ArrowRightIcon className="size-4" />
+-                  Continue
+-                </Button>
+-              </div>
+-            </div>
+-          )}
+-        </ConversationContent>
+-        <ConversationScrollButton />
+-      </Conversation>
+-
+-      <div className="sticky bottom-0 p-3">
+-        <PromptInput onSubmit={handleSubmit}>
+-          <PromptInputTextarea
+-            ref={textareaRef}
+-            onChange={(e) => {
+-              setInput(e.target.value)
+-            }}
+-            value={input}
+-            autoFocus={true}
+-          />
+-          <PromptInputToolbar>
+-            <PromptInputTools>
+-              <Tooltip>
+-                <TooltipTrigger asChild>
+-                  <PromptInputButton
+-                    variant="outline"
+-                    aria-label="Hidden tools"
+-                    onClick={() => {
+-                      setFiltersDialogOpen(true)
+-                    }}
+-                  >
+-                    <FilterIcon className="size-4" />
+-                  </PromptInputButton>
+-                </TooltipTrigger>
+-                <TooltipContent>Hidden tools</TooltipContent>
+-              </Tooltip>
+-              {availableTools.length > 0 && (
+-                <DropdownMenu>
+-                  <Tooltip>
+-                    <TooltipTrigger asChild>
+-                      <DropdownMenuTrigger asChild>
+-                        <PromptInputButton variant="outline">
+-                          <Settings2Icon className="size-4" />
+-                        </PromptInputButton>
+-                      </DropdownMenuTrigger>
+-                    </TooltipTrigger>
+-                    <TooltipContent>Tools</TooltipContent>
+-                  </Tooltip>
+-                  <DropdownMenuContent align="start">
+-                    {availableTools.map((tool) => (
+-                      <div
+-                        key={tool.id}
+-                        className="flex items-center justify-between gap-3 px-2 py-1.5 cursor-pointer hover:bg-accent rounded-sm"
+-                        onClick={() => {
+-                          setEnabledTools((prev) =>
+-                            prev.includes(tool.id) ? prev.filter((id) => id !== tool.id) : [...prev, tool.id],
+-                          )
+-                        }}
+-                      >
+-                        <div className="flex items-center gap-2">
+-                          {getToolIcon(tool.id)}
+-                          <span className="text-sm">{tool.name}</span>
+-                        </div>
+-                        <Switch
+-                          checked={enabledTools.includes(tool.id)}
+-                          onCheckedChange={(checked) => {
+-                            setEnabledTools((prev) =>
+-                              checked ? [...prev, tool.id] : prev.filter((id) => id !== tool.id),
+-                            )
+-                          }}
+-                          onClick={(e) => {
+-                            e.stopPropagation()
+-                          }}
+-                        />
+-                      </div>
+-                    ))}
+-                  </DropdownMenuContent>
+-                </DropdownMenu>
+-              )}
+-              {configQuery.data && model && (
+-                <PromptInputModelSelect
+-                  onValueChange={(value) => {
+-                    setModel(value)
++    <Conversation className="h-full min-h-0">
++      <ConversationContent>
++        {messages.map((message) => (
++          <div key={message.id} className={message.role === 'user' ? 'group/user-message' : undefined}>
++            {message.role === 'assistant' && message.parts.filter((part) => part.type === 'source-url').length > 0 && (
++              <Sources>
++                <SourcesTrigger count={message.parts.filter((part) => part.type === 'source-url').length} />
++                {message.parts
++                  .filter((part) => part.type === 'source-url')
++                  .map((part, i) => (
++                    <SourcesContent key={`${message.id}-${i}`}>
++                      <Source href={part.url} title={part.url} />
++                    </SourcesContent>
++                  ))}
++              </Sources>
++            )}
++            {renderMessageParts(
++              message,
++              (part, i) => (
++                <Part
++                  key={`${message.id}-${i}`}
++                  part={part}
++                  message={message}
++                  status="ready"
++                  index={i}
++                  regen={() => {
++                    /* Read-only rendering: retry controls are not mounted. */
+                   }}
+-                  value={model}
+-                >
+-                  <PromptInputModelSelectTrigger>
+-                    <PromptInputModelSelectValue />
+-                  </PromptInputModelSelectTrigger>
+-                  <PromptInputModelSelectContent>
+-                    {(configQuery.data as { models: { id: string; name: string }[] }).models.map((model) => (
+-                      <PromptInputModelSelectItem key={model.id} value={model.id}>
+-                        {model.name}
+-                      </PromptInputModelSelectItem>
+-                    ))}
+-                  </PromptInputModelSelectContent>
+-                </PromptInputModelSelect>
+-              )}
+-              <EffortSelect
+-                value={effort}
+-                onValueChange={(v) => {
+-                  setEffort(v)
+-                  localStorage.setItem('effort', v)
+-                }}
+-              />
+-            </PromptInputTools>
+-            <PromptInputSubmit disabled={!input} status={status} />
+-          </PromptInputToolbar>
+-        </PromptInput>
+-      </div>
+-
+-      <EditMessageDialog
+-        open={pendingEdit !== null}
+-        onOpenChange={(open) => {
+-          if (!open) setPendingEdit(null)
+-        }}
+-        onModify={handleModify}
+-        onFork={handleFork}
+-      />
+-
+-      <ToolFiltersDialog open={filtersDialogOpen} onOpenChange={setFiltersDialogOpen} />
+-    </>
++                  lastMessage={message.id === messages.at(-1)?.id}
++                  onApprovalResponse={() => {
++                    /* All user input belongs to the host question panel. */
++                  }}
++                  readOnly
++                />
++              ),
++              () => false,
++            )}
++          </div>
++        ))}
++        {messages.length === 0 && (
++          <p className="text-sm text-muted-foreground">Host conversation history will appear here.</p>
++        )}
++      </ConversationContent>
++      <ConversationScrollButton />
++    </Conversation>
+   )
+ }
+ 
+-const Chat = () => (
+-  // Upstream default is an empty filter list. A host (e.g. loopy) seeds its own
+-  // noisy tool names by passing `defaults={[...]}` here.
++const Chat = ({ messages }: { messages: UIMessage[] }) => (
+   <ToolFiltersProvider defaults={[]}>
+-    <ChatInner />
++    <ChatInner messages={messages} />
+   </ToolFiltersProvider>
+ )
+ 
+ export default Chat
+-
+ // Walk a message's parts and render them, collapsing two kinds of consecutive
+ // runs into a single element: filtered tool parts into a `HiddenToolsGroup`, and
+ // runs of >=2 calls to the same (non-filtered) tool into a `ToolCallGroup`.
+@@ -515,6 +79,8 @@
+ ): ReactNode[] {
+   const descriptors = message.parts.map((part) => {
+     const toolName = toolNameOfPart(part)
++    // Questions keep their individual waiting/answered badges instead of a generic running group.
++    if (toolName === 'ask_user') return { toolName: null, filtered: false }
+     return { toolName, filtered: toolName !== null && isFiltered(toolName) }
+   })
+ 
+@@ -549,35 +115,3 @@
+ function partState(part: UIMessagePart<UIDataTypes, UITools>): string {
+   return 'state' in part && typeof part.state === 'string' ? part.state : ''
+ }
+-
+-// A tool part whose state is not in `COMPLETE_TOOL_STATES` has no output (or
+-// denial) yet, so continuing would leave the backend with an orphaned tool call.
+-function hasIncompleteToolPart(parts: UIMessagePart<UIDataTypes, UITools>[]): boolean {
+-  return parts.some(
+-    (part) => (part.type === 'dynamic-tool' || 'toolCallId' in part) && !COMPLETE_TOOL_STATES.has(part.state),
+-  )
+-}
+-
+-const MAX_FIRST_MESSAGE_LENGTH = 30
+-
+-function saveConversationEntry(newConversationId: string, firstMessage: string, forkOf?: ConversationEntry['forkOf']) {
+-  const trimmedFirstMessage =
+-    firstMessage.length > MAX_FIRST_MESSAGE_LENGTH
+-      ? firstMessage.slice(0, MAX_FIRST_MESSAGE_LENGTH) + '...'
+-      : firstMessage
+-
+-  const entry: ConversationEntry = {
+-    id: newConversationId,
+-    firstMessage: trimmedFirstMessage,
+-    timestamp: Date.now(),
+-  }
+-  if (forkOf) {
+-    entry.forkOf = forkOf
+-  }
+-
+-  saveConversation(entry)
+-    .then(() => window.dispatchEvent(new Event('conversations-changed')))
+-    .catch((err: unknown) => {
+-      console.error('Failed to save conversation:', err)
+-    })
+-}
+--- a/src/Part.tsx
++++ b/src/Part.tsx
+@@ -18,6 +18,7 @@
+ import { ToolPart } from '@/components/tool-part'
+ 
+ interface PartProps {
++  readOnly?: boolean
+   part: UIMessagePart<UIDataTypes, UITools>
+   message: UIMessage
+   status: string
+@@ -51,6 +52,7 @@
+   conversationId,
+   messageIndex,
+   onNavigateToFork,
++  readOnly = false,
+ }: PartProps) {
+   const [editText, setEditText] = useState('')
+ 
+@@ -69,7 +71,7 @@
+   }
+ 
+   if (part.type === 'text') {
+-    if (message.role === 'user' && isEditing) {
++    if (!readOnly && message.role === 'user' && isEditing) {
+       return (
+         <div className="py-4">
+           <Message from="user">
+@@ -125,14 +127,16 @@
+         </Message>
+         {message.role === 'assistant' && index === message.parts.length - 1 && (
+           <Actions className="mt-1">
+-            <Action
+-              onClick={() => {
+-                regen(message.id)
+-              }}
+-              label="Retry"
+-            >
+-              <RefreshCcwIcon className="size-3" />
+-            </Action>
++            {!readOnly && (
++              <Action
++                onClick={() => {
++                  regen(message.id)
++                }}
++                label="Retry"
++              >
++                <RefreshCcwIcon className="size-3" />
++              </Action>
++            )}
+             <Action
+               onClick={() => {
+                 copy(part.text)
+@@ -143,7 +147,7 @@
+             </Action>
+           </Actions>
+         )}
+-        {message.role === 'user' && index === message.parts.length - 1 && (
++        {!readOnly && message.role === 'user' && index === message.parts.length - 1 && (
+           <div className="flex items-center gap-2 mt-1 justify-end">
+             {status !== 'submitted' && status !== 'streaming' && (
+               <Actions className="opacity-0 group-hover/user-message:opacity-100 transition-opacity">
+@@ -179,7 +183,7 @@
+       </Reasoning>
+     )
+   } else if (part.type === 'dynamic-tool' || 'toolCallId' in part) {
+-    return <ToolPart part={part} onApprovalResponse={onApprovalResponse} />
++    return <ToolPart part={part} onApprovalResponse={onApprovalResponse} readOnly={readOnly} />
+   }
+ }
+ 
+--- a/src/components/ai-elements/tool.tsx
++++ b/src/components/ai-elements/tool.tsx
+@@ -32,7 +32,15 @@
+   className?: string
+ } & ({ type: ToolUIPart['type']; toolName?: never } | { type: 'dynamic-tool'; toolName: string })
+ 
+-const getStatusBadge = (status: ToolPart['state']) => {
++const getStatusBadge = (status: ToolPart['state'], toolId: string) => {
++  const questionLabel =
++    toolId === 'ask_user'
++      ? status === 'input-available'
++        ? 'Waiting for answer'
++        : status === 'output-available'
++          ? 'Answered'
++          : undefined
++      : undefined
+   const labels = {
+     'input-streaming': 'Pending',
+     'input-available': 'Running',
+@@ -56,7 +64,7 @@
+   return (
+     <Badge className="gap-1.5 rounded-full text-xs" variant="secondary">
+       {icons[status]}
+-      {labels[status]}
++      {questionLabel ?? labels[status]}
+     </Badge>
+   )
+ }
+@@ -70,7 +78,7 @@
+       <div className="flex items-center gap-2">
+         {toolIcon}
+         <span className="font-medium text-sm">{toolId}</span>
+-        {getStatusBadge(state)}
++        {getStatusBadge(state, toolId)}
+       </div>
+       <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+     </CollapsibleTrigger>
+--- a/src/components/app-sidebar.tsx
++++ b/src/components/app-sidebar.tsx
+@@ -1,17 +1,4 @@
+-import { CirclePlus, MessageCircle, Trash } from 'lucide-react'
+-import type React from 'react'
+-import { useEffect, useState } from 'react'
+-import { toast } from 'sonner'
+-
+-import { Button } from '@/components/ui/button'
+-import {
+-  Dialog,
+-  DialogContent,
+-  DialogDescription,
+-  DialogFooter,
+-  DialogHeader,
+-  DialogTitle,
+-} from '@/components/ui/dialog'
++import { CirclePlus, MessageCircle } from 'lucide-react'
+ import {
+   Sidebar,
+   SidebarContent,
+@@ -24,90 +11,13 @@
+   SidebarMenuItem,
+   SidebarTrigger,
+ } from '@/components/ui/sidebar'
+-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+-import { useConversationIdFromUrl } from '@/hooks/useConversationIdFromUrl'
++import { TooltipProvider } from '@/components/ui/tooltip'
+ import { cn } from '@/lib/utils'
+-import type { ConversationEntry } from '@/types'
+-import { getConversations, deleteConversation as deleteConv } from '@/lib/chat-db'
+-import { stripBasePath, withBasePath } from '@/lib/base-path'
++import { runPath, type RunEntry } from '@/host-api'
+ import { ModeToggle } from './mode-toggle'
+ import logoSvg from '../assets/logo.svg'
+ 
+-function useConversations(): ConversationEntry[] {
+-  const [conversations, setConversations] = useState<ConversationEntry[]>([])
+-
+-  useEffect(() => {
+-    const loadConversations = () => {
+-      getConversations()
+-        .then(setConversations)
+-        .catch((err: unknown) => {
+-          console.error('Failed to load conversations:', err)
+-        })
+-    }
+-
+-    loadConversations()
+-
+-    window.addEventListener('conversations-changed', loadConversations)
+-
+-    return () => {
+-      window.removeEventListener('conversations-changed', loadConversations)
+-    }
+-  }, [])
+-
+-  return conversations
+-}
+-
+-function doLocalNavigation(e: React.MouseEvent) {
+-  if (e.button !== 0 || e.metaKey || e.ctrlKey) {
+-    return
+-  }
+-  const path = new URL((e.currentTarget as HTMLAnchorElement).href).pathname
+-  window.history.pushState({}, '', path)
+-  // custom event to notify other components of the URL change
+-  window.dispatchEvent(new Event('history-state-changed'))
+-  e.preventDefault()
+-}
+-
+-function deleteConversation(conversationId: string) {
+-  return deleteConv(conversationId).then(() => {
+-    window.dispatchEvent(new Event('conversations-changed'))
+-
+-    const currentPath = stripBasePath(window.location.pathname)
+-    if (currentPath === conversationId) {
+-      window.history.pushState({}, '', withBasePath('/'))
+-      window.dispatchEvent(new Event('history-state-changed'))
+-    }
+-  })
+-}
+-
+-export function AppSidebar() {
+-  const conversations = useConversations()
+-  const [conversationId] = useConversationIdFromUrl()
+-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+-  const [conversationToDelete, setConversationToDelete] = useState<ConversationEntry | null>(null)
+-
+-  const handleDeleteClick = (e: React.MouseEvent, conversation: ConversationEntry) => {
+-    e.preventDefault()
+-    e.stopPropagation()
+-    setConversationToDelete(conversation)
+-    setDeleteDialogOpen(true)
+-  }
+-
+-  const handleConfirmDelete = () => {
+-    if (conversationToDelete) {
+-      deleteConversation(conversationToDelete.id)
+-        .then(() => {
+-          setDeleteDialogOpen(false)
+-          setConversationToDelete(null)
+-          toast.success('Chat deleted successfully')
+-        })
+-        .catch((err: unknown) => {
+-          console.error('Failed to delete conversation:', err)
+-          toast.error('Failed to delete chat')
+-        })
+-    }
+-  }
+-
++export function AppSidebar({ runs, runId }: { runs: RunEntry[]; runId: string | null }) {
+   return (
+     <TooltipProvider>
+       <Sidebar collapsible="icon">
+@@ -115,62 +25,43 @@
+           <SidebarTrigger className="ml-auto" />
+           <div className="ml-2 flex items-center">
+             <h1 className="text-l font-medium text-balance truncate whitespace-nowrap">
+-              <img src={logoSvg} className="inline h-4 mr-2 mb-1" />
++              <img src={logoSvg} alt="" className="inline h-4 mr-2 mb-1" />
+               <span className="group-data-[state=collapsed]:invisible">Pydantic AI</span>
+             </h1>
+           </div>
+         </SidebarHeader>
+-
+         <SidebarContent>
+           <SidebarGroup>
+             <SidebarMenu className="mb-2">
+               <SidebarMenuItem>
+-                <SidebarMenuButton asChild tooltip="Start a new conversation">
+-                  <a href={withBasePath('/')} onClick={doLocalNavigation}>
++                <SidebarMenuButton asChild tooltip="New task">
++                  <a href="/official/">
+                     <CirclePlus />
+-                    <span>New conversation</span>
++                    <span>New task</span>
+                   </a>
+                 </SidebarMenuButton>
+               </SidebarMenuItem>
+             </SidebarMenu>
+-
+             <SidebarGroupContent>
+               <SidebarMenu>
+-                {conversations.map((conversation, index) => (
+-                  <SidebarMenuItem key={index} className="group/sidebar-menu-item">
++                {runs.map((run) => (
++                  <SidebarMenuItem key={run.run_id} className="group/sidebar-menu-item">
+                     <div className="flex items-center gap-1 h-auto">
+-                      <SidebarMenuButton asChild tooltip={conversation.firstMessage} className="flex-1">
++                      <SidebarMenuButton asChild tooltip={run.goal} className="flex-1">
+                         <a
+-                          href={withBasePath(conversation.id)}
+-                          onClick={doLocalNavigation}
+-                          className={cn('h-auto flex items-start gap-2', {
+-                            'bg-accent pointer-events-none': conversation.id === conversationId,
+-                          })}
++                          href={runPath(run.run_id)}
++                          aria-current={run.run_id === runId ? 'page' : undefined}
++                          className={cn('h-auto flex items-start gap-2', { 'bg-accent': run.run_id === runId })}
+                         >
+                           <MessageCircle className="size-3 mt-1" />
+-                          <span className="flex flex-col items-start">
+-                            <span className="truncate max-w-44">{conversation.firstMessage}</span>
+-                            <span className="text-xs opacity-30">
+-                              {new Date(conversation.timestamp).toLocaleString()}
++                          <span className="flex flex-col items-start min-w-0">
++                            <span className="truncate max-w-44">{run.goal}</span>
++                            <span className="text-xs text-muted-foreground truncate max-w-44">
++                              {run.run_id} · {run.status}
+                             </span>
+                           </span>
+                         </a>
+                       </SidebarMenuButton>
+-                      <Tooltip>
+-                        <TooltipTrigger asChild>
+-                          <Button
+-                            variant="ghost"
+-                            size="sm"
+-                            className="h-auto p-1.5 opacity-0 group-hover/sidebar-menu-item:opacity-100 transition-opacity group-data-[state=collapsed]:hidden absolute right-0 self-start"
+-                            onClick={(e) => {
+-                              handleDeleteClick(e, conversation)
+-                            }}
+-                          >
+-                            <Trash className="size-3" />
+-                          </Button>
+-                        </TooltipTrigger>
+-                        <TooltipContent>Delete conversation</TooltipContent>
+-                      </Tooltip>
+                     </div>
+                   </SidebarMenuItem>
+                 ))}
+@@ -178,41 +69,9 @@
+             </SidebarGroupContent>
+           </SidebarGroup>
+         </SidebarContent>
+-
+         <SidebarFooter>
+           <ModeToggle />
+         </SidebarFooter>
+-
+-        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+-          <DialogContent
+-            onKeyDown={(e) => {
+-              if (e.key === 'Enter') {
+-                e.preventDefault()
+-                handleConfirmDelete()
+-              }
+-            }}
+-          >
+-            <DialogHeader>
+-              <DialogTitle>Delete conversation?</DialogTitle>
+-              <DialogDescription>
+-                Are you sure you want to delete this chat? This action cannot be undone.
+-              </DialogDescription>
+-            </DialogHeader>
+-            <DialogFooter>
+-              <Button
+-                variant="outline"
+-                onClick={() => {
+-                  setDeleteDialogOpen(false)
+-                }}
+-              >
+-                Cancel
+-              </Button>
+-              <Button variant="destructive" onClick={handleConfirmDelete} autoFocus>
+-                Delete
+-              </Button>
+-            </DialogFooter>
+-          </DialogContent>
+-        </Dialog>
+       </Sidebar>
+     </TooltipProvider>
+   )
+--- a/src/components/host-panel.tsx
++++ b/src/components/host-panel.tsx
+@@ -0,0 +1,202 @@
++import { useRef, useState, type SyntheticEvent } from 'react'
++import { Button } from './ui/button'
++import { Textarea } from './ui/textarea'
++import { request, runPath, type HostRun } from '@/host-api'
++
++export function HostPanel({
++  snapshot,
++  runId,
++  refresh,
++  loadError,
++  connection,
++}: {
++  snapshot: HostRun | null
++  runId: string | null
++  refresh: () => Promise<void>
++  loadError: string
++  connection: string
++}) {
++  const [goal, setGoal] = useState('')
++  const [answer, setAnswer] = useState('')
++  const [busy, setBusy] = useState(false)
++  const [error, setError] = useState('')
++  const submitting = useRef(false)
++  const command = useRef<{ key: string; id: string } | null>(null)
++  const question = snapshot?.question
++
++  async function submit(kind: 'create' | 'start' | 'answer', event?: SyntheticEvent) {
++    event?.preventDefault()
++    if (submitting.current) return
++    if (kind === 'create' && !goal.trim()) return
++    if (kind === 'start' && snapshot?.status !== 'registered') return
++    if (kind === 'answer' && (!question?.pending || !answer.trim() || snapshot?.status !== 'waiting_for_user')) return
++    submitting.current = true
++    setBusy(true)
++    setError('')
++    try {
++      if (kind === 'create') {
++        const created = await request<HostRun>('/api/runs', { arm: 'official', goal: goal.trim() })
++        if (created.arm !== 'official' || !created.run_id) throw new Error('Host returned an invalid task binding')
++        window.location.assign(runPath(created.run_id))
++        return
++      }
++      if (!snapshot) return
++      const payload =
++        kind === 'answer'
++          ? { question_id: question!.question_id, task_revision: snapshot.task_revision, answer: answer.trim() }
++          : {}
++      const key = JSON.stringify([snapshot.run_id, kind, payload])
++      if (command.current?.key !== key) command.current = { key, id: crypto.randomUUID() }
++      await request<HostRun>(`/api/runs/${encodeURIComponent(snapshot.run_id)}/${kind}`, {
++        command_id: command.current.id,
++        ...payload,
++      })
++      // Re-fetch canonical history; POST responses and client drafts never become model messages.
++      await refresh()
++      command.current = null
++      if (kind === 'answer') setAnswer('')
++    } catch (reason) {
++      setError(
++        `${reason instanceof Error ? reason.message : String(reason)}. The command may have reached the host; check its current state before submitting again.`,
++      )
++      await refresh()
++    } finally {
++      submitting.current = false
++      setBusy(false)
++    }
++  }
++
++  return (
++    <section
++      aria-label="Host task"
++      className="m-3 shrink-0 max-h-[45vh] overflow-y-auto rounded-lg border bg-muted/30 p-4 space-y-3 text-sm"
++    >
++      <h2 className="font-semibold">Host task</h2>
++      <p className="text-xs text-muted-foreground">{connection}</p>
++      {(error || loadError) && (
++        <p role="alert" className="text-destructive whitespace-pre-wrap">
++          {error || loadError}
++        </p>
++      )}
++      {!runId && (
++        <form
++          onSubmit={(event) => {
++            void submit('create', event)
++          }}
++          className="space-y-2"
++        >
++          <label htmlFor="host-goal">Goal</label>
++          <Textarea
++            id="host-goal"
++            value={goal}
++            onChange={(event) => {
++              setGoal(event.target.value)
++            }}
++            disabled={busy}
++          />
++          <Button type="submit" disabled={busy || !goal.trim()}>
++            Create task
++          </Button>
++        </form>
++      )}
++      {runId && !snapshot && <p>Loading task {runId}…</p>}
++      {snapshot && (
++        <>
++          <p className="break-all">
++            <strong>Task:</strong> {snapshot.run_id}
++          </p>
++          <p className="whitespace-pre-wrap">
++            <strong>Goal:</strong> {snapshot.goal}
++          </p>
++          <p>
++            <strong>Status:</strong> <span data-testid="host-status">{snapshot.status}</span> · <strong>Phase:</strong>{' '}
++            {snapshot.phase} · <strong>Revision:</strong> {snapshot.task_revision}
++          </p>
++          {snapshot.status === 'registered' && (
++            <Button
++              disabled={busy || Boolean(loadError)}
++              onClick={() => {
++                void submit('start')
++              }}
++            >
++              Start task
++            </Button>
++          )}
++          {question && (
++            <div className="rounded-md border p-3 space-y-2">
++              <p>
++                <strong>{question.pending ? 'Pending question' : 'Answered question'}:</strong> {question.question}
++              </p>
++              <p className="text-xs text-muted-foreground">Question ID: {question.question_id}</p>
++              {question.answer !== null && (
++                <p className="whitespace-pre-wrap">
++                  <strong>Recorded answer:</strong> {question.answer}
++                </p>
++              )}
++              {question.pending && snapshot.status === 'waiting_for_user' && (
++                <form
++                  onSubmit={(event) => {
++                    void submit('answer', event)
++                  }}
++                  className="space-y-2"
++                >
++                  <label htmlFor="host-answer">Answer</label>
++                  <Textarea
++                    id="host-answer"
++                    value={answer}
++                    onChange={(event) => {
++                      setAnswer(event.target.value)
++                    }}
++                    disabled={busy}
++                  />
++                  <Button type="submit" disabled={busy || !answer.trim() || Boolean(loadError)}>
++                    Submit answer
++                  </Button>
++                </form>
++              )}
++            </div>
++          )}
++          <div className="border-t pt-2 space-y-1" aria-label="Host result">
++            <p>
++              <strong>Host verification scope:</strong>{' '}
++              {snapshot.outcome ? (
++                <span data-testid="host-scope">{snapshot.outcome.verification_scope}</span>
++              ) : (
++                'Not reported'
++              )}
++            </p>
++            <p>
++              <strong>Host verification result:</strong>{' '}
++              {snapshot.verification === null ? (
++                'Not reported'
++              ) : (
++                <span data-testid="host-verdict">{snapshot.verification.passed ? 'pass' : 'fail'}</span>
++              )}
++            </p>
++            {snapshot.outcome && (
++              <>
++                <p>
++                  <strong>Host outcome:</strong> {snapshot.outcome.status}
++                </p>
++                <p className="whitespace-pre-wrap">{snapshot.outcome.summary}</p>
++                <details>
++                  <summary>Host usage</summary>
++                  <pre className="whitespace-pre-wrap break-all">
++                    {JSON.stringify(snapshot.outcome.usage, null, 2)}
++                  </pre>
++                </details>
++              </>
++            )}
++            {snapshot.verification && (
++              <pre className="whitespace-pre-wrap break-all">
++                {typeof snapshot.verification.feedback === 'string'
++                  ? snapshot.verification.feedback
++                  : JSON.stringify(snapshot.verification.feedback, null, 2)}
++              </pre>
++            )}
++          </div>
++        </>
++      )}
++    </section>
++  )
++}
+--- a/src/components/tool-part.tsx
++++ b/src/components/tool-part.tsx
+@@ -12,11 +12,12 @@
+ const ToolInputMemo = memo(ToolInput)
+ 
+ interface ToolPartProps {
++  readOnly?: boolean
+   part: ToolUIPart | DynamicToolUIPart
+   onApprovalResponse: ChatAddToolApproveResponseFunction
+ }
+ 
+-export function ToolPart({ part, onApprovalResponse }: ToolPartProps) {
++export function ToolPart({ part, onApprovalResponse, readOnly = false }: ToolPartProps) {
+   const approval = 'approval' in part ? part.approval : undefined
+   const [open, setOpen] = useState(() => part.state === 'approval-requested' || Boolean(approval))
+   const { addFilter } = useToolFilters()
+@@ -33,17 +34,19 @@
+ 
+   return (
+     <Tool data-tool-name={toolName} open={open} onOpenChange={setOpen} className="group/tool-part relative">
+-      <button
+-        type="button"
+-        aria-label="Hide this tool"
+-        title={`Hide ${toolName} tool cards`}
+-        onClick={() => {
+-          addFilter(toolName)
+-        }}
+-        className="absolute top-2.5 right-9 z-10 rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover/tool-part:opacity-100"
+-      >
+-        <EyeOffIcon className="size-3.5" />
+-      </button>
++      {!readOnly && (
++        <button
++          type="button"
++          aria-label="Hide this tool"
++          title={`Hide ${toolName} tool cards`}
++          onClick={() => {
++            addFilter(toolName)
++          }}
++          className="absolute top-2.5 right-9 z-10 rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover/tool-part:opacity-100"
++        >
++          <EyeOffIcon className="size-3.5" />
++        </button>
++      )}
+       {part.type === 'dynamic-tool' ? (
+         <ToolHeader type={part.type} state={part.state} toolName={part.toolName} />
+       ) : (
+@@ -53,8 +56,13 @@
+         {open && (
+           <>
+             {isRunCode ? <RunCodeInput input={part.input} /> : <ToolInputMemo input={part.input} />}
+-            {approval && (
++            {approval && !readOnly && (
+               <ToolApprovalPrompt approval={approval} state={part.state} onApprovalResponse={onApprovalResponse} />
++            )}
++            {approval && readOnly && (
++              <p className="px-4 text-sm text-muted-foreground">
++                Host-owned tool state; no approval action is available here.
++              </p>
+             )}
+             {(part.state === 'output-available' || part.state === 'output-error') &&
+               (isRunCode && !part.errorText && isRunCodeOutput(part.output) ? (
+--- a/src/host-api.ts
++++ b/src/host-api.ts
+@@ -0,0 +1,96 @@
++import type { UIMessage } from 'ai'
++import { useCallback, useEffect, useRef, useState } from 'react'
++
++export interface HostRun {
++  run_id: string
++  arm: string
++  goal: string
++  status: 'registered' | 'running' | 'waiting_for_user' | 'completed' | 'failed'
++  task_revision: number
++  phase: string
++  question: null | { question_id: string; question: string; pending: boolean; answer: string | null }
++  outcome: null | { status: string; verification_scope: string; summary: string; usage: unknown }
++  verification: null | { passed: boolean; feedback: unknown }
++  messages: { vercel: UIMessage[]; aui: unknown[]; agui: unknown[] }
++  view_version: string
++}
++
++export type RunEntry = Pick<HostRun, 'run_id' | 'goal' | 'status'>
++
++export function runPath(id: string) {
++  return `/official/${encodeURIComponent(id)}`
++}
++
++export async function request<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
++  const response = await fetch(path, {
++    method: body === undefined ? 'GET' : 'POST',
++    headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
++    body: body === undefined ? undefined : JSON.stringify(body),
++    cache: 'no-store',
++    signal,
++  })
++  if (!response.ok) throw new Error(`Host HTTP ${response.status}: ${(await response.text()).slice(0, 800)}`)
++  return (await response.json()) as T
++}
++
++export function useHostRun(runId: string | null) {
++  const [snapshot, setSnapshot] = useState<HostRun | null>(null)
++  const [runs, setRuns] = useState<RunEntry[]>([])
++  const [error, setError] = useState('')
++  const [connection, setConnection] = useState('Connecting to host')
++  const generation = useRef(0)
++  const controller = useRef<AbortController | null>(null)
++
++  const refresh = useCallback(async () => {
++    const ticket = ++generation.current
++    controller.current?.abort()
++    const nextController = new AbortController()
++    controller.current = nextController
++    try {
++      const [list, next] = await Promise.all([
++        request<{ runs: RunEntry[] }>('/api/runs?arm=official', undefined, nextController.signal),
++        runId ? request<HostRun>(`/api/runs/${encodeURIComponent(runId)}`, undefined, nextController.signal) : null,
++      ])
++      if (ticket !== generation.current) return
++      if (next && (next.arm !== 'official' || next.run_id !== runId)) throw new Error('Host task binding mismatch')
++      if (next && !Array.isArray(next.messages.vercel)) throw new Error('Host snapshot has no Vercel history')
++      setRuns(list.runs)
++      setSnapshot(next)
++      setError('')
++    } catch (reason) {
++      if (ticket === generation.current && !nextController.signal.aborted) {
++        setError(reason instanceof Error ? reason.message : String(reason))
++      }
++    }
++  }, [runId])
++
++  useEffect(() => {
++    void refresh()
++    const source = runId ? new EventSource(`/api/runs/${encodeURIComponent(runId)}/events`) : null
++    const sync = () => {
++      void refresh()
++    }
++    if (source) {
++      source.addEventListener('sync', sync)
++      source.addEventListener('run.changed', sync)
++      source.onopen = () => {
++        setConnection('Host events connected')
++        void refresh()
++      }
++      source.onerror = () => {
++        setConnection('Host events reconnecting; displayed snapshot may be stale')
++      }
++    } else {
++      setConnection('Host task list')
++    }
++    window.addEventListener('focus', sync)
++    return () => {
++      ++generation.current
++      controller.current?.abort()
++      source?.close()
++      window.removeEventListener('focus', sync)
++    }
++  }, [runId, refresh])
++
++  return { snapshot, runs, error, connection, refresh }
++}
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -9,7 +9,7 @@
+ // import { analyzer } from 'vite-bundle-analyzer'
+ 
+ // 8000 is quite common for backend, avoid the clash
+-const BACKEND_DEV_SERVER_PORT = process.env.BACKEND_PORT ?? 38001
++const BACKEND_DEV_SERVER_PORT = process.env.BACKEND_PORT ?? 38800
+ 
+ const API_PROXY = {
+   '/api': {
+@@ -24,14 +24,13 @@
+   '.ico': 'image/x-icon',
+ }
+ 
+-// vite-plugin-singlefile inlines <script> and <link rel="stylesheet">, but favicons are
+-// plain public/ files it leaves as relative hrefs. Without this they'd 404 in the
+-// single-file artifact, which has no sibling files to resolve against.
++// Keep upstream icons self-contained: the comparison host mounts /official/assets,
++// while other /official/* paths serve the task page.
+ function inlineFavicons(): Plugin {
+   return {
+     name: 'inline-favicons',
+     transformIndexHtml(html) {
+-      return html.replace(/href="\.\/([\w-]+\.(?:svg|png|ico))"/g, (link, fileName: string) => {
++      return html.replace(/href="(?:\.\/|\/official\/|\/)([\w-]+\.(?:svg|png|ico))"/g, (link, fileName: string) => {
+         const mimeType = FAVICON_MIME_TYPES[extname(fileName)]
+         if (mimeType === undefined) return link
+         const base64 = readFileSync(resolve(__dirname, 'public', fileName)).toString('base64')
+@@ -42,11 +41,10 @@
+ }
+ 
+ // https://vite.dev/config/
+-export default defineConfig(({ command, mode }) => {
++export default defineConfig(({ mode }) => {
+   // `--mode offline` emits a single self-contained index.html for air-gapped hosting
+   // (pydantic-ai's `to_web(html_source=...)` takes one file). Everything is inlined:
+-  // the lazily-imported chunks, which would otherwise be fetched from the CDN base at
+-  // runtime, and the KaTeX fonts referenced by url() from its stylesheet.
++  // the lazily-imported chunks and the KaTeX fonts referenced by its stylesheet.
+   const offline = mode === 'offline'
+ 
+   return {
+@@ -54,9 +52,10 @@
+       react(),
+       tailwindcss(),
+       tsconfigPaths({ root: __dirname }),
+-      ...(offline ? [inlineFavicons(), viteSingleFile()] : []),
++      inlineFavicons(),
++      ...(offline ? [viteSingleFile()] : []),
+     ],
+-    base: offline ? './' : command === 'build' ? 'https://cdn.jsdelivr.net/npm/@pydantic/ai-chat-ui/dist/' : '',
++    base: offline ? './' : '/official/',
+     build: {
+       assetsDir: 'assets',
+       // The favicons are inlined above, so nothing should be copied next to index.html --

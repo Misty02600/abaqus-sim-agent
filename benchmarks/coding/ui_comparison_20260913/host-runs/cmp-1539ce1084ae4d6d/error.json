@@ -1,0 +1,4 @@
+{
+  "type": "CodingRunInfrastructureError",
+  "message": "PermissionError: [WinError 5] 拒绝访问。: 'D:\\\\Projects\\\\abaqus-agent\\\\abaqus-sim-agent\\\\var\\\\ui-comparison-20260913\\\\host-runs\\\\cmp-1539ce1084ae4d6d\\\\state\\\\.resume_state.json.e6ea393c3131485ab93860f532ed1f31.tmp' -> 'D:\\\\Projects\\\\abaqus-agent\\\\abaqus-sim-agent\\\\var\\\\ui-comparison-20260913\\\\host-runs\\\\cmp-1539ce1084ae4d6d\\\\state\\\\resume_state.json'"
+}

@@ -1,0 +1,464 @@
+{
+  "version": "task-knowledge-manual-review-v1",
+  "date": "2026-09-09",
+  "method": "Single-assistant posthoc manual review of three exposed historical tasks under task-knowledge-acceptance-v1; not an independent blind evaluation or automatic grader.",
+  "contract": "benchmarks/rag/task_knowledge_acceptance_v1.json",
+  "contract_sha256": "7a7bf9fd50bc67bf5d0a47a094e31e5cadfab9978d3ee1c093cdb678d8e559c8",
+  "old_outcomes_policy": "Historical completed/execution_evidence outcomes and all prior scores remain untouched. No aggregate success percentage is computed.",
+  "evidence_policy": "Only historical incoming capability/API/doc payloads and user inputs count as delivered grounding. Reviewer-side sources in the contract can adjudicate correctness but are NOT retroactively counted as retrieved. Reads of the Agent's own generated analysis or repaired code are not independent evidence.",
+  "tasks": [
+    {
+      "id": "api_region",
+      "bindings": {
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\exact-api-region\\state\\request.json": "d6feabf06712576939e619c8d39e4e34063d57a41c8cf5ed67883a465ddd3faf",
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\exact-api-region\\state\\history.json": "2f56276420fe54a47a7beab84c653b92f7cf44431c471722ca567cfe05bd7f96",
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\exact-api-region\\state\\outcome.json": "47ba6cffc54cfd6b0ad45137f2a234a77e33313770aecfdfc7065112611db8d4",
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\exact-api-region\\state\\initial_snapshot.json": "e3c1db109cd64afcac25462369bde467a80d1bfa07b7923b23c205c176935b53",
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\exact-api-region\\workspace\\analysis.json": "a9501311ae08ebd7aa429df50fb5f3f0c5a6ce882971904455bf1f182e4584ee"
+      },
+      "original_outcome": "completed",
+      "original_verification_scope": "execution_evidence",
+      "abaqus_calls": 0,
+      "solver_calls": 0,
+      "incoming_evidence_inventory": [
+        {
+          "tool": "load_capability",
+          "call_id": "call_92bfb3bac5a34b71be049c3b",
+          "payload_sha256": "32a221d345bec3702bab8f34986f664a08f4d71df7c8cb3eb316090542c27996",
+          "status": "loaded"
+        },
+        {
+          "tool": "lookup_abaqus_api",
+          "call_id": "call_124ce487d54d48efa7f69b65",
+          "payload_sha256": "e1ca77d115edc22ea64476baba6c71001034b3e80ac60b402c84b9f8e41c93da",
+          "status": "found",
+          "cards": [
+            "api:2024:abaqus.Odb.FieldOutput.FieldOutput.getSubset"
+          ]
+        },
+        {
+          "tool": "lookup_abaqus_api",
+          "call_id": "call_64deb7d83a4f4bbc80ac0904",
+          "payload_sha256": "a530cf2b4b0bf6442eb5c7997e181c81d4d7daf8d03f19d694e18d18ef49d457",
+          "status": "not_found",
+          "cards": []
+        },
+        {
+          "tool": "lookup_abaqus_api",
+          "call_id": "call_b49a9eaedba440a2ac9e3c9d",
+          "payload_sha256": "fd18e0fedc11348dee8429773398940828fb19a2b225ed0c5324b1a07ad9f783",
+          "status": "not_found",
+          "cards": []
+        },
+        {
+          "tool": "lookup_abaqus_api",
+          "call_id": "call_7b4535a5c70a4cc7bb465155",
+          "payload_sha256": "0f769d77288e0f39fbc064e3a3280de206fbad27d56b6b6b23eba1ecd47a0719",
+          "status": "not_found",
+          "cards": []
+        },
+        {
+          "tool": "search_abaqus_docs",
+          "call_id": "call_383dfbd9885449aba79e70b2",
+          "payload_sha256": "2ceff438837e8ba34a650072c8bb34369a13b894b7df203e714f6c1a8e374176",
+          "status": "found",
+          "documents": [
+            {
+              "document_id": "simaout-c-std-nodalvariables",
+              "section": "Nodal Variables",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-U"
+            },
+            {
+              "document_id": "simakey-r-nodeoutput",
+              "section": "Optional parameter when the option is used in conjunction with the , option",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-nodeoutput.htm#simakey-r-nodeoutput"
+            },
+            {
+              "document_id": "simaout-c-output",
+              "section": "Part and Assembly Information",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-output.htm#simaout-c-output-t-TheResultsFile-sma-topic10"
+            },
+            {
+              "document_id": "simaout-c-printfile",
+              "section": "Specifying the Directions for Nodal Output",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-printfile.htm#simaout-c-printfile-nodaloutput"
+            }
+          ]
+        }
+      ],
+      "answer_summary": "目标入参修正正确；依据说明扩大了runtime note的验证范围。",
+      "mandatory_facts": [
+        {
+          "id": "API-F1",
+          "answer": "correct",
+          "grounding": "supported",
+          "basis": [
+            "call_124ce487d54d48efa7f69b65"
+          ],
+          "reason": "节点集合语境下的OdbSet参数类型得到Catalog签名支持。按本任务语境理解，不把措辞自动扩大到全部getSubset重载。"
+        },
+        {
+          "id": "API-F2",
+          "answer": "correct",
+          "grounding": "partial",
+          "basis": [
+            "call_124ce487d54d48efa7f69b65"
+          ],
+          "reviewer_sources": [
+            "api_odb",
+            "api_assembly",
+            "api_subset"
+          ],
+          "reason": "表达式与版本化类型资料一致；当时OdbAssembly.nodeSets、OdbAssembly和OdbSet查询均未找到对应卡片，文档检索也未送达完整访问链。评审者后来核对的stub不能补算为Agent已收到。"
+        }
+      ],
+      "conditional_claims": [
+        {
+          "id": "API-C1",
+          "triggered": true,
+          "answer": "partial",
+          "grounding": "scope_or_version_mismatch",
+          "location": "analysis.json findings[3] and evidence_refs[1]",
+          "reason": "答案声称2024运行证据确认OdbSet路径；实际引用note只明确记录getSubset(region=one_odb_node)。相邻重载的成功不能充当本次重载已执行的证据。"
+        },
+        {
+          "id": "API-C2",
+          "triggered": true,
+          "answer": "appropriately_conditional",
+          "grounding": "supported",
+          "reason": "将LEFT存在性留作将来实际执行的检查，没有因此阻塞离线修正，也没有改为实例层路径。"
+        }
+      ],
+      "action_review": {
+        "status": "compliant_in_recorded_scope",
+        "checks": [
+          "AST核对：除region表达式外其余语句不变。",
+          "历史调用记录及usage均无Abaqus/Solver执行。",
+          "analysis.json与修正脚本hash匹配历史outcome。"
+        ],
+        "qualification": "源码行尾发生LF/CRLF规范化；确认的是语句/表达式边界，不声称字节级只改一个范围。"
+      },
+      "attribution": "代码任务达成与RAG证据充分性是不同结果；这里主要暴露访问链证据覆盖不足和runtime依据被扩大解释。"
+    },
+    {
+      "id": "riks_advice",
+      "bindings": {
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\domain-procedure-applicability\\state\\request.json": "4e6056dcd4eceb09423286b5d95f98e056ed0343c516b52aeec4cd5b3fd54cf7",
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\domain-procedure-applicability\\state\\history.json": "d1f2832b5d4ee1153783c1a6bbd861d6d4be08e90b72fd8e7a47f43c12982619",
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\domain-procedure-applicability\\state\\outcome.json": "4fd2172e1ecf6f7153c0133c4de6682d23992fa4f381dd8c814ec682f4b95f5d",
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\domain-procedure-applicability\\state\\initial_snapshot.json": "6cf2ee2bda17954de442a33573682a3f7fecf1aa95d3faf7ab35589558d594d7",
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\domain-procedure-applicability\\workspace\\analysis.json": "629fdc0fc6a0ed234b18da002bc9747802b388644b499871d41de4c0edc4f160"
+      },
+      "original_outcome": "completed",
+      "original_verification_scope": "execution_evidence",
+      "abaqus_calls": 0,
+      "solver_calls": 0,
+      "incoming_evidence_inventory": [
+        {
+          "tool": "load_capability",
+          "call_id": "call_1639454c3e0a4d3880e7c879",
+          "payload_sha256": "32a221d345bec3702bab8f34986f664a08f4d71df7c8cb3eb316090542c27996",
+          "status": "loaded"
+        },
+        {
+          "tool": "search_abaqus_docs",
+          "call_id": "call_33b4ca5318c44698aeba882f",
+          "payload_sha256": "c40229acae7053b2be1ddaf3acbffd05a2c1adad39a5a4db6b04a163ef8ab596",
+          "status": "found",
+          "documents": [
+            {
+              "document_id": "simakey-r-static",
+              "section": "*STATIC",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static"
+            },
+            {
+              "document_id": "simaout-c-std-solutiondependentamplitudevariables",
+              "section": "Solution-Dependent Amplitude Variables",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-solutiondependentamplitudevariables.htm#simaout-c-std-solutiondependentamplitudevariables__simaout-c-genxsl-LPF"
+            },
+            {
+              "document_id": "simaanl-c-static",
+              "section": "Unstable Problems",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3"
+            },
+            {
+              "document_id": "simaanl-c-postbuckling",
+              "section": "Material Options",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-matsect1"
+            }
+          ]
+        },
+        {
+          "tool": "search_abaqus_docs",
+          "call_id": "call_c8270a71ef0640ee8b491d40",
+          "payload_sha256": "635a119e13294125f3344985e98ed40a462edac10a3bd2e195795a481325d9ec",
+          "status": "found",
+          "documents": [
+            {
+              "document_id": "simakey-r-static",
+              "section": "*STATIC",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static"
+            },
+            {
+              "document_id": "simaanl-c-static",
+              "section": "Unstable Problems",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3"
+            },
+            {
+              "document_id": "simaanl-c-postbuckling",
+              "section": "Loads",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1"
+            },
+            {
+              "document_id": "simaanl-c-visco",
+              "section": "Loads",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-visco.htm#simaanl-c-visco-t-loadsect1"
+            }
+          ]
+        }
+      ],
+      "answer_summary": "核心适用性和比例加载解释基本到位，但追加的排他性载荷前提与2024稳定性声明缺少足够依据。",
+      "mandatory_facts": [
+        {
+          "id": "RIKS-F1",
+          "answer": "correct",
+          "grounding": "partial",
+          "basis": [
+            "call_33b4ca5318c44698aeba882f",
+            "call_c8270a71ef0640ee8b491d40"
+          ],
+          "reviewer_sources": [
+            "riks_method"
+          ],
+          "reason": "已送达Unstable Problems支持载荷作为解的一部分和比例加载下采用Riks。答案中的完整弧长机制与评审原文一致，但当时excerpt没有完整展开该机制。"
+        },
+        {
+          "id": "RIKS-F2",
+          "answer": "correct",
+          "grounding": "supported",
+          "basis": [
+            "call_33b4ca5318c44698aeba882f",
+            "call_c8270a71ef0640ee8b491d40"
+          ],
+          "reason": "单一比例因子、LPF含义和幅值参考忽略获得当时片段支持；用户给定的载荷情境没有要求引入dead-load历史，不因答案未展开该可选情况扣为缺失。力型载荷排他性另审。"
+        },
+        {
+          "id": "RIKS-F3",
+          "answer": "correct",
+          "grounding": "partial",
+          "basis": [
+            "call_33b4ca5318c44698aeba882f",
+            "call_c8270a71ef0640ee8b491d40"
+          ],
+          "reason": "不是任意不收敛修复的主旨合理，比例载荷和材料适用性有部分依据；答案列举的所有具体限制不能由有限片段整体背书。"
+        }
+      ],
+      "conditional_claims": [
+        {
+          "id": "RIKS-C1",
+          "triggered": true,
+          "answer": "partial",
+          "grounding": "missing",
+          "location": "analysis.json next_action",
+          "reason": "把确认均为力型载荷作为建议采用前提，超出了用户原要求。Loads示例列表和无关Quasi-Static Loads不能证明排他性规则。这里不反向断言所有其他加载方式受支持。"
+        },
+        {
+          "id": "RIKS-C2",
+          "triggered": true,
+          "answer": "correct",
+          "grounding": "supported",
+          "basis": [
+            "call_33b4ca5318c44698aeba882f"
+          ],
+          "reason": "LPF含义有送达的输出变量卡支持；未实际讨论结束条件，不强制检查该未触发分支。"
+        },
+        {
+          "id": "RIKS-C3",
+          "triggered": true,
+          "answer": "partial",
+          "grounding": "missing",
+          "location": "analysis.json findings[3]",
+          "reason": "把强制非零位移加载列入采用Riks不能消除的根因情境，缺少针对该情境的直接说明；与C1同属范围扩张，不重复计算为独立任务失败。"
+        }
+      ],
+      "version_review": {
+        "status": "unsupported_compatibility_assertion",
+        "location": "analysis.json findings[4]",
+        "reason": "承认检索资料为2026后，仍宣称所列核心行为及载荷类型限制在2024稳定；保存证据未验证这一整组跨版本主张。"
+      },
+      "action_review": {
+        "status": "compliant_in_recorded_file_runtime_scope",
+        "checks": [
+          "原project_notes.txt hash保持不变。",
+          "只新增analysis.json，没有改物理模型。",
+          "历史记录及usage无Abaqus/Solver执行。"
+        ],
+        "qualification": "文件/运行边界合规不等于所有证据范围表述合规。"
+      },
+      "attribution": "不能因BC指定单元未送达就判整个原任务失败；更直接的问题是答案主动增加了未获支持的排他性前提。"
+    },
+    {
+      "id": "warning_advice",
+      "bindings": {
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\recorded-solver-diagnostic\\state\\request.json": "58f6b20932815181703959fd6927046ac702d973d9e547791f62d0795888d44a",
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\recorded-solver-diagnostic\\state\\history.json": "62aa95fe26b513cdcc6290dd7af698c0d77630c7b21095800f9c14a199bc0d76",
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\recorded-solver-diagnostic\\state\\outcome.json": "aeb5cdb2989e85528488d0d7b3939dc24bc6952233a69f163a61793a01dd23ec",
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\recorded-solver-diagnostic\\state\\initial_snapshot.json": "c9870606a01f05c2c86cc0505eb1b38d8fe05df20b64aa641b96952b482466a2",
+        "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\recorded-solver-diagnostic\\workspace\\analysis.json": "24b5f4105183ad1009899d9dc39fb515327f7c7d868d201095329d44bf054d78"
+      },
+      "original_outcome": "completed",
+      "original_verification_scope": "execution_evidence",
+      "abaqus_calls": 0,
+      "solver_calls": 0,
+      "incoming_evidence_inventory": [
+        {
+          "tool": "load_capability",
+          "call_id": "call_731d767d2b504a12b147cdba",
+          "payload_sha256": "32a221d345bec3702bab8f34986f664a08f4d71df7c8cb3eb316090542c27996",
+          "status": "loaded"
+        },
+        {
+          "tool": "search_abaqus_docs",
+          "call_id": "call_16ae5776a11a407084310ac5",
+          "payload_sha256": "8df20fe9f4c6b5036e9728480d9f2b28001a84c0e7c11429e458aecedacb3f79",
+          "status": "found",
+          "documents": [
+            {
+              "document_id": "simaout-c-std-nodalvariables",
+              "section": "Nodal Variables",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-AT"
+            },
+            {
+              "document_id": "simaout-c-dboutput-incrementation",
+              "section": "Requesting Preselected Output",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-incrementation.htm#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83"
+            },
+            {
+              "document_id": "simaout-c-output",
+              "section": "The Message File",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-output.htm#simaout-c-output-message"
+            },
+            {
+              "document_id": "simaout-c-ov",
+              "section": "Abaqus Output Guide",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-ov.htm#simaout-c-ov"
+            }
+          ]
+        },
+        {
+          "tool": "search_abaqus_docs",
+          "call_id": "call_83256ec63de4405fad64e4cd",
+          "payload_sha256": "1475ca56342f931bcbb496717a5a7e2e78773ee58998b700c49760b6d3e4db84",
+          "status": "found",
+          "documents": [
+            {
+              "document_id": "simaout-c-std-nodalvariables",
+              "section": "Nodal Variables",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-AT"
+            },
+            {
+              "document_id": "simakey-r-static",
+              "section": "Data line for a general static analysis",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static"
+            },
+            {
+              "document_id": "simakey-r-geostatic",
+              "section": "Data line to define automatic time incrementation",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-geostatic.htm#simakey-r-geostatic"
+            },
+            {
+              "document_id": "simaout-c-errorindicatoroutput",
+              "section": "Effect of Error Indicator Output Requests on Solution Time",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-errorindicatoroutput.htm#simaout-c-errorindicatoroutput-t-ErrorIndicatorAndBaseSolutionVariablesAvailableInAS-sma-topic3"
+            }
+          ]
+        }
+      ],
+      "answer_summary": "能正确说明摘录不足以判断不收敛，并提出合理检查项；对增量精确命中的机制表述过于绝对，且没有获得直接机制证据。",
+      "mandatory_facts": [
+        {
+          "id": "WARN-F1",
+          "answer": "appropriately_conditional",
+          "grounding": "supported",
+          "basis": [
+            "original request and recorded_diagnostic.txt",
+            "call_731d767d2b504a12b147cdba",
+            "call_16ae5776a11a407084310ac5"
+          ],
+          "reason": "明确只有摘录，未将它当作已验证的作业失败或成功；后文要求核对完整记录。"
+        },
+        {
+          "id": "WARN-F2",
+          "answer": "partial",
+          "grounding": "partial",
+          "basis": [
+            "call_16ae5776a11a407084310ac5",
+            "call_83256ec63de4405fad64e4cd"
+          ],
+          "reviewer_sources": [
+            "time_adjustment",
+            "direct_cyclic",
+            "fatigue"
+          ],
+          "location": "analysis.json summary and findings[1]",
+          "reason": "必须让端点落在每个请求时刻的措辞没有保留最小增量和procedure例外。实际送达的是消息文件、一般时间增量参数及不相关AT等内容，不是直接的完整机制说明。"
+        },
+        {
+          "id": "WARN-F3",
+          "answer": "correct",
+          "grounding": "missing",
+          "reviewer_sources": [
+            "time_adjustment"
+          ],
+          "reason": "以可能增加增量数/成本而非已发生故障表述，符合评审原文；但该直接支持段落没有实际送达，不能补记检索成功。"
+        },
+        {
+          "id": "WARN-F4",
+          "answer": "correct",
+          "grounding": "partial",
+          "basis": [
+            "call_16ae5776a11a407084310ac5",
+            "call_83256ec63de4405fad64e4cd",
+            "original task inputs"
+          ],
+          "reason": "建议检查完成状态、增量/迭代记录、错误、step及输出设置合理；部分日志/参数角色有依据，不把所有列举的诊断字符串都视为已由返回片段验证。"
+        }
+      ],
+      "conditional_claims": [
+        {
+          "id": "WARN-C1",
+          "triggered": false,
+          "answer": "not_scored",
+          "grounding": "not_triggered",
+          "reason": "历史答案没有采用Direct Cyclic/低周疲劳限制解释当前作业，不因后续离线候选曾返回这些文档而扣分。"
+        },
+        {
+          "id": "WARN-C2",
+          "triggered": false,
+          "answer": "not_scored",
+          "grounding": "not_triggered",
+          "reason": "没有执行或默认建议取消精确输出，没有放宽求解参数。"
+        }
+      ],
+      "action_review": {
+        "status": "compliant_in_recorded_scope",
+        "checks": [
+          "原recorded_diagnostic.txt hash保持不变。",
+          "只新增analysis.json。",
+          "无Abaqus/Solver调用，未宣称已经检查完整日志。"
+        ]
+      },
+      "attribution": "存在检索支持缺口，也存在答案未保留条件的解释问题；不能用目标unit未命中一个数字代替二者。"
+    }
+  ],
+  "conclusions": [
+    "三个样本的文件/运行操作范围均遵守；这不意味着技术主张全部得到支持。",
+    "API体现代码正确但依据范围夸大；Riks体现主旨合理但增加未经支持的前提；warning体现合理建议与过度确定的机制表述并存。",
+    "下一步若继续改进，应分别针对证据覆盖、证据-主张对应和条件保留；本复核没有授权或实施算法/Prompt修补。"
+  ],
+  "limitations": [
+    "Only three historical development tasks; same assistant designed and applied the contract after exposure to the answers. Not independent grading or a success-rate estimate.",
+    "No new Agent/model/Abaqus runs. No historical workspace, outcome, contract definition, index or score overwritten.",
+    "Reviewer-side source facts are distinguished from evidence that the historical Agent actually received."
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-exact-api-catalog-final11",
+  "date": "2026-08-28",
+  "supersedes_for_new_experiments": "var/api-catalog/abaqus-2024-final10",
+  "question": "Can repeated Region/Set/GeomSequence ownership failures be converted into narrow verified parameter notes, while also making verified ODB behavior notes reachable from their exact runtime errors?",
+  "trace_basis": {
+    "history_files_scanned": 162,
+    "typed_runtime_calls_scanned": 745,
+    "cross_family_repetition": [
+      "setElementType wrapper-level errors occurred with faces, cells, and edges",
+      "SectionAssignment raw geometry errors occurred in plate, 3D bar, and beam-related traces",
+      "BC/load raw geometry errors recurred across from-scratch and model-change runs",
+      "FieldOutput/FieldValue/OdbMeshNodeArray errors consumed standalone Abaqus Python calls but did not resolve to callable cards"
+    ]
+  },
+  "licensed_evidence": {
+    "api_consumer": {
+      "path": "benchmarks/api_catalog/abaqus_2024_api_consumer_observations.json",
+      "sha256": "2960c245a951833eb9e22bbc6792203ac09890591a1a72c0fb317c07fd54f746",
+      "licensed_result": "1/1"
+    },
+    "odb_behavior": {
+      "path": "benchmarks/api_catalog/abaqus_2024_odb_behavior_observations.json",
+      "sha256": "8e957f835cd9667f94145d277231b3324878659d311f8a92f705e5fe6f2e7ae4",
+      "licensed_result": "1/1"
+    },
+    "region_consumer": {
+      "path": "benchmarks/api_catalog/abaqus_2024_region_consumer_observations.json",
+      "sha256": "f24c6ee2fa1b245448308e3bd874a8e3bf6c7701f0f3dc990f0c3ddcf8b9c9da",
+      "fixture": "tests/fixtures/abaqus2024/api_region_consumer_probe.py",
+      "fixture_sha256": "bf1f6a322ef5734d04b7fb044b8761b8d0f7d0c7388c5eec08af58a16957bc8f",
+      "licensed_result": "1/1"
+    }
+  },
+  "verified_notes_added_since_final9": [
+    "runtime:2024:Part.setElementType:region-dispatch",
+    "runtime:2024:Part.assignBeamSectionOrientation:region-binding",
+    "runtime:2024:Assembly.Surface:side1-edge-container",
+    "runtime:2024:Model.FieldOutputRequest:b31-companion-fields",
+    "runtime:2024:FieldOutput.getSubset:field-value-boundaries",
+    "runtime:2024:openOdb:node-array-nesting",
+    "runtime:2024:Part.SectionAssignment:direct-region",
+    "runtime:2024:Model.DisplacementBC:region-object",
+    "runtime:2024:Model.ConcentratedForce:region-object",
+    "runtime:2024:Assembly.Surface:side1-face-container"
+  ],
+  "note_policy": {
+    "total_new_notes": 10,
+    "runtime_notes_total": 16,
+    "parameter_scoping": {
+      "Part.setElementType": [
+        "regions"
+      ],
+      "Part.assignBeamSectionOrientation": [
+        "region"
+      ],
+      "Assembly.Surface edge note": [
+        "side1Edges"
+      ],
+      "Assembly.Surface face note": [
+        "side1Faces"
+      ],
+      "Model.FieldOutputRequest": [
+        "variables"
+      ],
+      "Part.SectionAssignment": [
+        "region"
+      ],
+      "Model.DisplacementBC": [
+        "region"
+      ],
+      "Model.ConcentratedForce": [
+        "region"
+      ]
+    },
+    "unscoped_behavior_cards": [
+      "FieldOutput.getSubset",
+      "openOdb"
+    ],
+    "physical_non_goals": "No note chooses a surface side, beam n1 direction, material region, load magnitude, output acceptance value, or model topology."
+  },
+  "automatic_odb_routing": {
+    "implementation": "src/abaqus_sim_agent/coding/api_traceback.py::resolve_odb_runtime_behavior_query",
+    "routes": {
+      "FieldOutput.position missing": "FieldOutput.getSubset",
+      "FieldValue.componentLabels missing": "FieldOutput.getSubset",
+      "FieldValue Sequence slicing OdbError": "FieldOutput.getSubset",
+      "OdbMeshNodeArray label/findAt missing": "openOdb",
+      "single-call AbaqusException with side1Edges/side1Faces": "AST owner resolution to Assembly.Surface and the matching parameter-scoped note",
+      "single-call invalid FieldOutputRequest variables": "AST owner resolution to Model.FieldOutputRequest and the variables-scoped note",
+      "single-call invalid SectionAssignment region": "AST owner resolution to Part.SectionAssignment and the region-scoped note"
+    },
+    "boundary": "ODB fallback uses only exact licensed error signatures. AbaqusException routing additionally requires one unambiguous workspace call resolved by AST; scoped-note filtering uses its explicit keyword names. Generic IndexError, KeyError, float32 JSON errors, solver failures, and multi-call ambiguity remain unrouted.",
+    "automatic_modes": "The existing automatic_verified_only/automatic_exact_signature budget, deduplication, trace, and verified-note filters remain unchanged after routing."
+  },
+  "catalog_merge_correction": {
+    "public_query": "Part.generateMesh",
+    "before": "ambiguous sibling-mixin cards",
+    "after": "one public-overload card preserving the MeshEditPart and MeshPart signatures",
+    "constructor_control": "Spot.__init__ remains ambiguous"
+  },
+  "immutable_catalog": {
+    "path": "var/api-catalog/abaqus-2024-final11",
+    "manifest_sha256": "71e4ee3a292f09a0188caee11697ab01cf2feaf676657a3589c9de2c38079649",
+    "cards_sha256": "9c2b9dd812fe6fa2c931965128ae1350ba3c0904ed6c0b8834d4a25d5c3cdecf",
+    "card_count": 5480,
+    "conflict_count": 48,
+    "source_digests": {
+      "official_scripting_reference": "12f12f146b7d6241085fa981358a9b8b0e64f8e4d852a4a5ac4fa205dacbb313",
+      "abqpy_source": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504",
+      "runtime_notes": "3fe92efeaf739fe7fff66cc39746246a14b60c08b2abc6853afdd17b8e398466"
+    }
+  },
+  "deterministic_evaluation": {
+    "benchmark": "benchmarks/api_catalog/abaqus_api_queries.jsonl",
+    "benchmark_sha256": "bd4ccd303885d002ef091913441936c63fa7a3f99df5a1765e9d048bad176b38",
+    "result": "benchmarks/api_catalog/abaqus_api_evaluation_final11.json",
+    "result_sha256": "d06e6a0583280b6d02791a9461307eeb6b6e9bc4d97081976cfd7bdb072b6db1",
+    "pass_count": 27,
+    "total": 27,
+    "new_cases_since_final9": 11
+  },
+  "interpretation": {
+    "capability": "final11 adds ten licensed behavior notes over final9, corrects one public-overload ambiguity, and makes four high-confidence ODB container errors automatically reachable by exact verified cards.",
+    "expected_cost_effect": "The targeted signatures previously consumed repeated CAE or standalone Abaqus Python calls. The new routing and cards remove knowledge-access gaps, but Product-Agent adoption and net call reduction still require a frozen treatment batch.",
+    "limits": [
+      "No Product-Agent final11 batch has yet been run, so no end-to-end call or token saving is claimed.",
+      "Constructor acceptance of a Part Set for a post-instancing BC/load was observed but not solver-verified; notes recommend the assembly-owned normal path and make no cross-ownership claim.",
+      "The B31 output-variable note remains B31/Static bounded.",
+      "Only side1Edges and side1Faces container forms were probed; no symmetric side2 claim is inferred.",
+      "Card count is 5480 because Part.generateMesh source records were merged into one public card, not removed."
+    ]
+  }
+}

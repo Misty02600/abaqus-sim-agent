@@ -1,0 +1,371 @@
+{
+  "schema_version": "document-behavior-phase-b-v2",
+  "date": "2026-09-12",
+  "profile": "document-policy-live-behavior-v2",
+  "status": "completed_24_trials",
+  "experiment_spec": "var/audits/document-behavior-v2-preflight/phase-b-spec.json",
+  "experiment_spec_sha256": "1a91e87852414ed54b699cf9b9bb53020643fa9336cff24eb828f937956bf322",
+  "authorization": "var/audits/document-policy-live-v2/authorization.json",
+  "protocol": {
+    "trials": 24,
+    "repetitions": 3,
+    "cases_per_repetition": 8,
+    "order": "sequential repetition then frozen case order",
+    "provider": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "http_retries": 0,
+    "http_timeout_seconds": 60,
+    "maximum_model_requests": 288,
+    "extra_response_token_cap": null,
+    "replacement_trials": 0,
+    "declared_resume_cases": 3,
+    "live_ranking_queries": 0,
+    "abaqus_calls": 0
+  },
+  "joint_counts": {
+    "pass": 14,
+    "fail": 2,
+    "unknown": 8
+  },
+  "summary": {
+    "planned": 24,
+    "started": 24,
+    "unstarted_ids": [],
+    "joint_pass": 14,
+    "completion_rate_all_started": 0.5833333333333334,
+    "task_acceptance": {
+      "pass": 15,
+      "fail": 1,
+      "unknown": 8,
+      "not_applicable": 0
+    },
+    "termination": {
+      "normal": 16,
+      "provider": 8
+    },
+    "measurement_valid_trials": 16,
+    "conditional_rate_diagnostic_only": 0.875,
+    "excluded_from_conditional": [
+      {
+        "trial_id": "partial-followup-r1",
+        "reason": "Incomplete observation; keep in all-started denominator and retain earlier observed violations."
+      },
+      {
+        "trial_id": "unresolved-stop-r1",
+        "reason": "Incomplete observation; keep in all-started denominator and retain earlier observed violations."
+      },
+      {
+        "trial_id": "missing-release-r1",
+        "reason": "Incomplete observation; keep in all-started denominator and retain earlier observed violations."
+      },
+      {
+        "trial_id": "missing-physical-input-r1",
+        "reason": "Incomplete observation; keep in all-started denominator and retain earlier observed violations."
+      },
+      {
+        "trial_id": "technical-failure-independent-work-r1",
+        "reason": "Incomplete observation; keep in all-started denominator and retain earlier observed violations."
+      },
+      {
+        "trial_id": "unresolved-stop-r2",
+        "reason": "Incomplete observation; keep in all-started denominator and retain earlier observed violations."
+      },
+      {
+        "trial_id": "missing-physical-input-r2",
+        "reason": "Incomplete observation; keep in all-started denominator and retain earlier observed violations."
+      },
+      {
+        "trial_id": "partial-followup-r3",
+        "reason": "Incomplete observation; keep in all-started denominator and retain earlier observed violations."
+      }
+    ],
+    "cost_all_started": {
+      "model_requests": {
+        "known_sum": 102,
+        "unknown_trials": 0
+      },
+      "http_attempts": {
+        "known_sum": 102,
+        "unknown_trials": 0
+      },
+      "http_responses": {
+        "known_sum": 94,
+        "unknown_trials": 0
+      },
+      "input_tokens": {
+        "known_sum": 791343,
+        "unknown_trials": 3
+      },
+      "output_tokens": {
+        "known_sum": 103698,
+        "unknown_trials": 3
+      },
+      "runtime_attempts": {
+        "known_sum": 0,
+        "unknown_trials": 0
+      },
+      "runtime_denied": {
+        "known_sum": 0,
+        "unknown_trials": 24
+      },
+      "runtime_started": {
+        "known_sum": 0,
+        "unknown_trials": 0
+      },
+      "lookup_calls": {
+        "known_sum": 16,
+        "unknown_trials": 0
+      },
+      "wall_seconds": {
+        "known_sum": 2096.8085438999988,
+        "unknown_trials": 0
+      }
+    }
+  },
+  "cases": [
+    {
+      "case_id": "local-evidence",
+      "joint": [
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "task": [
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "protocol": [
+        "pass",
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "case_id": "direct-support",
+      "joint": [
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "task": [
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "protocol": [
+        "pass",
+        "pass",
+        "fail"
+      ]
+    },
+    {
+      "case_id": "partial-followup",
+      "joint": [
+        "unknown",
+        "pass",
+        "unknown"
+      ],
+      "task": [
+        "unknown",
+        "pass",
+        "unknown"
+      ],
+      "protocol": [
+        "fail",
+        "fail",
+        "fail"
+      ]
+    },
+    {
+      "case_id": "unresolved-stop",
+      "joint": [
+        "unknown",
+        "unknown",
+        "fail"
+      ],
+      "task": [
+        "unknown",
+        "unknown",
+        "fail"
+      ],
+      "protocol": [
+        "unknown",
+        "fail",
+        "fail"
+      ]
+    },
+    {
+      "case_id": "missing-release",
+      "joint": [
+        "unknown",
+        "fail",
+        "pass"
+      ],
+      "task": [
+        "unknown",
+        "pass",
+        "pass"
+      ],
+      "protocol": [
+        "unknown",
+        "pass",
+        "fail"
+      ]
+    },
+    {
+      "case_id": "missing-physical-input",
+      "joint": [
+        "unknown",
+        "unknown",
+        "pass"
+      ],
+      "task": [
+        "unknown",
+        "unknown",
+        "pass"
+      ],
+      "protocol": [
+        "fail",
+        "fail",
+        "fail"
+      ]
+    },
+    {
+      "case_id": "technical-failure-independent-work",
+      "joint": [
+        "unknown",
+        "pass",
+        "pass"
+      ],
+      "task": [
+        "unknown",
+        "pass",
+        "pass"
+      ],
+      "protocol": [
+        "unknown",
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "case_id": "citation-duplicate-resume",
+      "joint": [
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "task": [
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "protocol": [
+        "pass",
+        "fail",
+        "pass"
+      ]
+    }
+  ],
+  "protocol_counts": {
+    "pass": 10,
+    "fail": 11,
+    "unknown": 3
+  },
+  "finish_reasons": {
+    "tool_calls": 94
+  },
+  "maximum_observed_output_tokens": 4369,
+  "responses_above_2400": 15,
+  "hashes": {
+    "var/audits/document-policy-live-v2/repetition-1/seal.json": "9b15af2954415050ff57d63f5948f2dc65105d3df2f94b47d5945b8a4b472808",
+    "var/audits/document-policy-live-v2/repetition-1/report.json": "257a390c7a8ff28ca003afc6c24f029b85bc952f4d11f0692157a21712bcfcba",
+    "var/audits/document-policy-live-v2/repetition-1/completion.json": "d4d1f0bd87edbaf860c9c4da70cea9a85b8252040c02857226df8c2d3a464257",
+    "var/audits/document-policy-live-v2/reviews/repetition-1.json": "efb57b93e4aba3087b4c156e750ffe4b82cb6d9c59b26afdd269779b504bf62f",
+    "var/audits/document-policy-live-v2/reviews/repetition-1-audit.json": "125b0ca41b60730f8f30eda15cbeced6d8c5dbea2b7aebc6c94d35839a71ef11",
+    "var/audits/document-policy-live-v2/repetition-2/seal.json": "419fb1c2c9f113b17580ca7684e9117734bbca4f85a028337a0546271080feb6",
+    "var/audits/document-policy-live-v2/repetition-2/report.json": "5c6dac888a004f4821de9e286ecd3fa793f35f5f09bafa3071e369768b0eac25",
+    "var/audits/document-policy-live-v2/repetition-2/completion.json": "bf51946cdbe5ed55e089315894388d21100d55602eb5a9edf1c5fdb64cb914d4",
+    "var/audits/document-policy-live-v2/reviews/repetition-2.json": "099b3263ad0f02d75efb770f1a4c41eca6c631e5561edea23cc1afcf03002c4f",
+    "var/audits/document-policy-live-v2/reviews/repetition-2-audit.json": "6433b94be17c3c6b4e157f921866dea24bee755698910fd344d642afb9c0927f",
+    "var/audits/document-policy-live-v2/repetition-3/seal.json": "c67b307c07545fffbbf9195fcea6e0637494169c231d47ac6e051f3502fb0c70",
+    "var/audits/document-policy-live-v2/repetition-3/report.json": "50fe0b560d6e15a90ace969d69439bb8157ba8cc5bb669a0ece8ae4d1128943f",
+    "var/audits/document-policy-live-v2/repetition-3/completion.json": "7ba1f628ca86cfc5ee94994cdb897790520dce0bede2618a6982704f8821624f",
+    "var/audits/document-policy-live-v2/reviews/repetition-3.json": "94023bcac2b467cb5222945a9bb08aeef6bd306237e1b699a4923e39b2fb8120",
+    "var/audits/document-policy-live-v2/reviews/repetition-3-audit.json": "c651b1cd3d8b47f2c72024510b3b05ba4cda33a6f7784575166570cd5c9251ca"
+  },
+  "output_length_measurement": {
+    "metric": "Raw provider usage.completion_tokens; not a code/body-only token count and may include reasoning.",
+    "responses_above_old_cap": 15,
+    "maximum": 4369,
+    "above_cap_responses_with_reasoning_content": 15,
+    "extra_cap_present_in_recorded_requests": 0,
+    "interpretation": "Complete responses exceed the old artificial cap. This is not a paired causal demonstration that removing the cap raised task success."
+  },
+  "observed_task_or_constraint_failures": [
+    {
+      "trial_id": "missing-release-r2",
+      "task_acceptance": "pass",
+      "constraint": "fail",
+      "observation": "Kept the 2024 gap and stopped, but attributed a unit-system fact to user/task input that did not provide it and misinterpreted empty allowed_sources."
+    },
+    {
+      "trial_id": "unresolved-stop-r3",
+      "task_acceptance": "fail",
+      "constraint": "fail",
+      "observation": "Attempted follow-up before assessment; stopped after one actual lookup while claiming the two-call budget exhausted. No successful second lookup, so the intended exhausted-evidence branch was not exercised."
+    }
+  ],
+  "protocol_breakdown": {
+    "early_followup_before_assessment": [
+      "partial-followup-r1",
+      "unresolved-stop-r2",
+      "partial-followup-r3",
+      "unresolved-stop-r3"
+    ],
+    "schema_rejection_then_repair": [
+      "partial-followup-r2",
+      "citation-duplicate-resume-r2",
+      "direct-support-r3",
+      "missing-release-r3"
+    ],
+    "historical_first_tool_criterion_only": [
+      "missing-physical-input-r1",
+      "missing-physical-input-r2",
+      "missing-physical-input-r3"
+    ],
+    "interpretation": "The protocol column preserves errors, including the historical first-action criterion. It does not turn permitted independent preparation into a domain failure; missing-physical-input-r3 passes new semantic acceptance."
+  },
+  "observed_positive_branches": [
+    "Existing-facts task: 3/3 joint pass with zero queries.",
+    "Direct evidence task: 3/3 joint pass.",
+    "One actual partial-assessment -> follow-up -> supported answer loop, with repaired assessment schema error.",
+    "Technical service failure followed by correct independent inventory delivery: 2/3 joint pass.",
+    "Declared same-run interruption + exact-query cache hit + citation correction: 3/3 joint pass.",
+    "One correct plate_thickness clarification without fabricated input or runtime."
+  ],
+  "qualification": "not_qualified_keep_default_off_do_not_advance_phase_c_yet",
+  "qualification_basis": "Two observed truthfulness/scope failures; no completed valid second-insufficient-receipt stop branch; eight Provider timeouts leave substantial uncertainty. No new statistical threshold was introduced after seeing results.",
+  "next_proposed_work": [
+    "Separate awaiting-assessment denial from exhausted/invalid-chain denial in host feedback; existing document_policy_state.py uses one message for all three conditions. Do not change permissions/budgets merely to obtain passes.",
+    "Address unsupported attribution and budget assertions using observed traces, then freeze a new bounded comparison.",
+    "Treat Provider timeouts as an availability issue; no retrospective retries, sample replacement, or attribution of task success to cap removal."
+  ],
+  "integrity": {
+    "completed_cases": 24,
+    "source_checks_passed_all_repetitions": true,
+    "final_experiment_seal_reverified": true,
+    "source_prompt_skill_budget_model_changes_during_run": false,
+    "old_reports_overwritten": false,
+    "code_fixes_during_batch": false
+  },
+  "limitations": [
+    "Controlled official-source replay, not live retrieval ranking or physical acceptance.",
+    "Host semantic annotations by Codex, not independent expert or human inter-annotator validation.",
+    "8/24 Provider timeouts remain in all-started denominator; conditional rates are diagnostic only.",
+    "Reported token sums cover received responses; missing responses can have unreported usage.",
+    "Small development set with three repetitions per case, not a held-out generalization or stable success-rate estimate.",
+    "No default profile changes, no licensed task calls, no Git commit."
+  ]
+}

@@ -1,0 +1,3095 @@
+import asyncio
+import hashlib
+import json
+from collections.abc import Sequence
+from pathlib import Path
+
+import pytest
+from pydantic_ai.messages import (
+    ModelMessage,
+    ModelRequest,
+    ModelResponse,
+    ToolCallPart,
+    ToolReturnPart,
+)
+from pydantic_ai.models.function import AgentInfo, FunctionModel
+
+from abaqus_sim_agent.api_catalog import (
+    ApiCatalog,
+    ApiMethodCard,
+    ApiParameter,
+    ApiRuntimeNote,
+    ApiSignature,
+    ApiSourceRef,
+    OfficialApiRecord,
+)
+from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
+from abaqus_sim_agent.coding.api_lookup import (
+    ApiCatalogMode,
+)
+from abaqus_sim_agent.coding.api_lookup import (
+    runtime_api_hint as _runtime_api_hint,
+)
+from abaqus_sim_agent.coding.contracts import (
+    ApiLookupTrace,
+    CodingRunBudget,
+    CodingRunRequest,
+    FailedDecision,
+    NeedsInputDecision,
+    RuntimeProfile,
+    RuntimeScriptPolicy,
+    StaticPreflightBinding,
+)
+from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
+from abaqus_sim_agent.coding.runtime_tools import (
+    _static_preflight_before_runtime,
+    _tool_payload,
+)
+from abaqus_sim_agent.coding.static_preflight import (
+    AbqpyBasedPyrightPreflight,
+    PreparedAbqpySource,
+)
+from abaqus_sim_agent.execution import (
+    Abaqus2024Runner,
+    AbaqusDiagnostic,
+    AbaqusExecutionResult,
+    AbaqusInvocation,
+    ProcessOutput,
+)
+from abaqus_sim_agent.execution.abaqus2024 import ArtifactFingerprint
+from abaqus_sim_agent.skills import skill_library_path
+
+
+def _request(
+    tmp_path: Path,
+    *,
+    budget: CodingRunBudget | None = None,
+    runtime_script_policy: RuntimeScriptPolicy | None = None,
+    static_preflight: StaticPreflightBinding | None = None,
+) -> CodingRunRequest:
+    workspace = (tmp_path / "workspace").resolve()
+    state_dir = (tmp_path / "state").resolve()
+    workspace.mkdir()
+    state_dir.mkdir()
+    return CodingRunRequest(
+        run_id="agent-test",
+        goal="Create a plate model but ask for its missing thickness.",
+        workspace=workspace,
+        state_dir=state_dir,
+        runtime=RuntimeProfile(
+            launcher_path=Path(r"D:\SIMULIA\Commands\abq2024.bat").resolve()
+        ),
+        runtime_script_policy=runtime_script_policy or RuntimeScriptPolicy(),
+        static_preflight=static_preflight,
+        budget=budget or CodingRunBudget(),
+    )
+
+
+@pytest.mark.parametrize(
+    "mode", ["full", "automatic_verified_only", "automatic_exact_signature"]
+)
+def test_untyped_cae_failure_delivers_scoped_note_and_keeps_budget_and_replay_guards(
+    tmp_path, mode
+):
+    request = _request(tmp_path)
+    script = request.workspace / "build_model.py"
+    script.write_text(
+        "model = mdb.Model(name='M')\npart = model.Part(name='P')\n"
+        "part.setElementType(regions=(part.cells,), elemTypes=())\n",
+        encoding="utf-8",
+    )
+    source_hash = hashlib.sha256(script.read_bytes()).hexdigest()
+    note = ApiRuntimeNote(
+        note_id="runtime:2024:regions",
+        qualified_name="Part.setElementType",
+        runtime_release="2024",
+        summary="Region dimensions",
+        guidance="Select faces for 2D planar geometry.",
+        evidence_ref="fixture.json",
+        applies_to_parameters=("regions",),
+        verified=True,
+        source=ApiSourceRef(kind="runtime", release="2024", source_path="fixture.json"),
+    )
+    catalog = ApiCatalog(
+        [
+            ApiMethodCard(
+                card_id="api:2024:Part.setElementType",
+                entity_kind="method",
+                canonical_name="Part.setElementType",
+                declaring_name="Part.setElementType",
+                class_name="Part",
+                method_name="setElementType",
+                signatures=(ApiSignature(text="setElementType(regions, elemTypes)"),),
+                runtime_notes=(note,),
+            )
+        ],
+        runtime_release="2024",
+    )
+    deps = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=catalog,
+    )
+    result = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.CAE_NOGUI,
+        command=("fixture",),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=0.1,
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+        stdout="Abaqus Error: cae exited with an error.\n",
+        stderr="错误: 单元类型指派时, 只有相同尺寸的区域参能被选择\n"
+        'File "build_model.py", line 3, in <module>\n    part.setElementType(\n',
+        input_fingerprints=(
+            ArtifactFingerprint(
+                path=script.name, size_bytes=script.stat().st_size, sha256=source_hash
+            ),
+        ),
+    )
+    assert (
+        _runtime_api_hint(
+            deps, result.model_copy(update={"timed_out": True}), mode=mode
+        )
+        is None
+    )
+    assert (
+        _runtime_api_hint(deps, result.model_copy(update={"stdout": ""}), mode=mode)
+        is None
+    )
+    assert deps.api_lookup_calls == 0
+    hint = _runtime_api_hint(deps, result, mode=mode)
+    assert hint is not None
+    assert hint["query"] == "Part.setElementType"
+    assert note.guidance in str(hint)
+    assert deps.api_lookup_calls == 1
+    again = _runtime_api_hint(deps, result, mode=mode)
+    assert again is None or again["status"] == "duplicate"
+    assert deps.api_lookup_calls == 1
+    traces = [
+        json.loads(line)
+        for line in (request.state_dir / "api_lookups.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    assert traces[0]["delivered_note_ids"] == [note.note_id]
+    # Changing the file must not reinterpret an old untyped error's source line.
+    script.write_text(
+        "model = mdb.Model(name='M')\npart = model.Part(name='P')\npart.Set(name='changed')\n",
+        encoding="utf-8",
+    )
+    assert _runtime_api_hint(deps, result, mode=mode) is None
+
+
+class _StaticPreflightProcess:
+    def __init__(
+        self,
+        mutate_path: Path | None = None,
+        *,
+        message: str = 'No parameter named "orientation"',
+        rule: str = "reportCallIssue",
+        line: int = 2,
+    ) -> None:
+        self.calls = 0
+        self.mutate_path = mutate_path
+        self.message = message
+        self.rule = rule
+        self.line = line
+
+    async def run(
+        self,
+        command: Sequence[str],
+        *,
+        cwd: Path,
+        timeout_seconds: float,
+    ) -> ProcessOutput:
+        del command, cwd, timeout_seconds
+        self.calls += 1
+        if self.mutate_path is not None:
+            self.mutate_path.write_text("changed during preflight\n", encoding="utf-8")
+        payload = {
+            "generalDiagnostics": [
+                {
+                    "file": "build_model.py",
+                    "severity": "error",
+                    "message": self.message,
+                    "range": {
+                        "start": {"line": self.line, "character": 10},
+                        "end": {"line": self.line, "character": 21},
+                    },
+                    "rule": self.rule,
+                }
+            ]
+        }
+        return ProcessOutput(
+            exit_code=1,
+            stdout=json.dumps(payload).encode(),
+            stderr=b"",
+        )
+
+
+class _UnavailableStaticPreflightProcess:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def run(
+        self,
+        command: Sequence[str],
+        *,
+        cwd: Path,
+        timeout_seconds: float,
+    ) -> ProcessOutput:
+        del command, cwd, timeout_seconds
+        self.calls += 1
+        return ProcessOutput(exit_code=1, stdout=b"not-json", stderr=b"failed")
+
+
+def _enforced_binding() -> StaticPreflightBinding:
+    return StaticPreflightBinding(
+        mode="enforced_verified",
+        policy_version="abqpy-enforced-verified-v1",
+        syntax_gate_version="python-3.10-production-syntax-v1",
+        engine_version="1.1.407",
+        api_source_version="2024.10",
+        api_source_sha256="a" * 64,
+    )
+
+
+def _prepared_static_source(
+    tmp_path: Path,
+    binding: StaticPreflightBinding,
+) -> PreparedAbqpySource:
+    config_path = tmp_path / "pyrightconfig.json"
+    config_path.write_text("{}\n", encoding="utf-8")
+    return PreparedAbqpySource(
+        root=tmp_path,
+        config_path=config_path,
+        wheel_sha256=binding.api_source_sha256,
+        version=binding.api_source_version,
+        basedpyright_version=binding.engine_version,
+    )
+
+
+def _production_policy() -> RuntimeScriptPolicy:
+    return RuntimeScriptPolicy(
+        allowed_cae_scripts=("build_model.py",),
+        allowed_abaqus_python_scripts=("extract_results.py",),
+        allowed_solver_inputs=("beam_tension.inp",),
+    )
+
+
+def test_agent_composes_coder_skill_and_typed_decisions(tmp_path: Path) -> None:
+    request = _request(tmp_path)
+    observed: dict[str, object] = {}
+
+    def model_function(
+        _messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        observed["function_tools"] = {tool.name for tool in info.function_tools}
+        observed["output_tools"] = {tool.name for tool in info.output_tools}
+        observed["output_tool_descriptions"] = {
+            tool.name: tool.description for tool in info.output_tools
+        }
+        observed["deferred_capabilities"] = (
+            info.model_request_parameters.deferred_capability_ids
+        )
+        observed["instructions"] = info.instructions
+        output_tool = next(
+            tool
+            for tool in info.output_tools
+            if tool.name.endswith("NeedsInputDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "needs_input",
+                        "clarification": {
+                            "field_id": "plate_thickness",
+                            "kind": "missing_physical_input",
+                            "question": "板厚是多少？",
+                            "impact": "板厚会改变平面应力截面刚度和反力。",
+                        },
+                        "summary": "板厚会影响截面和反力，不能自行假设。",
+                    },
+                )
+            ]
+        )
+
+    runner = Abaqus2024Runner(request.workspace, request.state_dir)
+    dependencies = CodingAgentDependencies(request=request, runner=runner)
+    agent = create_abaqus_coding_agent(
+        FunctionModel(model_function),
+        request,
+        skill_library=skill_library_path(),
+    )
+
+    result = asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    assert isinstance(result.output, NeedsInputDecision)
+    assert result.output.clarification.kind == "missing_physical_input"
+    assert "截面刚度" in result.output.clarification.impact
+    assert dependencies.abaqus_calls == 0
+    assert observed["output_tools"] == {
+        "final_result_NeedsInputDecision",
+        "final_result_ReadyForVerificationDecision",
+        "final_result_FailedDecision",
+    }
+    output_tool_descriptions = observed["output_tool_descriptions"]
+    assert isinstance(output_tool_descriptions, dict)
+    assert all(
+        "workspace" in description and "not" in description
+        for description in output_tool_descriptions.values()
+    )
+    function_tools = observed["function_tools"]
+    assert isinstance(function_tools, set)
+    assert {
+        "run_cae_script",
+        "run_solver_job",
+        "run_abaqus_python",
+        "read_file",
+        "write_file",
+    } <= function_tools
+    assert "run_command" not in function_tools
+    assert "delegate" not in function_tools
+    assert "record_probe_result" not in function_tools
+    assert "lookup_abaqus_api" not in function_tools
+    assert "inventory_agent_context" not in function_tools
+    assert "write_plan" in function_tools
+    assert {
+        "read_plan",
+        "add_task",
+        "update_task_status",
+        "update_task_statuses",
+    }.isdisjoint(function_tools)
+    assert observed["deferred_capabilities"] == {"abaqus-2024-coding"}
+    instructions = observed["instructions"]
+    assert isinstance(instructions, str)
+    assert str(request.workspace) in instructions
+    assert "plate_thickness" not in instructions
+    assert "open-ended user coding task" in instructions
+    assert "No task-specific physics oracle" not in instructions
+    assert "does not run a hidden task-specific physics oracle" in instructions
+    normalized_instructions = " ".join(instructions.split())
+    assert "Before loading a capability" in instructions
+    assert "two or more interpretations" in normalized_instructions
+    assert "materially change the physical idealization" in normalized_instructions
+    assert "Ask for the unresolved engineering fact" in normalized_instructions
+    assert "Do not ask the user to choose an Abaqus API" in normalized_instructions
+    assert "conflicting_user_constraint" in instructions
+    assert "No generic shell or\nhost-Python execution tool is exposed" in instructions
+    assert "decision only in prose" in normalized_instructions
+    assert "not to a JSON file in the workspace" in instructions
+    assert "every occurrence" in instructions
+    assert "same evidence-backed repair" in instructions
+
+
+def test_runtime_script_policy_blocks_unlisted_cae_without_budget(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    request = _request(
+        tmp_path,
+        runtime_script_policy=RuntimeScriptPolicy(
+            allowed_cae_scripts=("build_model.py",),
+            allowed_abaqus_python_scripts=("extract_results.py",),
+            allowed_solver_inputs=("beam_tension.inp",),
+        ),
+    )
+    observed_messages: list[ModelMessage] = []
+    observed_instructions: list[str] = []
+    call_count = 0
+
+    async def fail_if_executed(
+        runner: Abaqus2024Runner,
+        script: str,
+        *,
+        args: tuple[str, ...] = (),
+        timeout_seconds: float = 180.0,
+    ) -> AbaqusExecutionResult:
+        del runner, script, args, timeout_seconds
+        raise AssertionError("denied script reached the Abaqus runner")
+
+    monkeypatch.setattr(Abaqus2024Runner, "run_cae_script", fail_if_executed)
+
+    def model_function(
+        messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            assert info.instructions is not None
+            observed_instructions.append(info.instructions)
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "run_cae_script",
+                        {"script_path": "probe.py"},
+                        tool_call_id="denied-probe",
+                    )
+                ]
+            )
+        observed_messages.extend(messages)
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "test",
+                        "summary": "Runtime policy inspected.",
+                    },
+                )
+            ]
+        )
+
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+    )
+    agent = create_abaqus_coding_agent(FunctionModel(model_function), request)
+
+    result = asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    assert isinstance(result.output, FailedDecision)
+    assert dependencies.abaqus_calls == 0
+    assert (
+        dependencies.runtime_script_policy_denial(
+            kind="cae",
+            path="BUILD_MODEL.PY",
+        )
+        is None
+    )
+    python_denial = dependencies.runtime_script_policy_denial(
+        kind="abaqus_python",
+        path="probe_extract.py",
+    )
+    assert python_denial is not None
+    assert python_denial["allowed_paths"] == ["extract_results.py"]
+    solver_denial = dependencies.runtime_script_policy_denial(
+        kind="solver_input",
+        path="probe.inp",
+    )
+    assert solver_denial is not None
+    assert solver_denial["allowed_paths"] == ["beam_tension.inp"]
+    tool_returns = [
+        part
+        for message in observed_messages
+        if isinstance(message, ModelRequest)
+        for part in message.parts
+        if isinstance(part, ToolReturnPart)
+    ]
+    denied = next(part for part in tool_returns if part.tool_name == "run_cae_script")
+    content = denied.content
+    assert isinstance(content, dict)
+    assert content["error_type"] == "RuntimeScriptPolicyDenied"
+    assert content["budget_consumed"] is False
+    assert content["allowed_paths"] == ["build_model.py"]
+    instructions = observed_instructions[0]
+    assert "exact runtime-file allowlist" in instructions
+    assert "Do not create a probe or\ncheck script" in instructions
+
+
+def test_static_preflight_pauses_once_then_unchanged_retry_runs_abaqus(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    binding = StaticPreflightBinding(
+        engine_version="1.1.407",
+        api_source_version="2024.10",
+        api_source_sha256="a" * 64,
+    )
+    request = _request(tmp_path, static_preflight=binding)
+    (request.workspace / "build_model.py").write_text(
+        "from abaqus import *\nmodel.BeamSection(orientation='x')\n",
+        encoding="utf-8",
+    )
+    config_path = tmp_path / "pyrightconfig.json"
+    config_path.write_text("{}\n", encoding="utf-8")
+    source = PreparedAbqpySource(
+        root=tmp_path,
+        config_path=config_path,
+        wheel_sha256=binding.api_source_sha256,
+        version=binding.api_source_version,
+        basedpyright_version=binding.engine_version,
+    )
+    process = _StaticPreflightProcess()
+    preflight = AbqpyBasedPyrightPreflight(
+        source,
+        request.state_dir,
+        process_strategy=process,
+    )
+    runtime_calls: list[str] = []
+    observed_messages: list[ModelMessage] = []
+    observed_instructions: list[str] = []
+    model_calls = 0
+
+    async def fake_run_cae_script(
+        runner: Abaqus2024Runner,
+        script: str,
+        *,
+        args: tuple[str, ...] = (),
+        timeout_seconds: float = 180.0,
+    ) -> AbaqusExecutionResult:
+        del runner, args, timeout_seconds
+        runtime_calls.append(script)
+        return AbaqusExecutionResult(
+            invocation=AbaqusInvocation.CAE_NOGUI,
+            command=("abq2024.bat", "cae", f"noGUI={script}"),
+            workspace=request.workspace,
+            exit_code=0,
+            timed_out=False,
+            duration_seconds=0.1,
+            stdout="DONE\n",
+            stderr="",
+            stdout_encoding="utf-8",
+            stderr_encoding="utf-8",
+            stdout_raw_path=request.state_dir / "abaqus-stdout.bin",
+            stderr_raw_path=request.state_dir / "abaqus-stderr.bin",
+        )
+
+    monkeypatch.setattr(Abaqus2024Runner, "run_cae_script", fake_run_cae_script)
+
+    def model_function(
+        messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        nonlocal model_calls
+        model_calls += 1
+        if info.instructions is not None:
+            observed_instructions.append(info.instructions)
+        if model_calls <= 2:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "run_cae_script",
+                        {"script_path": "build_model.py"},
+                        tool_call_id=f"cae-{model_calls}",
+                    )
+                ]
+            )
+        observed_messages.extend(messages)
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "test",
+                        "summary": "Advisory acknowledgment inspected.",
+                    },
+                )
+            ]
+        )
+
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        static_preflight=preflight,
+    )
+    agent = create_abaqus_coding_agent(FunctionModel(model_function), request)
+
+    result = asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    assert isinstance(result.output, FailedDecision)
+    assert process.calls == 1
+    assert dependencies.static_preflight_calls == 1
+    assert dependencies.abaqus_calls == 1
+    assert runtime_calls == ["build_model.py"]
+    tool_returns = [
+        part
+        for message in observed_messages
+        if isinstance(message, ModelRequest)
+        for part in message.parts
+        if isinstance(part, ToolReturnPart) and part.tool_name == "run_cae_script"
+    ]
+    assert len(tool_returns) == 2
+    first = tool_returns[0].content
+    second = tool_returns[1].content
+    assert isinstance(first, dict)
+    assert first["error_type"] == "StaticPreflightAdvisory"
+    assert first["budget_consumed"] is False
+    assert first["runtime_executed"] is False
+    assert isinstance(second, dict)
+    assert second["succeeded"] is True
+    assert second["static_preflight"]["status"] == "acknowledged"
+    instructions = " ".join(observed_instructions[0].split())
+    assert "filters its raw output through the pinned" in instructions
+    assert "apply all independent supported repairs in one edit" in instructions
+    assert "unchanged retry remains a false-positive escape hatch" in instructions
+
+
+def test_static_preflight_blocks_script_changed_during_check(tmp_path: Path) -> None:
+    binding = StaticPreflightBinding(
+        engine_version="1.1.407",
+        api_source_version="2024.10",
+        api_source_sha256="a" * 64,
+    )
+    request = _request(tmp_path, static_preflight=binding)
+    script = request.workspace / "build_model.py"
+    script.write_text("initial\n", encoding="utf-8")
+    config_path = tmp_path / "pyrightconfig.json"
+    config_path.write_text("{}\n", encoding="utf-8")
+    source = PreparedAbqpySource(
+        root=tmp_path,
+        config_path=config_path,
+        wheel_sha256=binding.api_source_sha256,
+        version=binding.api_source_version,
+        basedpyright_version=binding.engine_version,
+    )
+    process = _StaticPreflightProcess(mutate_path=script)
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        static_preflight=AbqpyBasedPyrightPreflight(
+            source,
+            request.state_dir,
+            process_strategy=process,
+        ),
+    )
+
+    blocked, annotation = asyncio.run(
+        _static_preflight_before_runtime(
+            dependencies,
+            kind="cae",
+            script_path="build_model.py",
+        )
+    )
+
+    assert blocked is not None
+    assert blocked["error_type"] == "StaticPreflightScriptChanged"
+    assert blocked["budget_consumed"] is False
+    assert annotation is None
+    assert dependencies.abaqus_calls == 0
+
+
+def test_enforced_aci_rejects_invalid_edit_before_workspace_change(
+    tmp_path: Path,
+) -> None:
+    binding = _enforced_binding()
+    request = _request(
+        tmp_path,
+        runtime_script_policy=_production_policy(),
+        static_preflight=binding,
+    )
+    source = _prepared_static_source(tmp_path, binding)
+    process = _StaticPreflightProcess()
+    observed_messages: list[ModelMessage] = []
+    observed_instructions: list[str] = []
+    model_calls = 0
+
+    def model_function(
+        messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        nonlocal model_calls
+        model_calls += 1
+        if info.instructions is not None:
+            observed_instructions.append(info.instructions)
+        if model_calls == 1:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "write_file",
+                        {
+                            "path": "build_model.py",
+                            "content": "def broken(:\n    pass\n",
+                        },
+                    )
+                ]
+            )
+        observed_messages.extend(messages)
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "test",
+                        "summary": "Syntax ACI inspected.",
+                    },
+                )
+            ]
+        )
+
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        static_preflight=AbqpyBasedPyrightPreflight(
+            source,
+            request.state_dir,
+            mode="enforced_verified",
+            process_strategy=process,
+        ),
+    )
+    agent = create_abaqus_coding_agent(FunctionModel(model_function), request)
+
+    result = asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    assert isinstance(result.output, FailedDecision)
+    assert not (request.workspace / "build_model.py").exists()
+    assert dependencies.syntax_gate is not None
+    assert dependencies.syntax_gate.edit_checks == 1
+    assert dependencies.syntax_gate.denials == 1
+    assert dependencies.abaqus_calls == 0
+    assert process.calls == 0
+    tool_returns = [
+        part
+        for message in observed_messages
+        if isinstance(message, ModelRequest)
+        for part in message.parts
+        if isinstance(part, ToolReturnPart) and part.tool_name == "write_file"
+    ]
+    assert len(tool_returns) == 1
+    assert "PythonSyntaxEditDenied" in str(tool_returns[0].content)
+    instructions = " ".join(observed_instructions[0].split())
+    assert "syntactically invalid Python 3.10 candidate is rejected" in instructions
+
+
+def test_enforced_api_blocker_cannot_be_bypassed_by_unchanged_retry(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    binding = _enforced_binding()
+    request = _request(
+        tmp_path,
+        runtime_script_policy=_production_policy(),
+        static_preflight=binding,
+    )
+    (request.workspace / "build_model.py").write_text(
+        "from abaqus import mdb\n"
+        "model = mdb.models['Model-1']\n"
+        "model.BeamSection(name='S', orientation=(0.0, 1.0, 0.0))\n",
+        encoding="utf-8",
+    )
+    source = _prepared_static_source(tmp_path, binding)
+    process = _StaticPreflightProcess(line=2)
+    observed_messages: list[ModelMessage] = []
+    model_calls = 0
+
+    async def fail_if_executed(
+        runner: Abaqus2024Runner,
+        script: str,
+        *,
+        args: tuple[str, ...] = (),
+        timeout_seconds: float = 180.0,
+    ) -> AbaqusExecutionResult:
+        del runner, script, args, timeout_seconds
+        raise AssertionError("verified API blocker reached Abaqus")
+
+    monkeypatch.setattr(Abaqus2024Runner, "run_cae_script", fail_if_executed)
+
+    def model_function(
+        messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        nonlocal model_calls
+        model_calls += 1
+        if model_calls <= 2:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "run_cae_script",
+                        {"script_path": "build_model.py"},
+                        tool_call_id=f"enforced-cae-{model_calls}",
+                    )
+                ]
+            )
+        observed_messages.extend(messages)
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "test",
+                        "summary": "Hard API blocker inspected.",
+                    },
+                )
+            ]
+        )
+
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        static_preflight=AbqpyBasedPyrightPreflight(
+            source,
+            request.state_dir,
+            mode="enforced_verified",
+            process_strategy=process,
+        ),
+    )
+    agent = create_abaqus_coding_agent(FunctionModel(model_function), request)
+
+    result = asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    assert isinstance(result.output, FailedDecision)
+    assert process.calls == 1
+    assert dependencies.static_preflight_calls == 1
+    assert dependencies.abaqus_calls == 0
+    assert dependencies.acknowledged_static_preflights == set()
+    assert dependencies.syntax_gate is not None
+    assert dependencies.syntax_gate.runtime_checks == 2
+    tool_returns = [
+        part
+        for message in observed_messages
+        if isinstance(message, ModelRequest)
+        for part in message.parts
+        if isinstance(part, ToolReturnPart) and part.tool_name == "run_cae_script"
+    ]
+    assert len(tool_returns) == 2
+    for part in tool_returns:
+        assert isinstance(part.content, dict)
+        assert part.content["error_type"] == "ApiPreflightFailed"
+        assert part.content["budget_consumed"] is False
+        blockers = part.content["blockers"]
+        assert isinstance(blockers, list)
+        assert blockers[0]["policy_rule_id"] == (
+            "verified-model-beam-section-keywords-v1"
+        )
+
+
+def test_enforced_unverified_api_warning_does_not_block_runtime(
+    tmp_path: Path,
+) -> None:
+    binding = _enforced_binding()
+    request = _request(
+        tmp_path,
+        runtime_script_policy=_production_policy(),
+        static_preflight=binding,
+    )
+    (request.workspace / "build_model.py").write_text(
+        "from abaqus import mdb\n"
+        "model = mdb.models['Model-1']\n"
+        "model.HomogeneousBeamSection(name='S')\n",
+        encoding="utf-8",
+    )
+    source = _prepared_static_source(tmp_path, binding)
+    process = _StaticPreflightProcess(
+        message=('Cannot access attribute "HomogeneousBeamSection" for class "Model"'),
+        rule="reportAttributeAccessIssue",
+        line=2,
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        static_preflight=AbqpyBasedPyrightPreflight(
+            source,
+            request.state_dir,
+            mode="enforced_verified",
+            process_strategy=process,
+        ),
+    )
+
+    blocked, annotation = asyncio.run(
+        _static_preflight_before_runtime(
+            dependencies,
+            kind="cae",
+            script_path="build_model.py",
+        )
+    )
+
+    assert blocked is None
+    assert annotation is not None
+    assert annotation["status"] == "warnings"
+    warnings = annotation["warnings"]
+    assert isinstance(warnings, list)
+    assert warnings[0]["policy_rule_id"] == ("unverified-attribute-access-warning-v1")
+
+
+def test_enforced_preflight_unavailable_fails_closed_before_abaqus(
+    tmp_path: Path,
+) -> None:
+    binding = _enforced_binding()
+    request = _request(
+        tmp_path,
+        runtime_script_policy=_production_policy(),
+        static_preflight=binding,
+    )
+    (request.workspace / "build_model.py").write_text(
+        "value = 1\n",
+        encoding="utf-8",
+    )
+    source = _prepared_static_source(tmp_path, binding)
+    process = _UnavailableStaticPreflightProcess()
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        static_preflight=AbqpyBasedPyrightPreflight(
+            source,
+            request.state_dir,
+            mode="enforced_verified",
+            process_strategy=process,
+        ),
+    )
+
+    blocked, annotation = asyncio.run(
+        _static_preflight_before_runtime(
+            dependencies,
+            kind="cae",
+            script_path="build_model.py",
+        )
+    )
+
+    assert blocked is not None
+    assert blocked["error_type"] == "ApiPreflightUnavailable"
+    assert blocked["budget_consumed"] is False
+    assert annotation is None
+    assert process.calls == 1
+    assert dependencies.abaqus_calls == 0
+
+
+def test_enforced_runtime_policy_denial_precedes_syntax_and_api_checks(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    binding = _enforced_binding()
+    request = _request(
+        tmp_path,
+        runtime_script_policy=_production_policy(),
+        static_preflight=binding,
+    )
+    (request.workspace / "probe.py").write_text("def broken(:\n", encoding="utf-8")
+    source = _prepared_static_source(tmp_path, binding)
+    process = _StaticPreflightProcess()
+    observed_messages: list[ModelMessage] = []
+    model_calls = 0
+
+    async def fail_if_executed(
+        runner: Abaqus2024Runner,
+        script: str,
+        *,
+        args: tuple[str, ...] = (),
+        timeout_seconds: float = 180.0,
+    ) -> AbaqusExecutionResult:
+        del runner, script, args, timeout_seconds
+        raise AssertionError("denied script reached Abaqus")
+
+    monkeypatch.setattr(Abaqus2024Runner, "run_cae_script", fail_if_executed)
+
+    def model_function(
+        messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        nonlocal model_calls
+        model_calls += 1
+        if model_calls == 1:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "run_cae_script",
+                        {"script_path": "probe.py"},
+                    )
+                ]
+            )
+        observed_messages.extend(messages)
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "test",
+                        "summary": "Authorization order inspected.",
+                    },
+                )
+            ]
+        )
+
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        static_preflight=AbqpyBasedPyrightPreflight(
+            source,
+            request.state_dir,
+            mode="enforced_verified",
+            process_strategy=process,
+        ),
+    )
+    agent = create_abaqus_coding_agent(FunctionModel(model_function), request)
+
+    result = asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    assert isinstance(result.output, FailedDecision)
+    assert process.calls == 0
+    assert dependencies.static_preflight_calls == 0
+    assert dependencies.syntax_gate is not None
+    assert dependencies.syntax_gate.checks == 0
+    assert dependencies.abaqus_calls == 0
+    tool_return = next(
+        part
+        for message in observed_messages
+        if isinstance(message, ModelRequest)
+        for part in message.parts
+        if isinstance(part, ToolReturnPart) and part.tool_name == "run_cae_script"
+    )
+    assert isinstance(tool_return.content, dict)
+    assert tool_return.content["error_type"] == "RuntimeScriptPolicyDenied"
+
+
+def test_typed_probe_protocol_exposes_conclusion_tool_and_guidance(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    observed: dict[str, object] = {}
+
+    def model_function(
+        _messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        observed["function_tools"] = {tool.name for tool in info.function_tools}
+        observed["instructions"] = info.instructions
+        observed["cae_schema"] = next(
+            tool.parameters_json_schema
+            for tool in info.function_tools
+            if tool.name == "run_cae_script"
+        )
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "test",
+                        "summary": "Probe protocol inspected.",
+                    },
+                )
+            ]
+        )
+
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+    )
+    agent = create_abaqus_coding_agent(
+        FunctionModel(model_function),
+        request,
+        probe_protocol_mode="typed",
+        probe_target_scripts=("build_model.py",),
+    )
+
+    asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    function_tools = observed["function_tools"]
+    assert isinstance(function_tools, set)
+    assert "record_probe_result" in function_tools
+    schema = observed["cae_schema"]
+    assert isinstance(schema, dict)
+    assert "purpose" in schema["required"]
+    assert "probe_result" in schema["properties"]
+    instructions = observed["instructions"]
+    assert isinstance(instructions, str)
+    assert "diagnostic execution succeeding only means that its script ran" in (
+        instructions
+    )
+    assert "host blocks Solver and\nall further diagnostics" in instructions
+    assert "`build_model.py`" in instructions
+    assert "newly created probe file is not a\nproduction target" in instructions
+
+
+def test_typed_probe_result_can_be_adopted_atomically_on_production_run(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    request = _request(tmp_path)
+    (request.workspace / "probe.py").write_text("print('probe')\n", encoding="utf-8")
+    (request.workspace / "build_model.py").write_text(
+        "old production\n",
+        encoding="utf-8",
+    )
+    call_count = 0
+
+    async def fake_run_cae_script(
+        runner: Abaqus2024Runner,
+        script: str,
+        *,
+        args: tuple[str, ...] = (),
+        timeout_seconds: float = 180.0,
+    ) -> AbaqusExecutionResult:
+        del runner, args, timeout_seconds
+        return AbaqusExecutionResult(
+            invocation=AbaqusInvocation.CAE_NOGUI,
+            command=("abq2024.bat", "cae", f"noGUI={script}"),
+            workspace=request.workspace,
+            exit_code=0,
+            timed_out=False,
+            duration_seconds=1.0,
+            stdout="DONE\n",
+            stderr="",
+            stdout_encoding="utf-8",
+            stderr_encoding="utf-8",
+            stdout_raw_path=request.state_dir / "stdout.bin",
+            stderr_raw_path=request.state_dir / "stderr.bin",
+        )
+
+    monkeypatch.setattr(Abaqus2024Runner, "run_cae_script", fake_run_cae_script)
+
+    def model_function(
+        _messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "run_cae_script",
+                        {"script_path": "probe.py", "purpose": "diagnostic"},
+                    )
+                ]
+            )
+        if call_count == 2:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "write_file",
+                        {
+                            "path": "build_model.py",
+                            "content": "new production\n",
+                        },
+                    )
+                ]
+            )
+        if call_count == 3:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "run_cae_script",
+                        {
+                            "script_path": "build_model.py",
+                            "purpose": "production",
+                            "probe_result": {
+                                "status": "validated",
+                                "claim": "The candidate API call is accepted.",
+                                "evidence": "The diagnostic created the object.",
+                                "target_script": "build_model.py",
+                            },
+                        },
+                    )
+                ]
+            )
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "test",
+                        "summary": "Atomic adoption inspected.",
+                    },
+                )
+            ]
+        )
+
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+    )
+    agent = create_abaqus_coding_agent(
+        FunctionModel(model_function),
+        request,
+        probe_protocol_mode="typed",
+        probe_target_scripts=("build_model.py",),
+    )
+
+    result = asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    assert isinstance(result.output, FailedDecision)
+    assert dependencies.abaqus_calls == 2
+    traces = (request.state_dir / "probe_results.jsonl").read_text(encoding="utf-8")
+    assert '"event":"conclusion"' in traces
+    assert '"event":"adoption"' in traces
+    assert dependencies.unresolved_probe_feedback() is None
+
+
+@pytest.mark.parametrize(
+    "api_catalog_mode",
+    ["automatic_verified_only", "automatic_exact_signature"],
+)
+def test_automatic_modes_are_invisible_until_runtime_failure(
+    tmp_path: Path,
+    api_catalog_mode: ApiCatalogMode,
+) -> None:
+    request = _request(tmp_path)
+    observed: dict[str, object] = {}
+
+    def model_function(
+        _messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        observed["function_tools"] = {tool.name for tool in info.function_tools}
+        observed["instructions"] = info.instructions
+        output_tool = next(
+            tool
+            for tool in info.output_tools
+            if tool.name.endswith("NeedsInputDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "needs_input",
+                        "clarification": {
+                            "field_id": "plate_thickness",
+                            "kind": "missing_physical_input",
+                            "question": "板厚是多少？",
+                            "impact": "板厚会改变平面应力截面刚度和反力。",
+                        },
+                        "summary": "板厚是必需的物理输入。",
+                    },
+                )
+            ]
+        )
+
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=ApiCatalog([], runtime_release="2024"),
+    )
+    agent = create_abaqus_coding_agent(
+        FunctionModel(model_function),
+        request,
+        api_catalog_mode=api_catalog_mode,
+        planning_enabled=False,
+    )
+
+    asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    function_tools = observed["function_tools"]
+    assert isinstance(function_tools, set)
+    assert "lookup_abaqus_api" not in function_tools
+    assert "write_plan" not in function_tools
+    instructions = observed["instructions"]
+    assert isinstance(instructions, str)
+    assert "exact Abaqus API catalog" not in instructions
+    assert "lookup_abaqus_api" not in instructions
+
+
+def test_task_instructions_replace_only_plate_specific_prompt_blocks(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    observed: dict[str, object] = {}
+    task_instructions = """
+Repair the existing `model.py` so its verified container-binding failure no
+longer occurs. Do not require a solver run. Request verification only after
+`model.py` executes successfully and creates `repair_evidence.json`.
+""".strip()
+
+    def model_function(
+        _messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        observed["instructions"] = info.instructions
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "test",
+                        "summary": "Prompt inspected.",
+                    },
+                )
+            ]
+        )
+
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+    )
+    agent = create_abaqus_coding_agent(
+        FunctionModel(model_function),
+        request,
+        task_instructions=task_instructions,
+    )
+
+    asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    instructions = observed["instructions"]
+    assert isinstance(instructions, str)
+    assert task_instructions in instructions
+    assert "plate_thickness" not in instructions
+    assert "plate_tension.cae" not in instructions
+    assert "right_mean_u1" not in instructions
+    assert str(request.workspace) in instructions
+    assert "use the three Abaqus runtime tools" in instructions
+    assert "Load the `abaqus-2024-coding` capability" in instructions
+    assert "Keep authoring, solver, and ODB extraction separate" in instructions
+    assert "do not spend the finite tool budget on an unchanged retry" in " ".join(
+        instructions.split()
+    )
+
+
+def test_task_instructions_must_not_be_blank(tmp_path: Path) -> None:
+    request = _request(tmp_path)
+
+    with pytest.raises(ValueError, match="task_instructions must not be blank"):
+        create_abaqus_coding_agent(
+            FunctionModel(lambda _messages, _info: ModelResponse(parts=[])),
+            request,
+            task_instructions="  \n",
+        )
+
+
+def test_runtime_call_reservation_enforces_total_and_solver_budgets(
+    tmp_path: Path,
+) -> None:
+    request = _request(
+        tmp_path,
+        budget=CodingRunBudget(max_abaqus_calls=2, max_solver_calls=1),
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+    )
+
+    assert dependencies.reserve_runtime_call(solver=True) is None
+    assert "solver" in (dependencies.reserve_runtime_call(solver=True) or "")
+    assert dependencies.reserve_runtime_call(solver=False) is None
+    assert "exhausted" in (dependencies.reserve_runtime_call(solver=False) or "")
+    assert dependencies.abaqus_calls == 2
+    assert dependencies.solver_calls == 1
+
+
+def test_runtime_preflight_error_is_returned_to_agent_for_repair(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    call_count = 0
+    observed_messages: list[ModelMessage] = []
+
+    def model_function(
+        messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "run_cae_script",
+                        {"script_path": "missing.py"},
+                    )
+                ]
+            )
+        observed_messages.extend(messages)
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "authoring",
+                        "summary": "The requested script does not exist.",
+                    },
+                )
+            ]
+        )
+
+    runner = Abaqus2024Runner(request.workspace, request.state_dir)
+    dependencies = CodingAgentDependencies(request=request, runner=runner)
+    agent = create_abaqus_coding_agent(FunctionModel(model_function), request)
+
+    result = asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    assert isinstance(result.output, FailedDecision)
+    assert dependencies.abaqus_calls == 1
+    assert dependencies.executions == []
+    assert any("FileNotFoundError" in str(message) for message in observed_messages)
+
+
+def test_coder_filesystem_and_runner_share_canonical_workspace_without_shell(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    (request.workspace / "marker.txt").write_text("workspace marker", encoding="utf-8")
+    call_count = 0
+    observed_messages: list[ModelMessage] = []
+
+    def model_function(
+        messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            assert "run_command" not in {tool.name for tool in info.function_tools}
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "read_file",
+                        {"path": "marker.txt"},
+                        tool_call_id="read-marker",
+                    ),
+                ]
+            )
+        observed_messages.extend(messages)
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "test",
+                        "summary": "Workspace roots were inspected.",
+                    },
+                )
+            ]
+        )
+
+    runner = Abaqus2024Runner(request.workspace, request.state_dir)
+    dependencies = CodingAgentDependencies(request=request, runner=runner)
+    agent = create_abaqus_coding_agent(FunctionModel(model_function), request)
+
+    asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    tool_returns = [
+        part
+        for message in observed_messages
+        if isinstance(message, ModelRequest)
+        for part in message.parts
+        if isinstance(part, ToolReturnPart)
+    ]
+    read_result = next(part for part in tool_returns if part.tool_name == "read_file")
+    assert "workspace marker" in str(read_result.content)
+    assert all(part.tool_name != "run_command" for part in tool_returns)
+    assert runner.workspace == request.workspace
+
+
+def test_agent_can_lookup_optional_exact_api_catalog(tmp_path: Path) -> None:
+    request = _request(tmp_path)
+    catalog = ApiCatalog(
+        [
+            ApiMethodCard(
+                card_id="api:2024:MeshPart.seedEdgeByNumber",
+                entity_kind="method",
+                canonical_name="Part.seedEdgeByNumber",
+                declaring_name="MeshPart.seedEdgeByNumber",
+                class_name="MeshPart",
+                method_name="seedEdgeByNumber",
+                public_names=("Part.seedEdgeByNumber",),
+                signatures=(
+                    ApiSignature(
+                        text="seedEdgeByNumber(edges, number, constraint=FREE)",
+                        parameters=(
+                            ApiParameter(name="edges", required=True),
+                            ApiParameter(name="number", required=True),
+                        ),
+                    ),
+                ),
+                official_records=(
+                    OfficialApiRecord(
+                        record_id="official:2026:seedEdgeByNumber",
+                        entity_kind="method",
+                        owner_name="Part",
+                        callable_name="seedEdgeByNumber",
+                        canonical_name="Part.seedEdgeByNumber",
+                        summary="Seeds selected edges by number.",
+                        access=(
+                            "import part mdb.models[name].parts[name].seedEdgeByNumber",
+                        ),
+                        paths=("mdb.models[name].parts[name].seedEdgeByNumber",),
+                        required_parameters=(
+                            ApiParameter(
+                                name="edges",
+                                required=True,
+                                description="A sequence of Edge objects.",
+                            ),
+                            ApiParameter(
+                                name="number",
+                                required=True,
+                                description="The number of elements along the edge.",
+                            ),
+                        ),
+                        source=ApiSourceRef(
+                            kind="official",
+                            release="2026 FD02",
+                            source_path="SIMACAEKERRefMap/seed-edge.htm",
+                            source_url="http://localhost:4040/seed-edge.htm",
+                        ),
+                    ),
+                ),
+            )
+        ],
+        runtime_release="2024",
+    )
+    call_count = 0
+    observed_messages: list[ModelMessage] = []
+
+    def model_function(
+        messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            assert "lookup_abaqus_api" in {tool.name for tool in info.function_tools}
+            assert info.instructions is not None
+            assert "lookup_abaqus_api" in info.instructions
+            assert "Do not\nquery it preemptively" in info.instructions
+            assert "build_model.py" not in info.instructions
+            assert "extract_results.py" not in info.instructions
+            assert "open-ended user coding task" in info.instructions
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "lookup_abaqus_api",
+                        {"name": "Part.seedEdgeByNumber"},
+                        tool_call_id="lookup-api",
+                    )
+                ]
+            )
+        if call_count == 2:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "lookup_abaqus_api",
+                        {"name": "Part.seedEdgeByNumber"},
+                        tool_call_id="lookup-api-duplicate",
+                    )
+                ]
+            )
+        observed_messages.extend(messages)
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "test",
+                        "summary": "API card inspected.",
+                    },
+                )
+            ]
+        )
+
+    runner = Abaqus2024Runner(request.workspace, request.state_dir)
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=runner,
+        api_catalog=catalog,
+    )
+    agent = create_abaqus_coding_agent(
+        FunctionModel(model_function),
+        request,
+        api_catalog_enabled=True,
+    )
+
+    result = asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    assert isinstance(result.output, FailedDecision)
+    assert dependencies.api_lookup_calls == 1
+    tool_returns = [
+        part
+        for message in observed_messages
+        if isinstance(message, ModelRequest)
+        for part in message.parts
+        if isinstance(part, ToolReturnPart) and part.tool_name == "lookup_abaqus_api"
+    ]
+    assert len(tool_returns) == 2
+    assert "Part.seedEdgeByNumber" in str(tool_returns[0].content)
+    assert "A sequence of Edge objects." in str(tool_returns[0].content)
+    assert "'imports': ['part']" in str(tool_returns[0].content)
+    assert "duplicate" in str(tool_returns[1].content)
+    trace_lines = (
+        (request.state_dir / "api_lookups.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    )
+    traces = [ApiLookupTrace.model_validate_json(line) for line in trace_lines]
+    assert len(traces) == 2
+    assert traces[0].source == "active"
+    assert traces[0].query == "Part.seedEdgeByNumber"
+    assert traces[0].status == "found"
+    assert traces[0].counted is True
+    assert traces[0].payload_bytes > 0
+    assert traces[1].status == "duplicate"
+    assert traces[1].counted is False
+    assert dependencies.returned_api_card_ids == {"api:2024:MeshPart.seedEdgeByNumber"}
+
+
+def test_agent_parameter_lookup_is_scoped_and_independent_of_method_card(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    note = ApiRuntimeNote(
+        note_id="runtime:2024:Model.SurfaceTraction:side-aware-region",
+        qualified_name="Model.SurfaceTraction",
+        runtime_release="2024",
+        summary="Use a side-aware surface region.",
+        guidance="Pass an Assembly.Surface as region.",
+        evidence_ref="benchmarks/evidence.json",
+        applies_to_parameters=("region",),
+        verified=True,
+        source=ApiSourceRef(
+            kind="runtime",
+            release="2024",
+            source_path="benchmarks/evidence.json",
+        ),
+    )
+    card = ApiMethodCard(
+        card_id="api:2024:LoadModel.SurfaceTraction",
+        entity_kind="constructor",
+        canonical_name="Model.SurfaceTraction",
+        declaring_name="LoadModel.SurfaceTraction",
+        class_name="LoadModel",
+        method_name="SurfaceTraction",
+        public_names=("Model.SurfaceTraction",),
+        signatures=(
+            ApiSignature(
+                text=(
+                    "SurfaceTraction(name, createStepName, region, magnitude, "
+                    "directionVector=())"
+                ),
+                parameters=(
+                    ApiParameter(name="region", annotation="Region", required=True),
+                    ApiParameter(
+                        name="directionVector",
+                        annotation="tuple",
+                        default="()",
+                        required=False,
+                    ),
+                ),
+            ),
+        ),
+        official_records=(
+            OfficialApiRecord(
+                record_id="official:2026:SurfaceTraction",
+                entity_kind="constructor",
+                owner_name="Model",
+                callable_name="SurfaceTraction",
+                canonical_name="Model.SurfaceTraction",
+                access=("import load",),
+                required_parameters=(
+                    ApiParameter(
+                        name="region",
+                        required=True,
+                        description="A Region object specifying the loaded region.",
+                    ),
+                ),
+                optional_parameters=(
+                    ApiParameter(
+                        name="directionVector",
+                        required=False,
+                        description=(
+                            "A VertexArray of length 2, or two tuples of "
+                            "coordinates, specifying the load direction."
+                        ),
+                    ),
+                ),
+                source=ApiSourceRef(
+                    kind="official",
+                    release="2026 FD02",
+                    source_path="SIMACAEKERRefMap/surface-traction.htm",
+                    source_url="http://localhost:4040/surface-traction.htm",
+                ),
+            ),
+        ),
+        runtime_notes=(note,),
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=ApiCatalog([card], runtime_release="2024"),
+    )
+    call_count = 0
+    observed_messages: list[ModelMessage] = []
+
+    def model_function(
+        messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        nonlocal call_count
+        call_count += 1
+        queries = (
+            "Model.SurfaceTraction",
+            "SurfaceTraction.directionVector",
+            "Model.SurfaceTraction.region",
+            "SurfaceTraction.region",
+        )
+        if call_count <= len(queries):
+            if call_count == 1:
+                assert info.instructions is not None
+                assert "Model.SurfaceTraction.directionVector" in info.instructions
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "lookup_abaqus_api",
+                        {"name": queries[call_count - 1]},
+                        tool_call_id=f"parameter-lookup-{call_count}",
+                    )
+                ]
+            )
+        observed_messages.extend(messages)
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "test",
+                        "summary": "Parameter contracts inspected.",
+                    },
+                )
+            ]
+        )
+
+    agent = create_abaqus_coding_agent(
+        FunctionModel(model_function),
+        request,
+        api_catalog_enabled=True,
+    )
+    result = asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    assert isinstance(result.output, FailedDecision)
+    returns = [
+        part.content
+        for message in observed_messages
+        if isinstance(message, ModelRequest)
+        for part in message.parts
+        if isinstance(part, ToolReturnPart) and part.tool_name == "lookup_abaqus_api"
+    ]
+    assert len(returns) == 4
+    assert all(isinstance(payload, dict) for payload in returns)
+    method_payload, direction_payload, region_payload, duplicate_payload = returns
+    assert isinstance(method_payload, dict)
+    assert isinstance(direction_payload, dict)
+    assert isinstance(region_payload, dict)
+    assert isinstance(duplicate_payload, dict)
+    assert "cards" in method_payload
+    assert "parameter" not in method_payload
+    direction = direction_payload["parameter"]
+    assert isinstance(direction, dict)
+    assert direction["name"] == "directionVector"
+    assert direction["signature_variants"] == [
+        {
+            "kind": "unknown",
+            "annotation": "tuple",
+            "default": "()",
+            "required": False,
+        }
+    ]
+    assert "length 2" in str(direction["official_descriptions"])
+    assert direction["runtime_notes"] == []
+    assert direction["imports"] == ["load"]
+    region = region_payload["parameter"]
+    assert isinstance(region, dict)
+    assert region["name"] == "region"
+    assert [item["note_id"] for item in region["runtime_notes"]] == [note.note_id]
+    assert duplicate_payload["status"] == "duplicate"
+    assert duplicate_payload["parameter_name"] == "region"
+    assert dependencies.api_lookup_calls == 3
+    assert dependencies.returned_api_card_ids == {card.card_id}
+    assert dependencies.returned_api_parameter_keys == {
+        (card.card_id, "directionVector"),
+        (card.card_id, "region"),
+    }
+    traces = [
+        ApiLookupTrace.model_validate_json(line)
+        for line in (request.state_dir / "api_lookups.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    assert [trace.counted for trace in traces] == [True, True, True, False]
+    assert traces[1].delivered_note_ids == ()
+    assert traces[2].delivered_note_ids == (note.note_id,)
+
+
+def test_automatic_bare_lookup_deduplicates_card_returned_by_active_lookup(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    (request.workspace / "build_model.py").write_text(
+        "# line\n" * 8
+        + "model = mdb.models['Model-1']\n"
+        + "model.FieldOutputRequest(name='F-Output-1')\n",
+        encoding="utf-8",
+    )
+    card = ApiMethodCard(
+        card_id="api:2024:Model.FieldOutputRequest",
+        entity_kind="method",
+        canonical_name="Model.FieldOutputRequest",
+        declaring_name="Model.FieldOutputRequest",
+        class_name="Model",
+        method_name="FieldOutputRequest",
+        public_names=("Model.FieldOutputRequest",),
+        signatures=(
+            ApiSignature(
+                text="FieldOutputRequest(name, createStepName, variables=PRESELECT)",
+                parameters=(
+                    ApiParameter(name="name", required=True),
+                    ApiParameter(name="createStepName", required=True),
+                ),
+            ),
+        ),
+    )
+    catalog = ApiCatalog([card], runtime_release="2024")
+    call_count = 0
+
+    def model_function(
+        _messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "lookup_abaqus_api",
+                        {"name": "Model.FieldOutputRequest"},
+                        tool_call_id="lookup-qualified",
+                    )
+                ]
+            )
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "test",
+                        "summary": "Qualified API card inspected.",
+                    },
+                )
+            ]
+        )
+
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=catalog,
+    )
+    agent = create_abaqus_coding_agent(
+        FunctionModel(model_function),
+        request,
+        api_catalog_enabled=True,
+    )
+    asyncio.run(agent.run(request.goal, deps=dependencies))
+    execution = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.CAE_NOGUI,
+        command=("abq2024.bat", "cae", "noGUI=build_model.py"),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="Abaqus Error: cae exited with an error.\n",
+        stderr=(
+            "TypeError: keyword error\n"
+            'File "build_model.py", line 10, in <module>\n'
+            "    model.FieldOutputRequest(name='F-Output-1')\n"
+        ),
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+    )
+
+    hint = _runtime_api_hint(dependencies, execution)
+
+    assert hint is not None
+    assert hint == {
+        "status": "duplicate",
+        "query": "Model.FieldOutputRequest",
+        "error": "This exact API query was already attempted",
+    }
+    assert "cards" not in hint
+    assert dependencies.api_lookup_calls == 1
+    assert dependencies.api_lookup_queries == {"Model.FieldOutputRequest"}
+    assert dependencies.returned_api_card_ids == {card.card_id}
+    traces = [
+        ApiLookupTrace.model_validate_json(line)
+        for line in (request.state_dir / "api_lookups.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    assert [trace.status for trace in traces] == ["found", "duplicate"]
+    assert [trace.counted for trace in traces] == [True, False]
+    assert traces[1].source == "automatic"
+    assert traces[1].card_ids == ()
+    assert traces[1].payload_bytes < traces[0].payload_bytes
+
+
+def test_cae_error_reports_stage_failure_and_attaches_exact_api_hint(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    (request.workspace / "build.py").write_text(
+        "# line\n" * 7
+        + "model = mdb.models['Model-1']\n"
+        + "part = model.Part(name='Plate')\n"
+        + "part.seedEdgeByNumber(edges=(bottom, top), number=20)\n",
+        encoding="utf-8",
+    )
+    catalog = ApiCatalog(
+        [
+            ApiMethodCard(
+                card_id="api:2024:MeshPart.seedEdgeByNumber",
+                entity_kind="method",
+                canonical_name="Part.seedEdgeByNumber",
+                declaring_name="MeshPart.seedEdgeByNumber",
+                class_name="MeshPart",
+                method_name="seedEdgeByNumber",
+                public_names=("Part.seedEdgeByNumber",),
+                runtime_notes=(
+                    ApiRuntimeNote(
+                        note_id="runtime:2024:Part.seedEdgeByNumber:verified",
+                        qualified_name="Part.seedEdgeByNumber",
+                        runtime_release="2024",
+                        summary="Verified note.",
+                        guidance="Use verified guidance.",
+                        evidence_ref="evidence/verified.json",
+                        verified=True,
+                        source=ApiSourceRef(
+                            kind="runtime",
+                            release="2024",
+                            source_path="evidence/verified.json",
+                        ),
+                    ),
+                    ApiRuntimeNote(
+                        note_id="runtime:2024:Part.seedEdgeByNumber:advisory",
+                        qualified_name="Part.seedEdgeByNumber",
+                        runtime_release="2024",
+                        summary="Unverified note.",
+                        guidance="Do not inject unverified guidance automatically.",
+                        evidence_ref="evidence/advisory.json",
+                        verified=False,
+                        source=ApiSourceRef(
+                            kind="runtime",
+                            release="2024",
+                            source_path="evidence/advisory.json",
+                        ),
+                    ),
+                ),
+            )
+        ],
+        runtime_release="2024",
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=catalog,
+    )
+    execution = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.CAE_NOGUI,
+        command=("abq2024.bat", "cae", "noGUI=build.py"),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="Abaqus Error: cae exited with an error.\n",
+        stderr=(
+            "TypeError: found GeomSequence, expected Vertex\n"
+            'File "build.py", line 10, in <module>\n'
+            "    part.seedEdgeByNumber(edges=(bottom, top), number=20)\n"
+        ),
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+    )
+
+    payload = _tool_payload(execution)
+    hint = _runtime_api_hint(dependencies, execution)
+
+    assert payload["process_succeeded"] is True
+    assert payload["abaqus_error_detected"] is True
+    assert payload["stage_succeeded"] is False
+    assert payload["succeeded"] is False
+    assert hint is not None
+    assert hint["status"] == "found"
+    assert "Use verified guidance." in str(hint)
+    assert "evidence/verified.json" in str(hint)
+    assert "Do not inject unverified guidance automatically." not in str(hint)
+    assert dependencies.api_lookup_calls == 1
+    traces = [
+        ApiLookupTrace.model_validate_json(line)
+        for line in (request.state_dir / "api_lookups.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    assert len(traces) == 1
+    assert traces[0].source == "automatic"
+    assert traces[0].counted is True
+
+    solver_execution = execution.model_copy(
+        update={"invocation": AbaqusInvocation.SOLVER_JOB}
+    )
+    assert _runtime_api_hint(dependencies, solver_execution) is None
+    non_api_error = execution.model_copy(
+        update={
+            "stderr": (
+                "RuntimeError: license checkout failed\n"
+                "    part.seedEdgeByNumber(edges=edges, number=20)\n"
+            )
+        }
+    )
+    assert _runtime_api_hint(dependencies, non_api_error) is None
+    assert dependencies.api_lookup_calls == 1
+
+
+def test_automatic_verified_only_hint_is_compact_and_fingerprint_is_soft(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    (request.workspace / "build.py").write_text(
+        "# line\n" * 8
+        + "model = mdb.models['Model-1']\n"
+        + "part = model.Part(name='Plate')\n"
+        + "part.seedEdgeByNumber(edges=(bottom, top), number=20)\n",
+        encoding="utf-8",
+    )
+    verified_note_id = "runtime:2024:Part.seedEdgeByNumber:verified"
+    mismatch_note_id = "runtime:2024:Part.seedEdgeByNumber:english-fingerprint"
+    catalog = ApiCatalog(
+        [
+            ApiMethodCard(
+                card_id="api:2024:MeshPart.seedEdgeByNumber",
+                entity_kind="method",
+                canonical_name="Part.seedEdgeByNumber",
+                declaring_name="MeshPart.seedEdgeByNumber",
+                class_name="MeshPart",
+                method_name="seedEdgeByNumber",
+                public_names=("Part.seedEdgeByNumber",),
+                signatures=(
+                    ApiSignature(
+                        text="seedEdgeByNumber(edges, number, constraint=FREE)"
+                    ),
+                ),
+                official_records=(
+                    OfficialApiRecord(
+                        record_id="official:2026:seedEdgeByNumber",
+                        entity_kind="method",
+                        owner_name="Part",
+                        callable_name="seedEdgeByNumber",
+                        canonical_name="Part.seedEdgeByNumber",
+                        access=(
+                            "import part mdb.models[name].parts[name].seedEdgeByNumber",
+                        ),
+                        source=ApiSourceRef(
+                            kind="official",
+                            release="2026 FD02",
+                            source_path="SIMACAEKERRefMap/seed-edge.htm",
+                            source_url="http://localhost:4040/seed-edge.htm",
+                        ),
+                    ),
+                ),
+                runtime_notes=(
+                    ApiRuntimeNote(
+                        note_id=verified_note_id,
+                        qualified_name="Part.seedEdgeByNumber",
+                        runtime_release="2024",
+                        summary="General verified note.",
+                        guidance="Pass a consumer-compatible edge sequence.",
+                        evidence_ref="evidence/general.json",
+                        verified=True,
+                        source=ApiSourceRef(
+                            kind="runtime",
+                            release="2024",
+                            source_path="evidence/general.json",
+                        ),
+                    ),
+                    ApiRuntimeNote(
+                        note_id=mismatch_note_id,
+                        qualified_name="Part.seedEdgeByNumber",
+                        runtime_release="2024",
+                        summary="English fingerprint note.",
+                        guidance="Do not wrap a native sequence in another tuple.",
+                        evidence_ref="evidence/english.json",
+                        error_fingerprint="found GeomSequence, expected Vertex",
+                        verified=True,
+                        source=ApiSourceRef(
+                            kind="runtime",
+                            release="2024",
+                            source_path="evidence/english.json",
+                        ),
+                    ),
+                    ApiRuntimeNote(
+                        note_id="runtime:2024:Part.seedEdgeByNumber:unverified",
+                        qualified_name="Part.seedEdgeByNumber",
+                        runtime_release="2024",
+                        summary="Unverified note.",
+                        guidance="Never deliver this note automatically.",
+                        evidence_ref="evidence/unverified.json",
+                        verified=False,
+                        source=ApiSourceRef(
+                            kind="runtime",
+                            release="2024",
+                            source_path="evidence/unverified.json",
+                        ),
+                    ),
+                ),
+            )
+        ],
+        runtime_release="2024",
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=catalog,
+    )
+    execution = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.CAE_NOGUI,
+        command=("abq2024.bat", "cae", "noGUI=build.py"),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="Abaqus Error: cae exited with an error.\n",
+        stderr=(
+            "TypeError: 参数类型错误\n"
+            'File "build.py", line 11, in <module>\n'
+            "    part.seedEdgeByNumber(edges=(bottom, top), number=20)\n"
+        ),
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+    )
+
+    hint = _runtime_api_hint(
+        dependencies,
+        execution,
+        mode="automatic_verified_only",
+    )
+
+    assert hint is not None
+    assert hint["status"] == "found"
+    assert hint["query"] == "Part.seedEdgeByNumber"
+    assert hint["note_ids"] == [verified_note_id, mismatch_note_id]
+    assert hint["signature"] == "seedEdgeByNumber(edges, number, constraint=FREE)"
+    assert hint["imports"] == ["part"]
+    assert "Do not wrap a native sequence" in str(hint)
+    assert "Never deliver this note automatically" not in str(hint)
+    assert "cards" not in hint
+    assert "source_urls" not in str(hint)
+    assert "localhost:4040" not in str(hint)
+    traces = [
+        ApiLookupTrace.model_validate_json(line)
+        for line in (request.state_dir / "api_lookups.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    assert len(traces) == 1
+    assert traces[0].delivered_note_ids == (verified_note_id, mismatch_note_id)
+    assert traces[0].source == "automatic"
+    assert traces[0].counted is True
+
+
+def test_verified_odb_container_error_routes_to_behavior_card(tmp_path: Path) -> None:
+    request = _request(tmp_path)
+    note_id = "runtime:2024:FieldOutput.getSubset:field-value-boundaries"
+    card = ApiMethodCard(
+        card_id="api:2024:FieldOutput.getSubset",
+        entity_kind="method",
+        canonical_name="FieldOutput.getSubset",
+        declaring_name="FieldOutput.getSubset",
+        class_name="FieldOutput",
+        method_name="getSubset",
+        public_names=("FieldOutput.getSubset",),
+        signatures=(ApiSignature(text="getSubset(region)"),),
+        runtime_notes=(
+            ApiRuntimeNote(
+                note_id=note_id,
+                qualified_name="FieldOutput.getSubset",
+                runtime_release="2024",
+                summary="Verified FieldValue boundaries.",
+                guidance="Iterate FieldOutput.values without slicing.",
+                evidence_ref="evidence/odb.json",
+                verified=True,
+                source=ApiSourceRef(
+                    kind="runtime",
+                    release="2024",
+                    source_path="evidence/odb.json",
+                ),
+            ),
+        ),
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=ApiCatalog([card], runtime_release="2024"),
+    )
+    execution = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.ABAQUS_PYTHON,
+        command=("abq2024.bat", "python", "extract.py"),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="",
+        stderr="OdbError: Slice for an FieldValue Sequence  is not supported.\n",
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+    )
+
+    hint = _runtime_api_hint(
+        dependencies,
+        execution,
+        mode="automatic_verified_only",
+    )
+
+    assert hint is not None
+    assert hint["query"] == "FieldOutput.getSubset"
+    assert hint["note_ids"] == [note_id]
+    assert dependencies.api_lookup_calls == 1
+    trace = ApiLookupTrace.model_validate_json(
+        (request.state_dir / "api_lookups.jsonl").read_text(encoding="utf-8")
+    )
+    assert trace.delivered_note_ids == (note_id,)
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        "<unknown>.AbaqusException: Feature creation failed",
+        "特征创建失败.",
+    ],
+)
+@pytest.mark.parametrize(
+    ("surface_parameter", "note_id"),
+    [
+        (
+            "side1Edges",
+            "runtime:2024:Assembly.Surface:side1-edge-container",
+        ),
+        (
+            "side2Edges",
+            "runtime:2024:Assembly.Surface:side2-edge-container",
+        ),
+    ],
+)
+def test_abaqus_exception_routes_scoped_verified_note(
+    tmp_path: Path,
+    error: str,
+    surface_parameter: str,
+    note_id: str,
+) -> None:
+    request = _request(tmp_path)
+    (request.workspace / "build.py").write_text(
+        "model = mdb.models['Model-1']\n"
+        "assembly = model.rootAssembly\n"
+        f"assembly.Surface(name='SIDE', {surface_parameter}=edges)\n",
+        encoding="utf-8",
+    )
+    card = ApiMethodCard(
+        card_id="api:2024:Assembly.Surface",
+        entity_kind="method",
+        canonical_name="Assembly.Surface",
+        declaring_name="RegionAssembly.Surface",
+        class_name="RegionAssembly",
+        method_name="Surface",
+        public_names=("Assembly.Surface",),
+        signatures=(ApiSignature(text=f"Surface(name, {surface_parameter}=None)"),),
+        runtime_notes=(
+            ApiRuntimeNote(
+                note_id=note_id,
+                qualified_name="Assembly.Surface",
+                runtime_release="2024",
+                summary="Verified surface edge container.",
+                guidance="Pass the native edge sequence.",
+                evidence_ref="evidence/surface.json",
+                applies_to_parameters=(surface_parameter,),
+                verified=True,
+                source=ApiSourceRef(
+                    kind="runtime",
+                    release="2024",
+                    source_path="evidence/surface.json",
+                ),
+            ),
+        ),
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=ApiCatalog([card], runtime_release="2024"),
+    )
+    execution = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.CAE_NOGUI,
+        command=("abq2024.bat", "cae", "noGUI=build.py"),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="",
+        stderr=(
+            f"{error}\n"
+            'File "build.py", line 3, in <module>\n'
+            f"    assembly.Surface(name='SIDE', {surface_parameter}=edges)\n"
+        ),
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+    )
+
+    hint = _runtime_api_hint(
+        dependencies,
+        execution,
+        mode="automatic_verified_only",
+    )
+
+    assert hint is not None
+    assert hint["query"] == "Assembly.Surface"
+    assert hint["note_ids"] == [note_id]
+    assert dependencies.api_lookup_calls == 1
+
+
+def test_automatic_verified_only_returns_no_hint_without_verified_note(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    (request.workspace / "build.py").write_text(
+        "# line\n" * 8
+        + "model = mdb.models['Model-1']\n"
+        + "part = model.Part(name='Plate')\n"
+        + "part.Set(name='EDGE', edges=edges)\n",
+        encoding="utf-8",
+    )
+    card = ApiMethodCard(
+        card_id="api:2024:RegionPart.Set",
+        entity_kind="method",
+        canonical_name="Part.Set",
+        declaring_name="RegionPart.Set",
+        class_name="RegionPart",
+        method_name="Set",
+        public_names=("Part.Set",),
+        runtime_notes=(
+            ApiRuntimeNote(
+                note_id="runtime:2024:Part.Set:unverified",
+                qualified_name="Part.Set",
+                runtime_release="2024",
+                summary="Unverified note.",
+                guidance="This must not be injected.",
+                evidence_ref="evidence/unverified.json",
+                verified=False,
+                source=ApiSourceRef(
+                    kind="runtime",
+                    release="2024",
+                    source_path="evidence/unverified.json",
+                ),
+            ),
+        ),
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=ApiCatalog([card], runtime_release="2024"),
+    )
+    execution = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.CAE_NOGUI,
+        command=("abq2024.bat", "cae", "noGUI=build.py"),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="Abaqus Error: cae exited with an error.\n",
+        stderr=(
+            "TypeError: invalid region\n"
+            'File "build.py", line 11, in <module>\n'
+            "    part.Set(name='EDGE', edges=edges)\n"
+        ),
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+    )
+
+    hint = _runtime_api_hint(
+        dependencies,
+        execution,
+        mode="automatic_verified_only",
+    )
+
+    assert hint is None
+    assert dependencies.api_lookup_calls == 0
+    assert dependencies.api_lookup_queries == set()
+    assert not (request.state_dir / "api_lookups.jsonl").exists()
+
+
+def test_automatic_exact_signature_returns_compact_unique_card_without_note(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    (request.workspace / "build.py").write_text(
+        "model = mdb.models['Model-1']\n"
+        "model.BeamSection(\n"
+        "    name='Beam', integration=BEFORE_ANALYSIS,\n"
+        "    profile='Rect', orientation=(0.0, 0.0, 1.0),\n"
+        ")\n",
+        encoding="utf-8",
+    )
+    card = ApiMethodCard(
+        card_id="api:2024:SectionModel.BeamSection",
+        entity_kind="constructor",
+        canonical_name="Model.BeamSection",
+        declaring_name="SectionModel.BeamSection",
+        class_name="SectionModel",
+        method_name="BeamSection",
+        public_names=("Model.BeamSection",),
+        signatures=(
+            ApiSignature(
+                text=(
+                    "BeamSection(name, integration, profile, "
+                    "poissonRatio=0, material='')"
+                )
+            ),
+        ),
+        official_records=(
+            OfficialApiRecord(
+                record_id="official:2026:BeamSection",
+                entity_kind="constructor",
+                owner_name="Model",
+                callable_name="BeamSection",
+                canonical_name="Model.BeamSection",
+                access=("import section mdb.models[name].BeamSection",),
+                source=ApiSourceRef(
+                    kind="official",
+                    release="2026 FD02",
+                    source_path="SIMACAEKERRefMap/beam-section.htm",
+                ),
+            ),
+        ),
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=ApiCatalog([card], runtime_release="2024"),
+    )
+    execution = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.CAE_NOGUI,
+        command=("abq2024.bat", "cae", "noGUI=build.py"),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="Abaqus Error: cae exited with an error.\n",
+        stderr=(
+            "TypeError: 关键字错误: orientation\n"
+            'File "build.py", line 2, in <module>\n'
+            "    model.BeamSection(\n"
+        ),
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+    )
+
+    hint = _runtime_api_hint(
+        dependencies,
+        execution,
+        mode="automatic_exact_signature",
+    )
+
+    assert hint == {
+        "status": "found",
+        "query": "Model.BeamSection",
+        "card_id": card.card_id,
+        "signature": (
+            "BeamSection(name, integration, profile, poissonRatio=0, material='')"
+        ),
+        "guidance": (
+            "Use this exact callable signature to remove unsupported arguments. "
+            "Preserve user physics inputs and the runtime receiver's ownership."
+        ),
+        "imports": ["section"],
+    }
+    assert dependencies.api_lookup_calls == 1
+    assert dependencies.api_lookup_queries == {"Model.BeamSection"}
+    traces = [
+        ApiLookupTrace.model_validate_json(line)
+        for line in (request.state_dir / "api_lookups.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    assert len(traces) == 1
+    assert traces[0].source == "automatic"
+    assert traces[0].card_ids == (card.card_id,)
+    assert traces[0].delivered_note_ids == ()
+    assert traces[0].counted is True
+
+
+def test_automatic_verified_note_routes_beam_orientation_keyword(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    (request.workspace / "build.py").write_text(
+        "model = mdb.models['Model-1']\n"
+        "model.BeamSection(name='Beam', integration=BEFORE_ANALYSIS, "
+        "profile='Rect', beamOrientation=(0.0, 0.0, 1.0))\n",
+        encoding="utf-8",
+    )
+    note_id = "runtime:2024:Model.BeamSection:orientation-boundary"
+    card = ApiMethodCard(
+        card_id="api:2024:SectionModel.BeamSection",
+        entity_kind="constructor",
+        canonical_name="Model.BeamSection",
+        declaring_name="SectionModel.BeamSection",
+        class_name="SectionModel",
+        method_name="BeamSection",
+        public_names=("Model.BeamSection",),
+        signatures=(ApiSignature(text="BeamSection(name, integration, profile)"),),
+        runtime_notes=(
+            ApiRuntimeNote(
+                note_id=note_id,
+                qualified_name="Model.BeamSection",
+                runtime_release="2024",
+                summary="Construction and orientation assignment are separate.",
+                guidance="Use Part.assignBeamSectionOrientation separately.",
+                evidence_ref=(
+                    "benchmarks/api_catalog/"
+                    "abaqus_2024_beam_section_orientation_observations.json"
+                ),
+                applies_to_parameters=(
+                    "orientation",
+                    "beamOrientation",
+                    "geometricType",
+                ),
+                verified=True,
+                source=ApiSourceRef(
+                    kind="runtime",
+                    release="2024",
+                    source_path=(
+                        "benchmarks/api_catalog/"
+                        "abaqus_2024_beam_section_orientation_observations.json"
+                    ),
+                ),
+            ),
+        ),
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=ApiCatalog([card], runtime_release="2024"),
+    )
+    execution = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.CAE_NOGUI,
+        command=("abq2024.bat", "cae", "noGUI=build.py"),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="Abaqus Error: cae exited with an error.\n",
+        stderr=(
+            "TypeError: 关键字错误: beamOrientation\n"
+            'File "build.py", line 2, in <module>\n'
+            "    model.BeamSection(name='Beam', integration=BEFORE_ANALYSIS, "
+            "profile='Rect', beamOrientation=(0.0, 0.0, 1.0))\n"
+        ),
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+    )
+
+    hint = _runtime_api_hint(
+        dependencies,
+        execution,
+        mode="automatic_verified_only",
+    )
+
+    assert hint is not None
+    assert hint["query"] == "Model.BeamSection"
+    assert hint["note_ids"] == [note_id]
+    assert dependencies.api_lookup_calls == 1
+
+
+def test_automatic_exact_signature_requires_a_signature(tmp_path: Path) -> None:
+    request = _request(tmp_path)
+    (request.workspace / "build.py").write_text(
+        "model = mdb.models['Model-1']\n"
+        "part = model.Part(name='Plate')\n"
+        "part.Set(name='EDGE', edges=edges)\n",
+        encoding="utf-8",
+    )
+    card = ApiMethodCard(
+        card_id="api:2024:RegionPart.Set",
+        entity_kind="method",
+        canonical_name="Part.Set",
+        declaring_name="RegionPart.Set",
+        class_name="RegionPart",
+        method_name="Set",
+        public_names=("Part.Set",),
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=ApiCatalog([card], runtime_release="2024"),
+    )
+    execution = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.CAE_NOGUI,
+        command=("abq2024.bat", "cae", "noGUI=build.py"),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="Abaqus Error: cae exited with an error.\n",
+        stderr=(
+            "TypeError: invalid region\n"
+            'File "build.py", line 3, in <module>\n'
+            "    part.Set(name='EDGE', edges=edges)\n"
+        ),
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+    )
+
+    assert (
+        _runtime_api_hint(
+            dependencies,
+            execution,
+            mode="automatic_exact_signature",
+        )
+        is None
+    )
+    assert dependencies.api_lookup_calls == 0
+    assert dependencies.api_lookup_queries == set()
+    assert not (request.state_dir / "api_lookups.jsonl").exists()
+
+
+def test_automatic_hint_does_not_fall_back_to_ambiguous_bare_method(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    cards = [
+        ApiMethodCard(
+            card_id="api:2024:RegionPart.Set",
+            entity_kind="method",
+            canonical_name="Part.Set",
+            declaring_name="RegionPart.Set",
+            class_name="RegionPart",
+            method_name="Set",
+        ),
+        ApiMethodCard(
+            card_id="api:2024:RegionAssembly.Set",
+            entity_kind="method",
+            canonical_name="Assembly.Set",
+            declaring_name="RegionAssembly.Set",
+            class_name="RegionAssembly",
+            method_name="Set",
+        ),
+    ]
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=ApiCatalog(cards, runtime_release="2024"),
+    )
+    execution = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.CAE_NOGUI,
+        command=("abq2024.bat", "cae", "noGUI=build_model.py"),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="Abaqus Error: cae exited with an error.\n",
+        stderr=(
+            "TypeError: invalid region\n"
+            'File "build_model.py", line 10, in <module>\n'
+            "    part.Set(name='FACE', faces=part.faces[:])\n"
+        ),
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+    )
+
+    hint = _runtime_api_hint(dependencies, execution)
+
+    assert hint is None
+    assert dependencies.api_lookup_calls == 0
+    assert not (request.state_dir / "api_lookups.jsonl").exists()
+
+
+def test_exit_zero_python_traceback_is_not_a_successful_stage(tmp_path: Path) -> None:
+    request = _request(tmp_path)
+    base = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.ABAQUS_PYTHON,
+        command=("abq2024.bat", "python", "extract_results.py"),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="",
+        stderr=(
+            "Traceback (most recent call last):\n"
+            '  File "extract_results.py", line 8, in <module>\n'
+            "KeyError: 'Tension'\n"
+        ),
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+    )
+
+    for invocation in (
+        AbaqusInvocation.ABAQUS_PYTHON,
+        AbaqusInvocation.CAE_NOGUI,
+    ):
+        payload = _tool_payload(base.model_copy(update={"invocation": invocation}))
+        assert payload["process_succeeded"] is True
+        assert payload["python_traceback_detected"] is True
+        assert payload["stage_succeeded"] is False
+        assert payload["succeeded"] is False
+
+    solver_payload = _tool_payload(
+        base.model_copy(update={"invocation": AbaqusInvocation.SOLVER_JOB})
+    )
+    assert solver_payload["python_traceback_detected"] is False
+
+
+def test_solver_tool_payload_includes_high_signal_diagnostics(tmp_path: Path) -> None:
+    request = _request(tmp_path)
+    execution = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.SOLVER_JOB,
+        command=("abq2024.bat", "job=plate", "input=plate.inp", "interactive"),
+        workspace=request.workspace,
+        exit_code=1,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="Abaqus Error: Analysis Input File Processor exited with an error.",
+        stderr="",
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+        diagnostics=(
+            AbaqusDiagnostic(
+                level="error",
+                source="plate.dat",
+                line=42,
+                message="80 elements have missing property definitions",
+            ),
+        ),
+    )
+
+    payload = _tool_payload(execution)
+
+    assert payload["diagnostics"] == [
+        {
+            "level": "error",
+            "source": "plate.dat",
+            "line": 42,
+            "message": "80 elements have missing property definitions",
+        }
+    ]
+
+    cae_payload = _tool_payload(
+        execution.model_copy(update={"invocation": AbaqusInvocation.CAE_NOGUI})
+    )
+    assert "diagnostics" not in cae_payload
+
+
+def test_runtime_note_fixture_uses_catalog_qualified_names() -> None:
+    note_path = (
+        Path(__file__).parents[1]
+        / "benchmarks"
+        / "api_catalog"
+        / "abaqus_2024_runtime_notes.jsonl"
+    )
+    notes = [
+        ApiRuntimeNote.model_validate_json(line)
+        for line in note_path.read_text(encoding="utf-8").splitlines()
+    ]
+
+    assert {
+        "EdgeArray.findAt",
+        "Part.Set",
+        "Part.seedEdgeByNumber",
+    } <= {note.qualified_name for note in notes}
+    assert all(note.verified for note in notes)
+    scopes = {note.note_id: note.applies_to_parameters for note in notes}
+    assert scopes["runtime:2024:Part.seedEdgeByNumber:edge-containers"] == ("edges",)
+    assert scopes["runtime:2024:Part.Set:native-geom-sequence"] == ("faces",)
+    assert scopes["runtime:2024:Assembly.Set:native-edge-sequence"] == ("edges",)
+    assert scopes["runtime:2024:Part.setMeshControls:direct-face-array"] == ("regions",)
+    assert scopes["runtime:2024:EdgeArray.findAt:shape-dispatch"] == ("coordinates",)
+    assert scopes["runtime:2024:Model.SurfaceTraction:side-aware-region"] == ("region",)
+    assert scopes["runtime:2024:Model.BeamSection:orientation-boundary"] == (
+        "orientation",
+        "beamOrientation",
+        "geometricType",
+    )
+
+
+def test_automatic_note_scope_rejects_faces_before_query_or_budget(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    (request.workspace / "build.py").write_text(
+        "model = mdb.models['Model-1']\n"
+        "assembly = model.rootAssembly\n"
+        "assembly.Set(name='FACE', faces=faces)\n",
+        encoding="utf-8",
+    )
+    note = ApiRuntimeNote(
+        note_id="runtime:2024:Assembly.Set:edges",
+        qualified_name="Assembly.Set",
+        runtime_release="2024",
+        summary="Only verified for edges.",
+        guidance="Use the native edge sequence.",
+        evidence_ref="evidence/edges.json",
+        applies_to_parameters=("edges",),
+        verified=True,
+        source=ApiSourceRef(
+            kind="runtime",
+            release="2024",
+            source_path="evidence/edges.json",
+        ),
+    )
+    card = ApiMethodCard(
+        card_id="api:2024:RegionAssembly.Set",
+        entity_kind="method",
+        canonical_name="Assembly.Set",
+        declaring_name="RegionAssembly.Set",
+        class_name="RegionAssembly",
+        method_name="Set",
+        public_names=("Assembly.Set",),
+        runtime_notes=(note,),
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=ApiCatalog([card], runtime_release="2024"),
+    )
+    execution = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.CAE_NOGUI,
+        command=("abq2024.bat", "cae", "noGUI=build.py"),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="Abaqus Error: cae exited with an error.\n",
+        stderr=(
+            "TypeError: 关键字错误: faces\n"
+            'File "build.py", line 3, in <module>\n'
+            "    assembly.Set(name='FACE', faces=faces)\n"
+        ),
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+    )
+
+    hint = _runtime_api_hint(
+        dependencies,
+        execution,
+        mode="automatic_verified_only",
+    )
+
+    assert hint is None
+    assert dependencies.api_lookup_calls == 0
+    assert dependencies.api_lookup_queries == set()
+    assert not (request.state_dir / "api_lookups.jsonl").exists()
+
+
+def test_automatic_note_scope_accepts_indexed_edges_parameter(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    (request.workspace / "build.py").write_text(
+        "model = mdb.models['Model-1']\n"
+        "part = model.Part(name='Bar')\n"
+        "part.seedEdgeByNumber(edges=edges, number=20)\n",
+        encoding="utf-8",
+    )
+    note = ApiRuntimeNote(
+        note_id="runtime:2024:Part.seedEdgeByNumber:edges",
+        qualified_name="Part.seedEdgeByNumber",
+        runtime_release="2024",
+        summary="Verified edge binding.",
+        guidance="Pass a consumer-compatible edge sequence.",
+        evidence_ref="evidence/edges.json",
+        applies_to_parameters=("edges",),
+        verified=True,
+        source=ApiSourceRef(
+            kind="runtime",
+            release="2024",
+            source_path="evidence/edges.json",
+        ),
+    )
+    card = ApiMethodCard(
+        card_id="api:2024:MeshPart.seedEdgeByNumber",
+        entity_kind="method",
+        canonical_name="Part.seedEdgeByNumber",
+        declaring_name="MeshPart.seedEdgeByNumber",
+        class_name="MeshPart",
+        method_name="seedEdgeByNumber",
+        public_names=("Part.seedEdgeByNumber",),
+        runtime_notes=(note,),
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=ApiCatalog([card], runtime_release="2024"),
+    )
+    execution = AbaqusExecutionResult(
+        invocation=AbaqusInvocation.CAE_NOGUI,
+        command=("abq2024.bat", "cae", "noGUI=build.py"),
+        workspace=request.workspace,
+        exit_code=0,
+        timed_out=False,
+        duration_seconds=1.0,
+        stdout="Abaqus Error: cae exited with an error.\n",
+        stderr=(
+            "TypeError: edges[0]; found tuple, expecting Edge\n"
+            'File "build.py", line 3, in <module>\n'
+            "    part.seedEdgeByNumber(edges=edges, number=20)\n"
+        ),
+        stdout_encoding="utf-8",
+        stderr_encoding="utf-8",
+        stdout_raw_path=request.state_dir / "stdout.bin",
+        stderr_raw_path=request.state_dir / "stderr.bin",
+    )
+
+    hint = _runtime_api_hint(
+        dependencies,
+        execution,
+        mode="automatic_verified_only",
+    )
+
+    assert hint is not None
+    assert hint["status"] == "found"
+    assert hint["note_ids"] == [note.note_id]
+    assert dependencies.api_lookup_calls == 1
+    assert dependencies.api_lookup_queries == {"Part.seedEdgeByNumber"}
+
+
+def test_attribute_error_returns_owner_aware_catalog_alternatives_without_budget(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    cards = [
+        ApiMethodCard(
+            card_id=f"api:2024:{name}",
+            entity_kind="method",
+            canonical_name=name,
+            declaring_name=name,
+            class_name=name.rpartition(".")[0],
+            method_name=name.rpartition(".")[2],
+            public_names=(name,),
+        )
+        for name in (
+            "Part.BaseSolidExtrude",
+            "Part.BaseSolidRevolve",
+            "Part.BaseSolidSweep",
+            "Part.Set",
+            "Assembly.Set",
+        )
+    ]
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=ApiCatalog(cards, runtime_release="2024"),
+    )
+
+    def execution(error: str) -> AbaqusExecutionResult:
+        return AbaqusExecutionResult(
+            invocation=AbaqusInvocation.CAE_NOGUI,
+            command=("abq2024.bat", "cae", "noGUI=build.py"),
+            workspace=request.workspace,
+            exit_code=0,
+            timed_out=False,
+            duration_seconds=1.0,
+            stdout="Abaqus Error: cae exited with an error.\n",
+            stderr=error,
+            stdout_encoding="utf-8",
+            stderr_encoding="utf-8",
+            stdout_raw_path=request.state_dir / "stdout.bin",
+            stderr_raw_path=request.state_dir / "stderr.bin",
+        )
+
+    box_hint = _runtime_api_hint(
+        dependencies,
+        execution("AttributeError: 'Part' object has no attribute 'BaseSolidBox'\n"),
+        mode="automatic_verified_only",
+    )
+    instance_hint = _runtime_api_hint(
+        dependencies,
+        execution("AttributeError: 'PartInstance' object has no attribute 'Set'\n"),
+        mode="automatic_verified_only",
+    )
+
+    assert box_hint is not None
+    assert box_hint == {
+        "status": "not_found",
+        "query": "Part.BaseSolidBox",
+        "receiver_type": "Part",
+        "missing_attribute": "BaseSolidBox",
+        "alternatives": [
+            "Part.BaseSolidExtrude",
+            "Part.BaseSolidRevolve",
+            "Part.BaseSolidSweep",
+        ],
+        "guidance": (
+            "The runtime receiver does not expose this method. Choose a legal "
+            "Catalog alternative and adapt the owning object; alternatives are "
+            "names only, not interchangeable calls."
+        ),
+    }
+    assert instance_hint is not None
+    assert instance_hint["alternatives"] == ["Assembly.Set", "Part.Set"]
+    assert "cards" not in box_hint
+    assert "runtime_notes" not in box_hint
+    assert dependencies.api_lookup_calls == 0
+    assert dependencies.returned_api_card_ids == set()
+    traces = [
+        ApiLookupTrace.model_validate_json(line)
+        for line in (request.state_dir / "api_lookups.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    assert len(traces) == 2
+    assert all(not trace.counted for trace in traces)
+    assert all(not trace.delivered_note_ids for trace in traces)

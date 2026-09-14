@@ -1,0 +1,77 @@
+{
+  "version": "evidence-followup-requests-v1",
+  "role": "Seven question-first development cases for a single bounded experiment. The Riks case is an already exposed regression; six new questions were written before inspecting their target passages or retrieval rankings. This is not a family-disjoint held-out set. Slice labels and annotations are host-only and must not enter model inputs.",
+  "cases": [
+    {
+      "id": "riks-loading-regression",
+      "slice": "exposed_multifaceted",
+      "request": {
+        "kind": "question",
+        "question": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?",
+        "product": "Abaqus/Standard",
+        "observed_context": "Abaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step."
+      }
+    },
+    {
+      "id": "consistent-unit-system",
+      "slice": "new_simple",
+      "request": {
+        "kind": "question",
+        "question": "Does Abaqus/Standard impose a built-in system of physical units, or must model inputs use a consistent unit system chosen by the analyst?",
+        "product": "Abaqus/Standard",
+        "observed_context": "This is a documentation question about the unit convention, not a request to choose material values or run a model."
+      }
+    },
+    {
+      "id": "odb-history-precision",
+      "slice": "new_simple",
+      "request": {
+        "kind": "question",
+        "question": "In an Abaqus/Standard output database, what numerical precision is used to store nodal history output, and can requesting full nodal output precision change it?",
+        "product": "Abaqus/Standard",
+        "observed_context": "I want to understand stored ODB history data precision, not printed decimal places or the solver executable's floating-point mode."
+      }
+    },
+    {
+      "id": "steady-transient-heat-properties",
+      "slice": "new_multifaceted",
+      "request": {
+        "kind": "question",
+        "question": "For an uncoupled heat transfer analysis in Abaqus/Standard, are density and specific heat needed in steady state, and how do these material requirements differ for a transient analysis?",
+        "product": "Abaqus/Standard",
+        "observed_context": "Compare the two procedures' material requirements. No geometry, material values, latent heat data or results are supplied; do not choose any numerical properties."
+      }
+    },
+    {
+      "id": "temperature-thermal-expansion",
+      "slice": "new_multifaceted",
+      "request": {
+        "kind": "question",
+        "question": "In an Abaqus/Standard stress analysis, is changing a predefined temperature field by itself enough to produce thermal strains? What additional material definition is needed, and what role does a stress-free reference temperature play?",
+        "product": "Abaqus/Standard",
+        "observed_context": "This is a conceptual explanation of thermal strain generation. Do not invent expansion coefficients, initial temperatures or reference temperatures for a particular model."
+      }
+    },
+    {
+      "id": "missing-project-stress-result",
+      "slice": "new_insufficient_input",
+      "request": {
+        "kind": "question",
+        "question": "What is the exact maximum von Mises stress in MPa in my bracket after the load step?",
+        "product": "Abaqus/Standard",
+        "observed_context": "No model files, ODB, geometry, material properties, loads, boundary conditions or previous run results have been provided. Only generic Abaqus documentation is available."
+      }
+    },
+    {
+      "id": "unavailable-2024-release-evidence",
+      "slice": "new_insufficient_release",
+      "request": {
+        "kind": "question",
+        "question": "Using Abaqus 2024 documentation specifically, confirm the material requirements for transient uncoupled heat transfer in Abaqus/Standard. I need 2024 evidence, not an assumption that another release behaves identically.",
+        "product": "Abaqus/Standard",
+        "source_release": "2024",
+        "observed_context": "The available local documentation corpus is Abaqus 2026 FD02. No Abaqus 2024 manual or runtime compatibility test is supplied."
+      }
+    }
+  ]
+}

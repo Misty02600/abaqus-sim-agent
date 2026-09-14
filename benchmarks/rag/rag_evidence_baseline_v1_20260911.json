@@ -1,0 +1,188 @@
+{
+  "profile": "rag-evidence-baseline-v1",
+  "engineering_equivalence_passed": true,
+  "cases": [
+    {
+      "case_id": "riks-loading-regression",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "consistent-unit-system",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "odb-history-precision",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "steady-transient-heat-properties",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "temperature-thermal-expansion",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "missing-project-stress-result",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "unavailable-2024-release-evidence",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "exact-api-region-1",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "domain-procedure-applicability-1",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "recorded-solver-diagnostic-1",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "recorded-solver-diagnostic-2",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "explicit-at",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "explicit-static",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "unknown-symbol",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "unavailable-release",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    },
+    {
+      "case_id": "query-over-encoder-budget",
+      "retrieval_and_evidence_equal": true,
+      "rank_scores_within_tolerance": true,
+      "quality_score_equal": true
+    }
+  ],
+  "quality": {
+    "cases": 16,
+    "quality_scored_cases": 7,
+    "stages": {
+      "candidate": {
+        "requirements_matched": 9,
+        "requirements_total": 10,
+        "requirement_recall": 0.9,
+        "complete_cases": 6,
+        "scored_cases": 7,
+        "complete_evidence_rate": 0.8571428571428571
+      },
+      "rerank_top4": {
+        "requirements_matched": 6,
+        "requirements_total": 10,
+        "requirement_recall": 0.6,
+        "complete_cases": 4,
+        "scored_cases": 7,
+        "complete_evidence_rate": 0.5714285714285714
+      },
+      "delivered": {
+        "requirements_matched": 6,
+        "requirements_total": 10,
+        "requirement_recall": 0.6,
+        "complete_cases": 4,
+        "scored_cases": 7,
+        "complete_evidence_rate": 0.5714285714285714
+      }
+    },
+    "necessary_evidence_mrr_at_64": 0.6359543817527011,
+    "guard_checks": 5,
+    "guard_passes": 5,
+    "execution_errors": 0,
+    "source_targets": {
+      "checks": 2,
+      "delivered_complete": 1
+    },
+    "reranked_pairs": 640,
+    "quality_gate": "not_defined_not_a_product_acceptance_score"
+  },
+  "seal_sha256": "2f477704fb9dab3a0cdae3a8415964312697298aaaa1b168b3a0fdf284825abc",
+  "run_summary_sha256": "2b0b0f83ca607e79ec98606368f31c1ba56e5a4ac01fedbc2be510f5ee2abd4b",
+  "no_generated_model_or_abaqus_calls": true,
+  "no_default_switch": true,
+  "raw_evidence_sha256": {
+    "var\\audits\\rag-evidence-baseline-v1\\seal.json": "2f477704fb9dab3a0cdae3a8415964312697298aaaa1b168b3a0fdf284825abc",
+    "var\\audits\\rag-evidence-baseline-v1\\prepared.json": "82d836db7fad0671d2015c24e9ff962d94f0c38b0d070b7bfb0b5a9b6d001427",
+    "var\\audits\\rag-evidence-baseline-v1\\offline-scores.json": "d9a562003834d9aba20a0d1a758c074e033225f3805545fb61eb11f76b033dbd",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1-comparison.json": "08eeadf1aed8323afd1241363d2124563d010884e5b70ed330c71e822951331c",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\completion.json": "23190cc1221a28312614595a9032f41a26e159946ba24a1e03b014fea30381ae",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\consistent-unit-system.result.json": "33278a15f8d24f82079a39bad20e87206ef170eb0773d56987f519eab66a251d",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\consistent-unit-system.score.json": "d86009a24b6a355df775f091b8ee937ef94127e0abdf36c3705319c9fee0d434",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\domain-procedure-applicability-1.result.json": "9429d858733333c998365a8d491b6b424f699c969a1279e5fb3c3657a19e6c45",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\domain-procedure-applicability-1.score.json": "f4764c662d0de59efefb6d95af390400f8cecb01308ce86bb629de585c449880",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\exact-api-region-1.result.json": "57ecf32285e9dc70c41171df978f24d3779ffc19301cb931f0b0e3b162c52172",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\exact-api-region-1.score.json": "a79b2d9296fbc67abe08df6270a69d2f122fa609eed3bf2f01a0d2da12d00099",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\explicit-at.result.json": "64053d7f188118cabc7749ae208b059c1b14c8c44b4bba3a3e54dcf11c20d551",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\explicit-at.score.json": "6b83979da1798b46342ab0be59a80bbf8b9ef5bb060641c3cceb368f756d9629",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\explicit-static.result.json": "89f83e2e704cafc1f001f3c68ea3909bc777d54fee5517b15fc4439ccc9242c4",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\explicit-static.score.json": "5b7bbda9a724ec3dbc19547fe3428f4e861148dc62566f2c1f9d779e418b6e4d",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\manifest.json": "3a85746d348bcb71263f55d034015fa6c9f8fc8ba6802804a8e1ee56d427e3b4",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\missing-project-stress-result.result.json": "6856aca2076e56c852eb56778f4325901561d65a56f420bbba23f97b97aed267",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\missing-project-stress-result.score.json": "e8f60451736f8514a1866d7334db691fbffbdf0c9745215c024d1bb40f7162fb",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\odb-history-precision.result.json": "bb163837c46e7b99ab5eac18b494b27bd65e2ab271b082f9cc38aa005f2c4f6b",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\odb-history-precision.score.json": "b4dbff9e043f43ba61a65bb227f11fd67c3a5967772d6c3f9c115b79a6758596",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\query-over-encoder-budget.result.json": "412bae18c16268e2e15d7756fb1169ad86bc9e3729fbedd1b8d0c974e0f6cc84",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\query-over-encoder-budget.score.json": "e5c3df7a50b3d7009a08458770a381ca11b0175826b18d133b8be8ccf78e84ed",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\ready.json": "c62c72657047e0a70762a5ce542cc12eabdefa9160851bebd4b4e7556e7be738",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\recorded-solver-diagnostic-1.result.json": "d31293368f32b051357fa63e9b95acb139372f79105306f2f1c108dccc8505fb",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\recorded-solver-diagnostic-1.score.json": "02c720a1f009155b04a67ca2c727239cbc028ce659f2dd27b2a1347cb5429004",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\recorded-solver-diagnostic-2.result.json": "36b6887e7065a325d2fc63775276a34b0a774b2a6be3ecd9df9cdcc08232625c",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\recorded-solver-diagnostic-2.score.json": "bfc4e49983cf8c2d0941b781a153a6b4facfa371eb913b36dcdacf0cc3cc5262",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\riks-loading-regression.result.json": "dfa57acad4e402dadc316fdc576d46f41e6345c639893b7c538818944ac1308c",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\riks-loading-regression.score.json": "d85e821e31899c6b4752523543cbcff9c0e2dacc5efe07cb68520cd631fddae2",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\steady-transient-heat-properties.result.json": "6e92b564526b9883c3ecd022ede49ec54c7b06fac6538d47b111ac7c894600ea",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\steady-transient-heat-properties.score.json": "20663c2d4304822f50848df840d414955efb3465606ce704bc1ce38be54b4d50",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\summary.json": "2b0b0f83ca607e79ec98606368f31c1ba56e5a4ac01fedbc2be510f5ee2abd4b",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\temperature-thermal-expansion.result.json": "fb5d22416485849d1d95b04badc3076aa0d8769cd37c94c5e9d921e3cde791ed",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\temperature-thermal-expansion.score.json": "c546fe304146802cad59b9df69ea3d7092ba5373d114bfb1b567a4dbe30df923",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\unavailable-2024-release-evidence.result.json": "5e524ec4babb8731d3ebf8aacea961aa048dd4a19fad21d51066df64935c5631",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\unavailable-2024-release-evidence.score.json": "212708c8d6859fb5edae369dbd3f9ba63a71ed6550d2f81ac730eb7b16e2c9e2",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\unavailable-release.result.json": "2495b27ba213005a9a8782a3c829798f28108ef7e3f2f53730f0b99efdcec8ee",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\unavailable-release.score.json": "65875f73695dd91c4f57e23db91ee9643cf492d976940d17b19398ff16c8b56d",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\unknown-symbol.result.json": "8aa96cc41a50dd8ed0baf2dee6c0f689499977d7d6a09f064c5e6d83e8ea7cc0",
+    "var\\audits\\rag-evidence-baseline-v1\\run-1\\unknown-symbol.score.json": "42c91cea99db979113e4c65a3788f5cd727d3199243da051ca285c513583fc78"
+  }
+}

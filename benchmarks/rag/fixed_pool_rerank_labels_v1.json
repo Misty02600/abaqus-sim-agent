@@ -1,0 +1,342 @@
+{
+  "schema_version": "fixed-pool-task-aligned-labels-v1",
+  "parent_dataset_sha256": "272d794a33cf3238f3554ce9318693ab68d3262cc4abd95b60973a231204c594",
+  "role": "Host-only reviewed development labels; all queries unchanged; no new held-out; retain legacy scores.",
+  "changes": [
+    {
+      "case_id": "odb-history-precision",
+      "action": "replace task-misaligned background label, not assert full text equivalence",
+      "old": "odb_default_precision",
+      "new": "history_single_and_full_field_scope",
+      "reason": "Original question asks history storage precision and whether full changes history. New official execution definition directly covers both. It does not state the old generic default-field assertion; that old requirement remains only in legacy scoring."
+    },
+    {
+      "case_id": "temperature-thermal-expansion",
+      "action": "add required distinction formerly kept only as a source diagnostic",
+      "new": "initial_reference_distinction",
+      "reason": "Original question includes a stress-free reference temperature. The initial-state subtraction explanation distinguishes initial from coefficient reference temperature; it does not prove zero total mechanical stress. Source prose is scored only through unchanged relation-aware delivery."
+    }
+  ],
+  "cases": [
+    {
+      "id": "riks-loading-regression",
+      "request": {
+        "kind": "question",
+        "question": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?",
+        "product": "Abaqus/Standard",
+        "observed_context": "Abaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step."
+      },
+      "quality_scope": "annotated",
+      "requirements": [
+        {
+          "id": "riks_load_scaling",
+          "acceptable_unit_sets": [
+            [
+              "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84"
+            ]
+          ]
+        },
+        {
+          "id": "riks_bc_amplitude",
+          "acceptable_unit_sets": [
+            [
+              "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d"
+            ]
+          ]
+        }
+      ],
+      "source_targets": [],
+      "expected_status": null
+    },
+    {
+      "id": "consistent-unit-system",
+      "request": {
+        "kind": "question",
+        "question": "Does Abaqus/Standard impose a built-in system of physical units, or must model inputs use a consistent unit system chosen by the analyst?",
+        "product": "Abaqus/Standard",
+        "observed_context": "This is a documentation question about the unit convention, not a request to choose material values or run a model."
+      },
+      "quality_scope": "annotated",
+      "requirements": [
+        {
+          "id": "unit_convention",
+          "acceptable_unit_sets": [
+            [
+              "c0cee566bb76c7f17644a9005c2715226ec5132f70b666bd040a43ab71ae6b50"
+            ]
+          ]
+        }
+      ],
+      "source_targets": [],
+      "expected_status": null
+    },
+    {
+      "id": "odb-history-precision",
+      "request": {
+        "kind": "question",
+        "question": "In an Abaqus/Standard output database, what numerical precision is used to store nodal history output, and can requesting full nodal output precision change it?",
+        "product": "Abaqus/Standard",
+        "observed_context": "I want to understand stored ODB history data precision, not printed decimal places or the solver executable's floating-point mode."
+      },
+      "quality_scope": "annotated",
+      "requirements": [
+        {
+          "id": "history_single_and_full_field_scope",
+          "acceptable_unit_sets": [
+            [
+              "86ee4b38acae1e8f8f192698ee674318b212c285d286fcbb6cd46926e6630029"
+            ]
+          ]
+        }
+      ],
+      "source_targets": [
+        {
+          "id": "history_only_single_precision",
+          "member_id": "8804a16c495d7f476831eaf7726e65abe74c46cc7619e67baefa55a222469fdf",
+          "source_sha256": "14f7c94e2f64b961f9d6780ba440a9afaf7fa346a4e909abda685cff79a0bdb7",
+          "source_xpath": "/html/body/table/tr/td/article[2]/div/div[3]/dl/dd[21]",
+          "body_sha256": "17d47e677a3fb6fbcf71666753b0fb3be8bbdbb7d421c1328938de9929b3d4cd",
+          "require_context_reference": false,
+          "unit_id": "86ee4b38acae1e8f8f192698ee674318b212c285d286fcbb6cd46926e6630029"
+        }
+      ],
+      "expected_status": null
+    },
+    {
+      "id": "steady-transient-heat-properties",
+      "request": {
+        "kind": "question",
+        "question": "For an uncoupled heat transfer analysis in Abaqus/Standard, are density and specific heat needed in steady state, and how do these material requirements differ for a transient analysis?",
+        "product": "Abaqus/Standard",
+        "observed_context": "Compare the two procedures' material requirements. No geometry, material values, latent heat data or results are supplied; do not choose any numerical properties."
+      },
+      "quality_scope": "annotated",
+      "requirements": [
+        {
+          "id": "steady_internal_energy",
+          "acceptable_unit_sets": [
+            [
+              "41b62d2766366b032da2c5884e8d5d288338be9d07ecca9fd799e7bbeb15809e"
+            ]
+          ]
+        },
+        {
+          "id": "transient_material_requirements",
+          "acceptable_unit_sets": [
+            [
+              "a32e837dd84d53266aea7f866dbe8f8b8e74f9d31cb9e2120f036e7a3ff960f5"
+            ]
+          ]
+        }
+      ],
+      "source_targets": [],
+      "expected_status": null
+    },
+    {
+      "id": "temperature-thermal-expansion",
+      "request": {
+        "kind": "question",
+        "question": "In an Abaqus/Standard stress analysis, is changing a predefined temperature field by itself enough to produce thermal strains? What additional material definition is needed, and what role does a stress-free reference temperature play?",
+        "product": "Abaqus/Standard",
+        "observed_context": "This is a conceptual explanation of thermal strain generation. Do not invent expansion coefficients, initial temperatures or reference temperatures for a particular model."
+      },
+      "quality_scope": "annotated",
+      "requirements": [
+        {
+          "id": "temperature_requires_expansion",
+          "acceptable_unit_sets": [
+            [
+              "31b79082e8bc7ad279ba1d9c0d44acbc9b01e2a259b8ed90117f4b9c2e5c80dc"
+            ]
+          ]
+        },
+        {
+          "id": "coefficient_reference",
+          "acceptable_unit_sets": [
+            [
+              "4f3812d78afa585e3f2626bf5be4de721af3e324fdcc6891285038db915da082",
+              "9ba719366138f868ec6a154f5c02ed4f5556d39362d956e7ba8d1843f0235cd9"
+            ]
+          ]
+        },
+        {
+          "id": "initial_reference_distinction",
+          "acceptable_unit_sets": [
+            [
+              "5f3eb790275affb9673e4e42d25a828ccfc8ca362f8d572f88a8217a261ee6d9"
+            ]
+          ]
+        }
+      ],
+      "source_targets": [
+        {
+          "id": "initial_reference_distinction_prose",
+          "member_id": "898a33bf802b49f86c9c7c53d36239f54fc2fe414f7dcb6bcb2238a9767cb920",
+          "source_sha256": "62d45f2071b66171bf118dc84848953dc726cc8c903511599a4515c7a4985808",
+          "source_xpath": "/html/body/table/tr/td/article[1]/article[2]/div/p[4]",
+          "body_sha256": "ea964155b523929b5b66c2a4a9f8e342b0a7e436fe2c3af2b7c917e7bc065a88",
+          "require_context_reference": true,
+          "unit_id": "5f3eb790275affb9673e4e42d25a828ccfc8ca362f8d572f88a8217a261ee6d9"
+        }
+      ],
+      "expected_status": null
+    },
+    {
+      "id": "missing-project-stress-result",
+      "request": {
+        "kind": "question",
+        "question": "What is the exact maximum von Mises stress in MPa in my bracket after the load step?",
+        "product": "Abaqus/Standard",
+        "observed_context": "No model files, ODB, geometry, material properties, loads, boundary conditions or previous run results have been provided. Only generic Abaqus documentation is available."
+      },
+      "quality_scope": "unanswerable",
+      "requirements": [],
+      "source_targets": [],
+      "expected_status": null
+    },
+    {
+      "id": "unavailable-2024-release-evidence",
+      "request": {
+        "kind": "question",
+        "question": "Using Abaqus 2024 documentation specifically, confirm the material requirements for transient uncoupled heat transfer in Abaqus/Standard. I need 2024 evidence, not an assumption that another release behaves identically.",
+        "product": "Abaqus/Standard",
+        "source_release": "2024",
+        "observed_context": "The available local documentation corpus is Abaqus 2026 FD02. No Abaqus 2024 manual or runtime compatibility test is supplied."
+      },
+      "quality_scope": "unanswerable",
+      "requirements": [],
+      "source_targets": [],
+      "expected_status": null
+    },
+    {
+      "id": "exact-api-region-1",
+      "request": {
+        "kind": "question",
+        "question": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?",
+        "product": null,
+        "observed_context": "extract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT."
+      },
+      "quality_scope": "unannotated",
+      "requirements": [],
+      "source_targets": [],
+      "expected_status": null
+    },
+    {
+      "id": "domain-procedure-applicability-1",
+      "request": {
+        "kind": "question",
+        "question": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?",
+        "product": "Abaqus/Standard",
+        "observed_context": "Abaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation."
+      },
+      "quality_scope": "unannotated",
+      "requirements": [],
+      "source_targets": [],
+      "expected_status": null
+    },
+    {
+      "id": "recorded-solver-diagnostic-1",
+      "request": {
+        "kind": "question",
+        "question": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?",
+        "product": "Abaqus/Standard",
+        "observed_context": "recorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt."
+      },
+      "quality_scope": "annotated",
+      "requirements": [
+        {
+          "id": "complete_time_adjustment",
+          "acceptable_unit_sets": [
+            [
+              "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc"
+            ]
+          ]
+        }
+      ],
+      "source_targets": [],
+      "expected_status": null
+    },
+    {
+      "id": "recorded-solver-diagnostic-2",
+      "request": {
+        "kind": "question",
+        "question": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?",
+        "product": "Abaqus/Standard",
+        "observed_context": "Abaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt."
+      },
+      "quality_scope": "annotated",
+      "requirements": [
+        {
+          "id": "complete_time_adjustment",
+          "acceptable_unit_sets": [
+            [
+              "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc"
+            ]
+          ]
+        }
+      ],
+      "source_targets": [],
+      "expected_status": null
+    },
+    {
+      "id": "explicit-at",
+      "request": {
+        "kind": "symbol",
+        "symbol": "AT",
+        "symbol_kind": "output_variable"
+      },
+      "quality_scope": "unannotated",
+      "requirements": [],
+      "source_targets": [],
+      "expected_status": "found"
+    },
+    {
+      "id": "explicit-static",
+      "request": {
+        "kind": "symbol",
+        "symbol": "*STATIC",
+        "symbol_kind": "keyword",
+        "product": "Abaqus/Standard"
+      },
+      "quality_scope": "unannotated",
+      "requirements": [],
+      "source_targets": [],
+      "expected_status": "found"
+    },
+    {
+      "id": "unknown-symbol",
+      "request": {
+        "kind": "symbol",
+        "symbol": "NOT_A_REAL_ABAQUS_SYMBOL",
+        "symbol_kind": "output_variable"
+      },
+      "quality_scope": "unannotated",
+      "requirements": [],
+      "source_targets": [],
+      "expected_status": "not_found"
+    },
+    {
+      "id": "unavailable-release",
+      "request": {
+        "kind": "question",
+        "question": "Explain exact output timing",
+        "source_release": "2024"
+      },
+      "quality_scope": "unannotated",
+      "requirements": [],
+      "source_targets": [],
+      "expected_status": "not_found"
+    },
+    {
+      "id": "query-over-encoder-budget",
+      "request": {
+        "kind": "question",
+        "question": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word "
+      },
+      "quality_scope": "unannotated",
+      "requirements": [],
+      "source_targets": [],
+      "expected_status": "query_too_long"
+    }
+  ]
+}

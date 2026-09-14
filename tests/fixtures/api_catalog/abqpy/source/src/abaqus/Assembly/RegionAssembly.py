@@ -1,0 +1,3 @@
+class RegionAssembly:
+    def Set(self, name: str, edges: EdgeArray = ()):
+        ...

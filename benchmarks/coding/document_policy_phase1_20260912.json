@@ -1,0 +1,68 @@
+{
+  "profile": "document-policy-phase1-deterministic-v1",
+  "date": "2026-09-12",
+  "plan": "PLAN-0003",
+  "phase": "independent host component with fake search/validation ports",
+  "phase_status": "completed",
+  "whole_plan_status": "in_progress",
+  "tests": {
+    "file": "tests/test_document_policy.py",
+    "passed": 45,
+    "covered_boundaries": [
+      "zero-query local task and original execution checks retained",
+      "host-owned needs/root IDs; maximum eight needs; no model-forged host identity",
+      "all chain needs assessed; exact same-chain current-revision citations",
+      "unknown applicability is not promoted; hard scope is not model-editable",
+      "an actual second fake lookup; no third lookup even with larger run quota",
+      "all attempts reserved before dispatch; failure/cancellation consumes the slot",
+      "technical failure cannot be retried by rewording or renaming needs",
+      "receipt revalidation before cache reuse, assessment and dependent execution",
+      "physical inputs precede lookup/execution; only host-provided inputs unblock",
+      "only host-declared independence can exempt runtime, never final readiness",
+      "partial/invalid ledger and checkpoint fail closed; full events may lead stale snapshots",
+      "unfinished reservations become abandoned without restarting a search",
+      "host quota/revision changes preserve cumulative calls and invalidate old revision receipts",
+      "shared CodingAgentDependencies counter; stale DependencyResumeState does not reset usage",
+      "an exact but semantically nonsupporting quote can still pass mechanical checks"
+    ]
+  },
+  "preserved_evidence": {
+    "old_baseline_and_bge_seal_files_unchanged": 28,
+    "plan_0002_recorded_source_files_unchanged": 22
+  },
+  "regression": {
+    "pytest_passed": 1069,
+    "licensed_tests_skipped": 27,
+    "pytest_seconds": 90.26,
+    "basedpyright_errors": 0,
+    "basedpyright_warnings": 0,
+    "ruff_rule_check": "passed",
+    "changed_python_format_files": 6
+  },
+  "implemented_components": [
+    "coding/document_policy.py",
+    "coding/document_policy_contracts.py",
+    "coding/document_policy_state.py",
+    "coding/document_policy_journal.py",
+    "CodingRunFileLock.assert_held"
+  ],
+  "not_implemented_in_this_phase": [
+    "real DocumentReceiptValidator and runtime evidence service composition",
+    "Coder search/assessment tool registration and CLI request/launch mode",
+    "actual three-runtime-tool and ready-decision interception",
+    "automatic CodingRunService/resume_state checkpoint integration",
+    "eight live model behavior scenarios"
+  ],
+  "real_retrieval_calls": 0,
+  "generative_model_calls": 0,
+  "abaqus_calls": 0,
+  "default_product_path_changed": false,
+  "semantic_correctness_claimed": false,
+  "agent_adoption_or_task_benefit_claimed": false,
+  "notes": [
+    "The document policy journal is local and host-locked, not a distributed coordinator or database transaction.",
+    "Hash chains and head/checkpoint anchors detect corruption and stale prefixes, not malicious rewriting of every copy.",
+    "The component is implemented but not wired into the production Coder path.",
+    "This deterministic verification record does not freeze the new policy implementation against authorized later integration."
+  ]
+}

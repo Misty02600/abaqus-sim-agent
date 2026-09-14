@@ -1,0 +1,700 @@
+{
+  "top_k": 5,
+  "concept_cases": 10,
+  "concept_recall_at_k": 1.0,
+  "concept_mrr": 0.825,
+  "dense_cases": 11,
+  "dense_recall_at_k": 0.7272727272727273,
+  "dense_mrr": 0.6545454545454545,
+  "augmented_cases": 11,
+  "augmented_recall_at_k": 1.0,
+  "augmented_mrr": 1.0,
+  "symbol_cases": 10,
+  "symbol_accuracy": 1.0,
+  "paired_cases": 11,
+  "paired_recall_delta": 0.2727272727272727,
+  "paired_mrr_delta": 0.34545454545454546,
+  "p50_latency_ms": 314.82614999549696,
+  "p95_latency_ms": 526.6541250101,
+  "cases": [
+    {
+      "case_id": "concept-static-purpose",
+      "mode": "concept",
+      "query": "When is a static stress analysis appropriate if inertia can be neglected?",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simaanl-c-staticproc",
+        "simaanl-c-static",
+        "simaanl-c-stdtostd",
+        "simaanl-c-inertiarelief",
+        "simaanl-c-exptostd"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 0.5,
+      "elapsed_ms": 521.163900004467
+    },
+    {
+      "case_id": "concept-solid-elements",
+      "mode": "concept",
+      "query": "How do continuum solid elements represent three-dimensional bodies?",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simaelm-c-solidcont",
+        "simaelm-r-infinitelib",
+        "simaelm-r-3delem",
+        "simaelm-c-shelloverview",
+        "simamod-c-orientation"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 314.773599995533
+    },
+    {
+      "case_id": "concept-linear-elastic",
+      "mode": "concept",
+      "query": "How is isotropic linear elastic material behavior defined?",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simamat-c-linearelastic",
+        "simamat-m-LinearElasticity-sb",
+        "simamat-c-timevisco",
+        "simamat-c-hyperelastic",
+        "simamat-c-anisohyperelastic"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 321.7406000039773
+    },
+    {
+      "case_id": "concept-coupling",
+      "mode": "concept",
+      "query": "When should a surface be coupled to a reference point?",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simakey-r-coupling",
+        "simacst-c-coupling",
+        "simamod-c-orientation",
+        "simacst-m-SurfacebasedConstraints-sb",
+        "simaanl-c-fieldmapper"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 0.5,
+      "elapsed_ms": 311.7649999912828
+    },
+    {
+      "case_id": "concept-contact",
+      "mode": "concept",
+      "query": "What are the main choices when defining mechanical contact?",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simaitn-c-contactmechanical",
+        "simaitn-c-contactgeneralstd",
+        "simaitn-c-contactpropassign",
+        "simaitn-c-contactoverview",
+        "simamod-c-rigidoverview"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 0.25,
+      "elapsed_ms": 303.5226999927545
+    },
+    {
+      "case_id": "concept-distributed-load",
+      "mode": "concept",
+      "query": "How are distributed loads applied over elements or surfaces?",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simaprc-c-loaddistributed",
+        "simaprc-c-loading",
+        "simaelm-r-surfacelibrary",
+        "simaprc-c-surfacetension",
+        "simaelm-r-cylsurfacelibrary"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 316.93929999892134
+    },
+    {
+      "case_id": "concept-odb-output",
+      "mode": "concept",
+      "query": "How do I request field and history results in the output database?",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simaout-c-dboutput-requestingoutput-odb",
+        "simaout-c-dboutput-examples",
+        "simaout-c-dboutput-defaultoutput",
+        "simaout-c-dboutput-frequency",
+        "simaout-c-output"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 320.70649998786394
+    },
+    {
+      "case_id": "concept-boundary",
+      "mode": "concept",
+      "query": "How are displacement boundary conditions prescribed and modified?",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simaprc-c-boundary",
+        "simaprc-c-prescribedover",
+        "simakey-r-boundary",
+        "simaanl-c-adiabaticanal",
+        "simaanl-c-inertiarelief"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 314.7815999982413
+    },
+    {
+      "case_id": "concept-nonlinear-solution",
+      "mode": "concept",
+      "query": "How does Abaqus solve nonlinear equilibrium equations incrementally?",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simaanl-c-nonlineareqns",
+        "simaanl-c-convergencechecktype",
+        "simaanl-c-linearnonlinear",
+        "simaprc-c-initialcond-t-SpecifyingTheTypeOfInitialConditionBeingDefined-sma-topic1",
+        "simaanl-c-over"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 309.8209999880055
+    },
+    {
+      "case_id": "concept-part-instance",
+      "mode": "concept",
+      "query": "What is the relationship between parts, instances, and the assembly?",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simamod-c-partassy",
+        "simamod-c-element",
+        "simaout-c-output",
+        "simaprc-c-pretension"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 316.8214000033913
+    },
+    {
+      "case_id": "dense-cps4r",
+      "mode": "dense",
+      "query": "Is CPS4R a reduced-integration plane stress quadrilateral?",
+      "pair_id": "cps4r",
+      "retrieved_document_ids": [
+        "simaelm-r-2delem",
+        "simaelm-c-solidcont",
+        "simaelm-c-stdelementindex",
+        "simaelm-r-asymmaxisymm",
+        "simaanl-c-aledomains"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 321.49139999819454
+    },
+    {
+      "case_id": "dense-cpe4r",
+      "mode": "dense",
+      "query": "Which library entry defines the CPE4R plane strain element?",
+      "pair_id": "cpe4r",
+      "retrieved_document_ids": [
+        "simaelm-r-2delem",
+        "simaelm-c-dimension",
+        "simaelm-r-contshellgeneral",
+        "simaelm-c-infinite",
+        "simaelm-r-sphelemlib"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 311.3149999990128
+    },
+    {
+      "case_id": "dense-c3d8r",
+      "mode": "dense",
+      "query": "Where is the C3D8R reduced-integration brick documented?",
+      "pair_id": "c3d8r",
+      "retrieved_document_ids": [
+        "simaelm-c-expelementindex",
+        "simaelm-c-solidcont",
+        "simaelm-r-eulerianelemlib",
+        "simaelm-c-stdelementindex",
+        "simaelm-r-3delem"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 0.2,
+      "elapsed_ms": 315.6763000006322
+    },
+    {
+      "case_id": "dense-static",
+      "mode": "dense",
+      "query": "What does the *STATIC procedure keyword configure?",
+      "pair_id": "static",
+      "retrieved_document_ids": [
+        "simakey-r-static",
+        "simaout-c-proctypekeys",
+        "simaanl-c-expdynamic",
+        "simaprc-c-initialcond-t-SpecifyingTheTypeOfInitialConditionBeingDefined-sma-topic1",
+        "simaanl-c-convergecontrol"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 320.7637000014074
+    },
+    {
+      "case_id": "dense-dload",
+      "mode": "dense",
+      "query": "How is *DLOAD used for distributed loading?",
+      "pair_id": "dload",
+      "retrieved_document_ids": [
+        "simakey-r-dload",
+        "simakey-r-dsload",
+        "simaprc-c-loaddistributed",
+        "simaelm-r-elbowlibrary",
+        "simaelm-r-contshellgeneral"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 310.34909999289084
+    },
+    {
+      "case_id": "dense-cload",
+      "mode": "dense",
+      "query": "How is *CLOAD used for concentrated nodal loading?",
+      "pair_id": "cload",
+      "retrieved_document_ids": [
+        "simakey-r-cload",
+        "simakey-r-nodalthickness",
+        "simamod-c-nodalthickness",
+        "simakey-c-aqua-prodidx",
+        "simaanl-c-surfacebasedcavityover"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 313.26010001066606
+    },
+    {
+      "case_id": "dense-output-u",
+      "mode": "dense",
+      "query": "Which Abaqus/Standard output variable requests nodal displacement U?",
+      "pair_id": "output-u",
+      "retrieved_document_ids": [
+        "simaout-c-printfile",
+        "simaout-c-stdoutputvar",
+        "simaout-c-expoutputvar",
+        "simaout-c-stdoutindex",
+        "simaitn-c-contactgeneralstd"
+      ],
+      "hit": false,
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "elapsed_ms": 333.02990000811405
+    },
+    {
+      "case_id": "dense-output-rf",
+      "mode": "dense",
+      "query": "Which Abaqus/Standard output variable requests nodal reaction force RF?",
+      "pair_id": "output-rf",
+      "retrieved_document_ids": [
+        "simakey-r-nodalenergyrate",
+        "simakey-r-impedanceproperty",
+        "simakey-r-impedance",
+        "simaitn-c-contactgeneralstd",
+        "simaanl-c-randomresponse"
+      ],
+      "hit": false,
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "elapsed_ms": 314.87069999275263
+    },
+    {
+      "case_id": "dense-output-s",
+      "mode": "dense",
+      "query": "Which Abaqus/Standard output variable requests stress components S at integration points?",
+      "pair_id": "output-s",
+      "retrieved_document_ids": [
+        "simaout-c-std-elementintegrationpointvariables",
+        "simamod-c-conventions",
+        "simaanl-c-couptempdisp",
+        "simaanl-c-injectionmoldingstressanl",
+        "simaout-c-std-structuraloptimizationvariables"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 311.16739999561105
+    },
+    {
+      "case_id": "dense-allsdtol",
+      "mode": "dense",
+      "query": "Where is the ALLSDTOL parameter of *STATIC defined?",
+      "pair_id": "allsdtol",
+      "retrieved_document_ids": [
+        "simakey-r-static",
+        "simaanl-c-amspecialpurpose-type-thermomech-define",
+        "simakey-r-steadystatetransport",
+        "simakey-r-coupledtemperature-displacement",
+        "simaanl-c-solidelectrode-type-echem-lmb-arrhenius"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 310.7891999970889
+    },
+    {
+      "case_id": "dense-combined-static-plate",
+      "mode": "dense",
+      "query": "Find the Abaqus/Standard procedure, element, and output references for a CPS4R static plate requesting U S and RF.",
+      "pair_id": "combined-static-plate",
+      "retrieved_document_ids": [
+        "simakey-r-impedance",
+        "simakey-r-electromagnetic",
+        "simaout-c-output",
+        "simaanl-c-exptostd",
+        "simakey-r-radiationoutput"
+      ],
+      "hit": false,
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "elapsed_ms": 312.33839999185875
+    },
+    {
+      "case_id": "augmented-cps4r",
+      "mode": "augmented",
+      "query": "Is CPS4R a reduced-integration plane stress quadrilateral?",
+      "pair_id": "cps4r",
+      "retrieved_document_ids": [
+        "simaelm-r-2delem",
+        "simaelm-c-solidcont",
+        "simaelm-c-stdelementindex",
+        "simaelm-r-asymmaxisymm",
+        "simaanl-c-aledomains"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 509.2242999962764
+    },
+    {
+      "case_id": "augmented-cpe4r",
+      "mode": "augmented",
+      "query": "Which library entry defines the CPE4R plane strain element?",
+      "pair_id": "cpe4r",
+      "retrieved_document_ids": [
+        "simaelm-r-2delem",
+        "simaelm-c-dimension",
+        "simaelm-r-contshellgeneral",
+        "simaelm-c-infinite",
+        "simaelm-r-sphelemlib"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 518.7630000000354
+    },
+    {
+      "case_id": "augmented-c3d8r",
+      "mode": "augmented",
+      "query": "Where is the C3D8R reduced-integration brick documented?",
+      "pair_id": "c3d8r",
+      "retrieved_document_ids": [
+        "simaelm-r-3delem",
+        "simaelm-c-expelementindex",
+        "simaelm-c-solidcont",
+        "simaelm-r-eulerianelemlib",
+        "simaelm-c-stdelementindex"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 510.099099992658
+    },
+    {
+      "case_id": "augmented-static",
+      "mode": "augmented",
+      "query": "What does the *STATIC procedure keyword configure?",
+      "pair_id": "static",
+      "retrieved_document_ids": [
+        "simakey-r-static",
+        "simaout-c-proctypekeys",
+        "simaanl-c-expdynamic",
+        "simaprc-c-initialcond-t-SpecifyingTheTypeOfInitialConditionBeingDefined-sma-topic1",
+        "simaanl-c-convergecontrol"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 518.4401000005892
+    },
+    {
+      "case_id": "augmented-dload",
+      "mode": "augmented",
+      "query": "How is *DLOAD used for distributed loading?",
+      "pair_id": "dload",
+      "retrieved_document_ids": [
+        "simakey-r-dload",
+        "simakey-r-dsload",
+        "simaprc-c-loaddistributed",
+        "simaelm-r-elbowlibrary",
+        "simaelm-r-contshellgeneral"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 518.7890999950469
+    },
+    {
+      "case_id": "augmented-cload",
+      "mode": "augmented",
+      "query": "How is *CLOAD used for concentrated nodal loading?",
+      "pair_id": "cload",
+      "retrieved_document_ids": [
+        "simakey-r-cload",
+        "simakey-r-nodalthickness",
+        "simamod-c-nodalthickness",
+        "simakey-c-aqua-prodidx",
+        "simaanl-c-surfacebasedcavityover"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 513.3785999933025
+    },
+    {
+      "case_id": "augmented-output-u",
+      "mode": "augmented",
+      "query": "Which Abaqus/Standard output variable requests nodal displacement U?",
+      "pair_id": "output-u",
+      "retrieved_document_ids": [
+        "simaout-c-std-nodalvariables",
+        "simaout-c-printfile",
+        "simaout-c-stdoutputvar",
+        "simaout-c-expoutputvar",
+        "simaout-c-stdoutindex"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 526.7183000105433
+    },
+    {
+      "case_id": "augmented-output-rf",
+      "mode": "augmented",
+      "query": "Which Abaqus/Standard output variable requests nodal reaction force RF?",
+      "pair_id": "output-rf",
+      "retrieved_document_ids": [
+        "simaout-c-std-nodalvariables",
+        "simakey-r-nodalenergyrate",
+        "simakey-r-impedanceproperty",
+        "simakey-r-impedance",
+        "simaitn-c-contactgeneralstd"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 527.6739999972051
+    },
+    {
+      "case_id": "augmented-output-s",
+      "mode": "augmented",
+      "query": "Which Abaqus/Standard output variable requests stress components S at integration points?",
+      "pair_id": "output-s",
+      "retrieved_document_ids": [
+        "simaout-c-std-elementintegrationpointvariables",
+        "simamod-c-conventions",
+        "simaanl-c-couptempdisp",
+        "simaanl-c-injectionmoldingstressanl",
+        "simaout-c-std-structuraloptimizationvariables"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 519.0987999958452
+    },
+    {
+      "case_id": "augmented-allsdtol",
+      "mode": "augmented",
+      "query": "Where is the ALLSDTOL parameter of *STATIC defined?",
+      "pair_id": "allsdtol",
+      "retrieved_document_ids": [
+        "simakey-r-static",
+        "simaanl-c-amspecialpurpose-type-thermomech-define",
+        "simakey-r-steadystatetransport",
+        "simakey-r-coupledtemperature-displacement",
+        "simaanl-c-solidelectrode-type-echem-lmb-arrhenius"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 525.4348000016762
+    },
+    {
+      "case_id": "augmented-combined-static-plate",
+      "mode": "augmented",
+      "query": "Find the Abaqus/Standard procedure, element, and output references for a CPS4R static plate requesting U S and RF.",
+      "pair_id": "combined-static-plate",
+      "retrieved_document_ids": [
+        "simakey-r-static",
+        "simaelm-r-2delem",
+        "simaout-c-std-nodalvariables",
+        "simaout-c-std-elementintegrationpointvariables",
+        "simakey-r-impedance"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 1112.9705000057584
+    },
+    {
+      "case_id": "symbol-static",
+      "mode": "symbol",
+      "query": "*STATIC",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simakey-r-static"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 10.31420000072103
+    },
+    {
+      "case_id": "symbol-dload",
+      "mode": "symbol",
+      "query": "*DLOAD",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simakey-r-dload"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 9.202600005664863
+    },
+    {
+      "case_id": "symbol-cload",
+      "mode": "symbol",
+      "query": "*CLOAD",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simakey-r-cload"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 9.764099988387898
+    },
+    {
+      "case_id": "symbol-elastic",
+      "mode": "symbol",
+      "query": "*ELASTIC",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simakey-r-elastic"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 9.343900004751049
+    },
+    {
+      "case_id": "symbol-boundary",
+      "mode": "symbol",
+      "query": "*BOUNDARY",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simakey-r-boundary"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 9.406299999682233
+    },
+    {
+      "case_id": "symbol-cps4r",
+      "mode": "symbol",
+      "query": "CPS4R",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simaelm-r-2delem",
+        "simaelm-c-expelementindex",
+        "simaelm-c-stdelementindex"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 9.781499989912845
+    },
+    {
+      "case_id": "symbol-cpe4r",
+      "mode": "symbol",
+      "query": "CPE4R",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simaelm-r-2delem",
+        "simaelm-c-expelementindex",
+        "simaelm-c-stdelementindex"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 9.391400002641603
+    },
+    {
+      "case_id": "symbol-c3d8r",
+      "mode": "symbol",
+      "query": "C3D8R",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simaelm-r-3delem",
+        "simaelm-c-expelementindex",
+        "simaelm-c-stdelementindex"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 9.912900000927038
+    },
+    {
+      "case_id": "symbol-u",
+      "mode": "symbol",
+      "query": "U",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simaout-c-std-nodalvariables"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 23.43210000253748
+    },
+    {
+      "case_id": "symbol-rf",
+      "mode": "symbol",
+      "query": "RF",
+      "pair_id": null,
+      "retrieved_document_ids": [
+        "simaout-c-std-nodalvariables"
+      ],
+      "hit": true,
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "elapsed_ms": 24.41670000553131
+    }
+  ]
+}

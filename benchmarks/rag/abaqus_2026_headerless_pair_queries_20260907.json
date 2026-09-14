@@ -1,0 +1,12 @@
+{
+  "schema_version": "headerless-pair-development-probes-v1",
+  "scope": "Source-informed development probes authored before ranking. Targets are evaluation annotations only; the production projection has no page names, DOF constants or prewritten explanations. Exact-unit delivery is not answer correctness or complete applicability-context validation.",
+  "queries": [
+    {"id": "general-dof-components", "query": "Under the general Abaqus degree-of-freedom numbering convention, which numbers identify translations and rotations about the three Cartesian axes?", "target_unit_id": "b5e95c2f9a78b2e6b530bcc754a323be9c3963c35764a01cd1efd2cc49cc2b56"},
+    {"id": "axisymmetric-dof-components", "query": "For axisymmetric Abaqus elements, what do degrees of freedom 1 and 2 represent, and how are rotational degrees of freedom distinguished for twist and shells?", "target_unit_id": "c597218c009a72c168f9c8c18f8b00fb99672e107ee382dd334bb8fea0fda195"},
+    {"id": "assembly-qualified-names", "query": "In Abaqus input-file assembly naming conventions, how do qualified names distinguish a set belonging to a part instance from one belonging to an assembly?", "target_unit_id": "c8bc64f5a942218aa6812bf34843c8e43a11aabfc3661bdcea7f9b3446b0dba0"},
+    {"id": "deposition-callback-roles", "query": "When using the toolpath-mesh intersection module for controlled material deposition, which user subroutines set up the module data and determine element activation or deposited volume?", "target_unit_id": "9d41567ad29846d3aed5f0a324333dd058a8bd45004aa88548cfda690a40ee47"},
+    {"id": "lanczos-block-size", "query": "In Lanczos natural frequency extraction, how does the block size affect the maximum number of block Lanczos steps?", "target_unit_id": "3d28d179c3711448a4f525bc177518f8fe1b25f7cb1290c8ccb2fdce84244283"},
+    {"id": "triangular-face-numbering", "query": "For triangular two-dimensional solid elements, how are face numbers associated with corner-node pairs?", "target_unit_id": "f1d49d0689557c7a010d40e11a51668a3022cf62d56f1fd54eb89d9c5093d607", "required_context": "Triangular element faces", "caution": "Topology is explicitly declared by the source caption; preserve that caption, do not infer topology from the number of rows."}
+  ]
+}

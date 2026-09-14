@@ -1,0 +1,81 @@
+{
+  "schema_version": "1",
+  "experiment": "plate-element-choice-post-batch-manual-resume-v1",
+  "date": "2026-09-03",
+  "purpose": "Directly resume the interrupted third run from the completed time-separated evaluation batch instead of creating a new run.",
+  "target": {
+    "run_id": "eval-fa0ec40b7b3b",
+    "state_dir": "D:/abaqus-runs/plate-element-choice-resume-once-retry-20260903-v1/eval-fa0ec40b7b3b/state",
+    "pre_resume_archive": "D:/abaqus-runs/plate-element-choice-manual-resume-prestate-20260903-v1/eval-fa0ec40b7b3b",
+    "same_run_id_workspace_state_and_initial_snapshot": true
+  },
+  "composition": {
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "http_retries": 10,
+    "http_timeout_seconds": 60.0,
+    "api_catalog_mode": "automatic_verified_only",
+    "api_catalog_cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "clarification_policy_case": "plate-element-derived",
+    "verifier": "PlateTensionRunVerifier"
+  },
+  "before_resume": {
+    "status": "interrupted",
+    "turn": 2,
+    "active_wall_time_seconds": 1750.873,
+    "remaining_wall_time_seconds": 949.127,
+    "infrastructure_errors": 2,
+    "run_resumed_events": 1,
+    "abaqus_calls": 0,
+    "solver_calls": 0,
+    "workspace_files": 0,
+    "resume_state_sha256": "6591821c5d8724886580269fa47f8df4634ada9c6ab4fd5c0607c117ecc98900",
+    "events_sha256": "8b8867a2ae41880026dc23e95ce7d333b69d8d7d72be44f0cb3b850aae8118aa",
+    "history_sha256": "d9ee69d2e47de59d9610631758dc0af39a154cff2871762c1df330ab28aa46f7"
+  },
+  "result": {
+    "process_exit_code": 1,
+    "resume_started": true,
+    "new_turn": 3,
+    "resume_history_source": "step_complete",
+    "unresolved_non_runtime_tools": [
+      "find_files"
+    ],
+    "status": "interrupted",
+    "error": "ModelAPIError: Request timed out.",
+    "active_wall_time_seconds": 2465.483,
+    "remaining_wall_time_seconds": 234.517,
+    "infrastructure_errors": 3,
+    "run_resumed_events": 2,
+    "abaqus_calls": 0,
+    "solver_calls": 0,
+    "workspace_files": 0,
+    "resume_state_sha256": "6922be4f4017a0a878b29b6faaef740924dc04272e116e0dc39b7560fba44de6",
+    "events_sha256": "fbe3438ce06463a7a1c63a2d26955a06e42892b7f3ef5cf7619d2d5575111949",
+    "history_sha256": "5b884cd6c5c49dde67645d5924dee0a8b128fea6948ff4ea4f72790a1dc17cc9"
+  },
+  "evaluation_relationship": {
+    "original_batch_gate_remains": "2/3 passed",
+    "original_evaluation_summary_was_not_rewritten": true,
+    "manual_resume_result_is_not_counted_in_the_batch_gate": true
+  },
+  "decision": {
+    "status": "The same interrupted CodingRun was resumable again and entered turn 3, but the Provider timed out again before coding or Abaqus execution.",
+    "claims_allowed": [
+      "CodingRunService permits another explicit resume after the evaluator's one automatic resume has failed.",
+      "The second resume reused the same run, restored settled history and preserved cumulative wall-clock budget.",
+      "The failure remained a Provider timeout rather than a resume-state or workspace-consistency failure."
+    ],
+    "claims_forbidden": [
+      "The manual resume completed the task.",
+      "The original 2/3 evaluation became 3/3.",
+      "Repeated resume resets or extends the CodingRun wall-clock budget."
+    ]
+  },
+  "followup": {
+    "wall_clock_budget_was_later_extended_by_the_user": true,
+    "report": "plate_element_choice_budget_extended_resume_20260903.json"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": "1",
+  "dataset_id": "abaqus-2026-bm25-dense-rrf-heldout-v3",
+  "status": "consumed",
+  "seal_file": "abaqus_2026_bm25_dense_rrf_heldout_seal_v3.json",
+  "seal_sha256": "00e43e6dc0274d3ee60cf94c74d457004cf2172ad31d7fd19a0b248b92ff7d39",
+  "first_attempt_id": "heldout-v3-first-20260903",
+  "first_evaluation_started_at": "2026-09-03T17:55:57.6450966+08:00",
+  "first_evaluation_completed_at": "2026-09-03T17:57:32.8941613+08:00",
+  "report_file": "abaqus_2026_bm25_dense_rrf_heldout_evaluation_v3_20260903.json",
+  "report_sha256": "9bb5d7a6e688e0d5a3ecd598c1a252ca3234fb509514886228be9444623fd0a8",
+  "post_result_tuning_allowed": false,
+  "identical_configuration_reproduction_allowed": true
+}

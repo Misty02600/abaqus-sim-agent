@@ -1,0 +1,125 @@
+{
+  "schema_version": "1",
+  "observed_at": "2026-08-24",
+  "last_updated": "2026-08-25",
+  "scope": "Three minimal Abaqus/CAE 2024 noGUI API-owner/API-existence/API-signature regression fixtures; no input write, job submission, or solve.",
+  "runtime": {
+    "release": "2024",
+    "launcher": "D:/SIMULIA/Commands/abq2024.bat",
+    "python": "3.10.5"
+  },
+  "derivation": {
+    "kind": "minimal_synthetic_regressions",
+    "description": "The cases isolate two general API mistakes observed in a failed 3D bar CodingRun plus one invalid BeamSection keyword observed in B31 authoring: inventing a familiar-looking Part primitive, calling a Set constructor on PartInstance, and passing orientation into Model.BeamSection. No failed Agent script or repaired answer was copied into the fixtures.",
+    "source_evidence": [
+      "benchmarks/coding/bar_tension_3d_concept_evaluation_20260824.json",
+      "benchmarks/coding/beam_tension_b31_evaluation_20260824.json"
+    ],
+    "agent_visible_repaired_answer_included": false
+  },
+  "manifest": {
+    "path": "benchmarks/coding/api_repair_regression_cases.jsonl",
+    "sha256": "9dc667824492d46c3758c9a116b45522de4a63be7d173c67b60c14c177876bd3"
+  },
+  "broken_fixture_validation": {
+    "command": "ABAQUS_LICENSED_TESTS=1 pytest tests/test_api_repair_regressions.py -m abaqus --basetemp D:/abaqus-runs/api-repair-regression-broken-20260825-v2",
+    "passed": 3,
+    "failed": 0,
+    "raw_roots": [
+      "D:/abaqus-runs/api-repair-regression-broken-20260825-v2"
+    ],
+    "note": "All three CAE processes returned exit code 0 despite an unhandled AttributeError or TypeError; the expected result artifact was absent in every case."
+  },
+  "repaired_postcondition_validation": {
+    "passed": 3,
+    "failed": 0,
+    "raw_roots": [
+      "D:/abaqus-runs/api-repair-regression-repaired-20260824-v2",
+      "D:/abaqus-runs/api-repair-beam-section-auto-signature-20260825-v2"
+    ],
+    "solution_location": "outside_repository",
+    "note": "The first two minimal corrected scripts were executed outside the repository; the BeamSection result came from the isolated Product-Agent workspace. No repaired source is stored in the Agent-visible fixture directories."
+  },
+  "cases": [
+    {
+      "case_id": "base_solid_box",
+      "fixture_sha256": "50313fd2ebc3daf1e57223f0a884276143bb51e6835cb47ab3da988e0ef5ea8f",
+      "baseline": {
+        "result_absent": true,
+        "exit_code": 0,
+        "normalized_error": "AttributeError: 'Part' object has no attribute 'BaseSolidBox'",
+        "stdout": {
+          "path": "D:/abaqus-runs/api-repair-regression-broken-20260825-v2/test_broken_api_repair_regress0/state/executions/cae_nogui-5483a405bbe145519a8d7f070e370a29/stdout.bin",
+          "sha256": "3ebf42a2a9e1351faed499645c44d8f548fa5976a65ba2c45f48033d15959c1e"
+        },
+        "stderr": {
+          "path": "D:/abaqus-runs/api-repair-regression-broken-20260825-v2/test_broken_api_repair_regress0/state/executions/cae_nogui-5483a405bbe145519a8d7f070e370a29/stderr.bin",
+          "sha256": "11cd000011da69c64e239df2e0306005472983216853ae665e43ab8a64ce475e"
+        }
+      },
+      "repaired_result": {
+        "path": "D:/abaqus-runs/api-repair-regression-repaired-20260824-v2/base_solid_box/base_solid_box_result.json",
+        "sha256": "cd85d7ed6cd723e0bc581ef0073b0604cccf77655cc166331c3c85baaf002010",
+        "value": {
+          "case_id": "base_solid_box",
+          "cell_count": 1,
+          "dimensions": [10.0, 2.0, 1.0]
+        }
+      }
+    },
+    {
+      "case_id": "part_instance_set",
+      "fixture_sha256": "4e2a843cfa8b2cae592c16c5fbcd19bc742b7240d11e4f0cf9c401819de0fa02",
+      "baseline": {
+        "result_absent": true,
+        "exit_code": 0,
+        "normalized_error": "AttributeError: 'PartInstance' object has no attribute 'Set'",
+        "stdout": {
+          "path": "D:/abaqus-runs/api-repair-regression-broken-20260825-v2/test_broken_api_repair_regress1/state/executions/cae_nogui-264be0823ed34399b46d97ab9b03e91f/stdout.bin",
+          "sha256": "3ebf42a2a9e1351faed499645c44d8f548fa5976a65ba2c45f48033d15959c1e"
+        },
+        "stderr": {
+          "path": "D:/abaqus-runs/api-repair-regression-broken-20260825-v2/test_broken_api_repair_regress1/state/executions/cae_nogui-264be0823ed34399b46d97ab9b03e91f/stderr.bin",
+          "sha256": "03d5d568f1914bb27f155b48ea0a9ed807cfe3ec2c04510bbb3b45aeeaaecc57"
+        }
+      },
+      "repaired_result": {
+        "path": "D:/abaqus-runs/api-repair-regression-repaired-20260824-v2/part_instance_set/part_instance_set_result.json",
+        "sha256": "14519bb1c820678f92faa8c1f408ced69538abac682a0cabd32e42e5bc3b00d8",
+        "value": {
+          "case_id": "part_instance_set",
+          "edge_count": 1,
+          "repository": "rootAssembly"
+        }
+      }
+    },
+    {
+      "case_id": "beam_section_invalid_orientation",
+      "fixture_sha256": "ab06ae07812cbcf369e10271e7d73a6b28cde4998a064a01cabccffaca8afede",
+      "baseline": {
+        "result_absent": true,
+        "exit_code": 0,
+        "normalized_error": "TypeError: keyword error: orientation",
+        "stdout": {
+          "path": "D:/abaqus-runs/api-repair-regression-broken-20260825-v2/test_broken_api_repair_regress2/state/executions/cae_nogui-d3034a0964ff4c8ba37b919db9ea6369/stdout.bin",
+          "sha256": "3ebf42a2a9e1351faed499645c44d8f548fa5976a65ba2c45f48033d15959c1e"
+        },
+        "stderr": {
+          "path": "D:/abaqus-runs/api-repair-regression-broken-20260825-v2/test_broken_api_repair_regress2/state/executions/cae_nogui-d3034a0964ff4c8ba37b919db9ea6369/stderr.bin",
+          "sha256": "0f1fdb4a5326ef5e4d91082c2730db5b6d661e3cae98f511e3af9513569efc97"
+        }
+      },
+      "repaired_result": {
+        "path": "D:/abaqus-runs/api-repair-beam-section-auto-signature-20260825-v2/beam_section_invalid_orientation-ee9c3b6c76/workspace/beam_section_invalid_orientation_result.json",
+        "sha256": "ef4dcc89c20815cb40ff8608ee1ca2fb24101cf2743cd88b4ee458cb55bf37f9",
+        "value": {
+          "case_id": "beam_section_invalid_orientation",
+          "integration": "DURING_ANALYSIS",
+          "material": "Steel",
+          "profile": "RectProfile",
+          "section_name": "ProbeBeamSection"
+        }
+      }
+    }
+  ]
+}

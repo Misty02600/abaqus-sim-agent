@@ -1,0 +1,123 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-exact-api-catalog-final10",
+  "date": "2026-08-28",
+  "question": "Which repeated high-cost Abaqus API misunderstandings can be converted into narrow, licensed, traceable cards without expanding the global Skill or adding model templates?",
+  "trace_inventory": {
+    "root": "D:/abaqus-runs",
+    "history_files_scanned": 162,
+    "runtime_tool_calls": {
+      "run_cae_script": 501,
+      "run_solver_job": 83,
+      "run_abaqus_python": 161,
+      "total": 745
+    },
+    "selection_rule": "Promote only repeated consumer/container behavior that is not obvious from the callable signature and can be reproduced by a minimal Abaqus 2024 micro-regression.",
+    "not_promoted": [
+      "Part.SectionAssignment.region and Model.FieldOutputRequest import step are already explicit in official parameter/Access text and exact signatures.",
+      "Model.BeamSection unsupported orientation/geometricType keywords are already covered by automatic_exact_signature; no case recipe was added.",
+      "ModelJob.writeInput, Part.seedPart, Assembly.Set, and Part.Set owner mistakes already receive exact legal alternatives or existing verified notes.",
+      "No center-hole, material-partition, SurfaceTraction direction, or complete B31 solution template was added."
+    ]
+  },
+  "licensed_evidence": {
+    "api_consumer": {
+      "path": "benchmarks/api_catalog/abaqus_2024_api_consumer_observations.json",
+      "sha256": "cf74346a9ea510109f207b4dfa6336522e29b536c702acc6b44ac1dbba4912a6",
+      "fixture": "tests/fixtures/abaqus2024/api_consumer_probe.py",
+      "fixture_sha256": "862298c852c4402999fabb719895158381b755ebb4de642cd7a1b97710af29eb",
+      "licensed_result": "1/1"
+    },
+    "odb_behavior": {
+      "path": "benchmarks/api_catalog/abaqus_2024_odb_behavior_observations.json",
+      "sha256": "18745ecdb685eaf093a0f1a571478af94f33526fdb7ccd2a67fb5fdb1d5a7a16",
+      "fixture": "tests/fixtures/abaqus2024/odb_behavior_probe.py",
+      "fixture_sha256": "817f0b306e578611dd406dd6b4063de1d670a2dcb9bf4a8390c2fb7d9647ae3d",
+      "licensed_result": "1/1"
+    }
+  },
+  "new_verified_notes": [
+    {
+      "note_id": "runtime:2024:Part.setElementType:region-dispatch",
+      "query": "Part.setElementType.regions",
+      "scope": [
+        "regions"
+      ],
+      "evidence": "api_consumer"
+    },
+    {
+      "note_id": "runtime:2024:Part.assignBeamSectionOrientation:region-binding",
+      "query": "Part.assignBeamSectionOrientation.region",
+      "scope": [
+        "region"
+      ],
+      "evidence": "api_consumer"
+    },
+    {
+      "note_id": "runtime:2024:Assembly.Surface:side1-edge-container",
+      "query": "Assembly.Surface.side1Edges",
+      "scope": [
+        "side1Edges"
+      ],
+      "evidence": "api_consumer"
+    },
+    {
+      "note_id": "runtime:2024:Model.FieldOutputRequest:b31-companion-fields",
+      "query": "Model.FieldOutputRequest.variables",
+      "scope": [
+        "variables"
+      ],
+      "evidence": "api_consumer",
+      "limit": "B31/Static only; it does not define valid output variables for other element or procedure families."
+    },
+    {
+      "note_id": "runtime:2024:FieldOutput.getSubset:field-value-boundaries",
+      "query": "FieldOutput.getSubset",
+      "scope": [],
+      "evidence": "odb_behavior"
+    },
+    {
+      "note_id": "runtime:2024:openOdb:node-array-nesting",
+      "query": "openOdb",
+      "scope": [],
+      "evidence": "odb_behavior"
+    }
+  ],
+  "catalog_merge_correction": {
+    "problem": "Part.generateMesh was split into two cards inherited from MeshEditPart and MeshPart, so an exact public receiver lookup returned ambiguous even though both signatures belong to Part.",
+    "correction": "Merge non-constructor sibling-mixin records only when every card exposes the same public canonical method and their abqpy records share a base; preserve both signatures and source records.",
+    "result": "Part.generateMesh now resolves to one public-overload card with two signatures; Spot.__init__ remains ambiguous because constructors are excluded."
+  },
+  "immutable_catalog": {
+    "path": "var/api-catalog/abaqus-2024-final10",
+    "manifest_sha256": "2abb5330d1ecc5745b9b1b5786b4994cb79945d53eab078480c09bd7369e8f10",
+    "cards_sha256": "a59cfc038a8db1019538ecf194bf73d19531a9904aa8445b4cfc0618a9707cae",
+    "card_count": 5480,
+    "conflict_count": 48,
+    "source_digests": {
+      "official_scripting_reference": "12f12f146b7d6241085fa981358a9b8b0e64f8e4d852a4a5ac4fa205dacbb313",
+      "abqpy_source": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504",
+      "runtime_notes": "cba4a6739cd9b4458fe4f0397290c161f9a61732b2a6706badf50682c09d3a7c"
+    },
+    "runtime_notes_sha256": "cba4a6739cd9b4458fe4f0397290c161f9a61732b2a6706badf50682c09d3a7c"
+  },
+  "deterministic_evaluation": {
+    "benchmark": "benchmarks/api_catalog/abaqus_api_queries.jsonl",
+    "benchmark_sha256": "e826ce12ca363f89ed61863f18e7a6b0975010946b8f998e9027a571227c9da5",
+    "result": "benchmarks/api_catalog/abaqus_api_evaluation_final10.json",
+    "result_sha256": "cfd2ce97f0fbef4ddce9ae82d1969d9d102750a3ab4bdc315fc926ba0036ed1d",
+    "pass_count": 23,
+    "total": 23,
+    "new_cases": 7
+  },
+  "interpretation": {
+    "capability": "final10 can return narrow, verified container and ODB-boundary guidance for six additional exact method/parameter queries and resolves the Part.generateMesh public overload deterministically.",
+    "expected_cost_effect": "The notes target failures that historically consumed extra CAE or standalone Abaqus Python calls. Deterministic and licensed evidence proves card correctness, not that a Product Agent will query, receive, adopt, or save calls.",
+    "limits": [
+      "No Product-Agent treatment batch has yet measured final10 adoption or call reduction.",
+      "Automatic modes still require a traceback that resolves to the owning method; IndexError, raw JSON TypeError, and attribute-only ODB errors may not route to FieldOutput.getSubset or openOdb automatically.",
+      "The B31 FieldOutputRequest note is explicitly element/procedure bounded and must not be used as a general output-variable table.",
+      "Card count changed from 5481 to 5480 because two legitimate Part.generateMesh overload records were merged, not because a source record was deleted."
+    ]
+  }
+}

@@ -1,0 +1,795 @@
+{
+  "schema_version": "chunk-method-multilayer-evaluation-v1",
+  "scope": "Read-only evaluation of saved 12-page parent-child pilot; exposed development samples, not a new held-out test",
+  "pilot_report_sha256": "2fd0f3dc53c66b7aa8720b6bbabd7b4040a4aa0c67d6bc2799ea69c010dc7436",
+  "parent_store_sha256": "78fd05b7c90eec8e93577d682313a8e34a57d909bfd00195f30356f7e3ca1446",
+  "script_sha256": "310ee07bc21df4713d0fd160768f876085e0226b9a12409a8d1d9a34e7e23d8c",
+  "integrity": {
+    "parents": 941,
+    "searchable_parents": 762,
+    "children": 771,
+    "all_child_parent_mapping_and_text_coverage_passed": true,
+    "parents_with_multiple_children": 9,
+    "split_boundary_count": 9,
+    "boundary_counts": {
+      "sentence_heuristic": 7,
+      "newline": 2
+    }
+  },
+  "granularity": {
+    "total_tokens": {
+      "min": 16,
+      "median": 84,
+      "p90": 165,
+      "max": 255
+    },
+    "body_tokens_excluding_prefix": {
+      "min": 1,
+      "median": 57,
+      "p90": 135,
+      "max": 233
+    },
+    "prefix_token_fraction_estimate": {
+      "min": 0.05327868852459016,
+      "median": 0.28205128205128205,
+      "p90": 0.5432098765432098,
+      "max": 0.9032258064516129
+    },
+    "children_with_prefix_more_than_half_of_total": 103,
+    "children_with_body_at_most_16_tokens": 67,
+    "tiny_examples": [
+      {
+        "parent_id": "872698f6a910b020b705228a719824ba119b8c27223cc87a0827f6e717c233ac",
+        "kind": "p",
+        "heading": [
+          "Choosing the Element's Dimensionality",
+          "Two-Dimensional Elements",
+          "Generalized Plane Strain Elements"
+        ],
+        "body_tokens": 1,
+        "text": "where"
+      },
+      {
+        "parent_id": "66d0a3e00078d6e542aa1fafc34c6b62987b35616c3427d67c6efb25253ee61d",
+        "kind": "p",
+        "heading": [
+          "Explicit Dynamic Analysis",
+          "Dilatational Wave Speed"
+        ],
+        "body_tokens": 1,
+        "text": "and"
+      },
+      {
+        "parent_id": "8aced5c0144753afd81be2820941b859ad3ec31247c9b89630f1dc47247684f3",
+        "kind": "definition",
+        "heading": [
+          "Solid (Continuum) Elements",
+          "Choosing an Appropriate Element"
+        ],
+        "body_tokens": 2,
+        "text": "                  adjusted. \n\n              \n\n            \n          "
+      },
+      {
+        "parent_id": "c8d01f0a6466c2aa0e1f2caf1c864ae539f905657018960cc7fd88013afbe7cd",
+        "kind": "p",
+        "heading": [
+          "*ADAPTIVE MESH CONTROLS"
+        ],
+        "body_tokens": 3,
+        "text": "LevelStep"
+      },
+      {
+        "parent_id": "4bd7a352f7952c77b54afd8ed1c7bc1fb6f8939fdd3ad1914892cd49f8c0667e",
+        "kind": "p",
+        "heading": [
+          "Unstable Collapse and Postbuckling Analysis"
+        ],
+        "body_tokens": 4,
+        "text": "This page discusses:"
+      },
+      {
+        "parent_id": "18f0e1af5d00f0b1eee48a00dd180d3a32f8a427c69651a55f0a8e9c055eefb2",
+        "kind": "p",
+        "heading": [
+          "*ADAPTIVE MESH CONTROLS"
+        ],
+        "body_tokens": 4,
+        "text": "TypeHistory data"
+      },
+      {
+        "parent_id": "7cdff0e4738e5c919948a7ca5ed4a4e21e24ed41f6a9333a3e9115d6d618a1ff",
+        "kind": "p",
+        "heading": [
+          "Solid (Continuum) Elements"
+        ],
+        "body_tokens": 4,
+        "text": "This page discusses:"
+      },
+      {
+        "parent_id": "08e457747f385cbcc8dad8d1a509fb812b4d0e161d24d45d74b140c6b8a204f4",
+        "kind": "p",
+        "heading": [
+          "Choosing the Element's Dimensionality"
+        ],
+        "body_tokens": 4,
+        "text": "This page discusses:"
+      },
+      {
+        "parent_id": "12fce5edf7075838f22fbb90b92a11a2e560ae3f458995d466504d3872d2ea1c",
+        "kind": "p",
+        "heading": [
+          "Explicit Dynamic Analysis"
+        ],
+        "body_tokens": 4,
+        "text": "This page discusses:"
+      },
+      {
+        "parent_id": "859b583e906615aec1309c47142a0abd78d05f5eebb976dc3e187bb3f7777a54",
+        "kind": "p",
+        "heading": [
+          "Unstable Collapse and Postbuckling Analysis"
+        ],
+        "body_tokens": 5,
+        "text": "The Riks method:"
+      },
+      {
+        "parent_id": "1814ce1b139707a18f03fc303550aa7d9762c0227f837fe40b2cbba6b872723a",
+        "kind": "p",
+        "heading": [
+          "Explicit Dynamic Analysis"
+        ],
+        "body_tokens": 5,
+        "text": "An explicit dynamic analysis:"
+      },
+      {
+        "parent_id": "2a611006c29bf8b312bd5cefbede172957a6efc812334c873f4f75d3839472b0",
+        "kind": "p",
+        "heading": [
+          "Solid (Continuum) Elements"
+        ],
+        "body_tokens": 6,
+        "text": "Solid (continuum) elements:"
+      },
+      {
+        "parent_id": "5aa9fd1c1d2bc9713fe43f968cf4fd85677fbdefdc6c1a9422b3766322f6e7a6",
+        "kind": "text",
+        "heading": [
+          "Coupling Constraints"
+        ],
+        "body_tokens": 7,
+        "text": "A surface-based coupling constraint:"
+      },
+      {
+        "parent_id": "899bb481da1e842e2f7477406e121c5ea68f9553d338c6c8b0e11ce44d64ca99",
+        "kind": "p",
+        "heading": [
+          "Coupling Constraints",
+          "Distributing Coupling Constraints",
+          "Weighting Methods",
+          "Linearly Decreasing Weight Distribution"
+        ],
+        "body_tokens": 7,
+        "text": "A linearly decreasing weighting scheme"
+      },
+      {
+        "parent_id": "e3e09f42e7a3321d2ee5a4b3c908fc9f06e163f366c3f3e536230ecfa78d9f03",
+        "kind": "p",
+        "heading": [
+          "Mesh Tie Constraints"
+        ],
+        "body_tokens": 7,
+        "text": "A surface-based tie constraint:"
+      },
+      {
+        "parent_id": "c34fd714b5b302af29e40947d97b5e6c80ff2474b7262813c4d3c81b6052ca40",
+        "kind": "p",
+        "heading": [
+          "*ADAPTIVE MESH CONTROLS"
+        ],
+        "body_tokens": 8,
+        "text": "Abaqus/CAEStep module"
+      },
+      {
+        "parent_id": "597fd289d486e8446d3bd42b8e13cac801a0a7a8cedcbd36ba133f8f7bccd1a9",
+        "kind": "p",
+        "heading": [
+          "Coupling Constraints",
+          "Distributing Coupling Constraints",
+          "Weighting Methods",
+          "Quadratic Polynomial Weight Distribution"
+        ],
+        "body_tokens": 8,
+        "text": "A quadratic polynomial weight distribution defined by"
+      },
+      {
+        "parent_id": "fe87c8517626e27e1341a48b085a2a7b6a503a3661ba9569b1049f59ad2c2bb4",
+        "kind": "p",
+        "heading": [
+          "Mesh Tie Constraints",
+          "Limitations"
+        ],
+        "body_tokens": 8,
+        "text": "The following limitations exist for tie constraints:"
+      },
+      {
+        "parent_id": "e9e30b7f5f093f4af0bbb89c42c9deecdf955de4ec8f525a671533f23b8106d9",
+        "kind": "text",
+        "heading": [
+          "Choosing the Element's Dimensionality",
+          "Two-Dimensional Elements",
+          "Generalized Plane Strain Elements"
+        ],
+        "body_tokens": 8,
+        "text": "Figure 1. Generalized plane strain model."
+      },
+      {
+        "parent_id": "c00b5db9e262758621792a74252d2ffed522ee1cc276837b09b245915cbef1d7",
+        "kind": "text",
+        "heading": [
+          "Mass Scaling",
+          "Introducing Element Mass Scaling into a Model"
+        ],
+        "body_tokens": 8,
+        "text": "Element mass scaling can be performed by:"
+      }
+    ],
+    "split_boundaries": [
+      {
+        "parent_id": "757919476e33998280deff03e0329727bf98e885db57705d191cd774b9337e9f",
+        "kind": "sentence_heuristic",
+        "before": "between main and secondary surfaces are excluded from being tied to secondary nodes. ",
+        "after": "Sometimes when meshes are transitioned from one type of element to another type or fr"
+      },
+      {
+        "parent_id": "d3567c927011b24c3755975a1def7b0868f330684165a62d049f6d7a323d829c",
+        "kind": "sentence_heuristic",
+        "before": "removed to avoid an overconstraint if the overlapping constraints are not identical. ",
+        "after": "It is recommended that, wherever possible, you order the secondary and main surfaces "
+      },
+      {
+        "parent_id": "8aced5c0144753afd81be2820941b859ad3ec31247c9b89630f1dc47247684f3",
+        "kind": "newline",
+        "before": "       element is not on the center of the edge, the location of the midedge node is\n",
+        "after": "                  adjusted. \n\n              \n\n            \n          "
+      },
+      {
+        "parent_id": "9ec0989a3504fea189e0b1ddd61cd4e963695068e73149bc86ffca2a83c4225a",
+        "kind": "sentence_heuristic",
+        "before": "r hybrid (C3D10H) or nonhybrid (C3D10) elements; therefore, they are more expensive. ",
+        "after": "This element also uses a unique 11-point integration scheme, providing a superior str"
+      },
+      {
+        "parent_id": "89644c53efe8c0fcfb95bf268fe79888a0b9dd9bb887d0d37404a886eddfe48c",
+        "kind": "sentence_heuristic",
+        "before": "he heat conduction and plastic dissipation terms are integrated at the Gauss points. ",
+        "after": "While the plastic dissipation term is integrated at each Gauss point, the heat genera"
+      },
+      {
+        "parent_id": "36b2bf6de7d1229b68d61e26d45efb7a19ee5ff042b394a3838fb9c11256e375",
+        "kind": "sentence_heuristic",
+        "before": "ric direction) or reduced integration (2 Gauss points in each parametric direction). ",
+        "after": "The same integration scheme is always used for the specific heat and conductivity mat"
+      },
+      {
+        "parent_id": "322811f5d8bd23e535d31a97b00d70628742e5247e882d364abd3e468e88edad",
+        "kind": "sentence_heuristic",
+        "before": "me increment unless the penalty method is being used to enforce contact constraints. ",
+        "after": "Penalty contact can cause the element-by-element estimate to be slightly below the va"
+      },
+      {
+        "parent_id": "86188305c69dd29be67f6e4cb6410e32956f9fe44520547f1389e15f55b1769a",
+        "kind": "sentence_heuristic",
+        "before": " a finer mesh is required to obtain accurate results even at the integration points. ",
+        "after": "In that situation once the overall solution has converged with respect to the mesh de"
+      },
+      {
+        "parent_id": "c273d35c6390580b2246f035e54936155c81bad6ab506bd376a7e7ef0570224e",
+        "kind": "newline",
+        "before": "ut variables\nOUTPUT, HISTORY, TIME INTERVAL=t\nELEMENT OUTPUT, ELSET=element set name\n",
+        "after": "Data line specifying element output variables\nNODE OUTPUT, NSET=node set name\nData li"
+      }
+    ]
+  },
+  "coverage": {
+    "blocks_by_projection_status": {
+      "text": 762,
+      "deferred_list": 41,
+      "deferred_math": 134,
+      "deferred_table": 4
+    },
+    "stored_body_characters_by_status": {
+      "deferred_list": 43360,
+      "deferred_math": 187060,
+      "deferred_table": 34983,
+      "text": 334305
+    },
+    "deferred_lists": [
+      {
+        "parent_id": "4b6aadd61a7212b0dfee46100f931f5cb83424fead354e2d1fa6158abf0380cc",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 4
+      },
+      {
+        "parent_id": "b731c58d7c66e99d33e5f9719c4974b485ab50acd73a73864749ccda61a18a8d",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 3
+      },
+      {
+        "parent_id": "673da2b65d28413c55c8d99f42a2a17072697e308322ba9c1daa8a8161367747",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 2
+      },
+      {
+        "parent_id": "06c1498d8f2512d19214df8244afa3b2689617b6b487d763357d9c025467d389",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul",
+          "id": "simacst-c-coupling__ul_83815EDB09D04C9E9957C53DE9EEA393"
+        },
+        "direct_items": 6
+      },
+      {
+        "parent_id": "6c49b341563d1bc6e9575a08277215d3be866990156c44207cd8ce6a67d0afd0",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 2
+      },
+      {
+        "parent_id": "4e5550f5473d9aa1e1b488196d86f7404ffb4821391ad0d52becc6337792e256",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 6
+      },
+      {
+        "parent_id": "0757a65b2c9e2ba9acd93ed78f52d23070d3f7fe7ba9120b5e98b090ef75b5bb",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul",
+          "id": "simacst-c-coupling-region__ul_6A0CAD87E59D45CE97A68E3A6E62A094"
+        },
+        "direct_items": 3
+      },
+      {
+        "parent_id": "16c28d5f5824b4ff28899eb38fb7855677bfd18099926e699f24e08203c73972",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul",
+          "id": "simacst-c-coupling-t-RotationalDegreesOfFreedom-sma-topic6__ul_4CC3876A3BD14410B82556E3A2A9DB23"
+        },
+        "direct_items": 3
+      },
+      {
+        "parent_id": "1045c0fd5d4bcb3c918bb4cee785b3dd6322ab4be03df9e7447e00f1873066db",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 2
+      },
+      {
+        "parent_id": "a5f93443af1194b1336a71a0a15f2ba406cd35bbc3b88218dd0e7a2918ea18ff",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 3
+      },
+      {
+        "parent_id": "1f99afbd21a32382ab24dd815fe7a88a3b5b682cad56fb0a1cc3d557a0439521",
+        "nested_or_other_structures": true,
+        "root_attributes": {
+          "class": "ul ul",
+          "id": "simacst-c-coupling-t-ElementbasedSurface-sma-topic11__ul_684DDAAB92BD4E0EAB6F84BA12A76F31"
+        },
+        "direct_items": 2
+      },
+      {
+        "parent_id": "25a309931bb67432f120e0c0033a9f5929385fb7a0d9804c0561ca3aa93bdeae",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 2
+      },
+      {
+        "parent_id": "893a6b30725ee163ea2154740993b20c7e4ab872fd072cc2ad0c2d202e1a2f42",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul",
+          "id": "simacst-c-coupling-t-limitations1__ul_C93BDF3C3849415E999A181C6E77A03D"
+        },
+        "direct_items": 3
+      },
+      {
+        "parent_id": "7d9219d7f864e8d81fe8198bd5444188a04e332a0c76b1174ba4c630edac70f3",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul",
+          "id": "simacst-c-tiedconstraint__ul_C057253E5E8D4193960C1D28566F0A26"
+        },
+        "direct_items": 9
+      },
+      {
+        "parent_id": "52910a83d9062af3f7ece309c874ab113243d4f12e56d622dd1febed6b1ee9b2",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul",
+          "id": "simacst-c-tiedconstraint-t-TheldquosurfacetosurfacerdquoApproach-sma-topic9__ul_5FA1065F50314E6BB10842F8A3E5EE79"
+        },
+        "direct_items": 3
+      },
+      {
+        "parent_id": "2f9c0e225da97a3b443c4b0e4d3b8faaad58abaaee5276496af2ea850ff15641",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul",
+          "id": "simacst-c-tiedconstraint-t-TheldquosurfacetosurfacerdquoApproach-sma-topic9__ul_9BDAE83F57A84B09BAD34CFC7EAB8BB1"
+        },
+        "direct_items": 3
+      },
+      {
+        "parent_id": "a0fbeef29e6582543ee03e6764153e0a056205d557ba577fd408bd7ce229f450",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul",
+          "id": "simacst-c-tiedconstraint-t-ChoosingTheSlaveAndMasterSurfacesOfASurfacebasedTieConstraint-sma-topic11__ul_AC01422934584C82B2C6C6316BFC5AF9"
+        },
+        "direct_items": 3
+      },
+      {
+        "parent_id": "96507572cf3263d660ea40e8f32da22f92e28fc1f798770cc6c6b9c5bd7c2c3d",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul",
+          "id": "simacst-c-tiedconstraint-t-CriteriaForAdjustment-sma-topic13__ul_7C1F614C840B4E7F99B4E2610B9AA023"
+        },
+        "direct_items": 2
+      },
+      {
+        "parent_id": "e8208fae6056a46a32a6a285fe9a009a76e69ef6b688868c68a1652b50e47665",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul",
+          "id": "simacst-c-tiedconstraint-t-AccountingForAnOffsetBetweenTiedSurfaces-sma-topic15__ul_7EB5F60652CF4146B879CF778F6C56FD"
+        },
+        "direct_items": 3
+      },
+      {
+        "parent_id": "edffff4e462d38d2c8b2cdbb350d299d790c8977ddefb45a3a933cef496e335a",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul",
+          "id": "simacst-c-tiedconstraint-t-TieConstraintsVersusTiedContactInAS-sma-topic19__ul_0F40BDDFEEF141AA99D4D69CC942A41E"
+        },
+        "direct_items": 5
+      },
+      {
+        "parent_id": "c9a4cd81737bd2eb9f230c7baedaf30656f3c643ee02909783faa3bab263bc28",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul",
+          "id": "simacst-c-tiedconstraint-t-Limitations-sma-topic24__ul_18017CBC466F4848822036DFCC35B921"
+        },
+        "direct_items": 6
+      },
+      {
+        "parent_id": "0de7199a1853ce71aadd3bc090c2ba5c7d852211636930eaeebf99d25f04f1cd",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 4
+      },
+      {
+        "parent_id": "12934f6ff25dc9e37db8ea73e3cdc2c66d264d0dcbfd74b0ab14fc020f83d430",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 6
+      },
+      {
+        "parent_id": "fdff20af09da7f636f5f9917694f42a506acf1365dbc060f93f2ba22f5c27b76",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 3
+      },
+      {
+        "parent_id": "4c79203b6e749390d7e158dd91e31478e64ca2444836c6ed7d09f96474c46470",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 6
+      },
+      {
+        "parent_id": "70ceb8afb4e6f14f210a33334ab0b0a2cb1cab144f053dfea712f2925baa1ac5",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 3
+      },
+      {
+        "parent_id": "3975bf687d53a56dd6c0b7731769683b9323c95cc9a17e43c999fea1887f17f7",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ol ol bibliolist"
+        },
+        "direct_items": 1
+      },
+      {
+        "parent_id": "361918f6a849e8a30af27e98826c028ef99fe992db36e1a02512af72dfa62062",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 6
+      },
+      {
+        "parent_id": "27460d23a996d3329e79f6762bf96cf1f799ca06b2f551da0b14f1077f66cbf2",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 3
+      },
+      {
+        "parent_id": "b35c3b23c2e25125236cd7d39a8a5a36eba0a383a551ab1090f2c62470593cdc",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 5
+      },
+      {
+        "parent_id": "80788399c2b1c4a56eed08a75239d1d1e534df31f78f51cb1f203474187d4e7b",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 2
+      },
+      {
+        "parent_id": "0d7334489ae0514d0b8b3632db514a96f3724e647013f4448c43831fb10c2073",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 7
+      },
+      {
+        "parent_id": "a3d133ee955b3ca4af007277faa2cf9920d7171c5e0dbb1fe4bf6f1646415099",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 2
+      },
+      {
+        "parent_id": "64e8f252a95fde10c6d3578b0c4d6bf909c7c7189cbc78adb3c0d88cb9417d30",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 5
+      },
+      {
+        "parent_id": "6536c340bb3e957e699a728bcf1da2a1fb9739fb4846f8dd13183e99198a077a",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 2
+      },
+      {
+        "parent_id": "427292183fd8a46ade2c3f810eb68d5f4965e59cbe3dc3fb255c1aa575d3b67b",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 2
+      },
+      {
+        "parent_id": "0db431bc54ac974445352cab511490e825cf6d88735a07edef6fe4e37fbdcafa",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 2
+      },
+      {
+        "parent_id": "f507f49283bd2a444255e403352d8d637b95520ae9e0a4adca83e529a09b65a4",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 5
+      },
+      {
+        "parent_id": "39c65772d665d1d33976288e99503ab54b8052aba514514f32aa3a23a2d370e3",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 7
+      },
+      {
+        "parent_id": "1839de0d4e9e4279720a9b37750d8665e32ca93147a31d406a315dcd248940a7",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 11
+      },
+      {
+        "parent_id": "d96f4cc4032e1f2cbad9118fd0a655226664c10c6dd303bf99d11267e4e9730f",
+        "nested_or_other_structures": false,
+        "root_attributes": {
+          "class": "ul ul"
+        },
+        "direct_items": 3
+      }
+    ],
+    "flat_deferred_list_count": 40
+  },
+  "requirements": [
+    {
+      "query": "recorded-solver-diagnostic-1",
+      "need": "complete_time_adjustment",
+      "parent_id": "c152cd42eb2ebc32ca8c7d46813928f2a0ba81fc91034ef33a0d8cec1c2c974b",
+      "kind": "p",
+      "projection_status": "text",
+      "child_count": 1,
+      "in_candidate_pool": true,
+      "delivered_current": false,
+      "failure_stage": "ranking_or_top4_selection",
+      "same_section_text_run_counterfactual_delivers": false,
+      "counterfactual_total_body_characters": 5254,
+      "counterfactual_truncated_groups": 0,
+      "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+      "source_xpath": "/html/body/table/tr/td/article[1]/div/div[9]/p[1]"
+    },
+    {
+      "query": "recorded-solver-diagnostic-2",
+      "need": "complete_time_adjustment",
+      "parent_id": "c152cd42eb2ebc32ca8c7d46813928f2a0ba81fc91034ef33a0d8cec1c2c974b",
+      "kind": "p",
+      "projection_status": "text",
+      "child_count": 1,
+      "in_candidate_pool": true,
+      "delivered_current": true,
+      "failure_stage": "delivered",
+      "same_section_text_run_counterfactual_delivers": true,
+      "counterfactual_total_body_characters": 4674,
+      "counterfactual_truncated_groups": 0,
+      "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+      "source_xpath": "/html/body/table/tr/td/article[1]/div/div[9]/p[1]"
+    },
+    {
+      "query": "plane-strain-meaning",
+      "need": "zero_out_of_plane_strain",
+      "parent_id": "e40c29da26e1864e2644abf8f4f9e5c10d9cb2ad198445a89bd6855a0a972656",
+      "kind": "p",
+      "projection_status": "text",
+      "child_count": 1,
+      "in_candidate_pool": true,
+      "delivered_current": true,
+      "failure_stage": "delivered",
+      "same_section_text_run_counterfactual_delivers": true,
+      "counterfactual_total_body_characters": 2135,
+      "counterfactual_truncated_groups": 0,
+      "source": "http://localhost:4040/English/SIMACAEELMRefMap/simaelm-c-dimension.htm#simaelm-c-dimension-t-PlaneStrainElements-sma-topic3",
+      "source_xpath": "/html/body/table/tr/td/article[2]/article[2]/div/p[1]"
+    },
+    {
+      "query": "plane-strain-meaning",
+      "need": "nonzero_thickness_stress",
+      "parent_id": "63fbbf319abc90e3f0ada5897ca0545bea4011f89f2e55a48bca6fd2b1dda16a",
+      "kind": "p",
+      "projection_status": "text",
+      "child_count": 1,
+      "in_candidate_pool": true,
+      "delivered_current": false,
+      "failure_stage": "ranking_or_top4_selection",
+      "same_section_text_run_counterfactual_delivers": true,
+      "counterfactual_total_body_characters": 2135,
+      "counterfactual_truncated_groups": 0,
+      "source": "http://localhost:4040/English/SIMACAEELMRefMap/simaelm-c-dimension.htm#simaelm-c-dimension-t-PlaneStrainElements-sma-topic3",
+      "source_xpath": "/html/body/table/tr/td/article[2]/article[2]/div/p[3]"
+    },
+    {
+      "query": "coupling-deformation",
+      "need": "rigidity_contrast",
+      "parent_id": "6c49b341563d1bc6e9575a08277215d3be866990156c44207cd8ce6a67d0afd0",
+      "kind": "ul",
+      "projection_status": "deferred_list",
+      "child_count": 0,
+      "in_candidate_pool": false,
+      "delivered_current": false,
+      "failure_stage": "projection_excluded",
+      "same_section_text_run_counterfactual_delivers": false,
+      "counterfactual_total_body_characters": 6820,
+      "counterfactual_truncated_groups": 0,
+      "source": "http://localhost:4040/English/SIMACAECSTRefMap/simacst-c-coupling.htm#simacst-c-coupling-t-SurfacebasedCouplingDefinitions-sma-topic1",
+      "source_xpath": "/html/body/table/tr/td/article[1]/div/p[2]/ul"
+    },
+    {
+      "query": "tie-separation",
+      "need": "permanent_bond",
+      "parent_id": "c64e07206479986cc5bd111b6455dd3cf9de94a6ebf9554d0b182ae333308dfe",
+      "kind": "text",
+      "projection_status": "text",
+      "child_count": 1,
+      "in_candidate_pool": false,
+      "delivered_current": false,
+      "failure_stage": "not_retrieved_in_candidate_pool",
+      "same_section_text_run_counterfactual_delivers": false,
+      "counterfactual_total_body_characters": 6733,
+      "counterfactual_truncated_groups": 0,
+      "source": "http://localhost:4040/English/SIMACAECSTRefMap/simacst-c-tiedconstraint.htm#table12",
+      "source_xpath": "/html/body/table/tr/td/table/tr[3]/td[1]/table/tr/td/p/p[1]"
+    },
+    {
+      "query": "domain-procedure-applicability-2",
+      "need": "boundary_condition_magnitude",
+      "parent_id": "da5716254caff18a5d2cf3e1e0d6a094551725d40ca48e38292aa6b118990a30",
+      "kind": "p",
+      "projection_status": "text",
+      "child_count": 1,
+      "in_candidate_pool": false,
+      "delivered_current": false,
+      "failure_stage": "not_retrieved_in_candidate_pool",
+      "same_section_text_run_counterfactual_delivers": false,
+      "counterfactual_total_body_characters": 2483,
+      "counterfactual_truncated_groups": 0,
+      "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-bcsect1",
+      "source_xpath": "/html/body/table/tr/td/article[8]/div/p"
+    },
+    {
+      "query": "hybrid-pressure",
+      "need": "independent_pressure",
+      "parent_id": "36bd0f950913f1871a280de97bf51a91226b7f46dbb08195f22ec76db2336c15",
+      "kind": "p",
+      "projection_status": "text",
+      "child_count": 1,
+      "in_candidate_pool": true,
+      "delivered_current": true,
+      "failure_stage": "delivered",
+      "same_section_text_run_counterfactual_delivers": true,
+      "counterfactual_total_body_characters": 2382,
+      "counterfactual_truncated_groups": 0,
+      "source": "http://localhost:4040/English/SIMACAEELMRefMap/simaelm-c-solidcont.htm#simaelm-c-solidcont-t-ChoosingBetweenRegularAndHybridElements-sma-topic6__simaelm-c-solidcont-s-AlmostIncompressibleMaterialBehavior-section7",
+      "source_xpath": "/html/body/table/tr/td/article[2]/article[6]/div/div[1]/p[2]"
+    }
+  ],
+  "parent_scope_counterfactual": {
+    "definition": "Merge only contiguous searchable p/text blocks with identical source page, anchor and heading path. Definitions/code/lists/tables remain separate. Keep original selected parents/ranks, dedupe windows, use same 12000-character body budget. No new retrieval or model inference.",
+    "groups": 657,
+    "groups_over_12000_characters": 1,
+    "max_group_characters": 13886,
+    "results_are_not_product_behavior": true
+  },
+  "limits": [
+    "Prefix-token fractions are diagnostic estimates; standalone prefix tokenization is not a semantic-information metric.",
+    "Tiny bodies are flags for inspection, not automatically useless.",
+    "The zero-loss claim is relative to stored source blocks/search projections; original HTML coverage is not thereby proved complete.",
+    "These eight requirement probes are not exhaustive question-answer labels and were selected after observing failures.",
+    "Counterfactual window expansion is evidence-delivery analysis, not a tested retrieval improvement or authority to broaden product scope."
+  ]
+}

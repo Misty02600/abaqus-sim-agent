@@ -1,4 +1,8 @@
 default_install_hook_types: [pre-commit, commit-msg]
+default_language_version:
+  python: python3.12
+# These directories contain immutable evidence or local-only research.
+exclude: '^(benchmarks/|tests/fixtures/|docs/research/evidence/|docs/scratch/)'
 repos:
   - repo: builtin
     hooks:

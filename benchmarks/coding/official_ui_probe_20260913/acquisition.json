@@ -1,0 +1,17 @@
+{
+  "offline": {
+    "url": "https://cdn.jsdelivr.net/npm/@pydantic/ai-chat-ui@2.1.0/offline/index.html",
+    "sha256": "18ad2ee902620e4c3e089a2979bc822612db31e0db48fde8e759aa78ce79f7f8",
+    "bytes": 15888324
+  },
+  "source": {
+    "url": "https://codeload.github.com/pydantic/ai-chat-ui/zip/refs/tags/v2.1.0",
+    "sha256": "cdfe134b2fa7636e122b7652826eea9861dd0d546d39b3662bd658072cfa0579",
+    "bytes": 625795
+  },
+  "tag": {
+    "url": "https://api.github.com/repos/pydantic/ai-chat-ui/git/ref/tags/v2.1.0",
+    "sha256": "cebe33fc5f6945521481f37923946ad6ca3de1c287f88d60c4e823d53f73060f",
+    "bytes": 339
+  }
+}

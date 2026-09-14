@@ -1,0 +1,3359 @@
+{
+  "profile": "recall-policy-ablation-development-v1",
+  "manifest_sha256": "f9e10db1920fedab445550185756e5caae7e464b8e978f3d74fc46351705ac49",
+  "manifest": {
+    "profile": "recall-policy-ablation-development-v1",
+    "profiles": [
+      [
+        "full-dense",
+        "dense",
+        "question_context",
+        "flat"
+      ],
+      [
+        "full-hybrid",
+        "hybrid",
+        "question_context",
+        "flat"
+      ],
+      [
+        "question-dense",
+        "dense",
+        "question_only",
+        "flat"
+      ],
+      [
+        "page-hybrid",
+        "hybrid",
+        "question_context",
+        "page_lexical"
+      ]
+    ],
+    "cases": [
+      {
+        "id": "exact-api-region-1",
+        "request": {
+          "kind": "question",
+          "question": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?",
+          "product": null,
+          "observed_context": "extract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT."
+        },
+        "requirements": []
+      },
+      {
+        "id": "domain-procedure-applicability-1",
+        "request": {
+          "kind": "question",
+          "question": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?",
+          "product": "Abaqus/Standard",
+          "observed_context": "Abaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation."
+        },
+        "requirements": []
+      },
+      {
+        "id": "domain-procedure-applicability-2",
+        "request": {
+          "kind": "question",
+          "question": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?",
+          "product": "Abaqus/Standard",
+          "observed_context": "Abaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step."
+        },
+        "requirements": [
+          {
+            "need": "boundary_condition_magnitude",
+            "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d"
+          }
+        ]
+      },
+      {
+        "id": "recorded-solver-diagnostic-1",
+        "request": {
+          "kind": "question",
+          "question": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?",
+          "product": "Abaqus/Standard",
+          "observed_context": "recorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt."
+        },
+        "requirements": [
+          {
+            "need": "complete_time_adjustment",
+            "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc"
+          }
+        ]
+      },
+      {
+        "id": "recorded-solver-diagnostic-2",
+        "request": {
+          "kind": "question",
+          "question": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?",
+          "product": "Abaqus/Standard",
+          "observed_context": "Abaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt."
+        },
+        "requirements": [
+          {
+            "need": "complete_time_adjustment",
+            "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc"
+          }
+        ]
+      },
+      {
+        "id": "explicit-at",
+        "request": {
+          "kind": "symbol",
+          "symbol": "AT",
+          "symbol_kind": "output_variable"
+        },
+        "expected_status": "found"
+      },
+      {
+        "id": "explicit-static",
+        "request": {
+          "kind": "symbol",
+          "symbol": "*STATIC",
+          "symbol_kind": "keyword",
+          "product": "Abaqus/Standard"
+        },
+        "expected_status": "found"
+      },
+      {
+        "id": "unknown-symbol",
+        "request": {
+          "kind": "symbol",
+          "symbol": "NOT_A_REAL_ABAQUS_SYMBOL",
+          "symbol_kind": "output_variable"
+        },
+        "expected_status": "not_found"
+      },
+      {
+        "id": "unavailable-release",
+        "request": {
+          "kind": "question",
+          "question": "Explain exact output timing",
+          "source_release": "2024"
+        },
+        "expected_status": "not_found"
+      },
+      {
+        "id": "query-over-encoder-budget",
+        "request": {
+          "kind": "question",
+          "question": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word "
+        },
+        "expected_status": "query_too_long"
+      }
+    ],
+    "budget": {
+      "candidates": 64,
+      "output_units": 4,
+      "embedding_tokens": 256,
+      "reranker_pair_tokens": 512,
+      "unit_body_tokens": 1200,
+      "context_tokens": 4000
+    },
+    "frozen_sha256": {
+      "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\run_recall_policy_ablation_v1.py": "eace4065752c434f8fcd2738defffbe5880991351f10a7275218c81067ab6506",
+      "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\benchmarks\\rag\\recall_policy_requests_v1.json": "f8fe995b33d1bb9eb877e97c5a7b037acd20320a2381a7b6e3262b86caf7ea32",
+      "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\benchmarks\\rag\\unified_candidate_requests_v1.json": "0e410c1da1ec26a666459394db86016f59229cd5df26e4d236f2a27b1b11807b",
+      "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\benchmarks\\rag\\unified_candidate_scope_rules_v1.json": "09ccf2cd932a9e61d9dca0dfd0559f59c3a20189e66c1c00f550c44c5b699ca5",
+      "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\uv.lock": "6d8af39f4e6dfe7535f5610c0b85ed3ef023bc1ab2965ad320bc6ccc9713ca82",
+      "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\unified_candidate_backend.py": "068559cd4301fd3b236ae323e71e3de6a887828d854c618c8890307e7035f4af",
+      "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\unified_candidate_cli.py": "f9e85c3805f43e05103158beb2f6553adffed851c981b2faf9a3ea0b002c75b5",
+      "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\unified_retrieval.py": "233783bc9d3b5c2a3b126057c79f24c6127328358fb9ed85cfcbb8d4a8fe12dd",
+      "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\passage_selection.py": "73e1eb07ae0251dc7cccdbff83d788c5fc4e2dd933bfa9dd82a1169640e086f6",
+      "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\cross_encoder.py": "17e40fd5fda159e0131c039198a56582251aacb7a6fe6c7ae67f8fe0f8d2acfb",
+      "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\tests\\test_recall_policies.py": "2fddb372aeebb4f9a13d23f81fbcffb0659a6abf839293676e394e4e659daa7c"
+    },
+    "candidate_binding_sha256": "d28c3f29df45418a5c0056c6fdfc9ee2a247ddd679698212b64921edaf0d80a8",
+    "candidate_prepared_sha256": "6ec20d960265f3f05690a7b71436d574ca97e84a02478782dd63ce84f43d9afd",
+    "reranker": {
+      "repo": "cross-encoder/ms-marco-MiniLM-L6-v2",
+      "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+      "files": {
+        "config.json": {
+          "sha256": "380e02c93f431831be65d99a4e7e5f67c133985bf2e77d9d4eba46847190bacc",
+          "bytes": 794
+        },
+        "tokenizer.json": {
+          "sha256": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66",
+          "bytes": 711396
+        },
+        "tokenizer_config.json": {
+          "sha256": "a5c2e5a7b1a29a0702cd28c08a399b5ecc110c263009d17f7e3b415f25905fd8",
+          "bytes": 1330
+        },
+        "special_tokens_map.json": {
+          "sha256": "3c3507f36dff57bce437223db3b3081d1e2b52ec3e56ee55438193ecb2c94dd6",
+          "bytes": 132
+        },
+        "README.md": {
+          "sha256": "7c0ec39941d0d1d766ccde671f592971d82fe45b7eea550a80d1ea864ebc3baa",
+          "bytes": 3673
+        },
+        "onnx/model.onnx": {
+          "sha256": "5d3e70fd0c9ff14b9b5169a51e957b7a9c74897afd0a35ce4bd318150c1d4d4a",
+          "bytes": 91011230
+        }
+      },
+      "source_url": "https://huggingface.co/cross-encoder/ms-marco-MiniLM-L6-v2/tree/233902d25c440f23af6f7d6e94d2946bac0bee0a"
+    },
+    "versions": {
+      "chromadb": "1.5.9",
+      "langchain-chroma": "1.1.0",
+      "onnxruntime": "1.29.0",
+      "tokenizers": "0.23.1",
+      "pydantic": "2.13.4",
+      "lxml": "6.1.2"
+    },
+    "hypotheses": {
+      "question-dense": "Remove only separately supplied context from retrieval and rerank text; no rewriting, synonyms, keyword expansion or answer hints. Original request and explicit product/release constraints remain.",
+      "page-hybrid": "Use unchanged full query, Dense64+BM2564/RRF. Keep first32 fused children, select first2 distinct documents from flat64, add up to16 BM25-ranked unrepresented parents per document with original global IDF and common scope, fill unused slots from flat pool. Rerank at most64 and deliver at most4 complete units.",
+      "non_goals": "No default product switch, no new vectors/corpus, no warning-specific rule, no API fix, no generated query/answer, no Agent or licensed runtime. Necessary source delivery is not complete technical-answer correctness.",
+      "interpretation": "One bounded development comparison. Preserve all four configurations and every failure; no subsequent weight/k/prompt/gold tuning within this batch. Baseline evidence and ordered candidate IDs must reproduce archived unified runs. No held-out/general benefit claim."
+    },
+    "created_unix": 1789025758.4742906
+  },
+  "summary_sha256": "812aa16a6b68017b672dc200ab902719a2a056f2fd9f9e59d10642e56d29c8f9",
+  "analysis_script_sha256": "05a180e774bb6d15c38bb3581c4b2644c060200275eca2ed2bcdf576cdc1589a",
+  "raw_sha256": {
+    "manifest.json": "f9e10db1920fedab445550185756e5caae7e464b8e978f3d74fc46351705ac49",
+    "ready.json": "4e7c275c0e74a48f092242876f35ec5d94d703399fb5664ed619a70662b10135",
+    "full-dense\\domain-procedure-applicability-1.json": "d349b4f46e2d98c6864be589ce705d9ce56121464bb92d34e531c63ec819bec2",
+    "full-dense\\domain-procedure-applicability-2.json": "337eeff47d03c6f9cce951c08a65f1131c30dcd19fd2609eac6990ef8339bf4c",
+    "full-dense\\exact-api-region-1.json": "ff1019cf3df7a1f88c4184cd934d7e2ad39b888c5024dd3563bd2d60bd87f7aa",
+    "full-dense\\explicit-at.json": "9f7b0238f0736466970a0a9b18cf9d08ed8a8b4894b0d55b62a614632387ef37",
+    "full-dense\\explicit-static.json": "3ee5946128fcf4b36b25028fc160862426261e0d2dafb5613500f1f71cffe959",
+    "full-dense\\query-over-encoder-budget.json": "06632eb57ee8d75bc82db7646d22ac1f039d20e24af4fca71a2d402e6619e760",
+    "full-dense\\recorded-solver-diagnostic-1.json": "2632cfd971d5c71a014c120043ec445cb83c560caad7cfbcd5a3d1f396e84ee2",
+    "full-dense\\recorded-solver-diagnostic-2.json": "ee1e761f40840a2f0a71da9d2b7a7d4fe2c2d7883f852d59fc1796c50633efec",
+    "full-dense\\unavailable-release.json": "24ca62be443eeb348b9a8362bd12cc2b68e341c9bfa0fd4e3db85a6ec250233b",
+    "full-dense\\unknown-symbol.json": "e35fcc4ceaad5842763f909187b691dd8b255b8291c30e860dae574138229c03",
+    "full-hybrid\\domain-procedure-applicability-1.json": "ce2e695de44b6b3de3a086dfd27c8d4a91570c26f6013629785139170755d693",
+    "full-hybrid\\domain-procedure-applicability-2.json": "8f90735c717d7aaa46b3af7e61d475b82ae1facb70dba25c228ca7abc11277b5",
+    "full-hybrid\\exact-api-region-1.json": "eb5ea97b2850a7fb4ca868dc3cc06aeb176be647e7078ed7512fabd3ce47a1b8",
+    "full-hybrid\\explicit-at.json": "c5994bd54b92378a459c1500722507104cbcd218ffa7dabc6287342445891b5b",
+    "full-hybrid\\explicit-static.json": "0a9fd5e9d53be15017a932ccacf533c1a8a710bb0f7b6b22b9409ab96abc4a68",
+    "full-hybrid\\query-over-encoder-budget.json": "025ce7b4bcfb5e36d5ec2021ca5813301515b7b10eac24c39b56a34b068817f2",
+    "full-hybrid\\recorded-solver-diagnostic-1.json": "58cdf8973e017cb5ca1d43cfeda3ea425a419b234213600be5a71dbd02db793b",
+    "full-hybrid\\recorded-solver-diagnostic-2.json": "df8e04b75ffc788fcf6be9422779d5831c550bc673101d83bccf597ac6a32963",
+    "full-hybrid\\unavailable-release.json": "7554b33a54ab50fb1d84f3d4d1692ed0ba64c5b45957369786d0a37b16e31eb7",
+    "full-hybrid\\unknown-symbol.json": "ec87d918542950f6e180e41bcfb2ccc2358e9ff963f228d16e79bfd8dce619c2",
+    "page-hybrid\\domain-procedure-applicability-1.json": "903b5683a68381789007352df4762c5b362abaf58aefa4684d46420eea761823",
+    "page-hybrid\\domain-procedure-applicability-2.json": "a973006464d47d9fa582dd1e732e0f57156dfb0b2abe992d448c91681aa2d514",
+    "page-hybrid\\exact-api-region-1.json": "6eaf0fcc6d566282c21b63c561b9a381587587bd776d938d0ccac8c4acf856d6",
+    "page-hybrid\\explicit-at.json": "dd240d8850e77f97b0883633adbb9dcff3800b69eed4f13b5b5ba40210621705",
+    "page-hybrid\\explicit-static.json": "67e538e83264eced3ebd43590d0b4ee6cf09a7139969d70c6458ffaad9dc4ecc",
+    "page-hybrid\\query-over-encoder-budget.json": "ec0d7a1fc9ca6e2ca8f4d79d5ad56a476ccc86cdc40c08b9bf02978b8904b83d",
+    "page-hybrid\\recorded-solver-diagnostic-1.json": "3ff6fb7984b8b746ce29030b7e2193694b30c341f2a42866adfe4f48d44ffbe2",
+    "page-hybrid\\recorded-solver-diagnostic-2.json": "78edd1dc0dc4203e09c64239a7bfd250d90167eeb0e0b1e1b925cc25507aa43a",
+    "page-hybrid\\unavailable-release.json": "e508a2846a305b392e3361f46cd519cdab17efb59a978eb4fe36401b813e34a3",
+    "page-hybrid\\unknown-symbol.json": "955147cb4cddc91effd2f8bc8f06f71635d8a9720e2b92743787065246a7ff2d",
+    "question-dense\\domain-procedure-applicability-1.json": "69acd05bfb03a5a00082f5a579236245aed946eceeb7aa61acb65fa02d52f082",
+    "question-dense\\domain-procedure-applicability-2.json": "680b423269c1cea27e4a9858f8b13d9fe67ee78740ab5932f889ddc17bb735fa",
+    "question-dense\\exact-api-region-1.json": "0be202ad7e0db6288edf1804d825a960c51daf908acb9ae5ef6a1707249e4176",
+    "question-dense\\explicit-at.json": "2f1e749cb2e3deb462b27c5cb7a6cd6cbfeb0d7ab1e3b80ada440dd417304c90",
+    "question-dense\\explicit-static.json": "60bcd0752762e70f468f65945a6b62cdf380cbeadc174292c4868911bd5515fb",
+    "question-dense\\query-over-encoder-budget.json": "d6d8dc11c5a91d5bf9f813ee5e2b650f4cedd84850dc6ac2f4c4d2f4b0c829db",
+    "question-dense\\recorded-solver-diagnostic-1.json": "202529c0ea8c1dd50118ba4a11b991deb68b5d5eb89221680054d8a462e2a8ff",
+    "question-dense\\recorded-solver-diagnostic-2.json": "e43265599a96c5c8777389bdbfe5c2c7458c9c59b3995107aafca57016ac228c",
+    "question-dense\\unavailable-release.json": "b883ddfa65e1b632e6e47937afe5f469e8b67268398f3974a4f17e79bf5c435c",
+    "question-dense\\unknown-symbol.json": "57120482cfd122a3a17013169ffda35e3cb8e1a5a8e0369235e96fce6f809129"
+  },
+  "totals": {
+    "full-dense": {
+      "contract_passes": 10,
+      "required_in_pool": 2,
+      "required_delivered": 1
+    },
+    "full-hybrid": {
+      "contract_passes": 10,
+      "required_in_pool": 2,
+      "required_delivered": 1
+    },
+    "question-dense": {
+      "contract_passes": 10,
+      "required_in_pool": 2,
+      "required_delivered": 2
+    },
+    "page-hybrid": {
+      "contract_passes": 10,
+      "required_in_pool": 3,
+      "required_delivered": 1
+    }
+  },
+  "results": [
+    {
+      "profile": "full-dense",
+      "case_id": "exact-api-region-1",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0.0,
+      "requirements": [],
+      "seconds": 2.7199798999354243,
+      "retrieval_query": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?\nextract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2020,
+      "selected_evidence": [
+        {
+          "id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+          "document_id": "simaanl-c-scriptparstudies",
+          "title": "Scripting Parametric Studies",
+          "section": "Gathering Results",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm#simaanl-c-scriptparstudies-t-GatheringResults-sma-topic13",
+          "source_sha256": "6d356354094c9094a7e48bfed8de9b49adea5c9dd04c24516e754d5f17d704e1",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad",
+          "document_id": "simakey-r-wn",
+          "title": "What's New",
+          "section": "*NSET",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-wn.htm#simakey-r-wn-genxslid-wnentry118-FUN109752",
+          "source_sha256": "625cab02bcc8a6eb4da15b66ebe169675062fd841c2b5dd8c7ace50179d4b800",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [],
+            "origin": "unknown",
+            "evidence": "no official solver product declaration"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+          "document_id": "simamod-c-node",
+          "title": "Node Definition",
+          "section": "Example",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-Example-section5",
+          "source_sha256": "1a7962cbe71c37f93b3ce8506fe9d1f8032687ad7cc1b51d9045cdd7346ee2b5",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEMODRefMap/simamod-c-node.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2",
+          "document_id": "simamod-c-node",
+          "title": "Node Definition",
+          "section": "Alternate Method for Defining Assembly-Level Node Sets",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-AlternateMethodForDefiningAssemblylevelNodeSets-section6",
+          "source_sha256": "1a7962cbe71c37f93b3ce8506fe9d1f8032687ad7cc1b51d9045cdd7346ee2b5",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEMODRefMap/simamod-c-node.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "full-dense",
+      "case_id": "domain-procedure-applicability-1",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0.0,
+      "requirements": [],
+      "seconds": 2.660169299924746,
+      "retrieval_query": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?\nAbaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2075,
+      "selected_evidence": [
+        {
+          "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "document_id": "simakey-r-static",
+          "title": "*STATIC",
+          "section": "Optional parameters for a general static analysis",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEKEYRefMap/simakey-r-static.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Unstable Response",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "The Riks Method",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Material Options",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-matsect1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "full-dense",
+      "case_id": "domain-procedure-applicability-2",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0.0,
+      "requirements": [
+        {
+          "need": "boundary_condition_magnitude",
+          "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+          "in_pool": false,
+          "best_child_rerank": null,
+          "delivered_complete": false,
+          "dense_ranks": [],
+          "lexical_ranks": [],
+          "pool_ranks": [],
+          "rerank_items": []
+        }
+      ],
+      "seconds": 2.556806500069797,
+      "retrieval_query": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?\nAbaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2036,
+      "selected_evidence": [
+        {
+          "id": "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Proportional Loading",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-proportional",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "document_id": "simakey-r-static",
+          "title": "*STATIC",
+          "section": "Optional parameters for a general static analysis",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEKEYRefMap/simakey-r-static.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Loads",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Loads",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "full-dense",
+      "case_id": "recorded-solver-diagnostic-1",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0.0,
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "in_pool": true,
+          "best_child_rerank": 7,
+          "delivered_complete": false,
+          "dense_ranks": [
+            28
+          ],
+          "lexical_ranks": [],
+          "pool_ranks": [
+            28
+          ],
+          "rerank_items": [
+            {
+              "rank": 7,
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+              "score": 2.2375528812408447,
+              "pair_tokens": 354
+            }
+          ]
+        }
+      ],
+      "seconds": 2.2655430999584496,
+      "retrieval_query": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?\nrecorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 3010,
+      "selected_evidence": [
+        {
+          "id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370",
+          "document_id": "simaout-c-output",
+          "title": "About Output",
+          "section": "The Abaqus/Standard Message File",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-output.htm#simaout-c-output-message-std",
+          "source_sha256": "adbaee3be790ea653824ec34b747b32a19b88a11b0e2f10ad620985c1cfb8aee",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEOUTRefMap/simaout-c-output.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "f277b3516da47ec6947e76efdeade6a9e3bd15b9a9e51e7b28ffae6b568f77b7",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "full-dense",
+      "case_id": "recorded-solver-diagnostic-2",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0.0,
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "in_pool": true,
+          "best_child_rerank": 1,
+          "delivered_complete": true,
+          "dense_ranks": [
+            28
+          ],
+          "lexical_ranks": [],
+          "pool_ranks": [
+            28
+          ],
+          "rerank_items": [
+            {
+              "rank": 1,
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+              "score": 1.3706122636795044,
+              "pair_tokens": 373
+            }
+          ]
+        }
+      ],
+      "seconds": 2.726841100025922,
+      "retrieval_query": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?\nAbaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2582,
+      "selected_evidence": [
+        {
+          "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "document_id": "simaout-c-dboutput-frequency",
+          "title": "Controlling the Frequency of Output to the Output Database",
+          "section": "Time Domain Analysis: Time Incrementation",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+          "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simaout-c-dboutput-freq-std"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "aa62bbef9ec829bffb3a59ab06f77dda935987360fb1a1ba7d7d61d06e5cbc57",
+          "document_id": "simaprc-c-fields",
+          "title": "Predefined Fields",
+          "section": "Initial Transients",
+          "source": "http://localhost:4040/English/SIMACAEPRCRefMap/simaprc-c-fields.htm#simaprc-c-fields-t-InterpolationInTime-sma-topic22__simaprc-c-fields-s-InitialTransients-section12",
+          "source_sha256": "5d648663cc8972745967e2760739ea54830edf965b54fa04906eb1959c62c514",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEPRCRefMap/simaprc-c-fields.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "full-dense",
+      "case_id": "explicit-at",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0,
+      "requirements": [],
+      "seconds": 0.9191399998962879,
+      "retrieval_query": null,
+      "context_omitted": null,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 669,
+      "selected_evidence": [
+        {
+          "id": "simaout-c-exp-nodalvariables#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "document_id": "simaout-c-exp-nodalvariables",
+          "title": "Nodal Variables",
+          "section": "Nodal Variables",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-exp-nodalvariables.htm#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT",
+          "source_sha256": "fdc7ab41a500fd86061ebd99dfb5b4b05c4cabfbc9cd8a70a5ec997cb5f64049",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [],
+            "origin": "unknown",
+            "evidence": "no official solver product declaration"
+          },
+          "body_scope": "indexed_symbol_card"
+        },
+        {
+          "id": "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "document_id": "simaout-c-std-nodalvariables",
+          "title": "Nodal Variables",
+          "section": "Nodal Variables",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+          "source_sha256": "e515d2a9cfbdf08108f5aac0407b4a46c8ef7f93d36fddb9c662947f4db130a5",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [],
+            "origin": "unknown",
+            "evidence": "no official solver product declaration"
+          },
+          "body_scope": "indexed_symbol_card"
+        }
+      ]
+    },
+    {
+      "profile": "full-dense",
+      "case_id": "explicit-static",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0,
+      "requirements": [],
+      "seconds": 0.015145899960771203,
+      "retrieval_query": null,
+      "context_omitted": null,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 287,
+      "selected_evidence": [
+        {
+          "id": "simakey-r-static#keyword",
+          "document_id": "simakey-r-static",
+          "title": "*STATIC",
+          "section": "*STATIC",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static",
+          "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEKEYRefMap/simakey-r-static.htm: official Products"
+          },
+          "body_scope": "indexed_symbol_card"
+        }
+      ]
+    },
+    {
+      "profile": "full-dense",
+      "case_id": "unknown-symbol",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0,
+      "requirements": [],
+      "seconds": 0.0015657998155802488,
+      "retrieval_query": null,
+      "context_omitted": null,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2,
+      "selected_evidence": []
+    },
+    {
+      "profile": "full-dense",
+      "case_id": "unavailable-release",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0,
+      "requirements": [],
+      "seconds": 0.026785399997606874,
+      "retrieval_query": "Explain exact output timing",
+      "context_omitted": false,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": null,
+      "selected_evidence": []
+    },
+    {
+      "profile": "full-dense",
+      "case_id": "query-over-encoder-budget",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0,
+      "requirements": [],
+      "seconds": 0.000920700142160058,
+      "retrieval_query": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+      "context_omitted": false,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": null,
+      "selected_evidence": []
+    },
+    {
+      "profile": "full-hybrid",
+      "case_id": "exact-api-region-1",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0.0,
+      "requirements": [],
+      "seconds": 4.604004499968141,
+      "retrieval_query": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?\nextract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2020,
+      "selected_evidence": [
+        {
+          "id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+          "document_id": "simaanl-c-scriptparstudies",
+          "title": "Scripting Parametric Studies",
+          "section": "Gathering Results",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm#simaanl-c-scriptparstudies-t-GatheringResults-sma-topic13",
+          "source_sha256": "6d356354094c9094a7e48bfed8de9b49adea5c9dd04c24516e754d5f17d704e1",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad",
+          "document_id": "simakey-r-wn",
+          "title": "What's New",
+          "section": "*NSET",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-wn.htm#simakey-r-wn-genxslid-wnentry118-FUN109752",
+          "source_sha256": "625cab02bcc8a6eb4da15b66ebe169675062fd841c2b5dd8c7ace50179d4b800",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [],
+            "origin": "unknown",
+            "evidence": "no official solver product declaration"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+          "document_id": "simamod-c-node",
+          "title": "Node Definition",
+          "section": "Example",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-Example-section5",
+          "source_sha256": "1a7962cbe71c37f93b3ce8506fe9d1f8032687ad7cc1b51d9045cdd7346ee2b5",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEMODRefMap/simamod-c-node.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2",
+          "document_id": "simamod-c-node",
+          "title": "Node Definition",
+          "section": "Alternate Method for Defining Assembly-Level Node Sets",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-AlternateMethodForDefiningAssemblylevelNodeSets-section6",
+          "source_sha256": "1a7962cbe71c37f93b3ce8506fe9d1f8032687ad7cc1b51d9045cdd7346ee2b5",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEMODRefMap/simamod-c-node.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "full-hybrid",
+      "case_id": "domain-procedure-applicability-1",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0.0,
+      "requirements": [],
+      "seconds": 4.197201699949801,
+      "retrieval_query": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?\nAbaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2075,
+      "selected_evidence": [
+        {
+          "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "document_id": "simakey-r-static",
+          "title": "*STATIC",
+          "section": "Optional parameters for a general static analysis",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEKEYRefMap/simakey-r-static.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Unstable Response",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "The Riks Method",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Material Options",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-matsect1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "full-hybrid",
+      "case_id": "domain-procedure-applicability-2",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0.0,
+      "requirements": [
+        {
+          "need": "boundary_condition_magnitude",
+          "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+          "in_pool": false,
+          "best_child_rerank": null,
+          "delivered_complete": false,
+          "dense_ranks": [],
+          "lexical_ranks": [],
+          "pool_ranks": [],
+          "rerank_items": []
+        }
+      ],
+      "seconds": 4.174492100020871,
+      "retrieval_query": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?\nAbaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2036,
+      "selected_evidence": [
+        {
+          "id": "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Proportional Loading",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-proportional",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "document_id": "simakey-r-static",
+          "title": "*STATIC",
+          "section": "Optional parameters for a general static analysis",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEKEYRefMap/simakey-r-static.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Loads",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Loads",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "full-hybrid",
+      "case_id": "recorded-solver-diagnostic-1",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0.0,
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "in_pool": true,
+          "best_child_rerank": 9,
+          "delivered_complete": false,
+          "dense_ranks": [
+            28
+          ],
+          "lexical_ranks": [
+            9,
+            18
+          ],
+          "pool_ranks": [
+            4,
+            38
+          ],
+          "rerank_items": [
+            {
+              "rank": 9,
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+              "score": 2.2375528812408447,
+              "pair_tokens": 354
+            },
+            {
+              "rank": 17,
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:907:1165",
+              "score": 1.5676844120025635,
+              "pair_tokens": 216
+            }
+          ]
+        }
+      ],
+      "seconds": 4.1287485000211746,
+      "retrieval_query": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?\nrecorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2344,
+      "selected_evidence": [
+        {
+          "id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+          "document_id": "simaanl-c-directcyclicfatigue",
+          "title": "Low-Cycle Fatigue Analysis Using the Direct Cyclic Approach",
+          "section": "Specifying Output at Exact Times",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclicfatigue.htm#simaanl-c-directcyclicfatigue-t-SpecifyingOutputAtExactTimes-sma-topic19",
+          "source_sha256": "606cf62babb8c00d5496a1c126a285acf1e3f23ee27dbafc15012905db50b1a6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-directcyclicfatigue.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+          "document_id": "simaanl-c-directcyclic",
+          "title": "Direct Cyclic Analysis",
+          "section": "Specifying Output at Exact Times",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclic.htm#simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+          "source_sha256": "be050bf4d0fe1cfa2d67ef5330105c63c0c5fc815810fb5dbeeb20d0a1c59051",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-directcyclic.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "full-hybrid",
+      "case_id": "recorded-solver-diagnostic-2",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0.0,
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "in_pool": true,
+          "best_child_rerank": 3,
+          "delivered_complete": true,
+          "dense_ranks": [
+            28
+          ],
+          "lexical_ranks": [
+            1,
+            31
+          ],
+          "pool_ranks": [
+            2,
+            60
+          ],
+          "rerank_items": [
+            {
+              "rank": 3,
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+              "score": 1.3706122636795044,
+              "pair_tokens": 373
+            },
+            {
+              "rank": 12,
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:907:1165",
+              "score": -0.23366735875606537,
+              "pair_tokens": 235
+            }
+          ]
+        }
+      ],
+      "seconds": 4.769081900129095,
+      "retrieval_query": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?\nAbaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 1989,
+      "selected_evidence": [
+        {
+          "id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+          "document_id": "simaanl-c-directcyclic",
+          "title": "Direct Cyclic Analysis",
+          "section": "Specifying Output at Exact Times",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclic.htm#simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+          "source_sha256": "be050bf4d0fe1cfa2d67ef5330105c63c0c5fc815810fb5dbeeb20d0a1c59051",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-directcyclic.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+          "document_id": "simaanl-c-directcyclicfatigue",
+          "title": "Low-Cycle Fatigue Analysis Using the Direct Cyclic Approach",
+          "section": "Specifying Output at Exact Times",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclicfatigue.htm#simaanl-c-directcyclicfatigue-t-SpecifyingOutputAtExactTimes-sma-topic19",
+          "source_sha256": "606cf62babb8c00d5496a1c126a285acf1e3f23ee27dbafc15012905db50b1a6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-directcyclicfatigue.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "document_id": "simaout-c-dboutput-frequency",
+          "title": "Controlling the Frequency of Output to the Output Database",
+          "section": "Time Domain Analysis: Time Incrementation",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+          "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simaout-c-dboutput-freq-std"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "full-hybrid",
+      "case_id": "explicit-at",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0,
+      "requirements": [],
+      "seconds": 0.0054512000642716885,
+      "retrieval_query": null,
+      "context_omitted": null,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 669,
+      "selected_evidence": [
+        {
+          "id": "simaout-c-exp-nodalvariables#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "document_id": "simaout-c-exp-nodalvariables",
+          "title": "Nodal Variables",
+          "section": "Nodal Variables",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-exp-nodalvariables.htm#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT",
+          "source_sha256": "fdc7ab41a500fd86061ebd99dfb5b4b05c4cabfbc9cd8a70a5ec997cb5f64049",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [],
+            "origin": "unknown",
+            "evidence": "no official solver product declaration"
+          },
+          "body_scope": "indexed_symbol_card"
+        },
+        {
+          "id": "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "document_id": "simaout-c-std-nodalvariables",
+          "title": "Nodal Variables",
+          "section": "Nodal Variables",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+          "source_sha256": "e515d2a9cfbdf08108f5aac0407b4a46c8ef7f93d36fddb9c662947f4db130a5",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [],
+            "origin": "unknown",
+            "evidence": "no official solver product declaration"
+          },
+          "body_scope": "indexed_symbol_card"
+        }
+      ]
+    },
+    {
+      "profile": "full-hybrid",
+      "case_id": "explicit-static",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0,
+      "requirements": [],
+      "seconds": 0.0025100999046117067,
+      "retrieval_query": null,
+      "context_omitted": null,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 287,
+      "selected_evidence": [
+        {
+          "id": "simakey-r-static#keyword",
+          "document_id": "simakey-r-static",
+          "title": "*STATIC",
+          "section": "*STATIC",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static",
+          "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEKEYRefMap/simakey-r-static.htm: official Products"
+          },
+          "body_scope": "indexed_symbol_card"
+        }
+      ]
+    },
+    {
+      "profile": "full-hybrid",
+      "case_id": "unknown-symbol",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0,
+      "requirements": [],
+      "seconds": 0.00129029992967844,
+      "retrieval_query": null,
+      "context_omitted": null,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2,
+      "selected_evidence": []
+    },
+    {
+      "profile": "full-hybrid",
+      "case_id": "unavailable-release",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0,
+      "requirements": [],
+      "seconds": 0.026297400007024407,
+      "retrieval_query": "Explain exact output timing",
+      "context_omitted": false,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": null,
+      "selected_evidence": []
+    },
+    {
+      "profile": "full-hybrid",
+      "case_id": "query-over-encoder-budget",
+      "contract_ok": true,
+      "baseline_matches_archive": true,
+      "max_rerank_score_delta": 0,
+      "requirements": [],
+      "seconds": 0.0009015998803079128,
+      "retrieval_query": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+      "context_omitted": false,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": null,
+      "selected_evidence": []
+    },
+    {
+      "profile": "question-dense",
+      "case_id": "exact-api-region-1",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 2.1460889000445604,
+      "retrieval_query": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?",
+      "context_omitted": true,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2160,
+      "selected_evidence": [
+        {
+          "id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+          "document_id": "simaanl-c-scriptparstudies",
+          "title": "Scripting Parametric Studies",
+          "section": "Gathering Results",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm#simaanl-c-scriptparstudies-t-GatheringResults-sma-topic13",
+          "source_sha256": "6d356354094c9094a7e48bfed8de9b49adea5c9dd04c24516e754d5f17d704e1",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+          "document_id": "simamod-c-node",
+          "title": "Node Definition",
+          "section": "Example",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-Example-section5",
+          "source_sha256": "1a7962cbe71c37f93b3ce8506fe9d1f8032687ad7cc1b51d9045cdd7346ee2b5",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEMODRefMap/simamod-c-node.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "1c2b80d94c5cc40f1f590c67baee896fe96cab9f2f1e96923dfbe99c819735f0",
+          "document_id": "simamod-c-node",
+          "title": "Node Definition",
+          "section": "Defining Part and Assembly Sets",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11",
+          "source_sha256": "1a7962cbe71c37f93b3ce8506fe9d1f8032687ad7cc1b51d9045cdd7346ee2b5",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEMODRefMap/simamod-c-node.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "e33d15686372e2ddea6ea2efb05f4362d5ccf430de73c266fc410b26d361b5f6",
+          "document_id": "simaanl-c-cosimulationprep",
+          "title": "Preparing an Abaqus Analysis for Co-Simulation",
+          "section": "Interacting through Discrete Points",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-cosimulationprep.htm#simaanl-c-cosimulationprep-t-InteractingThroughDiscretePoints-sma-topic3",
+          "source_sha256": "06c0431e5bdf22006a65fb096867f489442456b1c8509252a041a49f6b046a55",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-cosimulationprep.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "question-dense",
+      "case_id": "domain-procedure-applicability-1",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 2.245821600081399,
+      "retrieval_query": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?",
+      "context_omitted": true,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 1952,
+      "selected_evidence": [
+        {
+          "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "document_id": "simakey-r-static",
+          "title": "*STATIC",
+          "section": "Optional parameters for a general static analysis",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEKEYRefMap/simakey-r-static.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Unstable Response",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "The Riks Method",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "9304e3884f2dc97f5cc593fb08daeb2f79bbdd18db94e8411e6981f391534279",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Incrementation",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-incrementation",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "question-dense",
+      "case_id": "domain-procedure-applicability-2",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [
+        {
+          "need": "boundary_condition_magnitude",
+          "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+          "in_pool": false,
+          "best_child_rerank": null,
+          "delivered_complete": false,
+          "dense_ranks": [],
+          "lexical_ranks": [],
+          "pool_ranks": [],
+          "rerank_items": []
+        }
+      ],
+      "seconds": 2.238205100176856,
+      "retrieval_query": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?",
+      "context_omitted": true,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2197,
+      "selected_evidence": [
+        {
+          "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "document_id": "simakey-r-static",
+          "title": "*STATIC",
+          "section": "Optional parameters for a general static analysis",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEKEYRefMap/simakey-r-static.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+          "document_id": "simaanl-c-static",
+          "title": "Static Stress Analysis",
+          "section": "Buckling or Collapse",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-unstable__simaanl-c-static-s-BucklingOrCollapse-section1",
+          "source_sha256": "c35f5d8390c07490a3d317719b2be232fcc892cfe0c0dee0966327235cec4020",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-static.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Loads",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "501631c6c975b742543b8f6c27d7431858655c7e08418420903910c485fa8b95",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Obtaining a Solution at a Particular Load or Displacement Value",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-ObtainingASolutionAtAParticularLoadOrDisplacementValue-sma-topic9",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "question-dense",
+      "case_id": "recorded-solver-diagnostic-1",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "in_pool": true,
+          "best_child_rerank": 1,
+          "delivered_complete": true,
+          "dense_ranks": [
+            10,
+            48
+          ],
+          "lexical_ranks": [],
+          "pool_ranks": [
+            10,
+            48
+          ],
+          "rerank_items": [
+            {
+              "rank": 1,
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+              "score": 3.034827709197998,
+              "pair_tokens": 292
+            },
+            {
+              "rank": 14,
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:907:1165",
+              "score": 0.7359787225723267,
+              "pair_tokens": 154
+            }
+          ]
+        }
+      ],
+      "seconds": 1.976009199861437,
+      "retrieval_query": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?",
+      "context_omitted": true,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2247,
+      "selected_evidence": [
+        {
+          "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "document_id": "simaout-c-dboutput-frequency",
+          "title": "Controlling the Frequency of Output to the Output Database",
+          "section": "Time Domain Analysis: Time Incrementation",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+          "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simaout-c-dboutput-freq-std"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "69f59177d9101623ef372831c4516cc664552c4acd0a9324116f463e2b231a0c",
+          "document_id": "simaout-c-dboutput-frequency",
+          "title": "Controlling the Frequency of Output to the Output Database",
+          "section": "Time Domain Analysis: Specifying Output Frequency in Time Points",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisSpecifyingOutputFrequencyInTimePoints-section8",
+          "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simaout-c-dboutput-freq-std"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "63fc99524c891976d1469a21cb350d20eae55eeeea8c0088e3fe64c44446016e",
+          "document_id": "simaanl-c-restart",
+          "title": "Restarting an Analysis",
+          "section": "Time Incrementation",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-restart.htm#simaanl-c-restart-t-ControllingTheFrequencyOfOutputToTheRestartFiles-sma-topic1__simaanl-c-restart-s-TimeIncrementation-section3",
+          "source_sha256": "7fe47b3b45d1ef3a2c81542c8b2bfa760945b80e94d093ba760506bfa8a8c836",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-restart.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "question-dense",
+      "case_id": "recorded-solver-diagnostic-2",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "in_pool": true,
+          "best_child_rerank": 1,
+          "delivered_complete": true,
+          "dense_ranks": [
+            11
+          ],
+          "lexical_ranks": [],
+          "pool_ranks": [
+            11
+          ],
+          "rerank_items": [
+            {
+              "rank": 1,
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+              "score": 1.6234650611877441,
+              "pair_tokens": 311
+            }
+          ]
+        }
+      ],
+      "seconds": 2.3623281000182033,
+      "retrieval_query": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?",
+      "context_omitted": true,
+      "pool_size": 64,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2628,
+      "selected_evidence": [
+        {
+          "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "document_id": "simaout-c-dboutput-frequency",
+          "title": "Controlling the Frequency of Output to the Output Database",
+          "section": "Time Domain Analysis: Time Incrementation",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+          "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simaout-c-dboutput-freq-std"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "63fc99524c891976d1469a21cb350d20eae55eeeea8c0088e3fe64c44446016e",
+          "document_id": "simaanl-c-restart",
+          "title": "Restarting an Analysis",
+          "section": "Time Incrementation",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-restart.htm#simaanl-c-restart-t-ControllingTheFrequencyOfOutputToTheRestartFiles-sma-topic1__simaanl-c-restart-s-TimeIncrementation-section3",
+          "source_sha256": "7fe47b3b45d1ef3a2c81542c8b2bfa760945b80e94d093ba760506bfa8a8c836",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-restart.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "a1584db788d44eb1bc7414497ef980916432a48ecf1c7f96cf323d1baa082c07",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "question-dense",
+      "case_id": "explicit-at",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 0.0038782998453825712,
+      "retrieval_query": null,
+      "context_omitted": null,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 669,
+      "selected_evidence": [
+        {
+          "id": "simaout-c-exp-nodalvariables#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "document_id": "simaout-c-exp-nodalvariables",
+          "title": "Nodal Variables",
+          "section": "Nodal Variables",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-exp-nodalvariables.htm#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT",
+          "source_sha256": "fdc7ab41a500fd86061ebd99dfb5b4b05c4cabfbc9cd8a70a5ec997cb5f64049",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [],
+            "origin": "unknown",
+            "evidence": "no official solver product declaration"
+          },
+          "body_scope": "indexed_symbol_card"
+        },
+        {
+          "id": "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "document_id": "simaout-c-std-nodalvariables",
+          "title": "Nodal Variables",
+          "section": "Nodal Variables",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+          "source_sha256": "e515d2a9cfbdf08108f5aac0407b4a46c8ef7f93d36fddb9c662947f4db130a5",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [],
+            "origin": "unknown",
+            "evidence": "no official solver product declaration"
+          },
+          "body_scope": "indexed_symbol_card"
+        }
+      ]
+    },
+    {
+      "profile": "question-dense",
+      "case_id": "explicit-static",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 0.0021699999924749136,
+      "retrieval_query": null,
+      "context_omitted": null,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 287,
+      "selected_evidence": [
+        {
+          "id": "simakey-r-static#keyword",
+          "document_id": "simakey-r-static",
+          "title": "*STATIC",
+          "section": "*STATIC",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static",
+          "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEKEYRefMap/simakey-r-static.htm: official Products"
+          },
+          "body_scope": "indexed_symbol_card"
+        }
+      ]
+    },
+    {
+      "profile": "question-dense",
+      "case_id": "unknown-symbol",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 0.0009620999917387962,
+      "retrieval_query": null,
+      "context_omitted": null,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2,
+      "selected_evidence": []
+    },
+    {
+      "profile": "question-dense",
+      "case_id": "unavailable-release",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 0.026841199956834316,
+      "retrieval_query": "Explain exact output timing",
+      "context_omitted": false,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": null,
+      "selected_evidence": []
+    },
+    {
+      "profile": "question-dense",
+      "case_id": "query-over-encoder-budget",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 0.000623099971562624,
+      "retrieval_query": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+      "context_omitted": false,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": null,
+      "selected_evidence": []
+    },
+    {
+      "profile": "page-hybrid",
+      "case_id": "exact-api-region-1",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 6.0862495000474155,
+      "retrieval_query": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?\nextract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": {
+        "document_ids": [
+          "simaanl-c-scriptparstudies",
+          "simaout-c-output"
+        ],
+        "base_ids": [
+          "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576:975:2044",
+          "eab4053b526fa9e23df58c019f3acca5b68590494603c584e907281c86f07325:0:996",
+          "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2:0:243",
+          "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736:0:590",
+          "98e036c69133b515638828e817895e7cec03e6a6fb4f795b94256edf1f2f62fd:0:1016",
+          "6e838bb26cc1535fc1934dec545673fd00ff9706dcd7a96bde2b5d52d5eab683:0:403",
+          "803a0340df2398d7ac9fd4a614b82d310700ff062b347e2800067e89d870d3f0:0:394",
+          "466b7d130e8cdca5148417f8d2539d3693fe96135573596020d95cc129e3a442:0:1028",
+          "073d9288760e891bf30f8bc157e96d9cfceb8db9f6b0cd164171d9f19a2f06da:0:188",
+          "19fcdd7450d842b645bb25b2576a069fc2e54d771d7b027b57bc3c3f73d42494:0:252",
+          "c233caa58e656b14cf863155c6cca62991eff5249952cedffa60211802c985f6:0:371",
+          "1c2b80d94c5cc40f1f590c67baee896fe96cab9f2f1e96923dfbe99c819735f0:0:535",
+          "cb29407bcb56db91b64df184907e76ac2962d3c14b5049db29353653d943dd11:0:434",
+          "470e5260375cc9b6987da000809fb7442496a2ee80a212e6c0f0dd41d5a1428a:1035:1476",
+          "d933281769cfc6b6f412104fe98f7e792e3907eac10c6a8d78c62f74e2989efc:0:756",
+          "94595bb9d6c5ead02d061a0399141d6e8233bbcf38f8aad1fe108c83d010b62a:0:1242",
+          "bc47b7c18d6b4df0ca8411aa0c00e3e4cc5960ec5e0374386a41915e13871b2a:0:33",
+          "24b5c42a621ee4054177d625513238c044478b62669169d40d6c58d91851a968:976:1492",
+          "5dc21ba2b6a87db9b8a58e6adfd58f7f65bb04d36bf01e1b50bed6360ac18a11:907:1412",
+          "4bd3fb132c58c26fe7b1258a9997a42b2fcc8ad07cdcc705fed0be0f2997a2a3:0:892",
+          "aab5b921de2009742619ac015233957a620e5d2c106d0566735cee4464016fd7:0:549",
+          "614b10a33464e94664c73ff802d61e4e9feddce4a9527125a676259413d44f6e:0:620",
+          "e5114217828af085276af899b63427def4de23eb678e05db7e88edf61bb41b67:0:559",
+          "705a694706057acd9220c998926178167f4a6e25a4eaa2ab1921c137ee4be1f0:0:423",
+          "7712c048e1555fd6318ff4f2b155d55b30a2acc117ea22c7804adefd155cf182:0:712",
+          "5e2e052c4e0716e8cc213936afbc1351991c0da05fd7f4b4524daf1ea6d9d015:0:279",
+          "ac447ea590a8a0467b80000b17cbba7c10e5b332d94e152396e132b9b8280aae:0:745",
+          "24b5c42a621ee4054177d625513238c044478b62669169d40d6c58d91851a968:0:976",
+          "6ff71cfe674a160f0814fb1ff87bb48f70bf9c62b0ed5dcfba97a9ec69754fc7:0:237",
+          "8dfa08066acf45f90000b90494c70db660a0ae68ca64a1fa2b1961654ab3856b:0:705",
+          "9495cd5704564a7df788fcf74b210de4c7f40aa5bf2bac23868cde312c17512e:0:849",
+          "07a6c6083621022a1fc6b5e7ba99841d15d4b7ff60920c1cc1754065fb997e77:0:495"
+        ],
+        "represented_parents": [
+          "073d9288760e891bf30f8bc157e96d9cfceb8db9f6b0cd164171d9f19a2f06da",
+          "07a6c6083621022a1fc6b5e7ba99841d15d4b7ff60920c1cc1754065fb997e77",
+          "19fcdd7450d842b645bb25b2576a069fc2e54d771d7b027b57bc3c3f73d42494",
+          "1c2b80d94c5cc40f1f590c67baee896fe96cab9f2f1e96923dfbe99c819735f0",
+          "24b5c42a621ee4054177d625513238c044478b62669169d40d6c58d91851a968",
+          "466b7d130e8cdca5148417f8d2539d3693fe96135573596020d95cc129e3a442",
+          "470e5260375cc9b6987da000809fb7442496a2ee80a212e6c0f0dd41d5a1428a",
+          "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2",
+          "4bd3fb132c58c26fe7b1258a9997a42b2fcc8ad07cdcc705fed0be0f2997a2a3",
+          "5dc21ba2b6a87db9b8a58e6adfd58f7f65bb04d36bf01e1b50bed6360ac18a11",
+          "5e2e052c4e0716e8cc213936afbc1351991c0da05fd7f4b4524daf1ea6d9d015",
+          "614b10a33464e94664c73ff802d61e4e9feddce4a9527125a676259413d44f6e",
+          "6e838bb26cc1535fc1934dec545673fd00ff9706dcd7a96bde2b5d52d5eab683",
+          "6ff71cfe674a160f0814fb1ff87bb48f70bf9c62b0ed5dcfba97a9ec69754fc7",
+          "705a694706057acd9220c998926178167f4a6e25a4eaa2ab1921c137ee4be1f0",
+          "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+          "7712c048e1555fd6318ff4f2b155d55b30a2acc117ea22c7804adefd155cf182",
+          "803a0340df2398d7ac9fd4a614b82d310700ff062b347e2800067e89d870d3f0",
+          "8dfa08066acf45f90000b90494c70db660a0ae68ca64a1fa2b1961654ab3856b",
+          "94595bb9d6c5ead02d061a0399141d6e8233bbcf38f8aad1fe108c83d010b62a",
+          "9495cd5704564a7df788fcf74b210de4c7f40aa5bf2bac23868cde312c17512e",
+          "98e036c69133b515638828e817895e7cec03e6a6fb4f795b94256edf1f2f62fd",
+          "aab5b921de2009742619ac015233957a620e5d2c106d0566735cee4464016fd7",
+          "ac447ea590a8a0467b80000b17cbba7c10e5b332d94e152396e132b9b8280aae",
+          "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+          "bc47b7c18d6b4df0ca8411aa0c00e3e4cc5960ec5e0374386a41915e13871b2a",
+          "c233caa58e656b14cf863155c6cca62991eff5249952cedffa60211802c985f6",
+          "cb29407bcb56db91b64df184907e76ac2962d3c14b5049db29353653d943dd11",
+          "d933281769cfc6b6f412104fe98f7e792e3907eac10c6a8d78c62f74e2989efc",
+          "e5114217828af085276af899b63427def4de23eb678e05db7e88edf61bb41b67",
+          "eab4053b526fa9e23df58c019f3acca5b68590494603c584e907281c86f07325"
+        ],
+        "limit_per_page": 16,
+        "local_ids": [
+          "d035f5c942a816bc022b6cae67c7a0fd107a17efb753eb60b36c77889f2797d0:0:914",
+          "e104fbb0bd407fcb60be812645086154f4aaa36a8f2df11508dd86bd6985ac03:0:851",
+          "166553157fd5381b025e3cc2a11b5d51c4af3494951e4b46bf30b2b91179384b:0:1094",
+          "5b872d57d900675e78aa201a4bfd0b7736c3ed49aac66577ec0daf8e558e0683:0:874",
+          "3c899b221a8ee6dc8d575c88f844cfe9c3bf4c1c56e37d3ad6d503de3852b39a:0:210",
+          "b768ec4211abea4f36a0be5e0e4cb933f4919874ea80d68691baf2735257e06d:0:436",
+          "a3b2dc94a76e2c2f53f0c25200af681af43413c6547c152d901c79b5e793788f:0:171",
+          "428e3a8396cd965cf6fc3fbd57f4e133711db2c7f68c4d5c893001c00fbe8277:0:1009",
+          "cd422a68ac4a807d980ac3204df27932d2d357de1363960dcc1e35addb48f447:0:740",
+          "1e3d06d5257ea40e38cf5868dad90b9fff65ec4c59d510d016c1e03e0a44700b:984:1920",
+          "cec8b26aad224739a64b27d9e75db395af5346efe96c92551a1627f01520bd76:0:186",
+          "23ce5db4e329e06e904aa5cb1470c406f979e909c679846581f7a430a3a3e66a:977:1578",
+          "cf10c883c40175acff598bac5430b99fd122b78ea168d3e2747763fc5a030734:0:1109",
+          "dc93b7e06fa3a23d3f46959f1c9bf38fbfb8b4722f1c6cba7f1b75a8fbe21216:0:913",
+          "2d98940c2ea40d69390ce8a3cb162204881fe27c3d2a71e3b24d3815dc46641d:0:588",
+          "ce4fbc3a2ea4e2b998fc74a7df3959026b4d6a50647a7686bf191d9921503306:1248:1604",
+          "95716c4890f6bf1e81b502681944a185aaa5fe6d9168dfa8efdc5429fa9b6a15:0:814",
+          "e0b6cfa05f142ea65aa3853729d161aa797bc1507703d731268667dae4d63fcf:0:259",
+          "e00297103e69dd4e7f9799d938182f1c339d0d854452bed578c55817ae5231a8:0:299",
+          "60717b1b2ef4b1e791c92eb55c4c2efbe41d512caadf01806b42df16393a1301:0:460",
+          "a8abb051f888420a54dfe9fc7e759687d91edc19b79344f6c15b2974195f0c1a:0:934",
+          "df7eb8d9ab91cd4e0ab299c3ce3a10cacdf365e936a4b325b7a85388c338b3a8:0:607",
+          "be6a6e08ee2a5546ec3576580d0b52c5fadd51b1000c528b39ebe559244f2922:0:728",
+          "a82ec33c6862dd40a695154d326431c4b5fde512a33a154ce644bf283a270553:0:317",
+          "9b4d141d98ad3f40be267ffb02df5728dce12b182505cf62c11cc5bec62fda1c:0:487",
+          "a40df158e4844aaf689cdaf3770e57db3a9efa809fd7520c538cf53e9d98d4e0:0:341",
+          "e50eed32c76056aea240cb4f4af048abe972172d5ab25831d8b78bbd5bb41391:0:1171",
+          "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370:902:1214",
+          "ac1cf30f987f0f35c565703c7e8e0670b85bd6b9a89100deb044114fc67eeba6:0:160",
+          "766030b03a9d376177d8a99295f75721657f26c133f1e7136ff078eeea86a866:0:1014",
+          "c775e0f2fc65b64a793c99c9f42a4d350e08ae3cfa9bcc2c411f066a9caf6fce:0:377",
+          "18be0cb574f51b5f09342c4be481d3401cc05accf1b72eaa70df10daa252cc79:0:317"
+        ],
+        "fill_ids": []
+      },
+      "rejected": [],
+      "context_tokens": 2526,
+      "selected_evidence": [
+        {
+          "id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+          "document_id": "simaanl-c-scriptparstudies",
+          "title": "Scripting Parametric Studies",
+          "section": "Gathering Results",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm#simaanl-c-scriptparstudies-t-GatheringResults-sma-topic13",
+          "source_sha256": "6d356354094c9094a7e48bfed8de9b49adea5c9dd04c24516e754d5f17d704e1",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+          "document_id": "simamod-c-node",
+          "title": "Node Definition",
+          "section": "Example",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-Example-section5",
+          "source_sha256": "1a7962cbe71c37f93b3ce8506fe9d1f8032687ad7cc1b51d9045cdd7346ee2b5",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEMODRefMap/simamod-c-node.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2",
+          "document_id": "simamod-c-node",
+          "title": "Node Definition",
+          "section": "Alternate Method for Defining Assembly-Level Node Sets",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-AlternateMethodForDefiningAssemblylevelNodeSets-section6",
+          "source_sha256": "1a7962cbe71c37f93b3ce8506fe9d1f8032687ad7cc1b51d9045cdd7346ee2b5",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEMODRefMap/simamod-c-node.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "466b7d130e8cdca5148417f8d2539d3693fe96135573596020d95cc129e3a442",
+          "document_id": "simaanl-c-genlcapabilityimportprev",
+          "title": "General Capability for Importing External Fields",
+          "section": "Identifying the Target and Source Fields",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-genlcapabilityimportprev.htm#simaanl-c-genlcapabilityimportprev-id-source-target",
+          "source_sha256": "c0d0a7f2322b99fc475d42519eb4974059974fc38e6f05148eca534bf167a271",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard",
+              "Abaqus/Explicit"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-genlcapabilityimportprev.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "page-hybrid",
+      "case_id": "domain-procedure-applicability-1",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 5.904902799986303,
+      "retrieval_query": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?\nAbaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": {
+        "document_ids": [
+          "simakey-r-static",
+          "simaanl-c-postbuckling"
+        ],
+        "base_ids": [
+          "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e:0:144",
+          "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84:0:515",
+          "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b:0:584",
+          "078a36ca39dc9500d915a5ff84dc47f70e41780421043cff3b3c5ee581700c45:0:118",
+          "9304e3884f2dc97f5cc593fb08daeb2f79bbdd18db94e8411e6981f391534279:0:196",
+          "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410:0:507",
+          "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3:0:806",
+          "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826:0:373",
+          "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060:1178:1767",
+          "b1e4d4f030620d92f679f24d1ff944130413a6c9013c165bae38a5d8d698413b:0:537",
+          "3fda80c77f765d13bed89fc014db318ee765eb42fe9d962ffaa10c6b523c9b0a:0:651",
+          "cf88248f7a934c84910ec2f2bd4aebb329decf5331619622b4a94533641948f4:0:766",
+          "989236baa5e1a0781e1f5716e226fee5ad0063d7471615e63031712bdbb195fa:0:499",
+          "dcf402900fd5d8fba053d23e98c492635658efa943b178365137f4b502fe59c2:0:831",
+          "4d352a916ac8df7d23ac2e21d7794fe1ddd6092205c53163485e71cf89778821:0:303",
+          "c5bee5600cbae234243ddb9e36007f5ac3b3186f3fdda096862a607ca211d1ad:0:988",
+          "8dadfcb071850296f0bb0053d2d81b20b75db7013a2e1880eb248525f0008f56:0:763",
+          "8e57b527a9793b5f595911cda55a3c0678493341be80ff61d221d99f6a724e0a:0:449",
+          "66afb7587ad052065a8e61355548524b49fa866160326ea4032e80d83911840a:0:1130",
+          "501631c6c975b742543b8f6c27d7431858655c7e08418420903910c485fa8b95:0:952",
+          "5f038d86dc9ab2f3229bcfe4f2c2e666c0c501e82773270c0fcfc9634c5654c3:0:519",
+          "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0:0:406",
+          "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b:0:809",
+          "27e0e6f220194a40aac56d592de6f9bb841f40e073a66aabccca0e0ea644773c:0:689",
+          "079386314a1f00700e0a54fc28d45811902c522d2991798bc1c1cd58caf7d9c6:0:905",
+          "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1:0:370",
+          "3f8a6bc0e2cc68d9f22867398f5cbcd68533edfc4ee45c6773856e9c94f3f1cf:0:995",
+          "6b96481cebf39dccd5e9dc9fb79124502dad9e4e57a116657981d461c705e739:0:862",
+          "918676125dbe1d182e42233f3eb6a5d7db02aa849c15b893d852e8182e049322:0:803",
+          "189e47f44b3c3a609c8d4cd8ebb98b8b8a52ecd181926c8cef6d9fffee907c20:1104:1631",
+          "b07266f5073e96a4f0965673fc9d88ac8890841bc4ca59d64cc797e471d8676d:0:861",
+          "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060:0:1178"
+        ],
+        "represented_parents": [
+          "078a36ca39dc9500d915a5ff84dc47f70e41780421043cff3b3c5ee581700c45",
+          "079386314a1f00700e0a54fc28d45811902c522d2991798bc1c1cd58caf7d9c6",
+          "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b",
+          "189e47f44b3c3a609c8d4cd8ebb98b8b8a52ecd181926c8cef6d9fffee907c20",
+          "27e0e6f220194a40aac56d592de6f9bb841f40e073a66aabccca0e0ea644773c",
+          "3f8a6bc0e2cc68d9f22867398f5cbcd68533edfc4ee45c6773856e9c94f3f1cf",
+          "3fda80c77f765d13bed89fc014db318ee765eb42fe9d962ffaa10c6b523c9b0a",
+          "4d352a916ac8df7d23ac2e21d7794fe1ddd6092205c53163485e71cf89778821",
+          "501631c6c975b742543b8f6c27d7431858655c7e08418420903910c485fa8b95",
+          "5f038d86dc9ab2f3229bcfe4f2c2e666c0c501e82773270c0fcfc9634c5654c3",
+          "66afb7587ad052065a8e61355548524b49fa866160326ea4032e80d83911840a",
+          "6b96481cebf39dccd5e9dc9fb79124502dad9e4e57a116657981d461c705e739",
+          "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+          "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+          "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0",
+          "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "8dadfcb071850296f0bb0053d2d81b20b75db7013a2e1880eb248525f0008f56",
+          "8e57b527a9793b5f595911cda55a3c0678493341be80ff61d221d99f6a724e0a",
+          "918676125dbe1d182e42233f3eb6a5d7db02aa849c15b893d852e8182e049322",
+          "9304e3884f2dc97f5cc593fb08daeb2f79bbdd18db94e8411e6981f391534279",
+          "989236baa5e1a0781e1f5716e226fee5ad0063d7471615e63031712bdbb195fa",
+          "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+          "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+          "b07266f5073e96a4f0965673fc9d88ac8890841bc4ca59d64cc797e471d8676d",
+          "b1e4d4f030620d92f679f24d1ff944130413a6c9013c165bae38a5d8d698413b",
+          "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+          "c5bee5600cbae234243ddb9e36007f5ac3b3186f3fdda096862a607ca211d1ad",
+          "cf88248f7a934c84910ec2f2bd4aebb329decf5331619622b4a94533641948f4",
+          "dcf402900fd5d8fba053d23e98c492635658efa943b178365137f4b502fe59c2",
+          "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+          "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b"
+        ],
+        "limit_per_page": 16,
+        "local_ids": [
+          "9acde276e49b5c769bef5a407bfb49572b2af2860224181ff7cdedb32d02f3d2:0:941",
+          "9e31f4fe6f31c8b7935f0547a971d60d09b36eefbabd5630c7b6445f19ce2ceb:0:810",
+          "e372087020f9c99061c196ce7e7fec48308bf5401b3b7a54c22f04d53f5621a6:0:635",
+          "a5540f880006e42ce5205e6ed9135a6d5d7585acb68be7ac3c3b6b377a2ea4cf:0:392",
+          "0d544294d16bdd83ecc6bd2048033f3386e93f22deef81713c358b08590d0314:0:1038",
+          "d8aa50b53d45ec26c6c67cdf740fbea427608c0fe32c70a002d16acd45a0e787:0:249",
+          "ac02899d3412f6cfd789dbe34835bc83f39d5e01a1622d2211155a69a3cc372e:0:125",
+          "c1f2708774d1c5104bc0f15686356375de04a17e2d744e0161ce8829e6b1f2ff:0:109",
+          "cac7bca490cda0329f40213f2d895a5fdcf070ac8aaaf44d891d5351aadec18b:0:1065",
+          "f5b1155da36fcac18ddedf4c072a6218d2b4365982734f7e5006d3dffc0afc36:0:644",
+          "e9c796b0aa7ea5b420de359379bc65a0d9d94aae6c3f6fa6bdcc82d53292b69e:0:547",
+          "ffb479a077f25c27114d89ec02f825238c72a61358768ce74741f4cda9467ee5:0:404",
+          "d9a62f484b65500893b369821d20566572237cd2a3083efc2898883bd022779e:0:80",
+          "2c29c879001675d0cd9f02fa7dcce27aea31e18489d2cd3bb53bb33120a7ee0c:0:582",
+          "40f48767f56669cf2e085599ef9bd13181f64e75f2dbb0cf1d7b311fb35fe87d:0:45",
+          "a24be6713baa7a22bc7122101425e1d5cfbcf750c3f59442fa0cc2b356bdeb2f:0:53",
+          "4ca6ff76dc81de2998d9ab76fbd6c4d7ff8375e685e5b58ec9067c641274902b:0:444",
+          "3056b8e9f0d5093ec1c8639e6b668f693efc31b27a95ec328972213a8907760f:0:543",
+          "d1c06627d150da447411ba6142d0973af50e7accc229078893b699aa75529c74:0:352",
+          "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d:0:322",
+          "c090695e1683e2ed1f1b86c28f9039c954d2c6551100c772bf3c83844cd5419c:0:187"
+        ],
+        "fill_ids": [
+          "8ca2c6b7789d5ed787175822e42b65858ce47549afe981683d26ab56a31745d1:0:1126",
+          "d79db360970913a4cbce271f6f3ffb096ec7cc436626f807a470ee7baab1ae5c:1118:1335",
+          "0d9585915ef5f7aea6371a5ce54ab4fe55881e499d123f768bf33bcdcde67103:761:1580",
+          "ce09b72cee4247c1f2b0ae67f18fcef660d6353c8787b0abc63eb62d041da587:0:1113",
+          "d474b35a569f8bfe30f09ca6c77779dbadd86b2c217cd8e77f7fed53cbb16e03:0:567",
+          "986bdc259c15c88ad105ff757947fa18f0b4811a45ce258dd181549b9734d569:0:562",
+          "9e04f8574eb8d1fffc343be0760a596dd90626e18bdb461ab44a910b5e720250:1658:2509",
+          "9d897087b730b2f896882b2083b0d0cf979e66d7f993ee1e698dbbf3259b6ad6:1441:2926",
+          "c76f5a38b38016098f28c8744e52786cf79cbf847419edbdd84b9d99d335d9ef:0:858",
+          "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370:0:902",
+          "b304cbc86965958336000621ade07fbe1a53e245d426cf9800a98906d5db86c7:0:1067"
+        ]
+      },
+      "rejected": [],
+      "context_tokens": 2075,
+      "selected_evidence": [
+        {
+          "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "document_id": "simakey-r-static",
+          "title": "*STATIC",
+          "section": "Optional parameters for a general static analysis",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEKEYRefMap/simakey-r-static.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Unstable Response",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "The Riks Method",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Material Options",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-matsect1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "page-hybrid",
+      "case_id": "domain-procedure-applicability-2",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [
+        {
+          "need": "boundary_condition_magnitude",
+          "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+          "in_pool": true,
+          "best_child_rerank": 34,
+          "delivered_complete": false,
+          "dense_ranks": [],
+          "lexical_ranks": [],
+          "pool_ranks": [
+            45
+          ],
+          "rerank_items": [
+            {
+              "rank": 34,
+              "id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d:0:322",
+              "score": 1.2807637453079224,
+              "pair_tokens": 192
+            }
+          ]
+        }
+      ],
+      "seconds": 5.7576719000935555,
+      "retrieval_query": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?\nAbaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": {
+        "document_ids": [
+          "simakey-r-static",
+          "simaanl-c-postbuckling"
+        ],
+        "base_ids": [
+          "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e:0:144",
+          "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84:0:515",
+          "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410:0:507",
+          "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826:0:373",
+          "b1e4d4f030620d92f679f24d1ff944130413a6c9013c165bae38a5d8d698413b:0:537",
+          "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b:0:584",
+          "1e75ac8c6dafb87738d85ac7f192e1f694b8a801de00b4d94d8324561abebdb6:0:1046",
+          "109872ebaa66d1ab19df8aac2e92c534d1550ceaa1ee8265d4e3ad46739ebc34:0:1090",
+          "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3:0:806",
+          "9c931db60554a79249db9a58e564c456b935911e76b7c526d0be13e9d82d623e:0:389",
+          "5e6fb47c952083f13b6f412968268cb568239bc166a01bf444b877694a255e32:0:1112",
+          "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1:0:370",
+          "501631c6c975b742543b8f6c27d7431858655c7e08418420903910c485fa8b95:0:952",
+          "dcf402900fd5d8fba053d23e98c492635658efa943b178365137f4b502fe59c2:0:831",
+          "078a36ca39dc9500d915a5ff84dc47f70e41780421043cff3b3c5ee581700c45:0:118",
+          "ef671707541f0b574237aff829160f34b2c19492c2fb85ab04e8e8afbe5213e0:0:331",
+          "ce8c57b96710014a2715050935a8df532fa1569a884d4a2fca6a45a50bacf83b:0:379",
+          "affa1ed4934991488d199cdde2db2919909e90fd8c750311310816f0a661c3f2:0:321",
+          "473096dda5421aa70ebeecbe1b05e35dbb39f3b344759069cb918c3d0b8e8209:0:917",
+          "e67606203fb88f3635f86f4a2dd0863c544add32623496aff5121a784086c45f:0:1126",
+          "989236baa5e1a0781e1f5716e226fee5ad0063d7471615e63031712bdbb195fa:0:499",
+          "a2adc924ba8f1a0a44e8c1c350a7b77231db03e59faaec915052f69f6628283b:0:808",
+          "f5b1155da36fcac18ddedf4c072a6218d2b4365982734f7e5006d3dffc0afc36:0:644",
+          "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060:1178:1767",
+          "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0:0:406",
+          "b663f266e874c1792acf2654d606a70fb37d4e02699e4d0f1b6298c88a4a7067:0:848",
+          "fcfa5c96ebe03acc885838cf2c9d2c13ea396e94f01ce523b81b75572dc3f336:0:371",
+          "9e31f4fe6f31c8b7935f0547a971d60d09b36eefbabd5630c7b6445f19ce2ceb:0:810",
+          "35c0f7f9a5a2010baa03b1713cf48f15e0c35a2357d50c7366e9bd0247ae83d7:0:911",
+          "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b:0:809",
+          "6b96481cebf39dccd5e9dc9fb79124502dad9e4e57a116657981d461c705e739:0:862",
+          "bcdca02731ef04b73df5648eb782dccb76ca8f9efaf82a054821504e4107d45c:0:1105"
+        ],
+        "represented_parents": [
+          "078a36ca39dc9500d915a5ff84dc47f70e41780421043cff3b3c5ee581700c45",
+          "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b",
+          "109872ebaa66d1ab19df8aac2e92c534d1550ceaa1ee8265d4e3ad46739ebc34",
+          "1e75ac8c6dafb87738d85ac7f192e1f694b8a801de00b4d94d8324561abebdb6",
+          "35c0f7f9a5a2010baa03b1713cf48f15e0c35a2357d50c7366e9bd0247ae83d7",
+          "473096dda5421aa70ebeecbe1b05e35dbb39f3b344759069cb918c3d0b8e8209",
+          "501631c6c975b742543b8f6c27d7431858655c7e08418420903910c485fa8b95",
+          "5e6fb47c952083f13b6f412968268cb568239bc166a01bf444b877694a255e32",
+          "6b96481cebf39dccd5e9dc9fb79124502dad9e4e57a116657981d461c705e739",
+          "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+          "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+          "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0",
+          "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "989236baa5e1a0781e1f5716e226fee5ad0063d7471615e63031712bdbb195fa",
+          "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+          "9c931db60554a79249db9a58e564c456b935911e76b7c526d0be13e9d82d623e",
+          "9e31f4fe6f31c8b7935f0547a971d60d09b36eefbabd5630c7b6445f19ce2ceb",
+          "a2adc924ba8f1a0a44e8c1c350a7b77231db03e59faaec915052f69f6628283b",
+          "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+          "affa1ed4934991488d199cdde2db2919909e90fd8c750311310816f0a661c3f2",
+          "b1e4d4f030620d92f679f24d1ff944130413a6c9013c165bae38a5d8d698413b",
+          "b663f266e874c1792acf2654d606a70fb37d4e02699e4d0f1b6298c88a4a7067",
+          "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+          "bcdca02731ef04b73df5648eb782dccb76ca8f9efaf82a054821504e4107d45c",
+          "ce8c57b96710014a2715050935a8df532fa1569a884d4a2fca6a45a50bacf83b",
+          "dcf402900fd5d8fba053d23e98c492635658efa943b178365137f4b502fe59c2",
+          "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+          "e67606203fb88f3635f86f4a2dd0863c544add32623496aff5121a784086c45f",
+          "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b",
+          "ef671707541f0b574237aff829160f34b2c19492c2fb85ab04e8e8afbe5213e0",
+          "f5b1155da36fcac18ddedf4c072a6218d2b4365982734f7e5006d3dffc0afc36",
+          "fcfa5c96ebe03acc885838cf2c9d2c13ea396e94f01ce523b81b75572dc3f336"
+        ],
+        "limit_per_page": 16,
+        "local_ids": [
+          "ac02899d3412f6cfd789dbe34835bc83f39d5e01a1622d2211155a69a3cc372e:0:125",
+          "9acde276e49b5c769bef5a407bfb49572b2af2860224181ff7cdedb32d02f3d2:0:941",
+          "5f038d86dc9ab2f3229bcfe4f2c2e666c0c501e82773270c0fcfc9634c5654c3:0:519",
+          "0d544294d16bdd83ecc6bd2048033f3386e93f22deef81713c358b08590d0314:0:1038",
+          "079386314a1f00700e0a54fc28d45811902c522d2991798bc1c1cd58caf7d9c6:0:905",
+          "9304e3884f2dc97f5cc593fb08daeb2f79bbdd18db94e8411e6981f391534279:0:196",
+          "2c29c879001675d0cd9f02fa7dcce27aea31e18489d2cd3bb53bb33120a7ee0c:0:582",
+          "cac7bca490cda0329f40213f2d895a5fdcf070ac8aaaf44d891d5351aadec18b:0:1065",
+          "e372087020f9c99061c196ce7e7fec48308bf5401b3b7a54c22f04d53f5621a6:0:635",
+          "d1c06627d150da447411ba6142d0973af50e7accc229078893b699aa75529c74:0:352",
+          "4ca6ff76dc81de2998d9ab76fbd6c4d7ff8375e685e5b58ec9067c641274902b:0:444",
+          "ffb479a077f25c27114d89ec02f825238c72a61358768ce74741f4cda9467ee5:0:404",
+          "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d:0:322",
+          "c1f2708774d1c5104bc0f15686356375de04a17e2d744e0161ce8829e6b1f2ff:0:109",
+          "a5540f880006e42ce5205e6ed9135a6d5d7585acb68be7ac3c3b6b377a2ea4cf:0:392",
+          "d8aa50b53d45ec26c6c67cdf740fbea427608c0fe32c70a002d16acd45a0e787:0:249",
+          "d9a62f484b65500893b369821d20566572237cd2a3083efc2898883bd022779e:0:80",
+          "e9c796b0aa7ea5b420de359379bc65a0d9d94aae6c3f6fa6bdcc82d53292b69e:0:547",
+          "3056b8e9f0d5093ec1c8639e6b668f693efc31b27a95ec328972213a8907760f:0:543",
+          "40f48767f56669cf2e085599ef9bd13181f64e75f2dbb0cf1d7b311fb35fe87d:0:45",
+          "a24be6713baa7a22bc7122101425e1d5cfbcf750c3f59442fa0cc2b356bdeb2f:0:53",
+          "4d352a916ac8df7d23ac2e21d7794fe1ddd6092205c53163485e71cf89778821:0:303",
+          "c090695e1683e2ed1f1b86c28f9039c954d2c6551100c772bf3c83844cd5419c:0:187"
+        ],
+        "fill_ids": [
+          "3fda80c77f765d13bed89fc014db318ee765eb42fe9d962ffaa10c6b523c9b0a:0:651",
+          "1e77b73084c8dfbc6e5fe8ac4df2ef980fcbd12875607e0e08c06fc62e6532a6:0:457",
+          "d79db360970913a4cbce271f6f3ffb096ec7cc436626f807a470ee7baab1ae5c:1118:1335",
+          "8c0a199e3bc0069054674d9c772ffcc22e42c0be01523a9d96e286a85e48e1a4:0:189",
+          "80043d79d3810797b0e86a29d5517142712627d73b8e934932a07f826a94bcf4:0:385",
+          "3b8c8384d4f6c845b452a70b2e7ebc390e59ddad0677fa33bcb746512afd97dc:0:1018",
+          "830072858ef3af9900ec2c549f0b62289fd6b4a610842989801e8ecd876f6840:0:852",
+          "6b2f0028760e5801d6314e2e6110036ff9ffd0e3281b132baff7f7f1b48901a9:0:1077",
+          "2fb10cb68622b985af8c1a4a553940b57285100f608d258f027995e7fe6a2bc9:0:461"
+        ]
+      },
+      "rejected": [],
+      "context_tokens": 2036,
+      "selected_evidence": [
+        {
+          "id": "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Proportional Loading",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-proportional",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "document_id": "simakey-r-static",
+          "title": "*STATIC",
+          "section": "Optional parameters for a general static analysis",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEKEYRefMap/simakey-r-static.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Loads",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0",
+          "document_id": "simaanl-c-postbuckling",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Loads",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+          "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "page-hybrid",
+      "case_id": "recorded-solver-diagnostic-1",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "in_pool": true,
+          "best_child_rerank": 8,
+          "delivered_complete": false,
+          "dense_ranks": [
+            28
+          ],
+          "lexical_ranks": [
+            9,
+            18
+          ],
+          "pool_ranks": [
+            4,
+            57
+          ],
+          "rerank_items": [
+            {
+              "rank": 8,
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+              "score": 2.2375528812408447,
+              "pair_tokens": 354
+            },
+            {
+              "rank": 19,
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:907:1165",
+              "score": 1.5676844120025635,
+              "pair_tokens": 216
+            }
+          ]
+        }
+      ],
+      "seconds": 5.38011800008826,
+      "retrieval_query": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?\nrecorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": {
+        "document_ids": [
+          "simakey-r-output",
+          "simaout-c-dboutput-requestingoutput-odb"
+        ],
+        "base_ids": [
+          "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce:0:344",
+          "52c3655479776b350b24239e96d5764ff2bfbf2e5e5f85a8cdde0f58ff3f934c:0:791",
+          "69f59177d9101623ef372831c4516cc664552c4acd0a9324116f463e2b231a0c:0:450",
+          "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+          "c38c08ae60544cdeb1f78bf8f93ff9c53359ce420cec5ed0798e4230ab7803c3:0:509",
+          "456885a6d27fdf1c5a4e5109c9dc1a70a1da5e12b35c88be3544273d79fa2e46:0:1049",
+          "d99d6d8b91d848bc9253974c682d43d0accc7357c9313c1fb58cbf3c9fbd1a1a:0:513",
+          "9af9b454bad0d830b1c569ce052062505f8bd9f3f31878e36885d9300ab3e2e6:0:480",
+          "d24cc7977342bb2fa453531742f775a511e44e16ea210146f1ae6864f99a4a4e:0:542",
+          "ac855b824732ebab1cc0dc1f044ed680f6be14cbae49f0b955139a8e9ae63868:915:1570",
+          "f0d4d04c5063bfcbf7b553802c68b6ef5698d4d8862dd978fb4a48208690d9f4:0:702",
+          "0c5fe1cb565d581c96e92c077a8c7c5a3d77cf62c48727e9b19da1bcb662f5f3:0:510",
+          "2444aa1b7b90d1ccb0a104f175636d84d59ff8682c17827542d595af23648dd9:0:552",
+          "8925a4e731c95c6f02e0731cf1bda7b22edb4ce31b7eefbd19400e6affc400c5:0:1087",
+          "6c7b4a92c5223d99b7fdc0e78dd41695b7895f5a282f73d0a0b2251985cf2cef:0:964",
+          "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896:0:546",
+          "8edc1a0e2a3d42d673a5c45e5ade895e94f8236510ae5a9ec1e9ec3b29d0c370:0:1326",
+          "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370:0:902",
+          "a1584db788d44eb1bc7414497ef980916432a48ecf1c7f96cf323d1baa082c07:0:540",
+          "87ab86a3054857c1b1c72f969a1487d1b164d0464aac5aa7090c90892bb0d485:0:732",
+          "53b2602cac079fad79cefb54c2a5e4977c478defe9a3965ffc8d871831b33716:0:930",
+          "5f2079a4fc3fcf19494b48f68484d46dafed8dee79bbc0b0ccff834c3cdaf722:0:571",
+          "bb6aa468a2a0fbce1c64cdfeeded58d6ea5ff51f7ce33ad26c909df55ad13437:0:183",
+          "726e7b8dbe3ff175fb1bba48fa205bd29849c15951cef3d64d2eb28e7dedceee:0:554",
+          "2a935c0e8e3e125f1e10234c644b9762c164fc531b73d6fea736af9ce67fad66:0:378",
+          "996b65d5f62e2fdd57aa47ecf8f5c04731def659bbd7568c608fc8ba023a0775:0:955",
+          "7ce57d1a16a68c2a0f7b3c03092dbc0840aaec42a3f45ee489a9bc474106d0e4:0:1540",
+          "f277b3516da47ec6947e76efdeade6a9e3bd15b9a9e51e7b28ffae6b568f77b7:0:617",
+          "268857aa13bc9efa5c6ffcf55bf57679f42abb1787c7c7329fb705db0c09db27:0:746",
+          "3d12b6bc62aea56283828f888afa610ba7dfce59667b1d0e99a42c793edd67ce:0:266",
+          "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2:0:198",
+          "41d241090400e0b78f1b7e84b016a950c871c292b97323ff6958c48be5a551ac:0:451"
+        ],
+        "represented_parents": [
+          "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+          "0c5fe1cb565d581c96e92c077a8c7c5a3d77cf62c48727e9b19da1bcb662f5f3",
+          "2444aa1b7b90d1ccb0a104f175636d84d59ff8682c17827542d595af23648dd9",
+          "268857aa13bc9efa5c6ffcf55bf57679f42abb1787c7c7329fb705db0c09db27",
+          "2a935c0e8e3e125f1e10234c644b9762c164fc531b73d6fea736af9ce67fad66",
+          "3d12b6bc62aea56283828f888afa610ba7dfce59667b1d0e99a42c793edd67ce",
+          "41d241090400e0b78f1b7e84b016a950c871c292b97323ff6958c48be5a551ac",
+          "456885a6d27fdf1c5a4e5109c9dc1a70a1da5e12b35c88be3544273d79fa2e46",
+          "52c3655479776b350b24239e96d5764ff2bfbf2e5e5f85a8cdde0f58ff3f934c",
+          "53b2602cac079fad79cefb54c2a5e4977c478defe9a3965ffc8d871831b33716",
+          "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+          "5f2079a4fc3fcf19494b48f68484d46dafed8dee79bbc0b0ccff834c3cdaf722",
+          "69f59177d9101623ef372831c4516cc664552c4acd0a9324116f463e2b231a0c",
+          "6c7b4a92c5223d99b7fdc0e78dd41695b7895f5a282f73d0a0b2251985cf2cef",
+          "726e7b8dbe3ff175fb1bba48fa205bd29849c15951cef3d64d2eb28e7dedceee",
+          "7ce57d1a16a68c2a0f7b3c03092dbc0840aaec42a3f45ee489a9bc474106d0e4",
+          "87ab86a3054857c1b1c72f969a1487d1b164d0464aac5aa7090c90892bb0d485",
+          "8925a4e731c95c6f02e0731cf1bda7b22edb4ce31b7eefbd19400e6affc400c5",
+          "8edc1a0e2a3d42d673a5c45e5ade895e94f8236510ae5a9ec1e9ec3b29d0c370",
+          "996b65d5f62e2fdd57aa47ecf8f5c04731def659bbd7568c608fc8ba023a0775",
+          "9af9b454bad0d830b1c569ce052062505f8bd9f3f31878e36885d9300ab3e2e6",
+          "a1584db788d44eb1bc7414497ef980916432a48ecf1c7f96cf323d1baa082c07",
+          "ac855b824732ebab1cc0dc1f044ed680f6be14cbae49f0b955139a8e9ae63868",
+          "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "bb6aa468a2a0fbce1c64cdfeeded58d6ea5ff51f7ce33ad26c909df55ad13437",
+          "c38c08ae60544cdeb1f78bf8f93ff9c53359ce420cec5ed0798e4230ab7803c3",
+          "d24cc7977342bb2fa453531742f775a511e44e16ea210146f1ae6864f99a4a4e",
+          "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370",
+          "d99d6d8b91d848bc9253974c682d43d0accc7357c9313c1fb58cbf3c9fbd1a1a",
+          "f0d4d04c5063bfcbf7b553802c68b6ef5698d4d8862dd978fb4a48208690d9f4",
+          "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+          "f277b3516da47ec6947e76efdeade6a9e3bd15b9a9e51e7b28ffae6b568f77b7"
+        ],
+        "limit_per_page": 16,
+        "local_ids": [
+          "cf7ea61e22de0c4b470ec99d477adfb7ff0157f5c9b7e7887061cc30998f87c7:0:540",
+          "5831381ebb1f21049b32f6a570c5296e23b4e232e62d66d589cb1412701a66e4:0:276",
+          "119ccf6bb642afe7b38a51ae0eefb25ff7a83800e7d0c671d8371d5d90454136:0:988",
+          "8e378cbcbf579a7c13489e19c771fac0099b70c889c9bab41622882bb5c29078:0:941",
+          "f3ea257e56208d2fc5907702389d30cb19e3489d49dd3cde5bf12f8dd6ad1a28:0:182",
+          "a0fd11263db37d33159ce3e71dace08f129b4d9f856024ab392ba9c3662e63a3:0:309",
+          "327a7511bb7ca76671465cd97b53c62d0ede465e2a7f5f4ca2dff8525b1c81fe:0:186",
+          "d5c508d617cfad6608a1cbb7e60995cb843393a63f93efac54b263ff0a14d970:0:162",
+          "fff20068a7e67622ccd93f9505d1c9b69ccb20c9f5bb0bcb2008830d9de366c3:0:142",
+          "3993a050375fec4d635768f2d19f3234deb56133549272bb332ee2484be9579b:0:170",
+          "9fddbb63dac49990c7843f41d6a13bed2599aac1082f11f19dace9a3c984b5f0:0:220",
+          "ab0fc46bfaeeafe2437a18e129ae0581ea9ad7a9e723b37f8dc7c316ca754666:0:142",
+          "b661d69dd77abf098231db74c56682806b030df9f762d8c398dc125640cbd6a2:0:89",
+          "7c669fdebe5b1680469d4b27ae8bf2ff72ff24f7c1d2144b1e2879704382c826:0:234",
+          "44a768f6cfc80cd3c2a44fce63c09113fdfa1af684b6aa1cb236c1a70f6f06f0:0:162",
+          "2bf9b5219f983da16b615404ec7629828ca6951a70fb459d538da31ee54bbce2:0:73",
+          "64f86d330f13b950fcbfb1f3732d7dbdb45b0b345e2d9f475c23abb4e00e363c:0:332",
+          "83b9b98c28c485c137b831fc58dd63ff2579fc408dd3d204025e2d9ea4a590f3:0:261",
+          "8daf8d6977609418ede22d5ea712d6c5a98cc8fc8d15a813d94aab8c1553ea54:0:75"
+        ],
+        "fill_ids": [
+          "3b3b0b8fd430a0109e335c8c17b702d12b9287435fdbd439a23d5a15b7a79c4f:0:1374",
+          "80814a0fdc5a2ea39c6e2d8b18eb6c2f285100da49ebbf31002ecafbe3e058f7:0:269",
+          "292f17cca998c54a4a725c264d392da37802d54410ebcbd7af33909e27f69521:0:686",
+          "2f2c74888e18b0c73d690db297ab28c03305e99fc6e080ec303a66526b2ec6ee:0:598",
+          "801c8d777267485c28cb5dc5a07d1b29cf34096bc7969e73fe06e54a9ea97416:0:312",
+          "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:907:1165",
+          "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500:0:202",
+          "3d28998937adca6fb5bec141d1f53b01054d71573f263e3c410fe7ed11e9d160:0:375",
+          "78302074c122a7e81cec8daeca37f44d0b0109fd6629e51c8d8d19b4421dbed8:0:1015",
+          "d96e8db5f4ec47e041e966ab0e68e7c1b564f62f4a3dfbe2c55ce96c0bbb1cdf:0:476",
+          "4994db04d898a80b255e64d32abb5def7661892d610e788ec08fa3b890436627:0:580",
+          "7417e47f1cc4abafb537b5bcffbb4e22f5fd951d008daa47d482c5cb36082ff9:0:223",
+          "9b194f502934ab185c41738ebf076b20246159646acc3ff0957c6481aeaa41b2:0:256"
+        ]
+      },
+      "rejected": [],
+      "context_tokens": 2344,
+      "selected_evidence": [
+        {
+          "id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+          "document_id": "simaanl-c-directcyclicfatigue",
+          "title": "Low-Cycle Fatigue Analysis Using the Direct Cyclic Approach",
+          "section": "Specifying Output at Exact Times",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclicfatigue.htm#simaanl-c-directcyclicfatigue-t-SpecifyingOutputAtExactTimes-sma-topic19",
+          "source_sha256": "606cf62babb8c00d5496a1c126a285acf1e3f23ee27dbafc15012905db50b1a6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-directcyclicfatigue.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+          "document_id": "simaanl-c-directcyclic",
+          "title": "Direct Cyclic Analysis",
+          "section": "Specifying Output at Exact Times",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclic.htm#simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+          "source_sha256": "be050bf4d0fe1cfa2d67ef5330105c63c0c5fc815810fb5dbeeb20d0a1c59051",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-directcyclic.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "page-hybrid",
+      "case_id": "recorded-solver-diagnostic-2",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "in_pool": true,
+          "best_child_rerank": 3,
+          "delivered_complete": true,
+          "dense_ranks": [
+            28
+          ],
+          "lexical_ranks": [
+            1,
+            31
+          ],
+          "pool_ranks": [
+            2
+          ],
+          "rerank_items": [
+            {
+              "rank": 3,
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+              "score": 1.3706122636795044,
+              "pair_tokens": 373
+            }
+          ]
+        }
+      ],
+      "seconds": 6.370887900004163,
+      "retrieval_query": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?\nAbaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt.",
+      "context_omitted": false,
+      "pool_size": 64,
+      "page_selection": {
+        "document_ids": [
+          "simakey-r-geostatic",
+          "simaout-c-dboutput-frequency"
+        ],
+        "base_ids": [
+          "456885a6d27fdf1c5a4e5109c9dc1a70a1da5e12b35c88be3544273d79fa2e46:0:1049",
+          "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+          "c5bee5600cbae234243ddb9e36007f5ac3b3186f3fdda096862a607ca211d1ad:988:2099",
+          "3d38d7771eee3ec1a6345cd8c42ee27cc623693175ba89026197f1cab81b7f1b:0:644",
+          "726e7b8dbe3ff175fb1bba48fa205bd29849c15951cef3d64d2eb28e7dedceee:0:554",
+          "268857aa13bc9efa5c6ffcf55bf57679f42abb1787c7c7329fb705db0c09db27:0:746",
+          "292f17cca998c54a4a725c264d392da37802d54410ebcbd7af33909e27f69521:0:686",
+          "8f91fd1708312c331c83dd149c9fd8bebe431bc4514b022b4799d448c0f9931a:0:362",
+          "f0d4d04c5063bfcbf7b553802c68b6ef5698d4d8862dd978fb4a48208690d9f4:0:702",
+          "8925a4e731c95c6f02e0731cf1bda7b22edb4ce31b7eefbd19400e6affc400c5:0:1087",
+          "63fc99524c891976d1469a21cb350d20eae55eeeea8c0088e3fe64c44446016e:0:1050",
+          "f26c37530687dd638b55b15432e2538adf3b6560912d698b77e0f4fd20700501:0:650",
+          "c5bee5600cbae234243ddb9e36007f5ac3b3186f3fdda096862a607ca211d1ad:0:988",
+          "7f6cb634c967ba55a6cc33b352cccdbfb195b44a61d178374deda8a78dd458c4:0:1242",
+          "afff418b3fc5fe567ba4dbbbf4ef627830e9d3a87a2bbef27c322f71538d67df:0:1787",
+          "f787bacab8aa66d99cad3cc09c10371dfffa7ae6b614a34ec6e9bcb1e774aced:0:510",
+          "78302074c122a7e81cec8daeca37f44d0b0109fd6629e51c8d8d19b4421dbed8:0:1015",
+          "6c7b4a92c5223d99b7fdc0e78dd41695b7895f5a282f73d0a0b2251985cf2cef:0:964",
+          "d96e8db5f4ec47e041e966ab0e68e7c1b564f62f4a3dfbe2c55ce96c0bbb1cdf:0:476",
+          "3d28998937adca6fb5bec141d1f53b01054d71573f263e3c410fe7ed11e9d160:0:375",
+          "3b3b0b8fd430a0109e335c8c17b702d12b9287435fdbd439a23d5a15b7a79c4f:0:1374",
+          "53b2602cac079fad79cefb54c2a5e4977c478defe9a3965ffc8d871831b33716:0:930",
+          "7417e47f1cc4abafb537b5bcffbb4e22f5fd951d008daa47d482c5cb36082ff9:0:223",
+          "996b65d5f62e2fdd57aa47ecf8f5c04731def659bbd7568c608fc8ba023a0775:0:955",
+          "087bbdb4d1620448ade20425e17406f2fa7166c351f049949f9d478fb823d5fb:0:344",
+          "7ce57d1a16a68c2a0f7b3c03092dbc0840aaec42a3f45ee489a9bc474106d0e4:0:1540",
+          "5c4d328c97b801ba2a4396d54e71db986ae9c09f03fe3aa0760d34077cb93b4a:0:490",
+          "c38c08ae60544cdeb1f78bf8f93ff9c53359ce420cec5ed0798e4230ab7803c3:0:509",
+          "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2:0:198",
+          "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896:0:546",
+          "8629612110daf274d7e81dce2cd0629c521a3699f020275c46e7fa5ddb7aef1e:0:771",
+          "87ab86a3054857c1b1c72f969a1487d1b164d0464aac5aa7090c90892bb0d485:0:732"
+        ],
+        "represented_parents": [
+          "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+          "087bbdb4d1620448ade20425e17406f2fa7166c351f049949f9d478fb823d5fb",
+          "268857aa13bc9efa5c6ffcf55bf57679f42abb1787c7c7329fb705db0c09db27",
+          "292f17cca998c54a4a725c264d392da37802d54410ebcbd7af33909e27f69521",
+          "3b3b0b8fd430a0109e335c8c17b702d12b9287435fdbd439a23d5a15b7a79c4f",
+          "3d28998937adca6fb5bec141d1f53b01054d71573f263e3c410fe7ed11e9d160",
+          "3d38d7771eee3ec1a6345cd8c42ee27cc623693175ba89026197f1cab81b7f1b",
+          "456885a6d27fdf1c5a4e5109c9dc1a70a1da5e12b35c88be3544273d79fa2e46",
+          "53b2602cac079fad79cefb54c2a5e4977c478defe9a3965ffc8d871831b33716",
+          "5c4d328c97b801ba2a4396d54e71db986ae9c09f03fe3aa0760d34077cb93b4a",
+          "63fc99524c891976d1469a21cb350d20eae55eeeea8c0088e3fe64c44446016e",
+          "6c7b4a92c5223d99b7fdc0e78dd41695b7895f5a282f73d0a0b2251985cf2cef",
+          "726e7b8dbe3ff175fb1bba48fa205bd29849c15951cef3d64d2eb28e7dedceee",
+          "7417e47f1cc4abafb537b5bcffbb4e22f5fd951d008daa47d482c5cb36082ff9",
+          "78302074c122a7e81cec8daeca37f44d0b0109fd6629e51c8d8d19b4421dbed8",
+          "7ce57d1a16a68c2a0f7b3c03092dbc0840aaec42a3f45ee489a9bc474106d0e4",
+          "7f6cb634c967ba55a6cc33b352cccdbfb195b44a61d178374deda8a78dd458c4",
+          "8629612110daf274d7e81dce2cd0629c521a3699f020275c46e7fa5ddb7aef1e",
+          "87ab86a3054857c1b1c72f969a1487d1b164d0464aac5aa7090c90892bb0d485",
+          "8925a4e731c95c6f02e0731cf1bda7b22edb4ce31b7eefbd19400e6affc400c5",
+          "8f91fd1708312c331c83dd149c9fd8bebe431bc4514b022b4799d448c0f9931a",
+          "996b65d5f62e2fdd57aa47ecf8f5c04731def659bbd7568c608fc8ba023a0775",
+          "afff418b3fc5fe567ba4dbbbf4ef627830e9d3a87a2bbef27c322f71538d67df",
+          "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "c38c08ae60544cdeb1f78bf8f93ff9c53359ce420cec5ed0798e4230ab7803c3",
+          "c5bee5600cbae234243ddb9e36007f5ac3b3186f3fdda096862a607ca211d1ad",
+          "d96e8db5f4ec47e041e966ab0e68e7c1b564f62f4a3dfbe2c55ce96c0bbb1cdf",
+          "f0d4d04c5063bfcbf7b553802c68b6ef5698d4d8862dd978fb4a48208690d9f4",
+          "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+          "f26c37530687dd638b55b15432e2538adf3b6560912d698b77e0f4fd20700501",
+          "f787bacab8aa66d99cad3cc09c10371dfffa7ae6b614a34ec6e9bcb1e774aced"
+        ],
+        "limit_per_page": 16,
+        "local_ids": [
+          "9af9b454bad0d830b1c569ce052062505f8bd9f3f31878e36885d9300ab3e2e6:0:480",
+          "d99d6d8b91d848bc9253974c682d43d0accc7357c9313c1fb58cbf3c9fbd1a1a:0:513",
+          "6e5ee03641306b2809e715dbc387fb051afd153a9f46bc9dd13ec5f039af801d:0:603",
+          "5d6f7bd5a454d2b24c4ae682c92437fcbc888efa45f19d6b5d025ce93b858e4b:0:476",
+          "69f59177d9101623ef372831c4516cc664552c4acd0a9324116f463e2b231a0c:0:450",
+          "0c5fe1cb565d581c96e92c077a8c7c5a3d77cf62c48727e9b19da1bcb662f5f3:0:510",
+          "ffe7443ec41e105df6a2e1fbf17d127e770463d869278e0cc1c6973ceae4bd68:1051:2021",
+          "d24cc7977342bb2fa453531742f775a511e44e16ea210146f1ae6864f99a4a4e:0:542",
+          "8b607884254ec5b162840d2a5537571d3b831e661eb6ef078569a2eaca68a698:0:387",
+          "f9af617d16a582bb07e0fff33b8854ccfcafce48460fb1b6b9c2e3ad26469ae7:0:295",
+          "64e791ef991a3497b37dac1b138365bdcf7ba810e2bd01481639031ed7d7dca0:0:297",
+          "3284539085d8908bf1a26709b8cadc05ab160e934bf42fa49f3adc7e2d438964:0:615",
+          "8cbfef8461067d375331304441f38c81a2b1e53c5204d96fa3b48aab9248ea90:0:239",
+          "e27ae6a081a5f69c326393eea552c1f28755ac4e5163b950cfe83123f01956e9:0:298",
+          "76ad5e930998238b7164f85b3baf5c7ec75f6a13e2ed53fd1677844c42702736:0:118",
+          "6ef118c802063a4e53faf9e0eda33b675a484d0cf95cd93b465a0459d45874c7:0:666",
+          "2259d3f4978e0594ce7c11007262f0015129ef09e4046a5a3e4de28d2e4b516d:0:220",
+          "9682f595281e674a87b55d907d2fe71fff0e7494aa1b356284303db6b7a02a1e:0:118",
+          "6cfddda1683e6d7955142882f343a770ab4a50944e7396a5c8acd92409c0e0aa:0:823",
+          "52ebf65284013ac8310a54831c14ba53e50a75885f1e23eb0da6d3a6f73a9617:0:223",
+          "6e2ac8f8e5385db114b6bbafb43516ea02b7c97e7b06d5bf37c02cc64e42b05e:0:295",
+          "eeea0786f823de14e26b42646790b3d86768e9c49efca577f8bc56e5165e6307:0:295"
+        ],
+        "fill_ids": [
+          "8edc1a0e2a3d42d673a5c45e5ade895e94f8236510ae5a9ec1e9ec3b29d0c370:0:1326",
+          "984ab1666f651d44cd6e9f6dffa4c17ecec53e9e89e3c46370d3da2b4884054b:1454:1799",
+          "7ffb9055ec88393bd362753787ab2169b5c8a292eb110e15062707645bc9dcfa:0:584",
+          "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500:0:202",
+          "8b193492d5d90c13912c6bebbb894e2dfe0d42cc1b2bea4df704cf946d2cb21f:0:665",
+          "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370:0:902",
+          "e3aee68abf3686de63649f79311f7e43102ab2780ff141c2144e435340c7f410:0:783",
+          "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce:0:344",
+          "30cda3025314fe9db052573034460c84be9455688a86c5c9e37c75f00f8b51f4:0:1065",
+          "aa62bbef9ec829bffb3a59ab06f77dda935987360fb1a1ba7d7d61d06e5cbc57:0:325"
+        ]
+      },
+      "rejected": [],
+      "context_tokens": 1989,
+      "selected_evidence": [
+        {
+          "id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+          "document_id": "simaanl-c-directcyclic",
+          "title": "Direct Cyclic Analysis",
+          "section": "Specifying Output at Exact Times",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclic.htm#simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+          "source_sha256": "be050bf4d0fe1cfa2d67ef5330105c63c0c5fc815810fb5dbeeb20d0a1c59051",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-directcyclic.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+          "document_id": "simaanl-c-directcyclicfatigue",
+          "title": "Low-Cycle Fatigue Analysis Using the Direct Cyclic Approach",
+          "section": "Specifying Output at Exact Times",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclicfatigue.htm#simaanl-c-directcyclicfatigue-t-SpecifyingOutputAtExactTimes-sma-topic19",
+          "source_sha256": "606cf62babb8c00d5496a1c126a285acf1e3f23ee27dbafc15012905db50b1a6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEANLRefMap/simaanl-c-directcyclicfatigue.htm: official Products"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "document_id": "simaout-c-dboutput-frequency",
+          "title": "Controlling the Frequency of Output to the Output Database",
+          "section": "Time Domain Analysis: Time Incrementation",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+          "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simaout-c-dboutput-freq-std"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        },
+        {
+          "id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+          "document_id": "simakey-r-output",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "verified_section",
+            "evidence": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1"
+          },
+          "body_scope": "complete_stored_evidence_unit"
+        }
+      ]
+    },
+    {
+      "profile": "page-hybrid",
+      "case_id": "explicit-at",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 0.003943499876186252,
+      "retrieval_query": null,
+      "context_omitted": null,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 669,
+      "selected_evidence": [
+        {
+          "id": "simaout-c-exp-nodalvariables#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "document_id": "simaout-c-exp-nodalvariables",
+          "title": "Nodal Variables",
+          "section": "Nodal Variables",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-exp-nodalvariables.htm#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT",
+          "source_sha256": "fdc7ab41a500fd86061ebd99dfb5b4b05c4cabfbc9cd8a70a5ec997cb5f64049",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [],
+            "origin": "unknown",
+            "evidence": "no official solver product declaration"
+          },
+          "body_scope": "indexed_symbol_card"
+        },
+        {
+          "id": "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "document_id": "simaout-c-std-nodalvariables",
+          "title": "Nodal Variables",
+          "section": "Nodal Variables",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+          "source_sha256": "e515d2a9cfbdf08108f5aac0407b4a46c8ef7f93d36fddb9c662947f4db130a5",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [],
+            "origin": "unknown",
+            "evidence": "no official solver product declaration"
+          },
+          "body_scope": "indexed_symbol_card"
+        }
+      ]
+    },
+    {
+      "profile": "page-hybrid",
+      "case_id": "explicit-static",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 0.002280999906361103,
+      "retrieval_query": null,
+      "context_omitted": null,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 287,
+      "selected_evidence": [
+        {
+          "id": "simakey-r-static#keyword",
+          "document_id": "simakey-r-static",
+          "title": "*STATIC",
+          "section": "*STATIC",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static",
+          "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+          "release": "2026 FD02",
+          "applicability": {
+            "products": [
+              "Abaqus/Standard"
+            ],
+            "origin": "official_page",
+            "evidence": "SIMACAEKEYRefMap/simakey-r-static.htm: official Products"
+          },
+          "body_scope": "indexed_symbol_card"
+        }
+      ]
+    },
+    {
+      "profile": "page-hybrid",
+      "case_id": "unknown-symbol",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 0.0013562000822275877,
+      "retrieval_query": null,
+      "context_omitted": null,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": 2,
+      "selected_evidence": []
+    },
+    {
+      "profile": "page-hybrid",
+      "case_id": "unavailable-release",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 0.03018180001527071,
+      "retrieval_query": "Explain exact output timing",
+      "context_omitted": false,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": null,
+      "selected_evidence": []
+    },
+    {
+      "profile": "page-hybrid",
+      "case_id": "query-over-encoder-budget",
+      "contract_ok": true,
+      "baseline_matches_archive": null,
+      "max_rerank_score_delta": null,
+      "requirements": [],
+      "seconds": 0.000636399956420064,
+      "retrieval_query": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+      "context_omitted": false,
+      "pool_size": 0,
+      "page_selection": null,
+      "rejected": [],
+      "context_tokens": null,
+      "selected_evidence": []
+    }
+  ],
+  "validation": {
+    "frozen_inputs_and_implementation_unchanged": true,
+    "historical_raw_hashes_unchanged": true,
+    "controls_exact_order_and_scores": 20,
+    "focused_tests": 38,
+    "full_pytest_passed": 852,
+    "licensed_tests_skipped": 27,
+    "generated_model_requests": 0,
+    "abaqus_calls": 0
+  },
+  "interpretation": {
+    "riks": "页面内BM25补充将必要Boundary Conditions单元加入64候选池的位置45，但重排为34且未交付；只用问题正文仍未召回。Riks最终证据问题未解决。",
+    "warning": "question_only将第一条warning的机制段Dense排名28改为10、重排7改为1并交付；第二条原已交付的warning保持交付。检索与重排输入同时改变，不能把收益单独归于一个阶段，也不证明应普遍丢弃上下文。",
+    "page_policy": "无Riks/Boundary Conditions/gold ID特殊规则；页面由全局排名选择，沿用产品/release范围和全语料IDF，在固定64重排预算内替换部分候选。增加了一次BM25扫描，因此不声称相同计算开销。",
+    "evidence_limit": "三项必要证据检查只有两个唯一源单元，其中两项是同一warning的不同问法；不等于三种独立任务或完整答案验收。API直接语料覆盖并未改变。",
+    "adoption": "两个显式候选开关均未接入产品Agent或成为默认。未评测两开关组合、生成式改写、新查询泛化或物理闭环；不合并独立处理的收益，也不新增权重/k调优回填本批。"
+  }
+}

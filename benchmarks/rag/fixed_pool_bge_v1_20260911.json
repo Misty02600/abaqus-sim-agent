@@ -1,0 +1,3467 @@
+{
+  "profile": "fixed-pool-three-arm-rerank-v1",
+  "seal_sha256": "04be6cafa7b1cc9d9017a0dbd9caaa3ab9a55c6695b58d007541271d7fd71e8d",
+  "arms": {
+    "minilm": {
+      "revised": {
+        "cases": 16,
+        "quality_scored_cases": 7,
+        "stages": {
+          "candidate": {
+            "requirements_matched": 10,
+            "requirements_total": 11,
+            "requirement_recall": 0.9090909090909091,
+            "complete_cases": 6,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.8571428571428571
+          },
+          "rerank_top4": {
+            "requirements_matched": 7,
+            "requirements_total": 11,
+            "requirement_recall": 0.6363636363636364,
+            "complete_cases": 5,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.7142857142857143
+          },
+          "delivered": {
+            "requirements_matched": 7,
+            "requirements_total": 11,
+            "requirement_recall": 0.6363636363636364,
+            "complete_cases": 5,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.7142857142857143
+          }
+        },
+        "necessary_evidence_mrr_at_64": 0.7584033613445378,
+        "guard_checks": 5,
+        "guard_passes": 5,
+        "execution_errors": 0,
+        "source_targets": {
+          "checks": 2,
+          "delivered_complete": 1
+        },
+        "reranked_pairs": 640,
+        "quality_gate": "not_defined_not_a_product_acceptance_score"
+      },
+      "legacy": {
+        "cases": 16,
+        "quality_scored_cases": 7,
+        "stages": {
+          "candidate": {
+            "requirements_matched": 9,
+            "requirements_total": 10,
+            "requirement_recall": 0.9,
+            "complete_cases": 6,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.8571428571428571
+          },
+          "rerank_top4": {
+            "requirements_matched": 6,
+            "requirements_total": 10,
+            "requirement_recall": 0.6,
+            "complete_cases": 4,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.5714285714285714
+          },
+          "delivered": {
+            "requirements_matched": 6,
+            "requirements_total": 10,
+            "requirement_recall": 0.6,
+            "complete_cases": 4,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.5714285714285714
+          }
+        },
+        "necessary_evidence_mrr_at_64": 0.6359543817527011,
+        "guard_checks": 5,
+        "guard_passes": 5,
+        "execution_errors": 0,
+        "source_targets": {
+          "checks": 2,
+          "delivered_complete": 1
+        },
+        "reranked_pairs": 640,
+        "quality_gate": "not_defined_not_a_product_acceptance_score"
+      },
+      "model_inference_pairs": 640,
+      "inference_seconds": 18.066977800335735,
+      "results": [
+        {
+          "case_id": "riks-loading-regression",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "riks_load_scaling",
+              "candidate": true,
+              "rerank_top4": false,
+              "delivered": false
+            },
+            {
+              "id": "riks_bc_amplitude",
+              "candidate": true,
+              "rerank_top4": false,
+              "delivered": false
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 0.0,
+            "delivered": 0.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": false,
+            "delivered": false
+          },
+          "first_necessary_parent_rank": 17,
+          "necessary_evidence_rr_at_64": 0.058823529411764705,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2023,
+            "latency_seconds": {
+              "delivery_replay": 0.03791880002245307
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+              "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "7dd08b587fffb0dc8ad57c6d6258e5e0d90ca29d37c61411b6ac4eb372457cca"
+            },
+            {
+              "id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "7b4386e97e00f9992e0e61421ff9111b55de9c261e58494df0cdcebcd37663dd"
+            },
+            {
+              "id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-unstable__simaanl-c-static-s-BucklingOrCollapse-section1",
+              "source_sha256": "c35f5d8390c07490a3d317719b2be232fcc892cfe0c0dee0966327235cec4020",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "17338fbf48571c9ab350b3cfc9c52d8ca1690bf5e1ec7c960c9eb51392671981"
+            },
+            {
+              "id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "a21ddc3345a19a078c4cfff17660797ce086c3fe1b251ab7c0c79f5a2a628d03"
+            }
+          ]
+        },
+        {
+          "case_id": "consistent-unit-system",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "unit_convention",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 1.0,
+            "delivered": 1.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": true,
+            "delivered": true
+          },
+          "first_necessary_parent_rank": 1,
+          "necessary_evidence_rr_at_64": 1.0,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 1954,
+            "latency_seconds": {
+              "delivery_replay": 0.04512130003422499
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "c0cee566bb76c7f17644a9005c2715226ec5132f70b666bd040a43ab71ae6b50",
+              "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-conventions.htm#simamod-c-conventions-t-Units-sma-topic8",
+              "source_sha256": "68b2f0a3a6681613e146a8ac4bf4c61bd1037be1d648e3906a69190133acaa65",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "438ba9e3b9b957a83e85a5507020f1514b63ed5c1597db693abf4394a925ac22"
+            },
+            {
+              "id": "ed88a1bd4209697567d0f4cf6a803be3f2a1879be142cd2d5a27604e683fa89f",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-physicalconstants.htm#table12",
+              "source_sha256": "aed55a5203538e03cc8483ce75a67716b11a4be003ef216eb8a50d403c45c20d",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "2dbb859a93cdc2a17ba4007ea729b0971194b4c3894579b398c2d170643d2f54"
+            },
+            {
+              "id": "87f02dd6735524775ba3624e2329740243fb061b624ab13b285c39cbfe5658de",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-unitsystem.htm#table12",
+              "source_sha256": "dce5f6ca8b7ea8d3192ae3810e786cca500c86b18390cbdcea92c40ad9ec0972",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "d1df51ba57b4cb054522127dcf88ce4ce5562b6486c4339773e6f843ae2c78e8"
+            },
+            {
+              "id": "b2f00b66845a4ee20c0d2c576279235b3b12b7911f94c1833916fc526defda38",
+              "source": "http://localhost:4040/English/SIMACAEMATRefMap/simamat-c-density.htm#simamat-c-density-t-Units-sma-topic2",
+              "source_sha256": "52e545209bb6443ea449a04cb1103a4ec559deef9857237642cd762a6d76dca4",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "4da24c42fe8372fdf662203f84258fbc604e5be754e04bf093b318e3d8531ed9"
+            }
+          ]
+        },
+        {
+          "case_id": "odb-history-precision",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "history_single_and_full_field_scope",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 1.0,
+            "delivered": 1.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": true,
+            "delivered": true
+          },
+          "first_necessary_parent_rank": 1,
+          "necessary_evidence_rr_at_64": 1.0,
+          "source_targets": [
+            {
+              "id": "history_only_single_precision",
+              "unit_id": "86ee4b38acae1e8f8f192698ee674318b212c285d286fcbb6cd46926e6630029",
+              "source_available": true,
+              "searchable": true,
+              "in_dense": true,
+              "in_bm25": true,
+              "in_pool": true,
+              "best_child_rerank": 1,
+              "delivered_exact_atomic_body": true,
+              "context_reference_delivered": false,
+              "delivered_complete": true
+            }
+          ],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2090,
+            "latency_seconds": {
+              "delivery_replay": 0.041330100037157536
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "86ee4b38acae1e8f8f192698ee674318b212c285d286fcbb6cd46926e6630029",
+              "source": "http://localhost:4040/English/SIMACAEEXCRefMap/simaexc-c-analysisproc.htm#simaexc-c-analysisproc-t-commandlineopts1__simaexc-c-analysisproc-s-AdditionalOptionsAvailableForTheAnalysisModule-comlineoptcustom3",
+              "source_sha256": "14f7c94e2f64b961f9d6780ba440a9afaf7fa346a4e909abda685cff79a0bdb7",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "17d47e677a3fb6fbcf71666753b0fb3be8bbdbb7d421c1328938de9929b3d4cd"
+            },
+            {
+              "id": "f7f4e62c45efbd577f9eddc5c473a099d40b7c5fd15fef9de526805fcd942d6c",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-submodeldisp.htm#simaanl-c-submodeldisp-t-SavingTheResultsToTheOutputDatabase-sma-topic4__simaanl-c-submodeldisp-s-SavingResultsWithHigherPrecision-section4",
+              "source_sha256": "3b4b75f896ecb997a104e6e9fc3588e94d0d666710ae30af82aeaf29f05a3a14",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "6ef03e6cc91665905540049131148913edbd2b7c8b6145e1755fb6bc00272102"
+            },
+            {
+              "id": "5591d04891dbfd8d5d0229c6e54b9693e2ec938a3b9b5ad6ac1a54dd5aff0111",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-precision.htm#table11",
+              "source_sha256": "ec1faede4f81847efc15bb0a2fc3546b51914c68edc9b5d362ddc511470d4575",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "b846c2214ca39363b56682596f27ff2bd49e40263b58c1378a7d04f455d71231"
+            },
+            {
+              "id": "d9287cff6d33b48622012ad969c13978d4163d4924d35f26e76009e5e9a484fa",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-precision.htm#table11",
+              "source_sha256": "ec1faede4f81847efc15bb0a2fc3546b51914c68edc9b5d362ddc511470d4575",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "efb3add21d83711efdcb2c97b83bd75914ba94e98e45a6ac395c83a32aef4b4d"
+            }
+          ]
+        },
+        {
+          "case_id": "steady-transient-heat-properties",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "steady_internal_energy",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            },
+            {
+              "id": "transient_material_requirements",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 1.0,
+            "delivered": 1.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": true,
+            "delivered": true
+          },
+          "first_necessary_parent_rank": 1,
+          "necessary_evidence_rr_at_64": 1.0,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2077,
+            "latency_seconds": {
+              "delivery_replay": 0.040010099997743964
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "41b62d2766366b032da2c5884e8d5d288338be9d07ecca9fd799e7bbeb15809e",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-heattransfer.htm#simaanl-c-heattransfer-steadystate",
+              "source_sha256": "4ae999bcee63d3eb44b4ce2dc54d319fa8417043c4c4c1cb2589c0a8a187e2d2",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "ca4933fdb6ef3dddd175dfac29846fb9fcb805ec271c7fb0e00dc9717a756e7d"
+            },
+            {
+              "id": "a32e837dd84d53266aea7f866dbe8f8b8e74f9d31cb9e2120f036e7a3ff960f5",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-heattransfer.htm#simaanl-c-heattransfer-t-matsect1",
+              "source_sha256": "4ae999bcee63d3eb44b4ce2dc54d319fa8417043c4c4c1cb2589c0a8a187e2d2",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "35a8f319f451fd01da60a5a0a57cfa43ea22e5e1e6dc7d92f420537b7d4a2637"
+            },
+            {
+              "id": "45397bf8d67866860992d33bd1a06e7c8bd20cb81e380d25ee74c3d04c05a241",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-heattransfer.htm#simaanl-c-heattransfer-t-SourcesOfNonlinearityInAHeatTransferAnalysis-sma-topic1",
+              "source_sha256": "4ae999bcee63d3eb44b4ce2dc54d319fa8417043c4c4c1cb2589c0a8a187e2d2",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "89a0f1346c9abe7feda7ffea6acce6659a3cb727962f4ddf06a300dca1a7e30a"
+            },
+            {
+              "id": "a0bf9425784497cff7ff8b83c0c261ffdc0a2ecb27850670d48c607a06c910db",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-heattransfer.htm#simaanl-c-heattransfer-steadystate__simaanl-c-heattransfer-s-AutomaticIncrementation-section1",
+              "source_sha256": "4ae999bcee63d3eb44b4ce2dc54d319fa8417043c4c4c1cb2589c0a8a187e2d2",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "162e3a93573db7fab635bbdfc06545c4182cf18f2720310c6bdd78429ef57cca"
+            }
+          ]
+        },
+        {
+          "case_id": "temperature-thermal-expansion",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "temperature_requires_expansion",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            },
+            {
+              "id": "coefficient_reference",
+              "candidate": false,
+              "rerank_top4": false,
+              "delivered": false
+            },
+            {
+              "id": "initial_reference_distinction",
+              "candidate": true,
+              "rerank_top4": false,
+              "delivered": false
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 0.6666666666666666,
+            "rerank_top4": 0.3333333333333333,
+            "delivered": 0.3333333333333333
+          },
+          "complete_evidence": {
+            "candidate": false,
+            "rerank_top4": false,
+            "delivered": false
+          },
+          "first_necessary_parent_rank": 1,
+          "necessary_evidence_rr_at_64": 1.0,
+          "source_targets": [
+            {
+              "id": "initial_reference_distinction_prose",
+              "unit_id": "5f3eb790275affb9673e4e42d25a828ccfc8ca362f8d572f88a8217a261ee6d9",
+              "source_available": true,
+              "searchable": true,
+              "in_dense": false,
+              "in_bm25": true,
+              "in_pool": true,
+              "best_child_rerank": 63,
+              "delivered_exact_atomic_body": false,
+              "context_reference_delivered": false,
+              "delivered_complete": false
+            }
+          ],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 1890,
+            "latency_seconds": {
+              "delivery_replay": 0.03600740013644099
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "31b79082e8bc7ad279ba1d9c0d44acbc9b01e2a259b8ed90117f4b9c2e5c80dc",
+              "source": "http://localhost:4040/English/SIMACAEPRCRefMap/simaprc-c-fields.htm#simaprc-c-fields-temp",
+              "source_sha256": "5d648663cc8972745967e2760739ea54830edf965b54fa04906eb1959c62c514",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "a3522ffacac577accd61ffdbd044d62cf232cd3c1c51848784e3cd79cb1b61cf"
+            },
+            {
+              "id": "6da7622f40a4422086dc95bf1973a29a42ae2c9fbb22a6d4aa1aece7f999aed2",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-thermstressanal.htm#simaanl-c-thermstressanal-t-TransferringTheHeatTransferResultsToTheStressAnalysis-sma-topic2",
+              "source_sha256": "d467937241a9ae67d290435f25337861287d0c6838bb19e219de20ba17d1c15c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "b9b2ba0e7d688baefc1d7baf486ff07e33821acf5a6ed4abde93fb5e76993c41"
+            },
+            {
+              "id": "207539a50bdefb805c3e8b68a5f0a021063af668ec49d63b37d4c32b3362a1b2",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-stdtostd.htm#simaanl-c-stdtostd-t-fieldsect1",
+              "source_sha256": "813455a70ebaaebfe9448ff3a4863becdcb97e479a1fe9d1334dcb3a0ca86d97",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "74766a20117eea2fd5cdcd954d1dfce1c197d4984879891848acd93e04f9ea58"
+            },
+            {
+              "id": "7af16dfba793a189ea08fb03ea2fa886dffc13dbdc2d178cc5030869eef879b4",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-exptostd.htm#simaanl-c-exptostd-fields",
+              "source_sha256": "91ff32b7bbcd9c65f15eacedf89282502127c3eac57a64cf8ec1c3282a634a3c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "077c34736539c8a98ca89fc1a47c73ec94949431502abc7b5596adc78951a17e"
+            }
+          ]
+        },
+        {
+          "case_id": "missing-project-stress-result",
+          "quality_scope": "unanswerable",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2172,
+            "latency_seconds": {
+              "delivery_replay": 0.03768349997699261
+            },
+            "baseline": {}
+          },
+          "rejected": [
+            {
+              "id": "382ffe7172891f346bc19213e5a9ae2b2fe42b71dad9180f2f845f2b98d86b8b",
+              "reason": "unit_body_budget"
+            }
+          ],
+          "evidence": [
+            {
+              "id": "1d4f03ece48e4c61b5ad7fb0c9f3c0393667efc7ebf6932c9f8be31272fe1964",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-optdesignresponses.htm#simaanl-c-optdesignresponses-t-EquivalentStresses-sma-topic7",
+              "source_sha256": "392a5864f1e6db3026fac28816b20295f4f8c6248bd64e62824f20de6ef7ae25",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "10823f57022f474f2c621508fa1e70817fd7bf53a5d41438e57c5f0cf1b979c6"
+            },
+            {
+              "id": "514179ed47485a480b3ef9512b19fa3db2d1b01c0aca74eb4e65d3ab00659cbf",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-optdesignresponses.htm#simaanl-c-optdesignresponses-t-EquivalentStresses-sma-topic7",
+              "source_sha256": "392a5864f1e6db3026fac28816b20295f4f8c6248bd64e62824f20de6ef7ae25",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "42360419df5da9178e87a279821f28acd1dae0198bc21a8f191512d0113e116f"
+            },
+            {
+              "id": "49bffc036ba9104bd52e3c5c1be7151ae2a1c6b6f4c8a3cc0856b05d3b21b163",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-multiloadcase.htm#simaanl-c-multiloadcase-t-LoadCases-sma-topic1",
+              "source_sha256": "28f25faa643ca09fc24cc159eb3005e2c16c3254c587c1e26cff8818c540d377",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "0440f7b7650e4739916fcef7c0fa8a06c49f25c7b85f228b02d20300dbd4f8cc"
+            },
+            {
+              "id": "8fb890cdca3c95746882426d7dd42301afc2914eaf1748a06a31daa3f8a34dee",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-optdesignresponses.htm#simaanl-c-optdesignresponses-t-ScaledCentroidalVonMisesStress-sma-topic13",
+              "source_sha256": "392a5864f1e6db3026fac28816b20295f4f8c6248bd64e62824f20de6ef7ae25",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "42473e61e0312a524c9c30539ba086e9a56fe7cd0bb5014279dee7667eda0da4"
+            }
+          ]
+        },
+        {
+          "case_id": "unavailable-2024-release-evidence",
+          "quality_scope": "unanswerable",
+          "status": "not_found",
+          "guard_pass": null,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "not_executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": null,
+            "latency_seconds": {},
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 8.960021659731865e-05
+            }
+          },
+          "rejected": [],
+          "evidence": []
+        },
+        {
+          "case_id": "exact-api-region-1",
+          "quality_scope": "unannotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2324,
+            "latency_seconds": {
+              "delivery_replay": 0.03678829991258681
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm#simaanl-c-scriptparstudies-t-GatheringResults-sma-topic13",
+              "source_sha256": "6d356354094c9094a7e48bfed8de9b49adea5c9dd04c24516e754d5f17d704e1",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "875471dee1d14bb4de43e7f51116ed1f6a80d5444751f0dd52b20ddf161da268"
+            },
+            {
+              "id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+              "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-Example-section5",
+              "source_sha256": "1a7962cbe71c37f93b3ce8506fe9d1f8032687ad7cc1b51d9045cdd7346ee2b5",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "d85f4f13be4e0444cb38bb77b46b7206a2c2fab282bc5b5c1a9092713b2c1fef"
+            },
+            {
+              "id": "1c2b80d94c5cc40f1f590c67baee896fe96cab9f2f1e96923dfbe99c819735f0",
+              "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11",
+              "source_sha256": "1a7962cbe71c37f93b3ce8506fe9d1f8032687ad7cc1b51d9045cdd7346ee2b5",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "979d47d27f00472fa15706949b5731e8c13ddd250ef112f9e07f0a51219b711c"
+            },
+            {
+              "id": "b535bb5ece41b4b0f34d5568eeb345c2979d033b25259a319b55e32f49b9298d",
+              "source": "http://localhost:4040/English/SIMACAEEXCRefMap/simaexc-c-analysisproc.htm#simaexc-c-analysisproc-t-commandlineopts1__simaexc-c-analysisproc-s-AdditionalOptionAvailableForTheDatacheckModule-comlineoptcustom4",
+              "source_sha256": "14f7c94e2f64b961f9d6780ba440a9afaf7fa346a4e909abda685cff79a0bdb7",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "e780a88cf12731dce2a122d953f8340b6815fe213a666abc9a82b15abd14e76f"
+            }
+          ]
+        },
+        {
+          "case_id": "domain-procedure-applicability-1",
+          "quality_scope": "unannotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 1952,
+            "latency_seconds": {
+              "delivery_replay": 0.04008149984292686
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+              "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "7dd08b587fffb0dc8ad57c6d6258e5e0d90ca29d37c61411b6ac4eb372457cca"
+            },
+            {
+              "id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "a21ddc3345a19a078c4cfff17660797ce086c3fe1b251ab7c0c79f5a2a628d03"
+            },
+            {
+              "id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "7b4386e97e00f9992e0e61421ff9111b55de9c261e58494df0cdcebcd37663dd"
+            },
+            {
+              "id": "9304e3884f2dc97f5cc593fb08daeb2f79bbdd18db94e8411e6981f391534279",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-incrementation",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "37e7ef02297bd6e079d6f8148e00e486d4dc2549c860d537ff5afe753f292ff2"
+            }
+          ]
+        },
+        {
+          "case_id": "recorded-solver-diagnostic-1",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "complete_time_adjustment",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 1.0,
+            "delivered": 1.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": true,
+            "delivered": true
+          },
+          "first_necessary_parent_rank": 1,
+          "necessary_evidence_rr_at_64": 1.0,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2050,
+            "latency_seconds": {
+              "delivery_replay": 0.03559549991041422
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+              "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "53431048e094723504b07c6ac273003bc0593b51762cd3142dfec89532889247"
+            },
+            {
+              "id": "69f59177d9101623ef372831c4516cc664552c4acd0a9324116f463e2b231a0c",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisSpecifyingOutputFrequencyInTimePoints-section8",
+              "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "24179e9b484f930ad60b42abedc5460a399ae41bd35bf7dc07bed153fc0dce0a"
+            },
+            {
+              "id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+              "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "3f15a5e642a25c26378911916678f6ffb35f7e24d8c46f863a6d294d801f7c8d"
+            },
+            {
+              "id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclic.htm#simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+              "source_sha256": "be050bf4d0fe1cfa2d67ef5330105c63c0c5fc815810fb5dbeeb20d0a1c59051",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "26c3aef7317e46de58c00ef08c3022ae28c6d858c1ee0963105df4aed4f44c66"
+            }
+          ]
+        },
+        {
+          "case_id": "recorded-solver-diagnostic-2",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "complete_time_adjustment",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 1.0,
+            "delivered": 1.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": true,
+            "delivered": true
+          },
+          "first_necessary_parent_rank": 4,
+          "necessary_evidence_rr_at_64": 0.25,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 1796,
+            "latency_seconds": {
+              "delivery_replay": 0.035273500019684434
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclic.htm#simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+              "source_sha256": "be050bf4d0fe1cfa2d67ef5330105c63c0c5fc815810fb5dbeeb20d0a1c59051",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "26c3aef7317e46de58c00ef08c3022ae28c6d858c1ee0963105df4aed4f44c66"
+            },
+            {
+              "id": "9af9b454bad0d830b1c569ce052062505f8bd9f3f31878e36885d9300ab3e2e6",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisSpecifyingOutputFrequencyInTimePoints-section8",
+              "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "596d13079697281f75c5fc5e5d18678fef39b470b1edd345e7d0cd80218b0b12"
+            },
+            {
+              "id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclicfatigue.htm#simaanl-c-directcyclicfatigue-t-SpecifyingOutputAtExactTimes-sma-topic19",
+              "source_sha256": "606cf62babb8c00d5496a1c126a285acf1e3f23ee27dbafc15012905db50b1a6",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "8bfa4c4651444753e9818042e25b19ac793e22b3d09185a9a5cab135b2a79db1"
+            },
+            {
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+              "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "53431048e094723504b07c6ac273003bc0593b51762cd3142dfec89532889247"
+            }
+          ]
+        },
+        {
+          "case_id": "explicit-at",
+          "quality_scope": "unannotated",
+          "status": "found",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": 669,
+            "latency_seconds": {
+              "total": 0.894979199860245
+            },
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 0.003795999800786376
+            }
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "simaout-c-exp-nodalvariables#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-exp-nodalvariables.htm#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT",
+              "source_sha256": "fdc7ab41a500fd86061ebd99dfb5b4b05c4cabfbc9cd8a70a5ec997cb5f64049",
+              "release": "2026 FD02",
+              "body_scope": "indexed_symbol_card",
+              "body_sha256": "4dc1b498c6071dbbbe082a38e7671ede80d290dbdad2df84e51e0e55a41a55e7"
+            },
+            {
+              "id": "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+              "source_sha256": "e515d2a9cfbdf08108f5aac0407b4a46c8ef7f93d36fddb9c662947f4db130a5",
+              "release": "2026 FD02",
+              "body_scope": "indexed_symbol_card",
+              "body_sha256": "eb98554eec07a4c5cdd8927bedbc7929ace1f142076da354c7b714c8a30d531e"
+            }
+          ]
+        },
+        {
+          "case_id": "explicit-static",
+          "quality_scope": "unannotated",
+          "status": "found",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": 287,
+            "latency_seconds": {
+              "total": 0.015512199839577079
+            },
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 0.001481599872931838
+            }
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "simakey-r-static#keyword",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static",
+              "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+              "release": "2026 FD02",
+              "body_scope": "indexed_symbol_card",
+              "body_sha256": "af5cc91b2d6038564feab4be72e56e83c3bd5533b7f7b33d7dc1de2fa1b6c7ca"
+            }
+          ]
+        },
+        {
+          "case_id": "unknown-symbol",
+          "quality_scope": "unannotated",
+          "status": "not_found",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": 2,
+            "latency_seconds": {
+              "total": 0.0013763001188635826
+            },
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 4.850002005696297e-05
+            }
+          },
+          "rejected": [],
+          "evidence": []
+        },
+        {
+          "case_id": "unavailable-release",
+          "quality_scope": "unannotated",
+          "status": "not_found",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "not_executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": null,
+            "latency_seconds": {},
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 8.160015568137169e-05
+            }
+          },
+          "rejected": [],
+          "evidence": []
+        },
+        {
+          "case_id": "query-over-encoder-budget",
+          "quality_scope": "unannotated",
+          "status": "query_too_long",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "not_executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": null,
+            "latency_seconds": {},
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 8.569983765482903e-05
+            }
+          },
+          "rejected": [],
+          "evidence": []
+        }
+      ]
+    },
+    "original_pool_order": {
+      "revised": {
+        "cases": 16,
+        "quality_scored_cases": 7,
+        "stages": {
+          "candidate": {
+            "requirements_matched": 10,
+            "requirements_total": 11,
+            "requirement_recall": 0.9090909090909091,
+            "complete_cases": 6,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.8571428571428571
+          },
+          "rerank_top4": {
+            "requirements_matched": 7,
+            "requirements_total": 11,
+            "requirement_recall": 0.6363636363636364,
+            "complete_cases": 4,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.5714285714285714
+          },
+          "delivered": {
+            "requirements_matched": 7,
+            "requirements_total": 11,
+            "requirement_recall": 0.6363636363636364,
+            "complete_cases": 4,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.5714285714285714
+          }
+        },
+        "necessary_evidence_mrr_at_64": 0.6785714285714286,
+        "guard_checks": 5,
+        "guard_passes": 5,
+        "execution_errors": 0,
+        "source_targets": {
+          "checks": 2,
+          "delivered_complete": 1
+        },
+        "reranked_pairs": 640,
+        "quality_gate": "not_defined_not_a_product_acceptance_score"
+      },
+      "legacy": {
+        "cases": 16,
+        "quality_scored_cases": 7,
+        "stages": {
+          "candidate": {
+            "requirements_matched": 9,
+            "requirements_total": 10,
+            "requirement_recall": 0.9,
+            "complete_cases": 6,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.8571428571428571
+          },
+          "rerank_top4": {
+            "requirements_matched": 7,
+            "requirements_total": 10,
+            "requirement_recall": 0.7,
+            "complete_cases": 4,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.5714285714285714
+          },
+          "delivered": {
+            "requirements_matched": 7,
+            "requirements_total": 10,
+            "requirement_recall": 0.7,
+            "complete_cases": 4,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.5714285714285714
+          }
+        },
+        "necessary_evidence_mrr_at_64": 0.75,
+        "guard_checks": 5,
+        "guard_passes": 5,
+        "execution_errors": 0,
+        "source_targets": {
+          "checks": 2,
+          "delivered_complete": 1
+        },
+        "reranked_pairs": 640,
+        "quality_gate": "not_defined_not_a_product_acceptance_score"
+      },
+      "model_inference_pairs": 0,
+      "inference_seconds": 0.0,
+      "results": [
+        {
+          "case_id": "riks-loading-regression",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "riks_load_scaling",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            },
+            {
+              "id": "riks_bc_amplitude",
+              "candidate": true,
+              "rerank_top4": false,
+              "delivered": false
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 0.5,
+            "delivered": 0.5
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": false,
+            "delivered": false
+          },
+          "first_necessary_parent_rank": 2,
+          "necessary_evidence_rr_at_64": 0.5,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2612,
+            "latency_seconds": {
+              "delivery_replay": 0.03661229996941984
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+              "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "7dd08b587fffb0dc8ad57c6d6258e5e0d90ca29d37c61411b6ac4eb372457cca"
+            },
+            {
+              "id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-proportional",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "369a1ed77946185cd023f6d4c15abff59ec0780aceb688a712bba3bad0958902"
+            },
+            {
+              "id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-unstable__simaanl-c-static-s-BucklingOrCollapse-section1",
+              "source_sha256": "c35f5d8390c07490a3d317719b2be232fcc892cfe0c0dee0966327235cec4020",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "17338fbf48571c9ab350b3cfc9c52d8ca1690bf5e1ec7c960c9eb51392671981"
+            },
+            {
+              "id": "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-proportional",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "33db1117b692ff5d1991338407e1d54e63e15a76b3ec675c5a1e7e16b13b356d"
+            }
+          ]
+        },
+        {
+          "case_id": "consistent-unit-system",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "unit_convention",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 1.0,
+            "delivered": 1.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": true,
+            "delivered": true
+          },
+          "first_necessary_parent_rank": 1,
+          "necessary_evidence_rr_at_64": 1.0,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 1993,
+            "latency_seconds": {
+              "delivery_replay": 0.033759200014173985
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "c0cee566bb76c7f17644a9005c2715226ec5132f70b666bd040a43ab71ae6b50",
+              "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-conventions.htm#simamod-c-conventions-t-Units-sma-topic8",
+              "source_sha256": "68b2f0a3a6681613e146a8ac4bf4c61bd1037be1d648e3906a69190133acaa65",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "438ba9e3b9b957a83e85a5507020f1514b63ed5c1597db693abf4394a925ac22"
+            },
+            {
+              "id": "bde3cf47fec51ca855abe9fdabf21092ac08c55c2295a9c91277c97783f0edcc",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-cosimulationprep.htm#simaanl-c-cosimulationprep-t-UnitSystem-sma-topic23",
+              "source_sha256": "06c0431e5bdf22006a65fb096867f489442456b1c8509252a041a49f6b046a55",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "b8000c62174df55fe783799fbb8a60513dacf519e555b56b02458c3f9a316d22"
+            },
+            {
+              "id": "ed88a1bd4209697567d0f4cf6a803be3f2a1879be142cd2d5a27604e683fa89f",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-physicalconstants.htm#table12",
+              "source_sha256": "aed55a5203538e03cc8483ce75a67716b11a4be003ef216eb8a50d403c45c20d",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "2dbb859a93cdc2a17ba4007ea729b0971194b4c3894579b398c2d170643d2f54"
+            },
+            {
+              "id": "70bc1ab2847f91c7aed31517586c1a7dde36017dbd156659b3c0e9c4568734a5",
+              "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-conventions.htm#simamod-c-conventions-unitsystem",
+              "source_sha256": "68b2f0a3a6681613e146a8ac4bf4c61bd1037be1d648e3906a69190133acaa65",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "952ed3592618423d8a8f340ef2b7ece4b7cdb926d93b04b7e5661f5a62a13445"
+            }
+          ]
+        },
+        {
+          "case_id": "odb-history-precision",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "history_single_and_full_field_scope",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 1.0,
+            "delivered": 1.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": true,
+            "delivered": true
+          },
+          "first_necessary_parent_rank": 2,
+          "necessary_evidence_rr_at_64": 0.5,
+          "source_targets": [
+            {
+              "id": "history_only_single_precision",
+              "unit_id": "86ee4b38acae1e8f8f192698ee674318b212c285d286fcbb6cd46926e6630029",
+              "source_available": true,
+              "searchable": true,
+              "in_dense": true,
+              "in_bm25": true,
+              "in_pool": true,
+              "best_child_rerank": 2,
+              "delivered_exact_atomic_body": true,
+              "context_reference_delivered": false,
+              "delivered_complete": true
+            }
+          ],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2101,
+            "latency_seconds": {
+              "delivery_replay": 0.03524450003169477
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "75c5496178929b9fe98e5758ff5b84985acbfe4e20c9582cb703456efcbf3ee4",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-output.htm#simaout-c-output-t-FormatOfTheOutputDatabase-sma-topic5__simaout-c-output-s-HandlingOfFloatingPointData-section7",
+              "source_sha256": "adbaee3be790ea653824ec34b747b32a19b88a11b0e2f10ad620985c1cfb8aee",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "c0db58f12890695e37b3aae6c859f53ea6435b6d030a5cd8c7dd332a1271d8fd"
+            },
+            {
+              "id": "86ee4b38acae1e8f8f192698ee674318b212c285d286fcbb6cd46926e6630029",
+              "source": "http://localhost:4040/English/SIMACAEEXCRefMap/simaexc-c-analysisproc.htm#simaexc-c-analysisproc-t-commandlineopts1__simaexc-c-analysisproc-s-AdditionalOptionsAvailableForTheAnalysisModule-comlineoptcustom3",
+              "source_sha256": "14f7c94e2f64b961f9d6780ba440a9afaf7fa346a4e909abda685cff79a0bdb7",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "17d47e677a3fb6fbcf71666753b0fb3be8bbdbb7d421c1328938de9929b3d4cd"
+            },
+            {
+              "id": "cb340274d8281ca2afdd66125f05a632813d6a13e2c5b1c2c8ccbb3fdc5f4de7",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-output.htm#simaout-c-output-t-FormatOfTheResultsFile-sma-topic13__simaout-c-output-s-PrecisionOfFloatingPointDataInTheResultsFile-section14",
+              "source_sha256": "adbaee3be790ea653824ec34b747b32a19b88a11b0e2f10ad620985c1cfb8aee",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "058cf33d1ecf6937d252079cd8c3e9a5682fd03ec81061093c957f3a8af543e4"
+            },
+            {
+              "id": "d9287cff6d33b48622012ad969c13978d4163d4924d35f26e76009e5e9a484fa",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-precision.htm#table11",
+              "source_sha256": "ec1faede4f81847efc15bb0a2fc3546b51914c68edc9b5d362ddc511470d4575",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "efb3add21d83711efdcb2c97b83bd75914ba94e98e45a6ac395c83a32aef4b4d"
+            }
+          ]
+        },
+        {
+          "case_id": "steady-transient-heat-properties",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "steady_internal_energy",
+              "candidate": true,
+              "rerank_top4": false,
+              "delivered": false
+            },
+            {
+              "id": "transient_material_requirements",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 0.5,
+            "delivered": 0.5
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": false,
+            "delivered": false
+          },
+          "first_necessary_parent_rank": 1,
+          "necessary_evidence_rr_at_64": 1.0,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 3211,
+            "latency_seconds": {
+              "delivery_replay": 0.037529699970036745
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "a32e837dd84d53266aea7f866dbe8f8b8e74f9d31cb9e2120f036e7a3ff960f5",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-heattransfer.htm#simaanl-c-heattransfer-t-matsect1",
+              "source_sha256": "4ae999bcee63d3eb44b4ce2dc54d319fa8417043c4c4c1cb2589c0a8a187e2d2",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "35a8f319f451fd01da60a5a0a57cfa43ea22e5e1e6dc7d92f420537b7d4a2637"
+            },
+            {
+              "id": "0d3c19147e2508a53df666903a8d27d787d0dc4f4115249840df874ea770637c",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-heattransfer.htm#simaanl-c-heattransfer-t-elemsect1",
+              "source_sha256": "4ae999bcee63d3eb44b4ce2dc54d319fa8417043c4c4c1cb2589c0a8a187e2d2",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "bbace53dd6857220a0da88d808ff51035c0f1548088bf2c73fd4d31b3277e63f"
+            },
+            {
+              "id": "2d59c8ba95a3275d218c3ade07f0bf3b3eac489418040af79011d7af144200ea",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-heatproc.htm#table11",
+              "source_sha256": "5fadfa947dbb1237f0f279eaef47a81dabb2dd16fa341370f10dcac6b4770c40",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "b59cb30aaa2004be7b7823a32b7da0f4363cd73b49d38d5f2e5b3af46fdc8799"
+            },
+            {
+              "id": "c1a80b054136d0c44ef7c34d6520baaaa710341f7f144b241166494db362938b",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-heattransfer.htm#simaanl-c-heattransfer-transient",
+              "source_sha256": "4ae999bcee63d3eb44b4ce2dc54d319fa8417043c4c4c1cb2589c0a8a187e2d2",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "1425b8eb81be47cf1d32a20e7084c5044acd24261658da2b34d6cad31a991dd4"
+            }
+          ]
+        },
+        {
+          "case_id": "temperature-thermal-expansion",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "temperature_requires_expansion",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            },
+            {
+              "id": "coefficient_reference",
+              "candidate": false,
+              "rerank_top4": false,
+              "delivered": false
+            },
+            {
+              "id": "initial_reference_distinction",
+              "candidate": true,
+              "rerank_top4": false,
+              "delivered": false
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 0.6666666666666666,
+            "rerank_top4": 0.3333333333333333,
+            "delivered": 0.3333333333333333
+          },
+          "complete_evidence": {
+            "candidate": false,
+            "rerank_top4": false,
+            "delivered": false
+          },
+          "first_necessary_parent_rank": 1,
+          "necessary_evidence_rr_at_64": 1.0,
+          "source_targets": [
+            {
+              "id": "initial_reference_distinction_prose",
+              "unit_id": "5f3eb790275affb9673e4e42d25a828ccfc8ca362f8d572f88a8217a261ee6d9",
+              "source_available": true,
+              "searchable": true,
+              "in_dense": false,
+              "in_bm25": true,
+              "in_pool": true,
+              "best_child_rerank": 14,
+              "delivered_exact_atomic_body": false,
+              "context_reference_delivered": false,
+              "delivered_complete": false
+            }
+          ],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 1987,
+            "latency_seconds": {
+              "delivery_replay": 0.03591000009328127
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "31b79082e8bc7ad279ba1d9c0d44acbc9b01e2a259b8ed90117f4b9c2e5c80dc",
+              "source": "http://localhost:4040/English/SIMACAEPRCRefMap/simaprc-c-fields.htm#simaprc-c-fields-temp",
+              "source_sha256": "5d648663cc8972745967e2760739ea54830edf965b54fa04906eb1959c62c514",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "a3522ffacac577accd61ffdbd044d62cf232cd3c1c51848784e3cd79cb1b61cf"
+            },
+            {
+              "id": "7af16dfba793a189ea08fb03ea2fa886dffc13dbdc2d178cc5030869eef879b4",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-exptostd.htm#simaanl-c-exptostd-fields",
+              "source_sha256": "91ff32b7bbcd9c65f15eacedf89282502127c3eac57a64cf8ec1c3282a634a3c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "077c34736539c8a98ca89fc1a47c73ec94949431502abc7b5596adc78951a17e"
+            },
+            {
+              "id": "207539a50bdefb805c3e8b68a5f0a021063af668ec49d63b37d4c32b3362a1b2",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-stdtostd.htm#simaanl-c-stdtostd-t-fieldsect1",
+              "source_sha256": "813455a70ebaaebfe9448ff3a4863becdcb97e479a1fe9d1334dcb3a0ca86d97",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "74766a20117eea2fd5cdcd954d1dfce1c197d4984879891848acd93e04f9ea58"
+            },
+            {
+              "id": "f5a978d0ada1ca7882ea0264eca6b1fa64ead02aad6bb65fb0ab7009ff2f3565",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-aqua.htm#simaanl-c-aqua-t-fieldsect1",
+              "source_sha256": "9586ae911159d6be6306ae0bb39659ed6fdd19ada97c450a9cdaec4850a25e29",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "b56e2e9cc144235749d3f97e69b0a2fffe0cee95571e03e1c368046327b9bdfd"
+            }
+          ]
+        },
+        {
+          "case_id": "missing-project-stress-result",
+          "quality_scope": "unanswerable",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 1954,
+            "latency_seconds": {
+              "delivery_replay": 0.036076099844649434
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "077234ee668acee273d14c2f89fb30bf346862a65fef7b4a22c9ed600dabbe77",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-optdesignresponses.htm#simaanl-c-optdesignresponses-t-ScaledCentroidalVonMisesStress-sma-topic13",
+              "source_sha256": "392a5864f1e6db3026fac28816b20295f4f8c6248bd64e62824f20de6ef7ae25",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "427af0d81fce07123a50ec87bea5ce039cbc6740bc49861bd04684fb686eb80c"
+            },
+            {
+              "id": "6a2ca750d33bdba98f932e2b5c1fc64f360daa5aa65e7fbce8b69f61a3c3f151",
+              "source": "http://localhost:4040/English/SIMACAEPRCRefMap/simaprc-c-initialcond-t-SpecifyingTheTypeOfInitialConditionBeingDefined-sma-topic1.htm#simaprc-c-initialcond-stress__simaprc-c-initialcond-s-DefiningInitialStressesUsingStressOutputFromAUserspecifiedOutputDatabaseFile-section24",
+              "source_sha256": "664f261bfeaf3bac52c0c70e7b0e39489fcff0859e82e87bfa2e58250986f47b",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "842151f4b72f765d6d0d5da07c62a42ac6724a7058e42f01e70327170df94024"
+            },
+            {
+              "id": "514179ed47485a480b3ef9512b19fa3db2d1b01c0aca74eb4e65d3ab00659cbf",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-optdesignresponses.htm#simaanl-c-optdesignresponses-t-EquivalentStresses-sma-topic7",
+              "source_sha256": "392a5864f1e6db3026fac28816b20295f4f8c6248bd64e62824f20de6ef7ae25",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "42360419df5da9178e87a279821f28acd1dae0198bc21a8f191512d0113e116f"
+            },
+            {
+              "id": "49e90538bc0dc5d3ddcb3436376b91cc356e814841da38b8c4b88d9ca22a0815",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-optabaqus.htm#simaanl-c-optabaqus-t-SupportForMultipleModels-sma-topic4",
+              "source_sha256": "262dd5c7d5509f41ad7bc0697e1ef6b6c3f6113296064ec3caaa022985b132c6",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "f1020faf395ef9cc1b9f3c84e7860914da888c193fdf5695e67144a7365e0311"
+            }
+          ]
+        },
+        {
+          "case_id": "unavailable-2024-release-evidence",
+          "quality_scope": "unanswerable",
+          "status": "not_found",
+          "guard_pass": null,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "not_executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": null,
+            "latency_seconds": {},
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 8.960021659731865e-05
+            }
+          },
+          "rejected": [],
+          "evidence": []
+        },
+        {
+          "case_id": "exact-api-region-1",
+          "quality_scope": "unannotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2161,
+            "latency_seconds": {
+              "delivery_replay": 0.034508700016885996
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm#simaanl-c-scriptparstudies-t-GatheringResults-sma-topic13",
+              "source_sha256": "6d356354094c9094a7e48bfed8de9b49adea5c9dd04c24516e754d5f17d704e1",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "875471dee1d14bb4de43e7f51116ed1f6a80d5444751f0dd52b20ddf161da268"
+            },
+            {
+              "id": "eab4053b526fa9e23df58c019f3acca5b68590494603c584e907281c86f07325",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-output.htm#simaout-c-output-t-PartAndAssemblyInformation-sma-topic12",
+              "source_sha256": "adbaee3be790ea653824ec34b747b32a19b88a11b0e2f10ad620985c1cfb8aee",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "b46f669a5487690f67ba43812f98bb8813a7723aec63c094e8abb6f7d91bb5dc"
+            },
+            {
+              "id": "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2",
+              "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-AlternateMethodForDefiningAssemblylevelNodeSets-section6",
+              "source_sha256": "1a7962cbe71c37f93b3ce8506fe9d1f8032687ad7cc1b51d9045cdd7346ee2b5",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "17fa9b201fd4fee44b4be0862e4bf041c7d4712863285658a1660f3dd5d37f7e"
+            },
+            {
+              "id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+              "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-Example-section5",
+              "source_sha256": "1a7962cbe71c37f93b3ce8506fe9d1f8032687ad7cc1b51d9045cdd7346ee2b5",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "d85f4f13be4e0444cb38bb77b46b7206a2c2fab282bc5b5c1a9092713b2c1fef"
+            }
+          ]
+        },
+        {
+          "case_id": "domain-procedure-applicability-1",
+          "quality_scope": "unannotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2788,
+            "latency_seconds": {
+              "delivery_replay": 0.03961370000615716
+            },
+            "baseline": {}
+          },
+          "rejected": [
+            {
+              "id": "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b",
+              "reason": "unit_body_budget"
+            }
+          ],
+          "evidence": [
+            {
+              "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+              "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "7dd08b587fffb0dc8ad57c6d6258e5e0d90ca29d37c61411b6ac4eb372457cca"
+            },
+            {
+              "id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-proportional",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "369a1ed77946185cd023f6d4c15abff59ec0780aceb688a712bba3bad0958902"
+            },
+            {
+              "id": "078a36ca39dc9500d915a5ff84dc47f70e41780421043cff3b3c5ee581700c45",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-solutiondependentamplitudevariables.htm#table11",
+              "source_sha256": "1b94726465a1df7ecf314aa349e480f4d5d6d57049c40e380487e0d11aba5bca",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "740760d8bae710771cb1227084b59bdc35c179ca01c8ec814ac90e94e201c506"
+            },
+            {
+              "id": "9304e3884f2dc97f5cc593fb08daeb2f79bbdd18db94e8411e6981f391534279",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-incrementation",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "37e7ef02297bd6e079d6f8148e00e486d4dc2549c860d537ff5afe753f292ff2"
+            }
+          ]
+        },
+        {
+          "case_id": "recorded-solver-diagnostic-1",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "complete_time_adjustment",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 1.0,
+            "delivered": 1.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": true,
+            "delivered": true
+          },
+          "first_necessary_parent_rank": 4,
+          "necessary_evidence_rr_at_64": 0.25,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2593,
+            "latency_seconds": {
+              "delivery_replay": 0.036254600156098604
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+              "source_sha256": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "3f15a5e642a25c26378911916678f6ffb35f7e24d8c46f863a6d294d801f7c8d"
+            },
+            {
+              "id": "52c3655479776b350b24239e96d5764ff2bfbf2e5e5f85a8cdde0f58ff3f934c",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-requestingoutput-odb.htm#table11",
+              "source_sha256": "0c7d1b16a01fb71fa332a1c9c2b0aa817a9f0f93fd74fcc82f9b3694b80d3a16",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "1f5f4b341f785a5026352aa843dbde213ed4a3115bda1ee746a7933f568eab9f"
+            },
+            {
+              "id": "69f59177d9101623ef372831c4516cc664552c4acd0a9324116f463e2b231a0c",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisSpecifyingOutputFrequencyInTimePoints-section8",
+              "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "24179e9b484f930ad60b42abedc5460a399ae41bd35bf7dc07bed153fc0dce0a"
+            },
+            {
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+              "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "53431048e094723504b07c6ac273003bc0593b51762cd3142dfec89532889247"
+            }
+          ]
+        },
+        {
+          "case_id": "recorded-solver-diagnostic-2",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "complete_time_adjustment",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 1.0,
+            "delivered": 1.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": true,
+            "delivered": true
+          },
+          "first_necessary_parent_rank": 2,
+          "necessary_evidence_rr_at_64": 0.5,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2615,
+            "latency_seconds": {
+              "delivery_replay": 0.0384551000315696
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "456885a6d27fdf1c5a4e5109c9dc1a70a1da5e12b35c88be3544273d79fa2e46",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-geostatic.htm#simakey-r-geostatic__simakey-r-geostatic-s-datadesc1",
+              "source_sha256": "0da28bebd5a3a6347fc12ef45d764cced1bb4db703614b1b80ee0cfd80e74db6",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "5ce89b99289209989aa6a4f5a8200acd1b4fedc1453be507e0a990646b155ea6"
+            },
+            {
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+              "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "53431048e094723504b07c6ac273003bc0593b51762cd3142dfec89532889247"
+            },
+            {
+              "id": "c5bee5600cbae234243ddb9e36007f5ac3b3186f3fdda096862a607ca211d1ad",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-nonlineareqns.htm#simaanl-c-nonlineareqns-t-AutomaticIncrementationControl-sma-topic4",
+              "source_sha256": "c60424f8b5c8ff2f43d651542a34a11e6f99f01acebbcb95972e53bbad8172bd",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "65f35c9fe5f303d97c4ceeba2096e0667984a19663be31356ac3eeae2325919f"
+            },
+            {
+              "id": "3d38d7771eee3ec1a6345cd8c42ee27cc623693175ba89026197f1cab81b7f1b",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-over.htm#sma-topic_m3q_nnp_hyb",
+              "source_sha256": "90b784cf52ffa7a0804000d2acd595cf2d102f6ff767ecec2abe2ebc84904545",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "476d6796ba6a6f1cc1af0be533a0d3731883d997025d9f09ec3d1c09ab9c7d8d"
+            }
+          ]
+        },
+        {
+          "case_id": "explicit-at",
+          "quality_scope": "unannotated",
+          "status": "found",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": 669,
+            "latency_seconds": {
+              "total": 0.894979199860245
+            },
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 0.003795999800786376
+            }
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "simaout-c-exp-nodalvariables#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-exp-nodalvariables.htm#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT",
+              "source_sha256": "fdc7ab41a500fd86061ebd99dfb5b4b05c4cabfbc9cd8a70a5ec997cb5f64049",
+              "release": "2026 FD02",
+              "body_scope": "indexed_symbol_card",
+              "body_sha256": "4dc1b498c6071dbbbe082a38e7671ede80d290dbdad2df84e51e0e55a41a55e7"
+            },
+            {
+              "id": "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+              "source_sha256": "e515d2a9cfbdf08108f5aac0407b4a46c8ef7f93d36fddb9c662947f4db130a5",
+              "release": "2026 FD02",
+              "body_scope": "indexed_symbol_card",
+              "body_sha256": "eb98554eec07a4c5cdd8927bedbc7929ace1f142076da354c7b714c8a30d531e"
+            }
+          ]
+        },
+        {
+          "case_id": "explicit-static",
+          "quality_scope": "unannotated",
+          "status": "found",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": 287,
+            "latency_seconds": {
+              "total": 0.015512199839577079
+            },
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 0.001481599872931838
+            }
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "simakey-r-static#keyword",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static",
+              "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+              "release": "2026 FD02",
+              "body_scope": "indexed_symbol_card",
+              "body_sha256": "af5cc91b2d6038564feab4be72e56e83c3bd5533b7f7b33d7dc1de2fa1b6c7ca"
+            }
+          ]
+        },
+        {
+          "case_id": "unknown-symbol",
+          "quality_scope": "unannotated",
+          "status": "not_found",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": 2,
+            "latency_seconds": {
+              "total": 0.0013763001188635826
+            },
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 4.850002005696297e-05
+            }
+          },
+          "rejected": [],
+          "evidence": []
+        },
+        {
+          "case_id": "unavailable-release",
+          "quality_scope": "unannotated",
+          "status": "not_found",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "not_executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": null,
+            "latency_seconds": {},
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 8.160015568137169e-05
+            }
+          },
+          "rejected": [],
+          "evidence": []
+        },
+        {
+          "case_id": "query-over-encoder-budget",
+          "quality_scope": "unannotated",
+          "status": "query_too_long",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "not_executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": null,
+            "latency_seconds": {},
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 8.569983765482903e-05
+            }
+          },
+          "rejected": [],
+          "evidence": []
+        }
+      ]
+    },
+    "bge_v2_m3": {
+      "revised": {
+        "cases": 16,
+        "quality_scored_cases": 7,
+        "stages": {
+          "candidate": {
+            "requirements_matched": 10,
+            "requirements_total": 11,
+            "requirement_recall": 0.9090909090909091,
+            "complete_cases": 6,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.8571428571428571
+          },
+          "rerank_top4": {
+            "requirements_matched": 7,
+            "requirements_total": 11,
+            "requirement_recall": 0.6363636363636364,
+            "complete_cases": 4,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.5714285714285714
+          },
+          "delivered": {
+            "requirements_matched": 7,
+            "requirements_total": 11,
+            "requirement_recall": 0.6363636363636364,
+            "complete_cases": 4,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.5714285714285714
+          }
+        },
+        "necessary_evidence_mrr_at_64": 0.8333333333333333,
+        "guard_checks": 5,
+        "guard_passes": 5,
+        "execution_errors": 0,
+        "source_targets": {
+          "checks": 2,
+          "delivered_complete": 1
+        },
+        "reranked_pairs": 640,
+        "quality_gate": "not_defined_not_a_product_acceptance_score"
+      },
+      "legacy": {
+        "cases": 16,
+        "quality_scored_cases": 7,
+        "stages": {
+          "candidate": {
+            "requirements_matched": 9,
+            "requirements_total": 10,
+            "requirement_recall": 0.9,
+            "complete_cases": 6,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.8571428571428571
+          },
+          "rerank_top4": {
+            "requirements_matched": 7,
+            "requirements_total": 10,
+            "requirement_recall": 0.7,
+            "complete_cases": 4,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.5714285714285714
+          },
+          "delivered": {
+            "requirements_matched": 7,
+            "requirements_total": 10,
+            "requirement_recall": 0.7,
+            "complete_cases": 4,
+            "scored_cases": 7,
+            "complete_evidence_rate": 0.5714285714285714
+          }
+        },
+        "necessary_evidence_mrr_at_64": 0.7619047619047619,
+        "guard_checks": 5,
+        "guard_passes": 5,
+        "execution_errors": 0,
+        "source_targets": {
+          "checks": 2,
+          "delivered_complete": 1
+        },
+        "reranked_pairs": 640,
+        "quality_gate": "not_defined_not_a_product_acceptance_score"
+      },
+      "model_inference_pairs": 640,
+      "inference_seconds": 403.1318362997845,
+      "results": [
+        {
+          "case_id": "riks-loading-regression",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "riks_load_scaling",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            },
+            {
+              "id": "riks_bc_amplitude",
+              "candidate": true,
+              "rerank_top4": false,
+              "delivered": false
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 0.5,
+            "delivered": 0.5
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": false,
+            "delivered": false
+          },
+          "first_necessary_parent_rank": 1,
+          "necessary_evidence_rr_at_64": 1.0,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2935,
+            "latency_seconds": {
+              "delivery_replay": 0.03740090015344322
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-proportional",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "369a1ed77946185cd023f6d4c15abff59ec0780aceb688a712bba3bad0958902"
+            },
+            {
+              "id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-unstable__simaanl-c-static-s-BucklingOrCollapse-section1",
+              "source_sha256": "c35f5d8390c07490a3d317719b2be232fcc892cfe0c0dee0966327235cec4020",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "17338fbf48571c9ab350b3cfc9c52d8ca1690bf5e1ec7c960c9eb51392671981"
+            },
+            {
+              "id": "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "1c08a27fbcdfd059d8424ab6a4d766dc791655d70b76e86701d9376159ebca40"
+            },
+            {
+              "id": "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "fd3bc376c648b70d7fb4637edc876974cbf2fcc8d124ad8dd450d92103d866fd"
+            }
+          ]
+        },
+        {
+          "case_id": "consistent-unit-system",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "unit_convention",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 1.0,
+            "delivered": 1.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": true,
+            "delivered": true
+          },
+          "first_necessary_parent_rank": 3,
+          "necessary_evidence_rr_at_64": 0.3333333333333333,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2008,
+            "latency_seconds": {
+              "delivery_replay": 0.03584469994530082
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "ed88a1bd4209697567d0f4cf6a803be3f2a1879be142cd2d5a27604e683fa89f",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-physicalconstants.htm#table12",
+              "source_sha256": "aed55a5203538e03cc8483ce75a67716b11a4be003ef216eb8a50d403c45c20d",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "2dbb859a93cdc2a17ba4007ea729b0971194b4c3894579b398c2d170643d2f54"
+            },
+            {
+              "id": "126d2dff9ec1c60a5076ded2c45268854261a8d4a2bf4bd19cb639872210ed95",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-r-wn.htm#simaanl-r-wn-genxslid-wnentry37-FUN144793",
+              "source_sha256": "58b8df05c6b40d5e7385e1f333dcc8018045c860a0691c98025b91f0b1117159",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "bf5b315a7c35ee280195ae8b394f9002b1109c4565ee7dc9679e884d769f8c9c"
+            },
+            {
+              "id": "c0cee566bb76c7f17644a9005c2715226ec5132f70b666bd040a43ab71ae6b50",
+              "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-conventions.htm#simamod-c-conventions-t-Units-sma-topic8",
+              "source_sha256": "68b2f0a3a6681613e146a8ac4bf4c61bd1037be1d648e3906a69190133acaa65",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "438ba9e3b9b957a83e85a5507020f1514b63ed5c1597db693abf4394a925ac22"
+            },
+            {
+              "id": "1859434287b4a2d855973ab191a54b3ea7d80f7d502b6b0828241a6525b584f0",
+              "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-conventions.htm#simamod-c-conventions-unitsystem",
+              "source_sha256": "68b2f0a3a6681613e146a8ac4bf4c61bd1037be1d648e3906a69190133acaa65",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "2f5d4eba1b69e89add42434dd6d9160ab3fcf7425ed512eb0b29486f04b0f7dd"
+            }
+          ]
+        },
+        {
+          "case_id": "odb-history-precision",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "history_single_and_full_field_scope",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 1.0,
+            "delivered": 1.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": true,
+            "delivered": true
+          },
+          "first_necessary_parent_rank": 1,
+          "necessary_evidence_rr_at_64": 1.0,
+          "source_targets": [
+            {
+              "id": "history_only_single_precision",
+              "unit_id": "86ee4b38acae1e8f8f192698ee674318b212c285d286fcbb6cd46926e6630029",
+              "source_available": true,
+              "searchable": true,
+              "in_dense": true,
+              "in_bm25": true,
+              "in_pool": true,
+              "best_child_rerank": 1,
+              "delivered_exact_atomic_body": true,
+              "context_reference_delivered": false,
+              "delivered_complete": true
+            }
+          ],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2308,
+            "latency_seconds": {
+              "delivery_replay": 0.036303000058978796
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "86ee4b38acae1e8f8f192698ee674318b212c285d286fcbb6cd46926e6630029",
+              "source": "http://localhost:4040/English/SIMACAEEXCRefMap/simaexc-c-analysisproc.htm#simaexc-c-analysisproc-t-commandlineopts1__simaexc-c-analysisproc-s-AdditionalOptionsAvailableForTheAnalysisModule-comlineoptcustom3",
+              "source_sha256": "14f7c94e2f64b961f9d6780ba440a9afaf7fa346a4e909abda685cff79a0bdb7",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "17d47e677a3fb6fbcf71666753b0fb3be8bbdbb7d421c1328938de9929b3d4cd"
+            },
+            {
+              "id": "75c5496178929b9fe98e5758ff5b84985acbfe4e20c9582cb703456efcbf3ee4",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-output.htm#simaout-c-output-t-FormatOfTheOutputDatabase-sma-topic5__simaout-c-output-s-HandlingOfFloatingPointData-section7",
+              "source_sha256": "adbaee3be790ea653824ec34b747b32a19b88a11b0e2f10ad620985c1cfb8aee",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "c0db58f12890695e37b3aae6c859f53ea6435b6d030a5cd8c7dd332a1271d8fd"
+            },
+            {
+              "id": "b4fabf406e502a3e164decc898e6cc08dcad96dadfb59eb0a9e379959691f78f",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-over.htm#simaanl-c-over-precision",
+              "source_sha256": "90b784cf52ffa7a0804000d2acd595cf2d102f6ff767ecec2abe2ebc84904545",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "9724e51265606ca3667ca079a842ff780b4ef11d1ca27718df0ae454c1f19dd2"
+            },
+            {
+              "id": "d0ae4fc1075b134fdef1e7000de243701f9f050526986e3264349b2c3e6bb155",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-stdoutputvar.htm#simaout-c-stdoutputvar-t-DirectionDefinitionsForNodalVariables-sma-topic6",
+              "source_sha256": "4d9a0cbc3262cc2d77ab36c1e42034584dead3844f49f0af54a06824973c1d79",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "d09f78a2178d20f2a074d0dc0b4d8bda7f9c9c40e6a49603095cde8966de2445"
+            }
+          ]
+        },
+        {
+          "case_id": "steady-transient-heat-properties",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "steady_internal_energy",
+              "candidate": true,
+              "rerank_top4": false,
+              "delivered": false
+            },
+            {
+              "id": "transient_material_requirements",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 0.5,
+            "delivered": 0.5
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": false,
+            "delivered": false
+          },
+          "first_necessary_parent_rank": 1,
+          "necessary_evidence_rr_at_64": 1.0,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 3708,
+            "latency_seconds": {
+              "delivery_replay": 0.053286900045350194
+            },
+            "baseline": {}
+          },
+          "rejected": [
+            {
+              "id": "d6563fec7860315c96e69a1e048c32e9107561b3b6f9ad5a6c757657aada1e8a",
+              "reason": "serialized_context_budget"
+            }
+          ],
+          "evidence": [
+            {
+              "id": "a32e837dd84d53266aea7f866dbe8f8b8e74f9d31cb9e2120f036e7a3ff960f5",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-heattransfer.htm#simaanl-c-heattransfer-t-matsect1",
+              "source_sha256": "4ae999bcee63d3eb44b4ce2dc54d319fa8417043c4c4c1cb2589c0a8a187e2d2",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "35a8f319f451fd01da60a5a0a57cfa43ea22e5e1e6dc7d92f420537b7d4a2637"
+            },
+            {
+              "id": "0db326c6c8d96bf29ddcdad93645561fd075c54990263c29db692829de6cdf77",
+              "source": "http://localhost:4040/English/SIMACAEMATRefMap/simamat-c-specificheat.htm#table12",
+              "source_sha256": "2aacf91863cfb8cc7083b8ae0ef07b1c5f7e8d901298a9d692487dc43042cfed",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "214f019f3f5f0646dabb4dd02c4e2d49708f205c9b6e83854b155c80258a3d4c"
+            },
+            {
+              "id": "f4fce46380d4a76316898ca4349d177911a1f36c91cbfc53f17f8bc22daba63d",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-heattransfer.htm#simaanl-c-heattransfer-forcedconvection",
+              "source_sha256": "4ae999bcee63d3eb44b4ce2dc54d319fa8417043c4c4c1cb2589c0a8a187e2d2",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "35fb902701951fa578068373ea303f6e2cd508535931248e0342f8a0766f8bef"
+            },
+            {
+              "id": "45397bf8d67866860992d33bd1a06e7c8bd20cb81e380d25ee74c3d04c05a241",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-heattransfer.htm#simaanl-c-heattransfer-t-SourcesOfNonlinearityInAHeatTransferAnalysis-sma-topic1",
+              "source_sha256": "4ae999bcee63d3eb44b4ce2dc54d319fa8417043c4c4c1cb2589c0a8a187e2d2",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "89a0f1346c9abe7feda7ffea6acce6659a3cb727962f4ddf06a300dca1a7e30a"
+            }
+          ]
+        },
+        {
+          "case_id": "temperature-thermal-expansion",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "temperature_requires_expansion",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            },
+            {
+              "id": "coefficient_reference",
+              "candidate": false,
+              "rerank_top4": false,
+              "delivered": false
+            },
+            {
+              "id": "initial_reference_distinction",
+              "candidate": true,
+              "rerank_top4": false,
+              "delivered": false
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 0.6666666666666666,
+            "rerank_top4": 0.3333333333333333,
+            "delivered": 0.3333333333333333
+          },
+          "complete_evidence": {
+            "candidate": false,
+            "rerank_top4": false,
+            "delivered": false
+          },
+          "first_necessary_parent_rank": 1,
+          "necessary_evidence_rr_at_64": 1.0,
+          "source_targets": [
+            {
+              "id": "initial_reference_distinction_prose",
+              "unit_id": "5f3eb790275affb9673e4e42d25a828ccfc8ca362f8d572f88a8217a261ee6d9",
+              "source_available": true,
+              "searchable": true,
+              "in_dense": false,
+              "in_bm25": true,
+              "in_pool": true,
+              "best_child_rerank": 32,
+              "delivered_exact_atomic_body": false,
+              "context_reference_delivered": false,
+              "delivered_complete": false
+            }
+          ],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 1800,
+            "latency_seconds": {
+              "delivery_replay": 0.03629459999501705
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "31b79082e8bc7ad279ba1d9c0d44acbc9b01e2a259b8ed90117f4b9c2e5c80dc",
+              "source": "http://localhost:4040/English/SIMACAEPRCRefMap/simaprc-c-fields.htm#simaprc-c-fields-temp",
+              "source_sha256": "5d648663cc8972745967e2760739ea54830edf965b54fa04906eb1959c62c514",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "a3522ffacac577accd61ffdbd044d62cf232cd3c1c51848784e3cd79cb1b61cf"
+            },
+            {
+              "id": "6da7622f40a4422086dc95bf1973a29a42ae2c9fbb22a6d4aa1aece7f999aed2",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-thermstressanal.htm#simaanl-c-thermstressanal-t-TransferringTheHeatTransferResultsToTheStressAnalysis-sma-topic2",
+              "source_sha256": "d467937241a9ae67d290435f25337861287d0c6838bb19e219de20ba17d1c15c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "b9b2ba0e7d688baefc1d7baf486ff07e33821acf5a6ed4abde93fb5e76993c41"
+            },
+            {
+              "id": "1da2e7eb3909a41bb74e4c29abdea27eeffdda08ddc3d1a28cbefc6a5161b789",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-thermstressanal.htm#simaanl-c-thermstressanal-t-matsect1",
+              "source_sha256": "d467937241a9ae67d290435f25337861287d0c6838bb19e219de20ba17d1c15c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "af8a11812c525cb04a2b50b1ff3d3a9d60ff5433dacb377fd2998a23f07ab0c7"
+            },
+            {
+              "id": "55a0013c228dbfa9725bd8d16394f4d4b57f20e012ad4c70e76de295b0213a31",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-couptempdisp.htm#simaanl-c-couptempdisp-t-matsect1",
+              "source_sha256": "261e1e5d4f33efe5c8049601c3e4163afc44ea9faf43e2a894b222021b620bf1",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "e1555fdd7500c5c3901e5c600d3b89ea85ad804381590e42fcab3ea1519da3e1"
+            }
+          ]
+        },
+        {
+          "case_id": "missing-project-stress-result",
+          "quality_scope": "unanswerable",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2255,
+            "latency_seconds": {
+              "delivery_replay": 0.03943190001882613
+            },
+            "baseline": {}
+          },
+          "rejected": [
+            {
+              "id": "382ffe7172891f346bc19213e5a9ae2b2fe42b71dad9180f2f845f2b98d86b8b",
+              "reason": "unit_body_budget"
+            },
+            {
+              "id": "3d866d0db3bb17b208f32894e627b096d5df7c423845ecb30924ff70e3ed1262",
+              "reason": "unit_body_budget"
+            }
+          ],
+          "evidence": [
+            {
+              "id": "49bffc036ba9104bd52e3c5c1be7151ae2a1c6b6f4c8a3cc0856b05d3b21b163",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-multiloadcase.htm#simaanl-c-multiloadcase-t-LoadCases-sma-topic1",
+              "source_sha256": "28f25faa643ca09fc24cc159eb3005e2c16c3254c587c1e26cff8818c540d377",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "0440f7b7650e4739916fcef7c0fa8a06c49f25c7b85f228b02d20300dbd4f8cc"
+            },
+            {
+              "id": "514179ed47485a480b3ef9512b19fa3db2d1b01c0aca74eb4e65d3ab00659cbf",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-optdesignresponses.htm#simaanl-c-optdesignresponses-t-EquivalentStresses-sma-topic7",
+              "source_sha256": "392a5864f1e6db3026fac28816b20295f4f8c6248bd64e62824f20de6ef7ae25",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "42360419df5da9178e87a279821f28acd1dae0198bc21a8f191512d0113e116f"
+            },
+            {
+              "id": "077234ee668acee273d14c2f89fb30bf346862a65fef7b4a22c9ed600dabbe77",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-optdesignresponses.htm#simaanl-c-optdesignresponses-t-ScaledCentroidalVonMisesStress-sma-topic13",
+              "source_sha256": "392a5864f1e6db3026fac28816b20295f4f8c6248bd64e62824f20de6ef7ae25",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "427af0d81fce07123a50ec87bea5ce039cbc6740bc49861bd04684fb686eb80c"
+            },
+            {
+              "id": "1d4f03ece48e4c61b5ad7fb0c9f3c0393667efc7ebf6932c9f8be31272fe1964",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-optdesignresponses.htm#simaanl-c-optdesignresponses-t-EquivalentStresses-sma-topic7",
+              "source_sha256": "392a5864f1e6db3026fac28816b20295f4f8c6248bd64e62824f20de6ef7ae25",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "10823f57022f474f2c621508fa1e70817fd7bf53a5d41438e57c5f0cf1b979c6"
+            }
+          ]
+        },
+        {
+          "case_id": "unavailable-2024-release-evidence",
+          "quality_scope": "unanswerable",
+          "status": "not_found",
+          "guard_pass": null,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "not_executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": null,
+            "latency_seconds": {},
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 8.960021659731865e-05
+            }
+          },
+          "rejected": [],
+          "evidence": []
+        },
+        {
+          "case_id": "exact-api-region-1",
+          "quality_scope": "unannotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 3937,
+            "latency_seconds": {
+              "delivery_replay": 0.045451399870216846
+            },
+            "baseline": {}
+          },
+          "rejected": [
+            {
+              "id": "94595bb9d6c5ead02d061a0399141d6e8233bbcf38f8aad1fe108c83d010b62a",
+              "reason": "serialized_context_budget"
+            }
+          ],
+          "evidence": [
+            {
+              "id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm#simaanl-c-scriptparstudies-t-GatheringResults-sma-topic13",
+              "source_sha256": "6d356354094c9094a7e48bfed8de9b49adea5c9dd04c24516e754d5f17d704e1",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "875471dee1d14bb4de43e7f51116ed1f6a80d5444751f0dd52b20ddf161da268"
+            },
+            {
+              "id": "e50eed32c76056aea240cb4f4af048abe972172d5ab25831d8b78bbd5bb41391",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-output.htm#table12",
+              "source_sha256": "adbaee3be790ea653824ec34b747b32a19b88a11b0e2f10ad620985c1cfb8aee",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "af2b0518b787e4faeabf7a7e09d419f313618f10292235064f45f7f9d18c6bcc"
+            },
+            {
+              "id": "24b5c42a621ee4054177d625513238c044478b62669169d40d6c58d91851a968",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm#simaanl-c-scriptparstudies-t-ParametricStudyRepositories-sma-topic28",
+              "source_sha256": "6d356354094c9094a7e48bfed8de9b49adea5c9dd04c24516e754d5f17d704e1",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "8baf1a5ad677369c32b377982bf61a0e86536c56b5368575cfb8e0c47be11ffe"
+            },
+            {
+              "id": "6ff71cfe674a160f0814fb1ff87bb48f70bf9c62b0ed5dcfba97a9ec69754fc7",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-nodaloutput.htm#simaout-c-dboutput-s-RequestingFieldOutputForTheExteriorNodesInTheModelInASAndAEXP-section32",
+              "source_sha256": "6cd3b773aaa594b0ede1c76bca0d037ad8ba30acb874ab3bc214a5d3471899a6",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "8243a96ea227116ee4c63a9c09d248a773a05338c2274002907cba531f228c0e"
+            }
+          ]
+        },
+        {
+          "case_id": "domain-procedure-applicability-1",
+          "quality_scope": "unannotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2879,
+            "latency_seconds": {
+              "delivery_replay": 0.03924859990365803
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "5f038d86dc9ab2f3229bcfe4f2c2e666c0c501e82773270c0fcfc9634c5654c3",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-outputsect1",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "ca801ccfa502dd5b8b42b625aff46e130271afe1b4ce6c6983684b540a54f760"
+            },
+            {
+              "id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "a21ddc3345a19a078c4cfff17660797ce086c3fe1b251ab7c0c79f5a2a628d03"
+            },
+            {
+              "id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "7b4386e97e00f9992e0e61421ff9111b55de9c261e58494df0cdcebcd37663dd"
+            },
+            {
+              "id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-proportional",
+              "source_sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "369a1ed77946185cd023f6d4c15abff59ec0780aceb688a712bba3bad0958902"
+            }
+          ]
+        },
+        {
+          "case_id": "recorded-solver-diagnostic-1",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "complete_time_adjustment",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 1.0,
+            "delivered": 1.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": true,
+            "delivered": true
+          },
+          "first_necessary_parent_rank": 1,
+          "necessary_evidence_rr_at_64": 1.0,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 1873,
+            "latency_seconds": {
+              "delivery_replay": 0.034542799927294254
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+              "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "53431048e094723504b07c6ac273003bc0593b51762cd3142dfec89532889247"
+            },
+            {
+              "id": "69f59177d9101623ef372831c4516cc664552c4acd0a9324116f463e2b231a0c",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisSpecifyingOutputFrequencyInTimePoints-section8",
+              "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "24179e9b484f930ad60b42abedc5460a399ae41bd35bf7dc07bed153fc0dce0a"
+            },
+            {
+              "id": "d99d6d8b91d848bc9253974c682d43d0accc7357c9313c1fb58cbf3c9fbd1a1a",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisSpecifyingOutputFrequencyInRegularTimeIntervalSize-section7",
+              "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "b655402c4729b725f72fe37acadcdb731a3c59fd7fc9090545f580953ce3f0ab"
+            },
+            {
+              "id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclicfatigue.htm#simaanl-c-directcyclicfatigue-t-SpecifyingOutputAtExactTimes-sma-topic19",
+              "source_sha256": "606cf62babb8c00d5496a1c126a285acf1e3f23ee27dbafc15012905db50b1a6",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "8bfa4c4651444753e9818042e25b19ac793e22b3d09185a9a5cab135b2a79db1"
+            }
+          ]
+        },
+        {
+          "case_id": "recorded-solver-diagnostic-2",
+          "quality_scope": "annotated",
+          "status": "found",
+          "guard_pass": null,
+          "requirements": [
+            {
+              "id": "complete_time_adjustment",
+              "candidate": true,
+              "rerank_top4": true,
+              "delivered": true
+            }
+          ],
+          "requirement_coverage": {
+            "candidate": 1.0,
+            "rerank_top4": 1.0,
+            "delivered": 1.0
+          },
+          "complete_evidence": {
+            "candidate": true,
+            "rerank_top4": true,
+            "delivered": true
+          },
+          "first_necessary_parent_rank": 2,
+          "necessary_evidence_rr_at_64": 0.5,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 64,
+            "context_tokens": 2266,
+            "latency_seconds": {
+              "delivery_replay": 0.03634909982793033
+            },
+            "baseline": {}
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "63fc99524c891976d1469a21cb350d20eae55eeeea8c0088e3fe64c44446016e",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-restart.htm#simaanl-c-restart-t-ControllingTheFrequencyOfOutputToTheRestartFiles-sma-topic1__simaanl-c-restart-s-TimeIncrementation-section3",
+              "source_sha256": "7fe47b3b45d1ef3a2c81542c8b2bfa760945b80e94d093ba760506bfa8a8c836",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "0b223c6c9d65a04a80688fee8dad012e27bba8d10b9de94c8835e0f568684650"
+            },
+            {
+              "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+              "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "53431048e094723504b07c6ac273003bc0593b51762cd3142dfec89532889247"
+            },
+            {
+              "id": "c5bee5600cbae234243ddb9e36007f5ac3b3186f3fdda096862a607ca211d1ad",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-nonlineareqns.htm#simaanl-c-nonlineareqns-t-AutomaticIncrementationControl-sma-topic4",
+              "source_sha256": "c60424f8b5c8ff2f43d651542a34a11e6f99f01acebbcb95972e53bbad8172bd",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "65f35c9fe5f303d97c4ceeba2096e0667984a19663be31356ac3eeae2325919f"
+            },
+            {
+              "id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclic.htm#simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+              "source_sha256": "be050bf4d0fe1cfa2d67ef5330105c63c0c5fc815810fb5dbeeb20d0a1c59051",
+              "release": "2026 FD02",
+              "body_scope": "complete_stored_evidence_unit",
+              "body_sha256": "26c3aef7317e46de58c00ef08c3022ae28c6d858c1ee0963105df4aed4f44c66"
+            }
+          ]
+        },
+        {
+          "case_id": "explicit-at",
+          "quality_scope": "unannotated",
+          "status": "found",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": 669,
+            "latency_seconds": {
+              "total": 0.894979199860245
+            },
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 0.003795999800786376
+            }
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "simaout-c-exp-nodalvariables#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-exp-nodalvariables.htm#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT",
+              "source_sha256": "fdc7ab41a500fd86061ebd99dfb5b4b05c4cabfbc9cd8a70a5ec997cb5f64049",
+              "release": "2026 FD02",
+              "body_scope": "indexed_symbol_card",
+              "body_sha256": "4dc1b498c6071dbbbe082a38e7671ede80d290dbdad2df84e51e0e55a41a55e7"
+            },
+            {
+              "id": "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+              "source_sha256": "e515d2a9cfbdf08108f5aac0407b4a46c8ef7f93d36fddb9c662947f4db130a5",
+              "release": "2026 FD02",
+              "body_scope": "indexed_symbol_card",
+              "body_sha256": "eb98554eec07a4c5cdd8927bedbc7929ace1f142076da354c7b714c8a30d531e"
+            }
+          ]
+        },
+        {
+          "case_id": "explicit-static",
+          "quality_scope": "unannotated",
+          "status": "found",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": 287,
+            "latency_seconds": {
+              "total": 0.015512199839577079
+            },
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 0.001481599872931838
+            }
+          },
+          "rejected": [],
+          "evidence": [
+            {
+              "id": "simakey-r-static#keyword",
+              "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static",
+              "source_sha256": "0908c32d83a90a43fd5c93c45016a7903a0e57c948042b644e04712b5ec336e6",
+              "release": "2026 FD02",
+              "body_scope": "indexed_symbol_card",
+              "body_sha256": "af5cc91b2d6038564feab4be72e56e83c3bd5533b7f7b33d7dc1de2fa1b6c7ca"
+            }
+          ]
+        },
+        {
+          "case_id": "unknown-symbol",
+          "quality_scope": "unannotated",
+          "status": "not_found",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": 2,
+            "latency_seconds": {
+              "total": 0.0013763001188635826
+            },
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 4.850002005696297e-05
+            }
+          },
+          "rejected": [],
+          "evidence": []
+        },
+        {
+          "case_id": "unavailable-release",
+          "quality_scope": "unannotated",
+          "status": "not_found",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "not_executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": null,
+            "latency_seconds": {},
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 8.160015568137169e-05
+            }
+          },
+          "rejected": [],
+          "evidence": []
+        },
+        {
+          "case_id": "query-over-encoder-budget",
+          "quality_scope": "unannotated",
+          "status": "query_too_long",
+          "guard_pass": true,
+          "requirements": [],
+          "requirement_coverage": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "complete_evidence": {
+            "candidate": null,
+            "rerank_top4": null,
+            "delivered": null
+          },
+          "first_necessary_parent_rank": null,
+          "necessary_evidence_rr_at_64": null,
+          "source_targets": [],
+          "stage_status": {
+            "retrieval": "not_executed",
+            "rerank": "not_executed",
+            "delivery": "not_executed"
+          },
+          "cost": {
+            "reranked_pairs": 0,
+            "context_tokens": null,
+            "latency_seconds": {},
+            "baseline": {
+              "profile": "rag-evidence-baseline-v1",
+              "context_reference_delivery_seconds": 8.569983765482903e-05
+            }
+          },
+          "rejected": [],
+          "evidence": []
+        }
+      ]
+    }
+  },
+  "selection": {
+    "minilm": {
+      "lost_previously_satisfied_requirements": [],
+      "complete_case_delta": 0,
+      "development_candidate": false
+    },
+    "original_pool_order": {
+      "lost_previously_satisfied_requirements": [
+        [
+          "steady-transient-heat-properties",
+          "steady_internal_energy"
+        ]
+      ],
+      "complete_case_delta": -1,
+      "development_candidate": false
+    },
+    "bge_v2_m3": {
+      "lost_previously_satisfied_requirements": [
+        [
+          "steady-transient-heat-properties",
+          "steady_internal_energy"
+        ]
+      ],
+      "complete_case_delta": -1,
+      "development_candidate": false
+    }
+  },
+  "labels_sha256": "3946cfa6da87b49d0040e7f27531a475d36087a9c2fcf59ed6203c95187033c5",
+  "raw_sha256": {
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\consistent-unit-system.json": "92c2c6a9f8def8c9d31834c292a311f01a2686500a8591de8ee75bff7c99e1e9",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\domain-procedure-applicability-1.json": "b8bef0ba0b5584f9d4f907efe982828ad42a8c015b9b41a89332182cf25b1ebb",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\exact-api-region-1.json": "e6fa5e01f078f59b14d7e4ad51b4bccb12cbbf365f778cdce480285a3ab07138",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\explicit-at.json": "503e0e1894f250abd1cf164b000f458fbb8c05cba407a6e1ed1d38a21410a375",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\explicit-static.json": "c4c3d07b4570262ba5a0933ec74da189492af1ecdeab8f2b09aa5fe39751651e",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\missing-project-stress-result.json": "6d307ecfc44d32fcf469364d5ab3aae3dd75a6c9c0674690d460ba0885332652",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\odb-history-precision.json": "8250945fbe4b3043065296626fafd90417db09a81390dd228f852fb14a7d0551",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\query-over-encoder-budget.json": "794f00fc83cd9feb8a38b1059c8f293e8139140818bf0a474fcb595bf80b6d1f",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\recorded-solver-diagnostic-1.json": "e432b79a8a2eabf37a57ed9ea5e9394b90e3d138049e427a8d8727b1b199a123",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\recorded-solver-diagnostic-2.json": "cd14272f925b43303e3a35f3d5b58e27159cb07d38b9e368d99760948f963f78",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\riks-loading-regression.json": "66f323d5c2b1fc7e528ffb6d586f2687c0a0e8437154a9d98b358c055c66daff",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\steady-transient-heat-properties.json": "4dca2d1b6cfdb8eb53b63761bab7cd948bbd2df968a1279ee85dc594031803b6",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\summary.json": "f474544ff6b423e51e4bbaf7f4788539ad666394c9367e4d7c7880255e7c3dbb",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\temperature-thermal-expansion.json": "0d5691331cdb3c3bfb46d66a8bf3f9bb7c3ba1922a5a74623acf5134102a8837",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\unavailable-2024-release-evidence.json": "7e24d55d53b4793ad2a3df9ee86f9c86e88a01389b954a1700b18910ee3c74db",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\unavailable-release.json": "00b376f9cbfd795f445710eddda1484264bf8691fa40568c5f83f50e677c2d05",
+    "var\\audits\\fixed-pool-bge-v1\\results\\bge_v2_m3\\unknown-symbol.json": "5f4ab672f9d8be8f40f2e0d7b45165a56138aaff6123614cf4ad3040b73a076a",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\consistent-unit-system.json": "055923fe0206044ad04cf7f9414afcd11675f0e4c9bc12ec560aee4dde15576c",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\domain-procedure-applicability-1.json": "bd91e441d945a8df56b9b1e906cef440ad91146dd23529078585ea36f02f6b76",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\exact-api-region-1.json": "7bbd6cac9096b66986f8285ed3ce279343f10694c782f3a64e005cd68618413c",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\explicit-at.json": "503e0e1894f250abd1cf164b000f458fbb8c05cba407a6e1ed1d38a21410a375",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\explicit-static.json": "c4c3d07b4570262ba5a0933ec74da189492af1ecdeab8f2b09aa5fe39751651e",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\missing-project-stress-result.json": "66187bd54cf6a3b9d7b5d52320397cc6d93f01577fafe706442fae4f269046a2",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\odb-history-precision.json": "079a850f3e07114ec793752557bff8d14ec3db4f8e4fc353e716ed30f491ab06",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\query-over-encoder-budget.json": "794f00fc83cd9feb8a38b1059c8f293e8139140818bf0a474fcb595bf80b6d1f",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\recorded-solver-diagnostic-1.json": "a2291e61a005b00e97daf73a55393a857d95391c80b904d33fe9dd071c220a41",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\recorded-solver-diagnostic-2.json": "2e9443710e34b3944cd8f8cbfe9d58684ab92c1885644034fedd00b4bb134f42",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\riks-loading-regression.json": "5e0b9fff901e8cc163abd7295d081a7f71c1a9d33ff7b846f24bd78daff16807",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\steady-transient-heat-properties.json": "a251a1b9bbe40354725bff1a11ecfce7cb247ae15a120963b41eca80fa811988",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\summary.json": "66b750f15c7291cb441f963f648a801e53685e34059fbbddcbb675f2560cb188",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\temperature-thermal-expansion.json": "5958e6fd91eeaaf94939dbbbfd41998e7bec8b9734c84c85b7880871d0241d20",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\unavailable-2024-release-evidence.json": "7e24d55d53b4793ad2a3df9ee86f9c86e88a01389b954a1700b18910ee3c74db",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\unavailable-release.json": "00b376f9cbfd795f445710eddda1484264bf8691fa40568c5f83f50e677c2d05",
+    "var\\audits\\fixed-pool-bge-v1\\results\\minilm\\unknown-symbol.json": "5f4ab672f9d8be8f40f2e0d7b45165a56138aaff6123614cf4ad3040b73a076a",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\consistent-unit-system.json": "583321688077749ca14d5432911178635e2c9a1769ff3034a7578098003600db",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\domain-procedure-applicability-1.json": "f1e49d3bad20cf9917a87a437f669c1f2ae087ee40d8526888a6f5e00bf8d376",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\exact-api-region-1.json": "d1ef0f84968991797e89fcbb8dca49bf19063e58e828e28095be515542d5b25c",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\explicit-at.json": "503e0e1894f250abd1cf164b000f458fbb8c05cba407a6e1ed1d38a21410a375",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\explicit-static.json": "c4c3d07b4570262ba5a0933ec74da189492af1ecdeab8f2b09aa5fe39751651e",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\missing-project-stress-result.json": "6bce0a960adc112130216d67bd2fd401fe5a410f62ad4c69ce9beac311b575fa",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\odb-history-precision.json": "77b04b7bf9691a82a9dbc1f282a21a64d8161dce5bb041e8744349375998ae08",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\query-over-encoder-budget.json": "794f00fc83cd9feb8a38b1059c8f293e8139140818bf0a474fcb595bf80b6d1f",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\recorded-solver-diagnostic-1.json": "e03236d649073b95c33a6c7b3eeb122d894c03d388d4b4dc899ed28e0f6c910d",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\recorded-solver-diagnostic-2.json": "3cdddfd1de6766d612742ee92e9c80dde71b74586114834dee94657bdccc5d84",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\riks-loading-regression.json": "d4c30ee60e8fe77723c034003e1c49ea06e4393af5d8359885e97d80af751dac",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\steady-transient-heat-properties.json": "9277106ad962a1458e0a8c897c82476fe51f01876e937f1f961a7839af22e726",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\summary.json": "f49815def71033516a262cddea87eb27d5524403fcc7883706ff753e7e0dda78",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\temperature-thermal-expansion.json": "02aa73279182ec291eac7b626f37515997adfaf1c8f01e7ffc2b55f63531fe66",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\unavailable-2024-release-evidence.json": "7e24d55d53b4793ad2a3df9ee86f9c86e88a01389b954a1700b18910ee3c74db",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\unavailable-release.json": "00b376f9cbfd795f445710eddda1484264bf8691fa40568c5f83f50e677c2d05",
+    "var\\audits\\fixed-pool-bge-v1\\results\\original_pool_order\\unknown-symbol.json": "5f4ab672f9d8be8f40f2e0d7b45165a56138aaff6123614cf4ad3040b73a076a",
+    "var\\audits\\fixed-pool-bge-v1\\bge-scores\\completion.json": "f90e5474fabf67e440c5c879e916a86a4b1947c3468d4ba0864229ba09375f62",
+    "var\\audits\\fixed-pool-bge-v1\\seal.json": "04be6cafa7b1cc9d9017a0dbd9caaa3ab9a55c6695b58d007541271d7fd71e8d",
+    "var\\audits\\fixed-pool-bge-v1\\label-review.json": "1274ab7b885ed4e702b68b49bda894a973c9c8b197a761c9f6d4c6376df61a95"
+  },
+  "no_new_retrieval_or_document_embeddings": true,
+  "no_generated_answers_or_abaqus": true,
+  "default_unchanged": true
+}

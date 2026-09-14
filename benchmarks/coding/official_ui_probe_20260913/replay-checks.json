@@ -1,0 +1,8 @@
+{
+  "duplicate_answer_http_status": 200,
+  "identical_response": true,
+  "product_state_hashes_unchanged": true,
+  "host_runs_checked": 2,
+  "real_provider_requests": 0,
+  "abaqus_calls": 0
+}

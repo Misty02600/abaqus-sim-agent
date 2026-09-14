@@ -1,0 +1,148 @@
+{
+  "schema_version": "1",
+  "experiment": "plate-element-choice-cps4-or-cps4r-time-separated-retry-v1",
+  "date": "2026-09-03",
+  "question": "Does a new time-separated three-repeat batch reproduce autonomous CPS4-or-CPS4R closed-loop behavior after the preceding batch failed its gate because two Provider resumes also timed out?",
+  "configuration": {
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "http_retries": 10,
+    "http_timeout_seconds": 60.0,
+    "prompt_version": "plate-tension-v4",
+    "clarification_policy_version": "physics-materiality-clarification-v1",
+    "clarification_policy_case": "plate-element-derived",
+    "allowed_element_types": [
+      "CPS4",
+      "CPS4R"
+    ],
+    "element_count": 80,
+    "api_catalog_mode": "automatic_verified_only",
+    "api_catalog_cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "repeat": 3,
+    "required_passes": 2,
+    "eval_task_retry": false,
+    "resume_infrastructure_once": true,
+    "resume_policy_version": "same-run-infrastructure-once-v1"
+  },
+  "raw_evidence": {
+    "run_root": "D:/abaqus-runs/plate-element-choice-resume-once-retry-20260903-v1",
+    "evaluation_summary_sha256": "c53b28b6cd7db47f9fb43a9fddaf686d759a0bc69f284bcbd8c52d4ca5b6a266",
+    "gate_sha256": "ae8ff61d0716674028080f0375ad08a83fd1613edc365ec258edf6ed31110069",
+    "evaluation_report_sha256": "1017ef775f4282916fb41678bd23b4e32e2ea4655ee6518ab38357f4b136170e",
+    "process_exit_code": 0
+  },
+  "result": {
+    "attempts": 3,
+    "passes": 2,
+    "required_passes": 2,
+    "gate_passed": true,
+    "attempts_detail": [
+      {
+        "ordinal": 1,
+        "run_id": "eval-6cffac2d2d93",
+        "status": "completed",
+        "closed_loop_pass": true,
+        "turns": 1,
+        "infrastructure_errors": 0,
+        "same_run_resumes": 0,
+        "model_requests": 17,
+        "tool_calls": 21,
+        "abaqus_calls": 7,
+        "solver_calls": 1,
+        "active_wall_time_seconds": 538.002,
+        "workspace_files": 21,
+        "clarifications": 0,
+        "selected_element_type_counts": {
+          "CPS4R": 80
+        },
+        "verification": {
+          "passed": true,
+          "artifacts_fresh": true,
+          "job_completed": true,
+          "right_mean_u1": 0.10000000149011612,
+          "mean_s11": 210.0,
+          "left_sum_rf1": -4200.0
+        }
+      },
+      {
+        "ordinal": 2,
+        "run_id": "eval-73589daa5125",
+        "status": "completed",
+        "closed_loop_pass": true,
+        "turns": 1,
+        "infrastructure_errors": 0,
+        "same_run_resumes": 0,
+        "model_requests": 17,
+        "tool_calls": 20,
+        "abaqus_calls": 7,
+        "solver_calls": 1,
+        "active_wall_time_seconds": 511.162,
+        "workspace_files": 20,
+        "clarifications": 0,
+        "selected_element_type_counts": {
+          "CPS4": 80
+        },
+        "verification": {
+          "passed": true,
+          "artifacts_fresh": true,
+          "job_completed": true,
+          "right_mean_u1": 0.10000000149011612,
+          "mean_s11": 210.0,
+          "left_sum_rf1": -4200.0
+        }
+      },
+      {
+        "ordinal": 3,
+        "run_id": "eval-fa0ec40b7b3b",
+        "status": "infrastructure_error",
+        "persisted_status": "interrupted",
+        "error": "ModelAPIError: Request timed out.",
+        "turns": 2,
+        "infrastructure_errors": 2,
+        "same_run_resumes": 1,
+        "model_requests": 2,
+        "tool_calls": 4,
+        "abaqus_calls": 0,
+        "solver_calls": 0,
+        "active_wall_time_seconds": 1750.873,
+        "workspace_files": 0
+      }
+    ]
+  },
+  "relationship_to_preceding_batch": {
+    "preceding_report": "plate_element_choice_allowed_resume_once_evaluation_20260903.json",
+    "preceding_result": "1/3, gate failed",
+    "this_result": "2/3, this batch's gate passed",
+    "descriptive_total_across_both_batches": "3/6",
+    "pooled_gate_was_not_preregistered": true,
+    "preceding_batch_is_not_replaced_or_discarded": true
+  },
+  "post_batch_state_note": {
+    "run_id": "eval-fa0ec40b7b3b",
+    "continued_after_evaluation_report": true,
+    "evaluation_summary_and_gate_remain_point_in_time": true,
+    "continuation_report": "plate_element_choice_post_batch_manual_resume_20260903.json"
+  },
+  "decision": {
+    "status": "This fresh time-separated batch passed its own 2/3 smoke gate and observed both permitted element choices passing the same host oracle. The preceding 1/3 batch remains part of the evidence, so the combined history is mixed rather than a stable success-rate claim.",
+    "claims_allowed": [
+      "The new three-repeat batch passed its configured 2/3 gate without pydantic-evals task retry.",
+      "One run autonomously selected 80 CPS4R elements and another selected 80 CPS4 elements; both asked no element question and passed the complete licensed oracle.",
+      "The third run exercised the single same-run resume and then failed on a second Provider timeout before files or Abaqus execution.",
+      "Across the two preserved same-profile batches, three of six attempts passed descriptively."
+    ],
+    "claims_forbidden": [
+      "The preceding 1/3 batch can be discarded because the retry batch passed.",
+      "The profile has a stable 2/3 or 50 percent success rate.",
+      "Same-run resume caused either successful run; neither passing run resumed.",
+      "OpenCode Go was reliable throughout the retry batch."
+    ]
+  },
+  "limits": [
+    "This batch was requested after observing the preceding failure, so it is a transparent time-separated replication rather than a preregistered pooled experiment.",
+    "The successful runs exercised one simple plate contract and do not establish arbitrary element selection or general CAE capability.",
+    "The failed interruption occurred before Abaqus execution and does not exercise in-flight external Job reconciliation."
+  ]
+}

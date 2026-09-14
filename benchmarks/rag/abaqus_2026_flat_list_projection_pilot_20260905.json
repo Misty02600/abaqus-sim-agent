@@ -1,0 +1,433 @@
+{
+  "schema_version": "flat-list-projection-pilot-v1",
+  "manifest": {
+    "schema_version": "flat-list-projection-v1",
+    "script_sha256": "51ed494844383543dc557625c6b11faa071762ce354d2ebfeed627af39cd3707",
+    "helper_sha256": "8d7035c3acff8c5b70a2d08a00ccebbea8c3667c7849ed147df7fa406c7a8fd6",
+    "baseline_pilot_report_sha256": "2fd0f3dc53c66b7aa8720b6bbabd7b4040a4aa0c67d6bc2799ea69c010dc7436",
+    "parent_store_sha256": "3ce35dfa102b8f34c8fb12c06f9631063cc8949df0fad9858e31205cb699e936",
+    "parent_count": 941,
+    "projection_counts": {
+      "text": 802,
+      "deferred_math": 134,
+      "deferred_list": 1,
+      "deferred_table": 4
+    },
+    "promoted_parent_ids": [
+      "4b6aadd61a7212b0dfee46100f931f5cb83424fead354e2d1fa6158abf0380cc",
+      "b731c58d7c66e99d33e5f9719c4974b485ab50acd73a73864749ccda61a18a8d",
+      "673da2b65d28413c55c8d99f42a2a17072697e308322ba9c1daa8a8161367747",
+      "06c1498d8f2512d19214df8244afa3b2689617b6b487d763357d9c025467d389",
+      "6c49b341563d1bc6e9575a08277215d3be866990156c44207cd8ce6a67d0afd0",
+      "4e5550f5473d9aa1e1b488196d86f7404ffb4821391ad0d52becc6337792e256",
+      "0757a65b2c9e2ba9acd93ed78f52d23070d3f7fe7ba9120b5e98b090ef75b5bb",
+      "16c28d5f5824b4ff28899eb38fb7855677bfd18099926e699f24e08203c73972",
+      "1045c0fd5d4bcb3c918bb4cee785b3dd6322ab4be03df9e7447e00f1873066db",
+      "a5f93443af1194b1336a71a0a15f2ba406cd35bbc3b88218dd0e7a2918ea18ff",
+      "25a309931bb67432f120e0c0033a9f5929385fb7a0d9804c0561ca3aa93bdeae",
+      "893a6b30725ee163ea2154740993b20c7e4ab872fd072cc2ad0c2d202e1a2f42",
+      "7d9219d7f864e8d81fe8198bd5444188a04e332a0c76b1174ba4c630edac70f3",
+      "52910a83d9062af3f7ece309c874ab113243d4f12e56d622dd1febed6b1ee9b2",
+      "2f9c0e225da97a3b443c4b0e4d3b8faaad58abaaee5276496af2ea850ff15641",
+      "a0fbeef29e6582543ee03e6764153e0a056205d557ba577fd408bd7ce229f450",
+      "96507572cf3263d660ea40e8f32da22f92e28fc1f798770cc6c6b9c5bd7c2c3d",
+      "e8208fae6056a46a32a6a285fe9a009a76e69ef6b688868c68a1652b50e47665",
+      "edffff4e462d38d2c8b2cdbb350d299d790c8977ddefb45a3a933cef496e335a",
+      "c9a4cd81737bd2eb9f230c7baedaf30656f3c643ee02909783faa3bab263bc28",
+      "0de7199a1853ce71aadd3bc090c2ba5c7d852211636930eaeebf99d25f04f1cd",
+      "12934f6ff25dc9e37db8ea73e3cdc2c66d264d0dcbfd74b0ab14fc020f83d430",
+      "fdff20af09da7f636f5f9917694f42a506acf1365dbc060f93f2ba22f5c27b76",
+      "4c79203b6e749390d7e158dd91e31478e64ca2444836c6ed7d09f96474c46470",
+      "70ceb8afb4e6f14f210a33334ab0b0a2cb1cab144f053dfea712f2925baa1ac5",
+      "3975bf687d53a56dd6c0b7731769683b9323c95cc9a17e43c999fea1887f17f7",
+      "361918f6a849e8a30af27e98826c028ef99fe992db36e1a02512af72dfa62062",
+      "27460d23a996d3329e79f6762bf96cf1f799ca06b2f551da0b14f1077f66cbf2",
+      "b35c3b23c2e25125236cd7d39a8a5a36eba0a383a551ab1090f2c62470593cdc",
+      "80788399c2b1c4a56eed08a75239d1d1e534df31f78f51cb1f203474187d4e7b",
+      "0d7334489ae0514d0b8b3632db514a96f3724e647013f4448c43831fb10c2073",
+      "a3d133ee955b3ca4af007277faa2cf9920d7171c5e0dbb1fe4bf6f1646415099",
+      "64e8f252a95fde10c6d3578b0c4d6bf909c7c7189cbc78adb3c0d88cb9417d30",
+      "6536c340bb3e957e699a728bcf1da2a1fb9739fb4846f8dd13183e99198a077a",
+      "427292183fd8a46ade2c3f810eb68d5f4965e59cbe3dc3fb255c1aa575d3b67b",
+      "0db431bc54ac974445352cab511490e825cf6d88735a07edef6fe4e37fbdcafa",
+      "f507f49283bd2a444255e403352d8d637b95520ae9e0a4adca83e529a09b65a4",
+      "39c65772d665d1d33976288e99503ab54b8052aba514514f32aa3a23a2d370e3",
+      "1839de0d4e9e4279720a9b37750d8665e32ca93147a31d406a315dcd248940a7",
+      "d96f4cc4032e1f2cbad9118fd0a655226664c10c6dd303bf99d11267e4e9730f"
+    ],
+    "children": 812,
+    "max_tokens": 255,
+    "policy": "Only flat list projection changes. Same bodies, source pages, tokenizer budget, query list, Dense20/BM2520, reranker, Top4, expansion and body budget. Rebuilt HNSW graph is a residual comparison confound.",
+    "queries": [
+      {
+        "id": "exact-api-region-1",
+        "query": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?\nextract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT.",
+        "role": "previously_observed"
+      },
+      {
+        "id": "domain-procedure-applicability-1",
+        "query": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?\nAbaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation.",
+        "role": "previously_observed"
+      },
+      {
+        "id": "domain-procedure-applicability-2",
+        "query": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?\nAbaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step.",
+        "role": "previously_observed"
+      },
+      {
+        "id": "recorded-solver-diagnostic-1",
+        "query": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?\nrecorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+        "role": "previously_observed"
+      },
+      {
+        "id": "recorded-solver-diagnostic-2",
+        "query": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?\nAbaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt.",
+        "role": "previously_observed"
+      },
+      {
+        "id": "tie-separation",
+        "query": "If I tie two surfaces in Abaqus, can they subsequently separate or slide relative to each other, or is a contact interaction needed for that behavior?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "coupling-deformation",
+        "query": "What is the difference between kinematic and distributing coupling when a load must be transferred from a reference point while allowing the coupled surface to deform?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "mass-scaling-inertia",
+        "query": "In an Abaqus/Explicit quasi-static analysis, why can excessive mass scaling change the physical response even when it reduces the number of stable time increments?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "hybrid-pressure",
+        "query": "Why do nearly incompressible materials often need hybrid solid elements in Abaqus/Standard, and what additional variable does the hybrid formulation introduce?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "plane-strain-meaning",
+        "query": "For a two-dimensional plane strain model, which out-of-plane strain components are constrained, and can the out-of-plane normal stress still be nonzero?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "reduced-integration-hourglass",
+        "query": "Why can first-order reduced-integration elements exhibit hourglass modes, and what does hourglass control attempt to prevent?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "nodal-stress-extrapolation",
+        "query": "Why can nodal extrapolated stress values differ from stresses at integration points, especially in a region with a steep stress gradient?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "explicit-stable-increment",
+        "query": "Why can a few very small elements control the stable time increment and increase the runtime of an Abaqus/Explicit analysis?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "meshing-predictor-tail",
+        "query": "For adaptive meshing, what does MESHING PREDICTOR=PREVIOUS use to predict node positions, compared with CURRENT?",
+        "role": "known_ingestion_failure_development_probe"
+      }
+    ]
+  },
+  "raw_directory": "D:/Projects/abaqus-agent/abaqus-sim-agent/var/audits/flat-list-projection-pilot-v1",
+  "raw_sha256": {
+    "candidate-index-binding.json": "7f2e5f2c591a486304da0b9462c3a2df967a83b090769d224373a2b69adff712",
+    "coupling-deformation.json": "b8acf69e77f75bb170f8ebb7487313a3d93b959359363fa9d081a34a1f0afd0b",
+    "domain-procedure-applicability-1.json": "a5712bf03acc6bc65a15cfd5d6dd67147b66c067bf021b378caff18e02deb11f",
+    "domain-procedure-applicability-2.json": "0ee370ba2d594c3c8b81d0949ff4838b078094916d6e9bb51bdb0c345f25c3a1",
+    "exact-api-region-1.json": "b61c00041bc66751a7b5647ec665a359b3ffbe31253ca1b1798291a5af0e1be5",
+    "explicit-stable-increment.json": "32f7ede714d1325d351a912cc8664ce0e9b7df652192d180854a402fbe0bf188",
+    "hybrid-pressure.json": "389d4f7971cb00e099451ac0c2160d63d180ed39dbf484cdad1b0a96dba94dcb",
+    "manifest.json": "93c6f6f36f7e3689b638e9271fd488a86d7ed65531ef40c0e077d2cacc2e9a57",
+    "mass-scaling-inertia.json": "af82b6fdbc1d8aca6d713d5919f3bd86523b745ada5666e836b5c3df5053fa43",
+    "meshing-predictor-tail.json": "a078d091590f25a5306fc550c1d15d72fd193f902bb6ab47ea3725d0f5e2df3d",
+    "nodal-stress-extrapolation.json": "68d0de3a52640e44686614afb6e7f34fcedcd61a19d305eb5f57029b7029d20b",
+    "parents.jsonl": "3ce35dfa102b8f34c8fb12c06f9631063cc8949df0fad9858e31205cb699e936",
+    "plane-strain-meaning.json": "950e8b1ac94d7aafa70de8ae3758c7e6106b9f7704f638cb161b19556c785480",
+    "recorded-solver-diagnostic-1.json": "9a8164bc02805419215fd9d4ad82b7d6cc7e06cd849a8b695771417c30b01f8b",
+    "recorded-solver-diagnostic-2.json": "5b92b0505da451412d61f8d9647b1f95c82e3bc4ba7c34539aaa15ee15585ce6",
+    "reduced-integration-hourglass.json": "1fd9fe69f7bbcde9f81da853c0015d18ba370edc845241d4e711a0a6ed91b613",
+    "tie-separation.json": "b1dfb74f7973d8e7ccb367951e6815ef5da1cee43ca9ab7232700642a5ff354a"
+  },
+  "results": [
+    {
+      "id": "exact-api-region-1",
+      "selected_parent_ids": [
+        "f877345d7ee03099cf03715f0f68f14fbc2773fab750c54144e5a1fb4722830f",
+        "ddf497e6e8cf68ad8bdaf6375a737a5f88d10fc0c1af7bc21912ed2c6a190811",
+        "4776cd0a5308b16f181a2cf324578391317382cf70e91ca1804a3c72cd5a3e54",
+        "2a40639ee0db479e953612fa5744c2a9f0458e6a990d1d8ab2ea2825bd2bcef3"
+      ],
+      "baseline_parent_ids": [
+        "f877345d7ee03099cf03715f0f68f14fbc2773fab750c54144e5a1fb4722830f",
+        "ddf497e6e8cf68ad8bdaf6375a737a5f88d10fc0c1af7bc21912ed2c6a190811",
+        "4776cd0a5308b16f181a2cf324578391317382cf70e91ca1804a3c72cd5a3e54",
+        "2a40639ee0db479e953612fa5744c2a9f0458e6a990d1d8ab2ea2825bd2bcef3"
+      ],
+      "selected_newly_searchable_parents": 0,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 1.3582517999457195
+    },
+    {
+      "id": "domain-procedure-applicability-1",
+      "selected_parent_ids": [
+        "7554cdab0b0e0c78c398907063f2716f538290c7563d8e057afc434f8cbb7001",
+        "726dcd2a75509ad1721c5cbb3cd7fbdad5be3e90239b26207053a02d39f87dcd",
+        "74befc886c016bb1d5f80fdfe731cedc985442e0dd7d6e86de90432634f6e8c6",
+        "5970e920383108c726fe8da209fe1c29aed7e1272d5183dae31d6e5c541f08e5"
+      ],
+      "baseline_parent_ids": [
+        "7554cdab0b0e0c78c398907063f2716f538290c7563d8e057afc434f8cbb7001",
+        "726dcd2a75509ad1721c5cbb3cd7fbdad5be3e90239b26207053a02d39f87dcd",
+        "74befc886c016bb1d5f80fdfe731cedc985442e0dd7d6e86de90432634f6e8c6",
+        "5970e920383108c726fe8da209fe1c29aed7e1272d5183dae31d6e5c541f08e5"
+      ],
+      "selected_newly_searchable_parents": 0,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 0.9579669999657199
+    },
+    {
+      "id": "domain-procedure-applicability-2",
+      "selected_parent_ids": [
+        "7554cdab0b0e0c78c398907063f2716f538290c7563d8e057afc434f8cbb7001",
+        "3a04137026c1de709862440b4e5045f5dea0bae76576baf154cb4d96e8923cb3",
+        "ed773b3beb8ab42933076d87073f3696431561185d586d7744d0728b01683d19",
+        "b731c58d7c66e99d33e5f9719c4974b485ab50acd73a73864749ccda61a18a8d"
+      ],
+      "baseline_parent_ids": [
+        "7554cdab0b0e0c78c398907063f2716f538290c7563d8e057afc434f8cbb7001",
+        "3a04137026c1de709862440b4e5045f5dea0bae76576baf154cb4d96e8923cb3",
+        "ed773b3beb8ab42933076d87073f3696431561185d586d7744d0728b01683d19",
+        "38e1f0669d9bcf45d04b2e68ee7c0c209ed2412c1c818e7c1da6a3dc04e6d90b"
+      ],
+      "selected_newly_searchable_parents": 1,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 0.9578282999573275
+    },
+    {
+      "id": "recorded-solver-diagnostic-1",
+      "selected_parent_ids": [
+        "692fbe5214ec47f72e76ef2fb4b5c0bb62fe5ab1ce0d95ed0d6a722e3f6337a1",
+        "0b0b3305fe7b13100b7828619ef7087a5b831008591074d2403a284d9f652dd2",
+        "d6864902c7552f856b9499ad49a0839c095222938cefa7267cef68479dbec3da",
+        "b5c0520a475e513dec3dfd6f28b271f87e5541e9d88e3118c8eebb14c5543ea8"
+      ],
+      "baseline_parent_ids": [
+        "692fbe5214ec47f72e76ef2fb4b5c0bb62fe5ab1ce0d95ed0d6a722e3f6337a1",
+        "0b0b3305fe7b13100b7828619ef7087a5b831008591074d2403a284d9f652dd2",
+        "d6864902c7552f856b9499ad49a0839c095222938cefa7267cef68479dbec3da",
+        "b5c0520a475e513dec3dfd6f28b271f87e5541e9d88e3118c8eebb14c5543ea8"
+      ],
+      "selected_newly_searchable_parents": 0,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 1.143932900042273
+    },
+    {
+      "id": "recorded-solver-diagnostic-2",
+      "selected_parent_ids": [
+        "5109ff70a1293a4724f41165fb97c565c46c0f22b687c1a3c1ec988df3375e93",
+        "37cd781297aa27d265ae929577a4abbe18278e4bbd9e4f257bc1a062caf3e15b",
+        "c152cd42eb2ebc32ca8c7d46813928f2a0ba81fc91034ef33a0d8cec1c2c974b",
+        "d2f7422fc89da0c2a52ca87b76957a2969a4fd5bfea53f503f89f4c7d35c0c7c"
+      ],
+      "baseline_parent_ids": [
+        "5109ff70a1293a4724f41165fb97c565c46c0f22b687c1a3c1ec988df3375e93",
+        "37cd781297aa27d265ae929577a4abbe18278e4bbd9e4f257bc1a062caf3e15b",
+        "c152cd42eb2ebc32ca8c7d46813928f2a0ba81fc91034ef33a0d8cec1c2c974b",
+        "d2f7422fc89da0c2a52ca87b76957a2969a4fd5bfea53f503f89f4c7d35c0c7c"
+      ],
+      "selected_newly_searchable_parents": 0,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 1.2521375000942498
+    },
+    {
+      "id": "tie-separation",
+      "selected_parent_ids": [
+        "ff10441907262e3d4fa9430f78e01bf3df4dc133763ce9336d57ec64276b8533",
+        "f9459abbb08fb8a5635cc6174dff216ddfc5350f2f84326920a810abad331873",
+        "127ac67d678560ba10d6f65332ee68f597b51b0de0cc9d6137ff20bca572d951",
+        "757919476e33998280deff03e0329727bf98e885db57705d191cd774b9337e9f"
+      ],
+      "baseline_parent_ids": [
+        "ff10441907262e3d4fa9430f78e01bf3df4dc133763ce9336d57ec64276b8533",
+        "f9459abbb08fb8a5635cc6174dff216ddfc5350f2f84326920a810abad331873",
+        "127ac67d678560ba10d6f65332ee68f597b51b0de0cc9d6137ff20bca572d951",
+        "757919476e33998280deff03e0329727bf98e885db57705d191cd774b9337e9f"
+      ],
+      "selected_newly_searchable_parents": 0,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 0.8529321000678465
+    },
+    {
+      "id": "coupling-deformation",
+      "selected_parent_ids": [
+        "6c49b341563d1bc6e9575a08277215d3be866990156c44207cd8ce6a67d0afd0",
+        "8c6bbc60049ee5f41f27a47a1ab7273eed9cb448d0d0d87abe25a0dea5cfeeca",
+        "06c1498d8f2512d19214df8244afa3b2689617b6b487d763357d9c025467d389",
+        "893a6b30725ee163ea2154740993b20c7e4ab872fd072cc2ad0c2d202e1a2f42"
+      ],
+      "baseline_parent_ids": [
+        "8c6bbc60049ee5f41f27a47a1ab7273eed9cb448d0d0d87abe25a0dea5cfeeca",
+        "4a38c73c276219e3d6a4c2fbb566c8a64eb898a2084ab6bc161d97ac758ea526",
+        "cab8d9d2039fa31884207b90f712b1c1be8fc28b351493f3723b9164d928aceb",
+        "42022944291d28cd88291e63f4d1a6116539eed5842857ce3589b064f4021e83"
+      ],
+      "selected_newly_searchable_parents": 3,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 0.7183762999484316
+    },
+    {
+      "id": "mass-scaling-inertia",
+      "selected_parent_ids": [
+        "6b28ff79b75ce56f7598486670d597f9606269f01e883ab8b71babe7581a2d47",
+        "68cd7cbde62dd8dcec572f07e36991c2369e57b162679682198dcaac098afa7d",
+        "c7f02e3c4ad2f5acb3efeb3d3b38f3cc6428ba3e503ac43ddf71a78e8e4d1685",
+        "7ba902251c6223cc5bc641798d34c5836161a0e8ffc3490dd2e88044232ad33c"
+      ],
+      "baseline_parent_ids": [
+        "6b28ff79b75ce56f7598486670d597f9606269f01e883ab8b71babe7581a2d47",
+        "68cd7cbde62dd8dcec572f07e36991c2369e57b162679682198dcaac098afa7d",
+        "c7f02e3c4ad2f5acb3efeb3d3b38f3cc6428ba3e503ac43ddf71a78e8e4d1685",
+        "7ba902251c6223cc5bc641798d34c5836161a0e8ffc3490dd2e88044232ad33c"
+      ],
+      "selected_newly_searchable_parents": 0,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 0.6810377999208868
+    },
+    {
+      "id": "hybrid-pressure",
+      "selected_parent_ids": [
+        "e9e2f8272e88242244a39aa8901a71aa498a870f01a5c99cb07005b009c614c1",
+        "c812508b6c039235383245dac46050516fefc3bd40700fa0087eae7fbec3477e",
+        "36bd0f950913f1871a280de97bf51a91226b7f46dbb08195f22ec76db2336c15",
+        "186f013550edde3a7aa3c592c801e4c0623cffba23bbf7adbb673ca8f626ff1e"
+      ],
+      "baseline_parent_ids": [
+        "e9e2f8272e88242244a39aa8901a71aa498a870f01a5c99cb07005b009c614c1",
+        "c812508b6c039235383245dac46050516fefc3bd40700fa0087eae7fbec3477e",
+        "36bd0f950913f1871a280de97bf51a91226b7f46dbb08195f22ec76db2336c15",
+        "186f013550edde3a7aa3c592c801e4c0623cffba23bbf7adbb673ca8f626ff1e"
+      ],
+      "selected_newly_searchable_parents": 0,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 0.701598700019531
+    },
+    {
+      "id": "plane-strain-meaning",
+      "selected_parent_ids": [
+        "e40c29da26e1864e2644abf8f4f9e5c10d9cb2ad198445a89bd6855a0a972656",
+        "7d99db122be2136c880fd98d67f3e48ec6299234fa29f4d3d95b896af1ff0290",
+        "8f0d929de9d55c71b6743f76e41c951f63e93e273b649b45e73f33555678af5c",
+        "ed05203423bd4dea5ed7e30164e06b93ad7e4d24533e2b459f258f19ad6f5c57"
+      ],
+      "baseline_parent_ids": [
+        "e40c29da26e1864e2644abf8f4f9e5c10d9cb2ad198445a89bd6855a0a972656",
+        "7d99db122be2136c880fd98d67f3e48ec6299234fa29f4d3d95b896af1ff0290",
+        "8f0d929de9d55c71b6743f76e41c951f63e93e273b649b45e73f33555678af5c",
+        "ed05203423bd4dea5ed7e30164e06b93ad7e4d24533e2b459f258f19ad6f5c57"
+      ],
+      "selected_newly_searchable_parents": 0,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 0.6854545000242069
+    },
+    {
+      "id": "reduced-integration-hourglass",
+      "selected_parent_ids": [
+        "30a4086b83945751afbed7a788293a452ecd334dc9bc1dcc057126d605c87668",
+        "78a6a883ce9b1945dd6db983953185661f7b2671deaf90e7c1a4365ce5b1bc4b",
+        "86636bb0b9e2fc4cd744254d592b3d3facf960601aeff822a1e4ff1d1e3c4d95",
+        "47bddc93ce71db06f90950949b95572dfce8995734f0afc8d3280fa2d13c0462"
+      ],
+      "baseline_parent_ids": [
+        "30a4086b83945751afbed7a788293a452ecd334dc9bc1dcc057126d605c87668",
+        "78a6a883ce9b1945dd6db983953185661f7b2671deaf90e7c1a4365ce5b1bc4b",
+        "86636bb0b9e2fc4cd744254d592b3d3facf960601aeff822a1e4ff1d1e3c4d95",
+        "47bddc93ce71db06f90950949b95572dfce8995734f0afc8d3280fa2d13c0462"
+      ],
+      "selected_newly_searchable_parents": 0,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 0.6393083999864757
+    },
+    {
+      "id": "nodal-stress-extrapolation",
+      "selected_parent_ids": [
+        "86188305c69dd29be67f6e4cb6410e32956f9fe44520547f1389e15f55b1769a",
+        "228a180521aa8d633a64a761d30ab229d3fcbfb610262e8746b6690af0940d47",
+        "476869ec422815da16a6531ae124573dc1fe7f7d2947422e1c5ba5a2646cea58",
+        "9ec0989a3504fea189e0b1ddd61cd4e963695068e73149bc86ffca2a83c4225a"
+      ],
+      "baseline_parent_ids": [
+        "86188305c69dd29be67f6e4cb6410e32956f9fe44520547f1389e15f55b1769a",
+        "228a180521aa8d633a64a761d30ab229d3fcbfb610262e8746b6690af0940d47",
+        "476869ec422815da16a6531ae124573dc1fe7f7d2947422e1c5ba5a2646cea58",
+        "9ec0989a3504fea189e0b1ddd61cd4e963695068e73149bc86ffca2a83c4225a"
+      ],
+      "selected_newly_searchable_parents": 0,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 0.7596796000143513
+    },
+    {
+      "id": "explicit-stable-increment",
+      "selected_parent_ids": [
+        "077f99604d362eeaf4c5eaf4599906787b4e298ba2540528f52aa6b859f6f3c8",
+        "7ba902251c6223cc5bc641798d34c5836161a0e8ffc3490dd2e88044232ad33c",
+        "815db0b58791582805734547745e769635a921e417eb79a5d0268d1d6c2b5a16",
+        "73722a09338ce11879d5b373f2cc5c9206d6bd2cb8004220ac7589a1eb3b2f44"
+      ],
+      "baseline_parent_ids": [
+        "077f99604d362eeaf4c5eaf4599906787b4e298ba2540528f52aa6b859f6f3c8",
+        "7ba902251c6223cc5bc641798d34c5836161a0e8ffc3490dd2e88044232ad33c",
+        "815db0b58791582805734547745e769635a921e417eb79a5d0268d1d6c2b5a16",
+        "73722a09338ce11879d5b373f2cc5c9206d6bd2cb8004220ac7589a1eb3b2f44"
+      ],
+      "selected_newly_searchable_parents": 0,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 0.757035700022243
+    },
+    {
+      "id": "meshing-predictor-tail",
+      "selected_parent_ids": [
+        "16d2cc8020e293ed6cb62727377c01693826786b774235da12bd74cb33b1c1cf",
+        "053dd3b4a6abd355a004bf4c38466bb41d16a691cac9ae44996e708525ff8e7c",
+        "c297e7f96ac56844a2a6307376af8d49397ec6bd6894d275ad77e5ebf7a481e3",
+        "e4e9f0460a82b2a2a6508ded0ebfa4843dc0db607acdc7a0a6a732b4787d51b7"
+      ],
+      "baseline_parent_ids": [
+        "16d2cc8020e293ed6cb62727377c01693826786b774235da12bd74cb33b1c1cf",
+        "053dd3b4a6abd355a004bf4c38466bb41d16a691cac9ae44996e708525ff8e7c",
+        "c297e7f96ac56844a2a6307376af8d49397ec6bd6894d275ad77e5ebf7a481e3",
+        "e4e9f0460a82b2a2a6508ded0ebfa4843dc0db607acdc7a0a6a732b4787d51b7"
+      ],
+      "selected_newly_searchable_parents": 0,
+      "truncated_rerank_pairs": 0,
+      "truncated_bodies": 0,
+      "seconds": 0.7346209000097588
+    }
+  ],
+  "checks": {
+    "source_bodies_and_parent_ids_preserved": true,
+    "all_children_fit_real_tokenizer": true,
+    "reopened_parent_child_mapping": true
+  },
+  "limits": [
+    "This is exposed development replay; no unseen or Agent success claim.",
+    "Nested lists, nondecimal numbering, MathML and tables are not silently flattened by this change.",
+    "Whole-parent evidence remains raw preserved markup for lists; readability is a separate concern.",
+    "No new default product index or Agent tool profile."
+  ]
+}

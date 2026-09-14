@@ -1,7 +1,7 @@
 [project]
 name = "abaqus-sim-agent"
 version = "0.1.0"
-description = "A durable LangGraph multi-agent system for Abaqus simulation workflows"
+description = "A Pydantic coding agent for Abaqus simulation workflows"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -10,11 +10,25 @@ authors = [
   { name = "Misty02600", email = "xiao02600@gmail.com" },
 ]
 dependencies = [
+  "beautifulsoup4>=4.14,<5",
+  "chromadb>=1.5,<2",
+  "langchain-chroma>=1.1,<2",
   "langchain-core>=1.2,<2",
   "langchain-openai>=1.5,<2",
-  "langgraph>=1.0.5,<2",
+  "langchain-text-splitters>=1.1,<2",
+  "lxml>=6.0,<7",
   "pydantic>=2.12,<3",
+  "pydantic-ai-harness[skills]==0.24.0",
+  "pydantic-ai-slim[openai]==2.33.0",
 ]
+
+[project.optional-dependencies]
+static-preflight = [
+  "basedpyright>=1.39.0,<2.0.0",
+]
+
+[project.scripts]
+abaqus-sim-agent = "abaqus_sim_agent.coding.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/Misty02600/abaqus-sim-agent"
@@ -38,6 +52,9 @@ dev = [
   { include-group = "lint" },
   { include-group = "test" },
   { include-group = "type" },
+]
+eval = [
+  "pydantic-evals==2.33.0",
 ]
 lint = [
   "ruff>=0.15.0,<1.0.0",

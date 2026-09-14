@@ -1,0 +1,78 @@
+{
+  "profile": "document-policy-phase2-wiring-v1",
+  "date": "2026-09-12",
+  "plan": "PLAN-0003",
+  "phase_status": "completed",
+  "whole_plan_status": "in_progress",
+  "generative_model_calls": 0,
+  "licensed_abaqus_calls": 0,
+  "default_policy_mode": "off",
+  "integration_tests": {
+    "file": "tests/test_document_policy_integration.py",
+    "passed": 13,
+    "scope": "Actual Pydantic AI/Harness and CodingRunService/CLI with FunctionModel and fake retrieval/runtime ports, plus a real failing validation worker",
+    "covered": [
+      "one search_abaqus_docs registration and one assessment tool; no general shell",
+      "CAE, solver and extraction blocked before budget while assessment is pending",
+      "ready and budget-exhaustion verification cannot bypass knowledge gaps",
+      "typed host physical input unblocked by the existing clarification path",
+      "actual second fake lookup, third-query denial and failed terminal decision",
+      "resume reuses validated receipt without another lookup and retains cumulative usage",
+      "operational quota amendments and new task revisions preserve immutable base files",
+      "corrupt document journal/head stop before model execution",
+      "unresolved Abaqus effects retain needs_reconcile before document restoration",
+      "CLI persists launch v2 and resume v4; edited external spec is not reread on resume",
+      "CLI cannot disable document or concept policy during resume",
+      "host-only independent script grant requires the unchanged script hash and cannot exempt readiness",
+      "real validation worker rejects missing dependencies and retains raw diagnostics"
+    ]
+  },
+  "real_backend_wiring": {
+    "model_backend": "FunctionModel deterministic callback; no generative provider",
+    "runs": [
+      {
+        "directory": "var/audits/document-policy-wiring-v1/run-1",
+        "summary_sha256": "1bb1b2763a7fa21591f55c1faeea7cb96883293fdeb64a658a65fcc981f936fa",
+        "passed": true,
+        "function_model_requests": 4,
+        "real_retrieval_calls": 1,
+        "independent_validation_receipts": 3,
+        "abaqus_calls": 0,
+        "elapsed_seconds": 88.39000000000124
+      },
+      {
+        "directory": "var/audits/document-policy-wiring-v1/run-2",
+        "summary_sha256": "6fb5d684608fd752f1d6d17a8bcf0289aabd9881d7becebdbd5d4fd206ee0bd0",
+        "passed": true,
+        "function_model_requests": 4,
+        "real_retrieval_calls": 1,
+        "independent_validation_receipts": 3,
+        "abaqus_calls": 0,
+        "elapsed_seconds": 59.96800000000076,
+        "rag_service_seconds": 40.54700000000048
+      }
+    ],
+    "verification_scope": "execution_evidence",
+    "resume_schema": "coding-run-resume-v4",
+    "document_dependency_snapshot_sha256": "02bc96091aa72130c03fc7295e65127030f750d2f6243a05c87fe664d6a8e56e",
+    "interpretation": "Actual composition and file delivery only; no semantic correctness, natural model behavior, latency optimization or physical simulation claim"
+  },
+  "regression": {
+    "pytest_passed": 1082,
+    "licensed_tests_skipped": 27,
+    "pytest_seconds": 109.54,
+    "changed_python_format_files_passed": 13,
+    "basedpyright_errors": 0,
+    "basedpyright_warnings": 0,
+    "ruff_rule_check": "passed",
+    "prior_baseline_and_bge_sealed_files_unchanged": 28
+  },
+  "protocol_notes": [
+    "search_abaqus_docs uses a query envelope; record_document_assessment uses protocol=document-assessment-v1 plus assessment.",
+    "The explicit assessment protocol field avoids the installed SDK single-BaseModel flattening path that failed nested strict tuple validation.",
+    "New bounded runs persist request binding, launch v2 and resume v4; off runs retain v1 launch/v3 resume serialization without new null fields.",
+    "Scope/backend declarations are immutable within the run; existing amendment interfaces change budgets/goals, not document bindings.",
+    "Independent-operation script hashes narrow a host declaration; they do not prove scientific independence or all transitive dependencies.",
+    "The eight live generative-model behavior scenarios remain unexecuted and require the next stage."
+  ]
+}

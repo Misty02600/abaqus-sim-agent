@@ -1,0 +1,172 @@
+{
+  "schema_version": "legal-boundaries-riks-preflight-v1",
+  "date": "2026-09-08",
+  "manifest": {
+    "version": "sentence-structure-legal-cuts-v1",
+    "canonical_source_sha256": "0a96562933752a5f7497d20df95e25286b35ce97ead49755c5c9af877a3e5271",
+    "source_manifest_sha256": "af6d85fd2da977c63210d42085bb43c1ef6a4caf295e867b465a45b449bb2a12",
+    "body_token_limit": 238,
+    "encoder_files": {
+      "C:\\Users\\Administrator\\.cache\\chroma\\onnx_models\\all-MiniLM-L6-v2\\onnx\\config.json": "b567c7d5a55b636c95186aaf993f9a8920842b7e05a9e703e68b23cab2c3a670",
+      "C:\\Users\\Administrator\\.cache\\chroma\\onnx_models\\all-MiniLM-L6-v2\\onnx\\model.onnx": "4f148ba8ae9c2c7fbee4af2b132db8d06c6a6545b47fc83bbb98c3d22b8393e6",
+      "C:\\Users\\Administrator\\.cache\\chroma\\onnx_models\\all-MiniLM-L6-v2\\onnx\\special_tokens_map.json": "b6d346be366a7d1d48332dbc9fdf3bf8960b5d879522b7799ddba59e76237ee3",
+      "C:\\Users\\Administrator\\.cache\\chroma\\onnx_models\\all-MiniLM-L6-v2\\onnx\\tokenizer.json": "da0e79933b9ed51798a3ae27893d3c5fa4a201126cef75586296df9b4d2c62a0",
+      "C:\\Users\\Administrator\\.cache\\chroma\\onnx_models\\all-MiniLM-L6-v2\\onnx\\tokenizer_config.json": "7702051bbc4953b94d47fa1d61b42ed4cbb3c71b501a8dd7183a823f8bea1f20",
+      "C:\\Users\\Administrator\\.cache\\chroma\\onnx_models\\all-MiniLM-L6-v2\\onnx\\vocab.txt": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3"
+    },
+    "implementation": {
+      "src/abaqus_sim_agent/evaluation/legal_boundaries.py": "d9be75c12a4817db6c6971084da1b6529c8549b7151c92c823a4c2dd48c62c3a",
+      "src/abaqus_sim_agent/evaluation/boundary_chunks.py": "b4e5229d3472fa2a4a54cfc12ac3ddac4ebbfdddd34c290048b49ec9a41d5d00",
+      "var/audits/audit_legal_boundaries_riks.py": "b5a31b35ed1ceb32d32a992e5e4ed243a862c3399644a8482af21827e28400ef"
+    },
+    "policy": "Model end_indices address these exact legal locators; length guard accepts only the same offsets. No page-name/DOF/answer-specific rule. An oversized indivisible locator blocks the entire index build; no partial omission and no forced cut."
+  },
+  "locators": 94,
+  "protected_rules": {
+    "code_block": 5,
+    "formula_marker": 16,
+    "heading_with_first_unit": 20,
+    "colon_lead_with_next_unit": 3,
+    "formula_with_direct_lead": 2,
+    "formula_with_where_paragraph": 2,
+    "usage_label_with_code": 4
+  },
+  "conflicts": [
+    {
+      "span": {
+        "start": 4576,
+        "end": 5392
+      },
+      "tokens": 296,
+      "reasons": [
+        "formula_marker",
+        "formula_with_direct_lead",
+        "formula_with_where_paragraph"
+      ],
+      "text": " The initial load proportionality factor, [Formula: (normal(Δ) × (λ)_((i × n)))], is computed as\n\n[Formula: (((normal(Δ) × (λ)_((i × n))) = ((normal(Δ) × (l)_((i × n))))/((l)_((p × e × r × i × o × d)))) ,)]\n\nwhere [Formula: (l)_((p × e × r × i × o × d))] is a user-specified total arc length scale factor (typically set equal to 1). This value of [Formula: (normal(Δ) × (λ)_((i × n)))] is used during the first iteration of a Riks step. For subsequent iterations and increments the value of [Formula: λ] is computed automatically, so you have no control over the load magnitude. The value of [Formula: λ] is part of the solution. Minimum and maximum arc length increments, [Formula: (normal(Δ) × (l)_((m × i × n)))] and [Formula: (normal(Δ) × (l)_((m × a × x)))], can be used to control the automatic incrementation."
+    }
+  ],
+  "previous_boundary_audit": [
+    {
+      "arm": "flash",
+      "chunks_sha256": "569c8e621d371cfa118e2b8bf063d610e729abe9b21e523e510b8a599ddf58eb",
+      "violations": [
+        {
+          "chunk_index": 2,
+          "end": 1188,
+          "protected_reasons": [],
+          "sentence_or_structure_boundary": false
+        },
+        {
+          "chunk_index": 3,
+          "end": 1701,
+          "protected_reasons": [],
+          "sentence_or_structure_boundary": false
+        },
+        {
+          "chunk_index": 8,
+          "end": 4782,
+          "protected_reasons": [
+            "formula_with_where_paragraph"
+          ],
+          "sentence_or_structure_boundary": false
+        },
+        {
+          "chunk_index": 10,
+          "end": 6006,
+          "protected_reasons": [
+            "usage_label_with_code"
+          ],
+          "sentence_or_structure_boundary": false
+        }
+      ]
+    },
+    {
+      "arm": "pro",
+      "chunks_sha256": "5bcd42a2be1283dcb2e9fbd835c0bfa07928eb4288a3e0d291fe17d602515aab",
+      "violations": [
+        {
+          "chunk_index": 7,
+          "end": 4672,
+          "protected_reasons": [
+            "formula_with_direct_lead"
+          ],
+          "sentence_or_structure_boundary": false
+        },
+        {
+          "chunk_index": 8,
+          "end": 4782,
+          "protected_reasons": [
+            "formula_with_where_paragraph"
+          ],
+          "sentence_or_structure_boundary": false
+        },
+        {
+          "chunk_index": 10,
+          "end": 6177,
+          "protected_reasons": [
+            "heading_with_first_unit"
+          ],
+          "sentence_or_structure_boundary": false
+        }
+      ]
+    }
+  ],
+  "status": "blocked_by_encoder_capacity",
+  "model_calls": 0,
+  "index_built": false,
+  "retrieval_replayed": false,
+  "same_questions": [
+    {
+      "id": "proportional-load",
+      "query": "How are dead load, reference load and the load proportionality factor combined in a Riks analysis?",
+      "source_units": [
+        "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+        "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84"
+      ]
+    },
+    {
+      "id": "boundary-amplitude",
+      "query": "How are prescribed boundary-condition magnitudes varied in a modified Riks step, and can amplitude definitions control them?",
+      "source_units": [
+        "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d"
+      ]
+    },
+    {
+      "id": "initial-increment",
+      "query": "How is the initial Riks load proportionality increment related to the initial arc length increment and total arc length scale?",
+      "source_units": [
+        "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b"
+      ]
+    },
+    {
+      "id": "termination",
+      "query": "How can a Riks step be terminated using load proportionality factor or displacement limits, and what happens if neither is specified?",
+      "source_units": [
+        "989236baa5e1a0781e1f5716e226fee5ad0063d7471615e63031712bdbb195fa"
+      ]
+    }
+  ],
+  "checks": {
+    "exact_canonical_reconstruction": true,
+    "model_and_length_guard_share_legal_offsets": true,
+    "oversized_units_not_silently_split_or_omitted": true
+  },
+  "raw_directory": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\rag-legal-boundaries-riks-v1",
+  "raw_sha256": {
+    "capacity-conflicts.json": "ebbbc5281e2e120bbb1bf183457b12a74927897163479d4149535c966b547fec",
+    "locators.json": "7bf623150b24a8d3aacc22aec99b3df7ae94b56fc050786b4ce42e951f97e002",
+    "manifest.json": "653d6aad089977910b57775e24a220c69e075c311348d56c67b163f4bc169b95",
+    "protected-spans.json": "3c4e1b70060c5ed82914a448e47dc284c00b1f50785eb00519e11b3ff29a1de6",
+    "implementation\\src\\abaqus_sim_agent\\evaluation\\boundary_chunks.py": "b4e5229d3472fa2a4a54cfc12ac3ddac4ebbfdddd34c290048b49ec9a41d5d00",
+    "implementation\\src\\abaqus_sim_agent\\evaluation\\legal_boundaries.py": "d9be75c12a4817db6c6971084da1b6529c8549b7151c92c823a4c2dd48c62c3a",
+    "implementation\\var\\audits\\audit_legal_boundaries_riks.py": "b5a31b35ed1ceb32d32a992e5e4ed243a862c3399644a8482af21827e28400ef"
+  },
+  "limits": [
+    "Conservative sentence/structure rules are not complete NLP or semantic understanding. Uncertain abbreviation boundaries are retained rather than forced.",
+    "A formula and its immediately following where paragraph are protected together by explicit policy. A capacity conflict is conditional on that policy, not proof that no finer meaning-preserving representation exists.",
+    "Only existing Code/Formula markers, Markdown headings and local explicit lead relationships are recognized; arbitrary implicit dependencies are not classified.",
+    "No Flash/Pro request or new index when this preflight cannot satisfy the existing encoder budget. No fabricated retrieval score.",
+    "Original source/projection and previous experiments remain unchanged; no default index/model switch."
+  ]
+}

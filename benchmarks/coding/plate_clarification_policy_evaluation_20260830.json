@@ -1,0 +1,228 @@
+{
+  "schema_version": "1",
+  "experiment": "plate-physics-materiality-clarification-v1",
+  "date": "2026-08-30",
+  "question": "Can the single Coder ask only when missing or conflicting engineering facts change the physical problem, while proceeding without an element-code question when the element choice is implementation-owned or already compatible?",
+  "frozen_configuration": {
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "http_retries": 3,
+    "clarification_policy_version": "physics-materiality-clarification-v1",
+    "repeat_per_case": 3,
+    "required_passes_per_case": 2,
+    "eval_retry": false,
+    "decision_only_profile": {
+      "evaluator_version": "clarification-policy-evaluator-v2",
+      "api_catalog_mode": "off",
+      "concept_retrieval_mode": "off",
+      "planning_enabled": false,
+      "runtime_execution_allowed": false
+    },
+    "licensed_closed_loop_profile": {
+      "prompt_version": "plate-tension-v4",
+      "api_catalog_mode": "automatic_verified_only",
+      "api_catalog": "var/api-catalog/abaqus-2024-final15",
+      "api_catalog_cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+      "concept_retrieval_mode": "off",
+      "planning_enabled": false,
+      "runtime": "Abaqus 2024"
+    }
+  },
+  "raw_evidence": [
+    {
+      "purpose": "decision-only ambiguous and conflicting cases",
+      "run_root": "D:/abaqus-runs/clarification-policy-20260829-v3",
+      "source_evaluation_summary_sha256": "8acb877ea6dada3217bbf858860077b6fb65f7b44c443a9eb561bfe782ca53e3",
+      "v2_replay_sha256": "85a6dd0229ef263ee0e343de8295953017ea1bcf113069d750d6e923db9e207e"
+    },
+    {
+      "purpose": "missing physical input plus licensed plate oracle",
+      "run_root": "D:/abaqus-runs/plate-clarification-policy-20260829-v1",
+      "evaluation_summary_sha256": "9fce8ba0aa438a25c124bddf3d0bf6c76bce22766ef8d9e815e2fc3e5e87a056",
+      "gate_sha256": "fa19c670a4aea48b6ae56de52abbe1e9f10f04967b77194d7157a83452c534e2"
+    },
+    {
+      "purpose": "implementation-owned element choice plus licensed plate oracle",
+      "run_root": "D:/abaqus-runs/plate-element-derived-20260829-v1",
+      "evaluation_summary_sha256": "510e2ec76bc38ee936acbef284eeb2c0e0130fb175225e0f7eb6774be5dd72b3",
+      "gate_sha256": "8fc4410a4ab8c700147fa2dbc52d435885a50c4487f64246a5c7d4b0b8872164"
+    },
+    {
+      "purpose": "compatible explicit CPS4R constraint plus licensed plate oracle",
+      "run_root": "D:/abaqus-runs/plate-explicit-compatible-element-20260829-v1",
+      "evaluation_summary_sha256": "6e3051c9d1ccbb00881782c65824ecd4e255c2360cdf01434d7a98f24865321b",
+      "gate_sha256": "fa19c670a4aea48b6ae56de52abbe1e9f10f04967b77194d7157a83452c534e2"
+    }
+  ],
+  "scorer_replay": {
+    "reason": "The original scorer required narrow field_id aliases even though field_id is model-authored and the strict contract defines its meaning through kind, question, and impact. It therefore rejected otherwise correct decisions such as out_of_plane_physical_state and idealization_element_conflict.",
+    "method": "clarification-policy-evaluator-v2 replayed only the deterministic scorer over the immutable source summary. It did not call the model, edit a workspace, or replace any attempt.",
+    "source_summary_sha256": "8acb877ea6dada3217bbf858860077b6fb65f7b44c443a9eb561bfe782ca53e3"
+  },
+  "results": [
+    {
+      "case_id": "plate-out-of-plane-ambiguous",
+      "evaluation_level": "decision_only",
+      "expected_decision": "needs_input",
+      "expected_kind": "ambiguous_physical_intent",
+      "attempts": 3,
+      "passes": 3,
+      "required_passes": 2,
+      "gate_passed": true,
+      "observed_behavior": "All three decisions asked the user to choose the out-of-plane physical idealization before any tool call; all workspaces stayed empty."
+    },
+    {
+      "case_id": "plate-explicit-element-conflict",
+      "evaluation_level": "decision_only",
+      "expected_decision": "needs_input",
+      "expected_kind": "conflicting_user_constraint",
+      "attempts": 3,
+      "passes": 2,
+      "required_passes": 2,
+      "gate_passed": true,
+      "observed_behavior": "Two decisions identified the plane-strain/CPS4R conflict before any tool call and explained its result impact; the third attempt ended in a provider timeout without a model decision."
+    },
+    {
+      "case_id": "plate_tension_missing_thickness",
+      "evaluation_level": "licensed_closed_loop",
+      "expected_decision": "needs_input_then_proceed",
+      "expected_kind": "missing_physical_input",
+      "attempts": 3,
+      "passes": 1,
+      "required_passes": 2,
+      "gate_passed": false,
+      "attempts_detail": [
+        {
+          "ordinal": 1,
+          "run_id": "eval-9eae508c0206",
+          "status": "completed",
+          "oracle_passed": true,
+          "model_requests": 27,
+          "tool_calls": 26,
+          "api_lookup_calls": 1,
+          "abaqus_calls": 7,
+          "solver_calls": 2,
+          "history_sha256": "283e4461a40bada6626f88bab5b5a35d24b5487dbfa5160540389c086da67458"
+        },
+        {
+          "ordinal": 2,
+          "run_id": "eval-64c9a00e26f8",
+          "status": "infrastructure_error",
+          "error": "ModelAPIError: Request timed out.",
+          "history_sha256": "035b8f4403c7c1ad387ea19888d9daeb5bfa2515ecabe42961df4608cb582966"
+        },
+        {
+          "ordinal": 3,
+          "run_id": "eval-fb1453e03f79",
+          "status": "infrastructure_error",
+          "error": "ModelAPIError: Request timed out.",
+          "history_sha256": "d7b2fd696c025365cff76121d82fc4d1ff32b0b114ab5fb8aef09d91446c9336"
+        }
+      ],
+      "observed_behavior": "All three attempts first requested plate_thickness with the strict kind and impact contract and no preceding tool calls. One continued through the complete host oracle; two timed out later before producing workspace files or Abaqus executions."
+    },
+    {
+      "case_id": "plate-element-derived",
+      "evaluation_level": "licensed_closed_loop",
+      "expected_decision": "proceed",
+      "attempts": 3,
+      "passes": 0,
+      "required_passes": 2,
+      "gate_passed": false,
+      "attempts_detail": [
+        {
+          "ordinal": 1,
+          "run_id": "eval-74c56b8f84ed",
+          "status": "infrastructure_error",
+          "error": "ModelAPIError: Request timed out.",
+          "history_sha256": "af83a402f99c41b4670500afa2fd2ade217d0ee857d4a7a6034dca2af567c27e"
+        },
+        {
+          "ordinal": 2,
+          "run_id": "eval-1d19431c05ec",
+          "status": "infrastructure_error",
+          "error": "ModelAPIError: Request timed out.",
+          "history_sha256": "29234d0c4acca7b7667b9e51996462bba0ffae321b29abcccf24902fee42e18e"
+        },
+        {
+          "ordinal": 3,
+          "run_id": "eval-694cbe6121e0",
+          "status": "infrastructure_error",
+          "error": "ModelAPIError: Request timed out.",
+          "history_sha256": "3f1e23aa51c3f4290c326a4df53bf67ec8bea7008d45d7f42cff5d340efba391"
+        }
+      ],
+      "observed_behavior": "All three attempts ended at the model-provider boundary without a final decision, workspace artifacts, or Abaqus execution. This batch does not establish whether the Coder reliably derives CPS4R."
+    },
+    {
+      "case_id": "plate-explicit-compatible-element",
+      "evaluation_level": "licensed_closed_loop",
+      "expected_decision": "proceed",
+      "attempts": 3,
+      "passes": 1,
+      "required_passes": 2,
+      "gate_passed": false,
+      "attempts_detail": [
+        {
+          "ordinal": 1,
+          "run_id": "eval-f648345e0958",
+          "status": "completed",
+          "oracle_passed": true,
+          "model_requests": 20,
+          "tool_calls": 21,
+          "api_lookup_calls": 3,
+          "abaqus_calls": 8,
+          "solver_calls": 2,
+          "history_sha256": "ce16dd8e4f2ba6af345d8903bc1130a94c7fad5a72d5b7bbe4c381dd5cfbe2b8"
+        },
+        {
+          "ordinal": 2,
+          "run_id": "eval-ebd0ee021edb",
+          "status": "infrastructure_error",
+          "error": "ModelAPIError: Request timed out.",
+          "history_sha256": "f078a968f4ec53dc996bb5d0ea1902994724eb9ae26c10d2fcf20cce13636785"
+        },
+        {
+          "ordinal": 3,
+          "run_id": "eval-6b609d081acd",
+          "status": "infrastructure_error",
+          "error": "ModelAPIError: Request timed out.",
+          "history_sha256": "d54eedf50dea640e0ee6112e2acc7baf90fb530b4d13e8f30cc73c299da7c7a3"
+        }
+      ],
+      "observed_behavior": "The passing attempt preserved the explicit CPS4R constraint, asked no clarification, produced 80 CPS4R elements, and passed the complete plate oracle. The other two attempts timed out before any tool call or workspace file."
+    }
+  ],
+  "physics_result": {
+    "passing_closed_loop_attempts": 2,
+    "element_type_counts": {
+      "CPS4R": 80
+    },
+    "right_mean_u1": 0.10000000149011612,
+    "mean_s11": 210.0,
+    "left_sum_rf1": -4200.0,
+    "oracle_findings": []
+  },
+  "decision": {
+    "status": "The two decision-only needs_input cases pass their 2/3 gates. None of the three licensed closed-loop batches passes its 2/3 gate under this run configuration.",
+    "claims_allowed": [
+      "The current Coder can distinguish an ambiguous physical idealization and an explicit physical conflict from an implementation question in the observed decision-only smoke.",
+      "The current strict clarification contract has one licensed missing-input closed-loop pass and one licensed compatible-explicit-element closed-loop pass.",
+      "A valid compatible CPS4R user constraint can be honored without clarification in an observed complete host-oracle run.",
+      "Provider timeouts are preserved separately from Agent decisions and Abaqus verification failures."
+    ],
+    "claims_forbidden": [
+      "The Coder reliably derives an element type when the user omits it.",
+      "Any licensed clarification-policy closed-loop case passes the formal 2/3 smoke gate in this batch.",
+      "The 3/3 and 2/3 decision-only results prove arbitrary CAE ambiguity handling.",
+      "The failed proceed batches show that the clarification rule or Abaqus physics is wrong."
+    ]
+  },
+  "limits": [
+    "Each gate has only three stochastic attempts and is a smoke result, not a stable success-rate estimate.",
+    "The decision-only evaluator intentionally disables runtime and cannot prove coding, solver, or ODB behavior.",
+    "The element-derived batch produced no model decision, so the key positive proceed behavior remains unverified.",
+    "The two licensed positive attempts required 7 and 8 Abaqus calls and 2 solver calls each; they are correctness evidence, not efficiency evidence.",
+    "The observed transport timeouts prevent a clean estimate of policy reliability under a healthy model-provider condition."
+  ]
+}

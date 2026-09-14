@@ -1,0 +1,45 @@
+{
+  "profile": "document-policy-live-behavior-v1",
+  "date": "2026-09-12",
+  "batch": "var/audits/document-policy-live-v1/batch-2",
+  "prior_invalid_batch": "var/audits/document-policy-live-v1/batch-1",
+  "transport_change_only": "Shared OpenCode Go adapter now injects an application User-Agent and a version-domain SHA-256 of the stable conversation ID; the eight scenarios, evidence, model, budgets, prompts and review criteria were unchanged.",
+  "seal_sha256": "6c26c2029f2c1eda9c56df1833d13bb3d12946c0953560b897cd953e2097c788",
+  "report_sha256": "f9c53b2f03a62b3ad5153cbcb70c299822d246325bb51909e9bd305fc7f3f20a",
+  "completion_sha256": "d50b824d75775c2821205d38b629f3b61d194670fd1f653d50347bd72d43f762",
+  "host_review": "var/audits/document-policy-live-v1/batch-2/host_review.json",
+  "host_review_sha256": "cfe3ec1d6598be892a3de1932962973428876c42cb2710b86aa9220e74b2f976",
+  "batch_gate": "failed",
+  "cases": 8,
+  "passed": 3,
+  "failed_model_behavior": 4,
+  "invalid_provider": 1,
+  "provider_requests": 30,
+  "http_200_responses": 29,
+  "provider_timeouts_before_response": 1,
+  "controlled_evidence_queries": 4,
+  "live_ranking_queries": 0,
+  "cache_hits": 1,
+  "licensed_abaqus_calls": 0,
+  "observed_positive_branches": [
+    "zero-query use of sufficient workspace facts",
+    "direct evidence assessment and calibrated continuation",
+    "hard missing-release scope retained with controlled knowledge stop",
+    "physical plate_thickness clarification with zero query/runtime, but too late to pass its first-action criterion",
+    "same-run resume and exact-query cache hit without an additional lookup"
+  ],
+  "observed_failures": [
+    "partial-followup skipped assessment, so the host rejected its immediate follow-up",
+    "three cases exceeded the fixed 2400-token output limit; none was rerun or given a larger cap",
+    "missing-physical-input inspected/wrote files before needs_input",
+    "one unresolved-stop case had a provider timeout and is invalid, not a behavior failure"
+  ],
+  "qualification": "not_qualified_keep_off",
+  "claims_excluded": [
+    "stable success rate",
+    "general autonomous follow-up or stopping ability",
+    "retrieval improvement",
+    "Abaqus 2024 documentation compatibility",
+    "licensed simulation or physical acceptance"
+  ]
+}

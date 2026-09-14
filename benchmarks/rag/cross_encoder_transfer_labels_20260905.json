@@ -1,0 +1,13 @@
+{
+  "role": "Pre-ranking source-section evidence probes for the separately written transfer questions, not exhaustive answer labels",
+  "cases": [
+    {"id":"tie-separation","page":"simacst-c-tiedconstraint","guide":"SIMACAECSTRefMap","sections":["Mesh Tie Constraints"],"facts":"Tie permanently bonds tied nodes for the simulation; ordinary separation/sliding is not that constraint's behavior. Distinguish initially untied nodes and element deletion exceptions."},
+    {"id":"coupling-deformation","page":"simacst-c-coupling","guide":"SIMACAECSTRefMap","sections":["Coupling Constraints","Kinematic Coupling Constraints","Distributing Coupling Constraints"],"facts":"Kinematic constrains selected motion to rigid motion; distributing relates reference motion to an average and permits deformation within the coupling region."},
+    {"id":"mass-scaling-inertia","page":"simaanl-c-massscaling","guide":"SIMACAEANLRefMap","sections":["Quasi-Static Analysis"],"facts":"Added mass increases inertial forces; excessive scaling can change the solution even in a nominally quasi-static run."},
+    {"id":"hybrid-pressure","page":"simaelm-c-solidcont","guide":"SIMACAEELMRefMap","sections":["Choosing between Regular and Hybrid Elements"],"facts":"Near incompressibility makes a displacement-only pressure solution sensitive; hybrid uses independently interpolated pressure stress."},
+    {"id":"plane-strain-meaning","page":"simaelm-c-dimension","guide":"SIMACAEELMRefMap","sections":["Plane Strain Elements"],"facts":"Out-of-plane normal and shear strains vanish; thickness-direction stress need not vanish, as thermal expansion example shows."},
+    {"id":"reduced-integration-hourglass","page":"simaelm-c-solidcont","guide":"SIMACAEELMRefMap","sections":["Choosing between Full- and Reduced-Integration Elements"],"facts":"One-point integration can permit distortions with zero computed strain at the integration point; hourglass control addresses uncontrolled distortion and is not a substitute for adequate mesh."},
+    {"id":"nodal-stress-extrapolation","page":"simaout-c-dboutput-elementoutput","guide":"SIMACAEOUTRefMap","sections":["Extrapolation and Interpolation of Element Output Variables"],"facts":"Element shape functions extrapolate integration-point values; extrapolated values can be less accurate in steep stress gradients. Read actual paragraph, not just parent-page hit."},
+    {"id":"explicit-stable-increment","page":"simaanl-c-expdynamic","guide":"SIMACAEANLRefMap","sections":["Estimating the Stable Time Increment Size","Computational Cost"],"facts":"Small characteristic element length and wave speed limit a stable increment; global stability estimation may reduce sensitivity later in the step."}
+  ]
+}

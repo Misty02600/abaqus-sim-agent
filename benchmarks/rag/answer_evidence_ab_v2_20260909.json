@@ -1,0 +1,220 @@
+{
+  "version": "answer-evidence-ab-v2",
+  "schema_valid": 5,
+  "task_output_shape_valid": 3,
+  "complete_task_shape_pairs": 1,
+  "http_requests": 6,
+  "input_tokens": 24541,
+  "output_tokens": 4623,
+  "seconds_total": 43.343716500210576,
+  "checks": [
+    {
+      "task": "api_region",
+      "arm": "A",
+      "schema_valid": true,
+      "schema_errors": [],
+      "task_output_shape_valid": true,
+      "seconds": 8.172682099975646,
+      "usage": {
+        "input_tokens": 6184,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "output_tokens": 991,
+        "input_audio_tokens": 0,
+        "cache_audio_read_tokens": 0,
+        "output_audio_tokens": 0,
+        "details": {
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 6184
+        },
+        "cost": null,
+        "requests": 1,
+        "tool_calls": 0
+      },
+      "proposed_python_syntax_valid": true,
+      "only_requested_expression_changed": false
+    },
+    {
+      "task": "api_region",
+      "arm": "B",
+      "schema_valid": true,
+      "schema_errors": [],
+      "task_output_shape_valid": true,
+      "seconds": 4.281979500083253,
+      "usage": {
+        "input_tokens": 3242,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "output_tokens": 488,
+        "input_audio_tokens": 0,
+        "cache_audio_read_tokens": 0,
+        "output_audio_tokens": 0,
+        "details": {
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 3242
+        },
+        "cost": null,
+        "requests": 1,
+        "tool_calls": 0
+      },
+      "proposed_python_syntax_valid": true,
+      "only_requested_expression_changed": true
+    },
+    {
+      "task": "riks_advice",
+      "arm": "B",
+      "schema_valid": true,
+      "schema_errors": [],
+      "task_output_shape_valid": false,
+      "seconds": 7.4090672000311315,
+      "usage": {
+        "input_tokens": 3574,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "output_tokens": 751,
+        "input_audio_tokens": 0,
+        "cache_audio_read_tokens": 0,
+        "output_audio_tokens": 0,
+        "details": {
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 3574
+        },
+        "cost": null,
+        "requests": 1,
+        "tool_calls": 0
+      },
+      "string_null_instead_of_json_null": true
+    },
+    {
+      "task": "riks_advice",
+      "arm": "A",
+      "schema_valid": true,
+      "schema_errors": [],
+      "task_output_shape_valid": true,
+      "seconds": 7.372550200088881,
+      "usage": {
+        "input_tokens": 4129,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "output_tokens": 747,
+        "input_audio_tokens": 0,
+        "cache_audio_read_tokens": 0,
+        "output_audio_tokens": 0,
+        "details": {
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 4129
+        },
+        "cost": null,
+        "requests": 1,
+        "tool_calls": 0
+      },
+      "string_null_instead_of_json_null": false
+    },
+    {
+      "task": "warning_advice",
+      "arm": "A",
+      "schema_valid": true,
+      "schema_errors": [],
+      "task_output_shape_valid": false,
+      "seconds": 8.391192400013097,
+      "usage": {
+        "input_tokens": 4034,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "output_tokens": 855,
+        "input_audio_tokens": 0,
+        "cache_audio_read_tokens": 0,
+        "output_audio_tokens": 0,
+        "details": {
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 4034
+        },
+        "cost": null,
+        "requests": 1,
+        "tool_calls": 0
+      },
+      "string_null_instead_of_json_null": true
+    },
+    {
+      "task": "warning_advice",
+      "arm": "B",
+      "schema_valid": false,
+      "schema_errors": [
+        {
+          "type": "json_invalid",
+          "loc": [],
+          "msg": "Invalid JSON: expected `,` or `]` at line 1 column 1988",
+          "ctx": {
+            "error": "expected `,` or `]` at line 1 column 1988"
+          }
+        }
+      ],
+      "task_output_shape_valid": false,
+      "seconds": 7.716245100018568,
+      "usage": {
+        "input_tokens": 3378,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "output_tokens": 791,
+        "input_audio_tokens": 0,
+        "cache_audio_read_tokens": 0,
+        "output_audio_tokens": 0,
+        "details": {
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 3378
+        },
+        "cost": null,
+        "requests": 1,
+        "tool_calls": 0
+      }
+    }
+  ],
+  "manifest_sha256": "4764c4ac4e2286ce27ede71c59239cabd26382b213373f57c2e8126afbd25702",
+  "raw_directory": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\answer-evidence-ab-v2",
+  "raw_sha256": {
+    "api_region-A-input.json": "f856258c0728eb2e198bd2cdc7c3b9a9eb56c859088398fe6aa98e3089d528c1",
+    "api_region-B-input.json": "67e838e2403cf82438c90c6e5868a67017c1187a8ce1b9f1a00d89bf4710556a",
+    "execution-started.json": "f3062dbea018188701f498af0d4ad3148f11206c3a43fbe4d6dd9ff06611c47a",
+    "manifest.json": "4764c4ac4e2286ce27ede71c59239cabd26382b213373f57c2e8126afbd25702",
+    "riks_advice-A-input.json": "3679d8ffd46b45057dee41905c223f93479568cc9a60e88503e922d5ec9ea33c",
+    "riks_advice-B-input.json": "697ac7433afebd7314cdddc6be630619e018a2ce50a4b02bcafbd05b65a8d240",
+    "run-summary.json": "628bdbd1930219772f547397f38027cab5eaaf3f71eae04a9526c76d82d289e1",
+    "warning_advice-A-input.json": "8845f14ffd1931e3f7c9c203e48e085e61e904ce848c72896d76735342d5978d",
+    "warning_advice-B-input.json": "323140b379eb7e40267038b8a9a83140e2432ea10963c6f1b7eeb807522b6b93",
+    "api_region-A\\answer.json": "659e3495dc94a2f87fa93b91683cd123f443f573c3e8c601707f426899bef146",
+    "api_region-A\\messages.json": "884084412cee9bff6d5c9e42004ae2a9ea17aa3a7dca73c0031a51e27b919b21",
+    "api_region-A\\model-output.json": "a1ba08e18c88416d2f6eb4ebd839faf05f93419561561656f65c2f8b341ecb26",
+    "api_region-A\\run.json": "f9461b3f26a53e4e454eec27da43038df3b77dbd0d4e4f21fadf97a3d1c2d26f",
+    "api_region-B\\answer.json": "33b65d106574cf9e86c30bae19167a9a37386e74558d826b67d22e53b724ae26",
+    "api_region-B\\messages.json": "252a20880633476434be9bb44edb9b72c7563847e135f80ba1e67cccfc82da5f",
+    "api_region-B\\model-output.json": "ca49f8d5aebd77cfc9239ec5d90d2a768c7e0c890c6eba5da1dceba3db2685a0",
+    "api_region-B\\run.json": "dda255d76d45e75582e453f8346a8a27aca00338fb6e336d94cf65f14819c8d0",
+    "riks_advice-A\\answer.json": "6b4dad3c9f5f7286ef966ac1824080ec5c785cc17928be7549840e8b62d91743",
+    "riks_advice-A\\messages.json": "dacd7b4e0bc23996522f6226f3de45ce18a792a72c71e059a369522861475d3f",
+    "riks_advice-A\\model-output.json": "90d90da404d3d70867a910bb33b760d8e6019b9eed49c77db9bf65cf078a935a",
+    "riks_advice-A\\run.json": "3c8bb17792312132bd22eebdd1ba013d12fd22968fb500ec035b88351d4ff591",
+    "riks_advice-B\\answer.json": "afb10d2c715e1f43056cbe04eafc99894ea39940bbc979e85506121fe4d5012f",
+    "riks_advice-B\\messages.json": "10f385a2ada897ca9d7c02f28b0f9f2550274e781775377dbf8a370679858db2",
+    "riks_advice-B\\model-output.json": "8b4ab74d56bffc2a4d5012c140a2b2ce124622383af022d4811e90d523b620dc",
+    "riks_advice-B\\run.json": "d6bf35f940c5411bc5c0f4ee0ba7de31bcd48c5489e0b10f32968389e2548f25",
+    "warning_advice-A\\answer.json": "d4fa7e67c2ff46ddc09409eab653cce7cf8c79e024bc530745e03647ce2c78ec",
+    "warning_advice-A\\messages.json": "84887db5111200e207ec8242063af19334e2b7ed479d7544b175a30e055d2e41",
+    "warning_advice-A\\model-output.json": "f0a89abb64b0775c5b71a9dd0164daea52103d8350de91bae3176537b90f0105",
+    "warning_advice-A\\run.json": "96e0126924ad9ebaa7df4bb5fab1b2a9edee5b7b7ca6b92ef2b876d724987bda",
+    "warning_advice-B\\messages.json": "5968b6ed5b282b7beea6ecc7918fd305fc02123dab9415416fbf4488899e8f8a",
+    "warning_advice-B\\run.json": "afb4ad569e79cf0844103c5f2cb7677b22cb6129e13b4c1b2174a8687b6e3073",
+    "api_region-A\\responses\\response-0001.json": "ae156cdef0add5aaaf74e7e5bf6487aecb9faa42505f56c7fd8c3aca41d903c3",
+    "api_region-B\\responses\\response-0001.json": "9bd8cf365a063d24a36ba392e38a2983406c4d86a97ac85922eeb9bfd0fd8a8b",
+    "riks_advice-A\\responses\\response-0001.json": "7ebd0f51d7f9c17873968c6e49d5557def93dbb79ec3982179e5b5e0ae3e524a",
+    "riks_advice-B\\responses\\response-0001.json": "b59180f87b334fb828300b2a36a85b0bd320c624b0d0498318debb29744aee8e",
+    "warning_advice-A\\responses\\response-0001.json": "2a4bb2628e7b3adaf947cd8c0570b2c533bfe16d08f03705f26abcbe677c27df",
+    "warning_advice-B\\responses\\response-0001.json": "79b1c4862fb676034255176546a58bdca67e4bfabadd39332e62e33b88512d39"
+  },
+  "limits": [
+    "Same original six evidence bytes; only shared formatting instructions and flat schema changed fromv1.",
+    "Schema-valid string null is not JSON null; no automatic normalization or historical repair.",
+    "API is the only complete task-shape pair; proposed script scope is a separate content/action criterion.",
+    "No actual scripts or Abaqus executed; comparison is answer-stage only, one observation per arm/task.",
+    "No aggregate semantic success rate or general B superiority claim."
+  ]
+}

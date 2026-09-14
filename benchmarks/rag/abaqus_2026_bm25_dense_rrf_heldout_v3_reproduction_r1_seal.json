@@ -1,0 +1,124 @@
+{
+  "schema_version": "1",
+  "dataset_id": "abaqus-2026-bm25-dense-rrf-heldout-v3",
+  "purpose": "identical_reproduction",
+  "status": "sealed",
+  "parent_seal": {
+    "path": "abaqus_2026_bm25_dense_rrf_heldout_seal_v3.json",
+    "sha256": "00e43e6dc0274d3ee60cf94c74d457004cf2172ad31d7fd19a0b248b92ff7d39"
+  },
+  "reference_report": {
+    "path": "abaqus_2026_bm25_dense_rrf_heldout_evaluation_v3_20260903.json",
+    "sha256": "9bb5d7a6e688e0d5a3ecd598c1a252ca3234fb509514886228be9444623fd0a8"
+  },
+  "reference_attempts": {
+    "path": "abaqus_2026_bm25_dense_rrf_heldout_attempts_v3.jsonl",
+    "sha256": "a78a7b650443975f9f50991c15e10cdde59234e1bec7eddf631f26df2cec4704"
+  },
+  "reference_consumption": {
+    "path": "abaqus_2026_bm25_dense_rrf_heldout_consumption_v3.json",
+    "sha256": "ba3ca417dab9730a40482156e841832b584638e9dccb560aafc907da2bfe57cf"
+  },
+  "reference_posthoc_vector_snapshot": {
+    "path": "abaqus_2026_bm25_dense_rrf_heldout_dense_vector_posthoc_v3.json",
+    "sha256": "dd502e301fd9670f255b7a905f74854390b4795235e2bc9a1e1f7c99f90e53b6"
+  },
+  "uv_lock": {
+    "path": "uv.lock",
+    "sha256": "6d8af39f4e6dfe7535f5610c0b85ed3ef023bc1ab2965ad320bc6ccc9713ca82"
+  },
+  "python_version": "3.12.11",
+  "runtime_versions": {
+    "chromadb": "1.5.9",
+    "langchain-chroma": "1.1.0",
+    "langchain-core": "1.5.6",
+    "numpy": "2.5.2",
+    "onnxruntime": "1.29.0",
+    "tokenizers": "0.23.1",
+    "tqdm": "4.70.0"
+  },
+  "query_encoder_type": "chromadb.DefaultEmbeddingFunction/all-MiniLM-L6-v2",
+  "query_encoder_root": "C:\\Users\\Administrator\\.cache\\chroma\\onnx_models\\all-MiniLM-L6-v2",
+  "query_encoder_files": [
+    {
+      "path": "onnx.tar.gz",
+      "size_bytes": 83178821,
+      "sha256": "913d7300ceae3b2dbc2c50d1de4baacab4be7b9380491c27fab7418616a16ec3"
+    },
+    {
+      "path": "onnx/config.json",
+      "size_bytes": 650,
+      "sha256": "b567c7d5a55b636c95186aaf993f9a8920842b7e05a9e703e68b23cab2c3a670"
+    },
+    {
+      "path": "onnx/model.onnx",
+      "size_bytes": 90387606,
+      "sha256": "4f148ba8ae9c2c7fbee4af2b132db8d06c6a6545b47fc83bbb98c3d22b8393e6"
+    },
+    {
+      "path": "onnx/special_tokens_map.json",
+      "size_bytes": 125,
+      "sha256": "b6d346be366a7d1d48332dbc9fdf3bf8960b5d879522b7799ddba59e76237ee3"
+    },
+    {
+      "path": "onnx/tokenizer.json",
+      "size_bytes": 711661,
+      "sha256": "da0e79933b9ed51798a3ae27893d3c5fa4a201126cef75586296df9b4d2c62a0"
+    },
+    {
+      "path": "onnx/tokenizer_config.json",
+      "size_bytes": 518,
+      "sha256": "7702051bbc4953b94d47fa1d61b42ed4cbb3c71b501a8dd7183a823f8bea1f20"
+    },
+    {
+      "path": "onnx/vocab.txt",
+      "size_bytes": 231508,
+      "sha256": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3"
+    }
+  ],
+  "onnx_providers": [
+    "AzureExecutionProvider",
+    "CPUExecutionProvider"
+  ],
+  "dense_vector_storage": {
+    "algorithm": "chroma-target-hnsw-segment-bytes-v1",
+    "collection_name": "abaqus_docs_2026_fd02",
+    "collection_id": "5cda2820-ae05-4933-898b-1786a70027c5",
+    "dimension": 384,
+    "collection_config_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "collection_schema_sha256": "b85d10d97d51bc1d762491b6db52ee8e9702c642f66fe151742f859dbdd92fc2",
+    "segment_ids": [
+      "964893cf-0a0b-4d3c-acca-486e1e4516d1"
+    ],
+    "sha256": "6a4d1d016d4371ddf0016ef6812853369a0225c3ce656fd8ab6c9c2af8c42896",
+    "files": [
+      {
+        "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/data_level0.bin",
+        "size_bytes": 65218188,
+        "sha256": "5bbbcde364205b92c85db002d142efb04e4bd36dd9e89c40859ff43027e26f35"
+      },
+      {
+        "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/header.bin",
+        "size_bytes": 100,
+        "sha256": "46879b16337e25659bd133bd1887bad8917397111084e440c382848c64b179dd"
+      },
+      {
+        "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/index_metadata.pickle",
+        "size_bytes": 7360282,
+        "sha256": "2a6e1843f2725e2ece3eb86ca163f89195d29b3fe6df8adef891e40ab0d679b2"
+      },
+      {
+        "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/length.bin",
+        "size_bytes": 155652,
+        "sha256": "7e566e5c154c3abdf4ba6bbbd08ba36cdf8a221b0921b84d4e60517234091f1b"
+      },
+      {
+        "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/link_lists.bin",
+        "size_bytes": 334968,
+        "sha256": "378171af8e4133830ea79a75dc6ffb79709e37d8fc42046daac46d6d93729f28"
+      }
+    ]
+  },
+  "reproduction_source_sha256": "c9886b8bbf044e299805b5f66132cf5b5e334590e3d175e37f8d936150b4c5d0",
+  "sealed_at": "2026-09-03T19:36:55.6578335+08:00"
+}

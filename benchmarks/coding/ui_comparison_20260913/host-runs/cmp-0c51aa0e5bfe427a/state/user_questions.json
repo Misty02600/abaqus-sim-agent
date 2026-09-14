@@ -1,0 +1,24 @@
+{
+  "schema_version": "user-questions-v1",
+  "run_id": "cmp-0c51aa0e5bfe427a",
+  "questions": [
+    {
+      "question_id": "cmp-0c51aa0e5bfe427a-q1",
+      "question": "Plate thickness? Please include units.",
+      "task_revision": 0,
+      "turn": 1,
+      "abaqus_calls_before": 0,
+      "revision_had_runtime": false,
+      "goal_at_question": "AGUI API precheck PASS",
+      "execution_count": 0,
+      "history_sha256": "dbd9f4d4feb5c31ab465b4a0f155441d87804bebb390004934161d570f017d63",
+      "workspace_sha256": "602e35a92eec4bc0a2ec6ae113f07bfc6933322fb69fe8dee416e5a67217e2a2",
+      "asked_at": "2026-09-13T15:23:43.994910Z",
+      "answer": "1 mm",
+      "source": "file",
+      "resolved_at": "2026-09-13T15:23:44.100271Z",
+      "cancelled": false,
+      "answer_revision": 0
+    }
+  ]
+}

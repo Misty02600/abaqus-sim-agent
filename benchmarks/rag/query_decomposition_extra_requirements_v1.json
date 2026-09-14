@@ -1,0 +1,7 @@
+{
+  "role": "Supplemental facet coverage fixed before query generation; does not replace the original necessary-unit metric and is never supplied to the generation model.",
+  "case_id": "domain-procedure-applicability-2",
+  "need": "lpf_load_definition",
+  "unit_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+  "description": "Existing candidate-pool unit defining proportional loading, dead/reference load vectors and the load proportionality factor. This unit was not delivered by the latest question-only baseline."
+}

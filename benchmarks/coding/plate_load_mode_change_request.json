@@ -1,0 +1,10 @@
+{
+  "schema_version": "1",
+  "prompt_version": "plate-load-mode-change-v1",
+  "source_contract": "A completed and independently verified plate-tension-v4 CodingRun",
+  "agent_visible_seed_files": [
+    "build_model.py",
+    "extract_results.py"
+  ],
+  "goal": "当前工作区提供了一份已经在 Abaqus 2024 中完成物理验收的 100 mm × 20 mm、厚度 1 mm\n二维平面应力板脚本。请修改已有 build_model.py，把右边界的 U1=0.1 mm 规定位移删除，改为在同一个\nStatic, General 分析步中对整个 x=100 mm 右边界施加全局 +X 方向、均匀 210 MPa 的 general surface\ntraction。traction 必须是非 follower，并按当前面积均匀施加。\n\n保留完整板几何、mm-N-MPa、E=210000 MPa、泊松比 0.3、厚度 1 mm、Abaqus/Standard、唯一\nStatic, General、NLGEOM=OFF、CPS4R 20×4 结构化网格、左边界 U1=0、左下角 U2=0，以及 U、S、RF\n输出。除了目标右边界 traction 外不得增加其他机械载荷。右边界不得再有任何规定位移。\n\nextract_results.py 的公开结果合同没有变化，不要修改该文件；它仍应生成包含 right_mean_u1、mean_s11、\nleft_sum_rf1 的 results.json。保持 build_model.py → CAE/INP、独立 Solver → ODB、原\nextract_results.py → results.json 的三阶段边界，不在 CAE 脚本中提交 Job。\n\n所有物理输入已经给全，不要请求澄清。只有载荷控制模式确实改变、原合同保持、三阶段产物和结果齐全后\n才请求验证。"
+}

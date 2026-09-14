@@ -1,0 +1,30 @@
+{
+  "schema_version": "diagnostic-retrieval-reproduction-comparison-v1",
+  "purpose": "identical_replay",
+  "compared_at": "2026-09-04T08:48:13.071815Z",
+  "diagnostic_seal_file": "abaqus_2026_diagnostic_retrieval_dev_v1_reproduction_r1_seal.json",
+  "diagnostic_seal_sha256": "8da846bab42fde9b8ada9ccbf0ac2e50aa9cb66b7e11b7f510e62a41be6ff979",
+  "reference_report_file": "abaqus_2026_diagnostic_retrieval_dev_v1_evaluation_20260904.json",
+  "reference_report_sha256": "047ee9adf839d7aec55d95be190a3184a56166bcc843d00e4b0337048fd0a39a",
+  "reproduction_report_file": "abaqus_2026_diagnostic_retrieval_dev_v1_reproduction_r1_report.json",
+  "reproduction_report_sha256": "46b034231504341c7f1eff5c02e6d56f4b1d0e8b64534edbf5168a6f14fedf05",
+  "case_count": 86,
+  "retrievers_per_case": 3,
+  "ordered_rankings_compared": 258,
+  "ordered_ranking_mismatches": [],
+  "ordered_rankings_identical": true,
+  "allowed_differences": [
+    "evaluated_at",
+    "cases.*.bm25.elapsed_ms",
+    "cases.*.dense.elapsed_ms",
+    "cases.*.hybrid.elapsed_ms",
+    "cases.*.fusion_elapsed_ms",
+    "diagnostic_seal_sha256",
+    "implementation.diagnostic_py",
+    "audit.implementation.diagnostic_py"
+  ],
+  "non_latency_reference_sha256": "df301641724ce188d620f885687f79d31630969dee4ffdf5c4bfaa807154f115",
+  "non_latency_reproduction_sha256": "df301641724ce188d620f885687f79d31630969dee4ffdf5c4bfaa807154f115",
+  "non_latency_fields_identical": true,
+  "interpretation": "This replay verifies the first development report under a pre-bound diagnostic environment. It is not a new held-out result and does not repair the first report's historical pre-ranking attestation gap."
+}

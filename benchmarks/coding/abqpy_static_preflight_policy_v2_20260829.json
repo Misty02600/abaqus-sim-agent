@@ -1,0 +1,85 @@
+{
+  "schema_version": "1",
+  "benchmark_id": "abqpy-static-preflight-policy-v2-20260829",
+  "policy_version": "abqpy-advisory-high-confidence-v2",
+  "changes_from_v1": [
+    "Treat BasedPyright's missing-required-parameters diagnostic as actionable.",
+    "Tell the Agent to batch all supported repairs before runtime and reserve unchanged retry for a specifically evidenced false positive."
+  ],
+  "engine": {
+    "name": "basedpyright",
+    "version": "1.39.10"
+  },
+  "api_source": {
+    "name": "abqpy",
+    "version": "2024.10",
+    "wheel_sha256": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504"
+  },
+  "fixture_hash_algorithm": "SHA-256 over sorted POSIX relative path, NUL, file bytes, NUL",
+  "positive_set": {
+    "description": "All checked-in Abaqus 2024 reference and licensed-probe Python fixtures under tests/fixtures/abaqus2024.",
+    "selection": "tests/fixtures/abaqus2024/**/*.py",
+    "script_count": 21,
+    "fixture_set_sha256": "9e1485be853aa86308c479919dbbc2d4086efca5e9cf42017c779c763361eddc",
+    "paused_scripts": 0,
+    "raw_diagnostics_filtered": 134,
+    "duration_seconds": {
+      "total": 24.7112980999227,
+      "mean": 1.1767284809487,
+      "min": 0.913265600000159,
+      "max": 1.53429289998894
+    }
+  },
+  "negative_set": {
+    "description": "Five fixed scripts whose API-binding failures were reproduced with licensed Abaqus 2024 before this static benchmark.",
+    "fixture_set_sha256": "1242f66eaee1543faea217e2edad507868e66fe6e0aa596526a9a3d7f4fd6ef4",
+    "script_count": 5,
+    "caught_scripts": 5,
+    "raw_diagnostics_filtered": 1,
+    "duration_seconds": {
+      "total": 5.80953819998831,
+      "mean": 1.16190763999766
+    },
+    "cases": [
+      {
+        "fixture": "tests/fixtures/api_repair_regressions/base_solid_box/repair_case.py",
+        "expected_rule": "reportAttributeAccessIssue",
+        "expected_term": "BaseSolidBox"
+      },
+      {
+        "fixture": "tests/fixtures/api_repair_regressions/part_instance_set/repair_case.py",
+        "expected_rule": "reportAttributeAccessIssue",
+        "expected_term": "PartInstance"
+      },
+      {
+        "fixture": "tests/fixtures/api_repair_final13/beam_section_orientation_keyword/repair_case.py",
+        "expected_rule": "reportCallIssue",
+        "expected_term": "orientation"
+      },
+      {
+        "fixture": "tests/fixtures/api_repair_final11/set_element_type_direct_faces/repair_case.py",
+        "expected_rule": "reportArgumentType",
+        "expected_term": "setElementType"
+      },
+      {
+        "fixture": "tests/fixtures/api_repair_final11/assembly_surface_flat_edges/repair_case.py",
+        "expected_rule": "reportArgumentType",
+        "expected_term": "side1Edges"
+      }
+    ]
+  },
+  "licensed_trace_regression": {
+    "source_run": "beam-b31-final15-abqpy-preflight-v1-20260829/beam-d9eae392189d",
+    "observed_static_message": "Arguments missing for parameters method, n1",
+    "observed_runtime_result": "Abaqus 2024 reported required parameters missing at the same assignBeamSectionOrientation call",
+    "reproduction_test": "test_real_basedpyright_catches_missing_orientation_arguments_from_v1_trace"
+  },
+  "runtime_policy": {
+    "mode": "advisory",
+    "first_actionable_report": "pause_without_abaqus_budget",
+    "unchanged_repeat": "evidence-only escape hatch",
+    "timeout_or_unavailable": "fail_open",
+    "raw_output_preserved": true
+  },
+  "reproduction_test": "tests/test_static_preflight.py"
+}

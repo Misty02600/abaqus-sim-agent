@@ -1,0 +1,1243 @@
+{
+  "schema_version": "document-context-v2-observed-query-replay-v1",
+  "dataset_role": "posthoc development replay of five observed queries; not held-out",
+  "review_method": "Primary assistant inspection of all old/new delivered excerpts, full retrieved content as needed, and local official source sections; no independent human/LLM judge, no statistical generalization.",
+  "policy": {
+    "mode": "exact-symbol-augmented Dense",
+    "top_k": 4,
+    "inputs": "original query, exact_terms and products unchanged",
+    "bm25": "built and corpus-verified, not used for active-tool rankings"
+  },
+  "build_commands": [
+    "uv run python -m abaqus_sim_agent.retrieval build --docs-root D:\\SIMULIA\\Documentation\\2026LE --index-dir var/rag-context-v2 --collection abaqus_docs_context_v2 --no-reset",
+    "uv run python -m abaqus_sim_agent.retrieval build-bm25 --index-dir var/rag-context-v2 --collection abaqus_docs_context_v2"
+  ],
+  "replay_commands": [
+    "uv run python var/audits/replay_document_context_v2.py prepare",
+    "uv run python var/audits/replay_document_context_v2.py old",
+    "uv run python var/audits/replay_document_context_v2.py new"
+  ],
+  "raw_directory": "D:/Projects/abaqus-agent/abaqus-sim-agent/var/audits/document-context-v2-replay",
+  "raw_sha256": {
+    "inputs.json": "c257ae8053a6fb57ce9f35c75cdc153afa2e720fd75ab8ec41164947ab641924",
+    "new-binding.json": "c714525661a67e552ce59d982198ac843405eaf97aaec9649b6dc7635c7e5cf1",
+    "new-results.json": "e6f9878a53ae5c1a79b4e261edd542af5e7e22417250b95c9b9bf26d761c26bf",
+    "old-binding.json": "aa38ae6aedf46084f72d8266658a4d1d96928a60889842b86bf6aa7e509ae068",
+    "old-results.json": "316efcb000c704e4c855a9a08d196b484aefe369b09ea27f7efa6ff19524f8b5"
+  },
+  "replay_script_sha256": "7e0d7a05cf82d1c394cd8cad02fb05de996ee05dac9364a39f1a0bac53d1e791",
+  "summary_script_sha256": "dcde17b5a3ad130c5bea65473fe576422508c2cdae929331f3990fa85046bd4d",
+  "implementation_sha256": {
+    "src/abaqus_sim_agent/retrieval/documents.py": "4ee1defc70673d29bbdbf772389ec91dbb9b0ea6f4a762beab838118ff2fb366",
+    "src/abaqus_sim_agent/retrieval/index.py": "4fe670b4915cbabbb38e2a7344babd2639cbf1e62c7c5b899ec6f94c46145734",
+    "src/abaqus_sim_agent/retrieval/bm25.py": "91696abe6d752ba46e0ecb499858091ee0f09205ef539ea988de99673db5d36d",
+    "src/abaqus_sim_agent/coding/concept_lookup.py": "db5b3dd2f8cb8ed43bedc4575289c756dc7dd1d82a6aaf31598cabab432e425a",
+    "src/abaqus_sim_agent/coding/contracts.py": "c18bb174dea5b88d525bb3d0e99b7f3a1bfdb513b17f76f91634cd828e8caea1",
+    "uv.lock": "6d8af39f4e6dfe7535f5610c0b85ed3ef023bc1ab2965ad320bc6ccc9713ca82"
+  },
+  "source_validation": {
+    "source_count": 1480,
+    "validation_sha256": "30c49c5038e1bf25b7fbd06df2e8abf426a17be59c0563b04d90d5f3959f4630"
+  },
+  "review_source_sha256": {
+    "SIMACAEANLRefMap/simaanl-c-postbuckling.htm": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+    "SIMACAEANLRefMap/simaanl-c-static.htm": "c35f5d8390c07490a3d317719b2be232fcc892cfe0c0dee0966327235cec4020",
+    "SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+    "SIMACAEKEYRefMap/simakey-r-output.htm": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+    "SIMACAEKERRefMap/simaker-c-odbassemblypyc.htm": "97adf37b9933ac467e340251b4379d6096cce8306a4b45e1aa82371a6ec272bd"
+  },
+  "indices": {
+    "old": {
+      "index_dir": "D:/Projects/abaqus-agent/abaqus-sim-agent/var/rag",
+      "manifest": {
+        "schema_version": "1",
+        "document_context_version": "unrecorded",
+        "built_at": "2026-08-21T09:27:18.461377Z",
+        "release": "2026 FD02",
+        "collection_name": "abaqus_docs_2026_fd02",
+        "docs_root": "D:\\SIMULIA\\Documentation\\2026LE\\English",
+        "guide_ids": [
+          "SIMACAEMODRefMap",
+          "SIMACAEANLRefMap",
+          "SIMACAECSTRefMap",
+          "SIMACAEELMRefMap",
+          "SIMACAEITNRefMap",
+          "SIMACAEKEYRefMap",
+          "SIMACAEMATRefMap",
+          "SIMACAEOUTRefMap",
+          "SIMACAEPRCRefMap"
+        ],
+        "files_seen": 1609,
+        "files_loaded": 1480,
+        "files_skipped": 129,
+        "documents_indexed": 38913,
+        "build_elapsed_seconds": 1202.46,
+        "embedding": "chromadb.DefaultEmbeddingFunction/all-MiniLM-L6-v2",
+        "chunk_size_characters": 1000,
+        "chunk_overlap_characters": 100,
+        "index_size_bytes": 324365208
+      },
+      "manifest_sha256": "9671bd588940438ef1edfc067ac9bb8b26b96d6be57c0c4740b70bd2aafb5cc1",
+      "bm25_manifest": {
+        "schema_version": "1",
+        "built_at": "2026-09-03T07:47:17.613368Z",
+        "algorithm": "bm25-okapi-v1",
+        "tokenizer": "abaqus-lexical-v1",
+        "k1": 1.2,
+        "b": 0.75,
+        "collection_name": "abaqus_docs_2026_fd02",
+        "release": "2026 FD02",
+        "dense_manifest_sha256": "9671bd588940438ef1edfc067ac9bb8b26b96d6be57c0c4740b70bd2aafb5cc1",
+        "semantic_corpus_sha256": "2f68cc586e829ab068fd173aaaff87a749f3fbfb257b25cee249b5d5ef09acc2",
+        "database_filename": "bm25-75db127594586c96c95f158f5a3266ab570bfe920d85d356eb68102eb4588bd5.sqlite3",
+        "database_sha256": "75db127594586c96c95f158f5a3266ab570bfe920d85d356eb68102eb4588bd5",
+        "documents_indexed": 32466,
+        "terms_indexed": 16690,
+        "postings_indexed": 1298647,
+        "total_document_length": 2363118,
+        "average_document_length": 72.78746996858251,
+        "database_size_bytes": 76525568
+      },
+      "bm25_manifest_sha256": "8007bdc46139ffb7bda308c44ef49356b32d3c59810d861e94d81fc469867738",
+      "semantic_corpus_sha256": "2f68cc586e829ab068fd173aaaff87a749f3fbfb257b25cee249b5d5ef09acc2",
+      "all_records_ordered_content_metadata_sha256": "81ad29d98089d311a0dd050f89cda7869d39bb5422d6defb64cf1bcabdb9ed39",
+      "record_count": 38913,
+      "vector_snapshot": {
+        "algorithm": "chroma-target-hnsw-segment-bytes-v1",
+        "collection_name": "abaqus_docs_2026_fd02",
+        "collection_id": "5cda2820-ae05-4933-898b-1786a70027c5",
+        "dimension": 384,
+        "collection_config_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "collection_schema_sha256": "b85d10d97d51bc1d762491b6db52ee8e9702c642f66fe151742f859dbdd92fc2",
+        "segment_ids": [
+          "964893cf-0a0b-4d3c-acca-486e1e4516d1"
+        ],
+        "sha256": "6a4d1d016d4371ddf0016ef6812853369a0225c3ce656fd8ab6c9c2af8c42896",
+        "files": [
+          {
+            "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/data_level0.bin",
+            "size_bytes": 65218188,
+            "sha256": "5bbbcde364205b92c85db002d142efb04e4bd36dd9e89c40859ff43027e26f35"
+          },
+          {
+            "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/header.bin",
+            "size_bytes": 100,
+            "sha256": "46879b16337e25659bd133bd1887bad8917397111084e440c382848c64b179dd"
+          },
+          {
+            "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/index_metadata.pickle",
+            "size_bytes": 7360282,
+            "sha256": "2a6e1843f2725e2ece3eb86ca163f89195d29b3fe6df8adef891e40ab0d679b2"
+          },
+          {
+            "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/length.bin",
+            "size_bytes": 155652,
+            "sha256": "7e566e5c154c3abdf4ba6bbbd08ba36cdf8a221b0921b84d4e60517234091f1b"
+          },
+          {
+            "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/link_lists.bin",
+            "size_bytes": 334968,
+            "sha256": "378171af8e4133830ea79a75dc6ffb79709e37d8fc42046daac46d6d93729f28"
+          }
+        ]
+      }
+    },
+    "new": {
+      "index_dir": "D:/Projects/abaqus-agent/abaqus-sim-agent/var/rag-context-v2",
+      "manifest": {
+        "schema_version": "1",
+        "document_context_version": "abaqus-document-context-v2",
+        "built_at": "2026-09-05T09:40:24.805567Z",
+        "release": "2026 FD02",
+        "collection_name": "abaqus_docs_context_v2",
+        "docs_root": "D:\\SIMULIA\\Documentation\\2026LE\\English",
+        "guide_ids": [
+          "SIMACAEMODRefMap",
+          "SIMACAEANLRefMap",
+          "SIMACAECSTRefMap",
+          "SIMACAEELMRefMap",
+          "SIMACAEITNRefMap",
+          "SIMACAEKEYRefMap",
+          "SIMACAEMATRefMap",
+          "SIMACAEOUTRefMap",
+          "SIMACAEPRCRefMap"
+        ],
+        "files_seen": 1609,
+        "files_loaded": 1480,
+        "files_skipped": 129,
+        "documents_indexed": 39019,
+        "build_elapsed_seconds": 1151.166968000005,
+        "embedding": "chromadb.DefaultEmbeddingFunction/all-MiniLM-L6-v2",
+        "chunk_size_characters": 1000,
+        "chunk_overlap_characters": 100,
+        "index_size_bytes": 363042896
+      },
+      "manifest_sha256": "d79314843583049a3993e6e49cf063f4969e36f224bc12b2df2860cec2f5d192",
+      "bm25_manifest": {
+        "schema_version": "1",
+        "built_at": "2026-09-05T09:40:41.852163Z",
+        "algorithm": "bm25-okapi-v1",
+        "tokenizer": "abaqus-lexical-v1",
+        "k1": 1.2,
+        "b": 0.75,
+        "collection_name": "abaqus_docs_context_v2",
+        "release": "2026 FD02",
+        "dense_manifest_sha256": "d79314843583049a3993e6e49cf063f4969e36f224bc12b2df2860cec2f5d192",
+        "semantic_corpus_sha256": "e8ce5868ab799597f6664ee214f0a2d0e1e33fd433f5f3b88a75301be156b83e",
+        "database_filename": "bm25-9c9083fb6f9512e958a8fde02025b407995860ece3e131c97a7ae439a76b146d.sqlite3",
+        "database_sha256": "9c9083fb6f9512e958a8fde02025b407995860ece3e131c97a7ae439a76b146d",
+        "documents_indexed": 32572,
+        "terms_indexed": 16703,
+        "postings_indexed": 1333728,
+        "total_document_length": 2565320,
+        "average_document_length": 78.75844283433624,
+        "database_size_bytes": 92758016
+      },
+      "bm25_manifest_sha256": "0b81b4b91f68ca795140971d4ed49485375d033f8bdb04e571017de249db3fdc",
+      "semantic_corpus_sha256": "e8ce5868ab799597f6664ee214f0a2d0e1e33fd433f5f3b88a75301be156b83e",
+      "all_records_ordered_content_metadata_sha256": "4bea6790e2ac4158d15d71fb1786f46e47124c3ab625be5cec7d7c3d6e8d114a",
+      "record_count": 39019,
+      "vector_snapshot": {
+        "algorithm": "chroma-target-hnsw-segment-bytes-v1",
+        "collection_name": "abaqus_docs_context_v2",
+        "collection_id": "45d5f2dd-e675-4616-95a6-84a946da45ff",
+        "dimension": 384,
+        "collection_config_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "collection_schema_sha256": "7d00096bc6f1d4d273d27f803d7763dd5a2709e02c517c5cbf83ce63b8af907c",
+        "segment_ids": [
+          "2d082221-5229-4180-bf37-34c220d7e4d1"
+        ],
+        "sha256": "92642ee64da6528458f239457d5032e2e8c3195c0472b18c1e72025f2a7262cc",
+        "files": [
+          {
+            "path": "2d082221-5229-4180-bf37-34c220d7e4d1/data_level0.bin",
+            "size_bytes": 65216512,
+            "sha256": "772a6d450e844cc45c9009d74078e6a7e759eb8f8da1cbd07c37a62d642daaf8"
+          },
+          {
+            "path": "2d082221-5229-4180-bf37-34c220d7e4d1/header.bin",
+            "size_bytes": 100,
+            "sha256": "939cc3b56c23640f52fd70bc319023ab1311e0aea69361b28329e8a411e37949"
+          },
+          {
+            "path": "2d082221-5229-4180-bf37-34c220d7e4d1/index_metadata.pickle",
+            "size_bytes": 7350972,
+            "sha256": "032d613f54fda0e4a6a399db4e01b6d743b10b8abb3486205a0e0433bcfeed11"
+          },
+          {
+            "path": "2d082221-5229-4180-bf37-34c220d7e4d1/length.bin",
+            "size_bytes": 155648,
+            "sha256": "4d91867ba12d33cb7d4b7355eb38ae69cfa929ee8cb9c1a64d57336f4999f456"
+          },
+          {
+            "path": "2d082221-5229-4180-bf37-34c220d7e4d1/link_lists.bin",
+            "size_bytes": 339248,
+            "sha256": "360e88f91d584a874bbdaf5b050218934eb2781f21f2328216ebc0e461bb0ede"
+          }
+        ]
+      }
+    }
+  },
+  "checks": {
+    "old_historical_order_reproduced_queries": 5,
+    "old_historical_order_reproduced_hits": 20,
+    "queries_replayed_per_index": 5,
+    "old_and_new_bindings_unchanged_after_replay": true,
+    "original_source_pages_rechecked": 1480,
+    "targeted_regression_tests_passed": 38,
+    "model_requests": 0,
+    "abaqus_calls": 0
+  },
+  "cases": [
+    {
+      "id": "exact-api-region-1",
+      "question": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?",
+      "observed_context": "extract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT.",
+      "exact_terms": [
+        "U"
+      ],
+      "products": [],
+      "assessment": "unresolved_coverage_gap",
+      "finding": "Both versions return the same page/section/match order. None of the returned snippets explains OdbAssembly.nodeSets or the repository-to-OdbSet access. The general corpus still excludes the Scripting Reference; no Catalog member coverage was added.",
+      "old": [
+        {
+          "rank": 1,
+          "document_id": "simaout-c-std-nodalvariables",
+          "section_id": "simaout-c-std-nodalvariables__simaout-c-genxsl-U",
+          "match": "exact",
+          "record_id": "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-U:output_variable-001",
+          "section_title": "Nodal Variables",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-U",
+          "content_sha256": "7642f3a19affb877d0f91dfa6332a6292bbfb09e4a0ae692cc83366034cfbecb",
+          "delivered_excerpt_sha256": "1140830f011236a5b5535f833def031c7e6affb41c87062960b7fb4d235caa0d",
+          "delivered_excerpt_characters": 290
+        },
+        {
+          "rank": 2,
+          "document_id": "simakey-r-nodeoutput",
+          "section_id": "simakey-r-nodeoutput",
+          "match": "semantic",
+          "record_id": "simakey-r-nodeoutput#simakey-r-nodeoutput:chunk-008",
+          "section_title": "Optional parameter when the option is used in conjunction with the , option",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/Explicit",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-nodeoutput.htm#simakey-r-nodeoutput",
+          "content_sha256": "e7e58495d93afe1b28f7a71ce7ba0454f8e877e98a73ca238267f50805f75e98",
+          "delivered_excerpt_sha256": "688974917d8d81f2203a23d8d7ffa923f18698f2de218d702c9a6e95ed4a4ffa",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 3,
+          "document_id": "simaout-c-output",
+          "section_id": "simaout-c-output-t-TheResultsFile-sma-topic10",
+          "match": "semantic",
+          "record_id": "simaout-c-output#simaout-c-output-t-TheResultsFile-sma-topic10:chunk-038",
+          "section_title": "Part and Assembly Information",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/Explicit",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-output.htm#simaout-c-output-t-TheResultsFile-sma-topic10",
+          "content_sha256": "33ea37758964e2eb368f69911ac28c3c9c021fb5f9469af6270c7d80a9e91881",
+          "delivered_excerpt_sha256": "ad0246b2da276e702f4acca9d06efb22548501905df1f576463b619b2be78bf0",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 4,
+          "document_id": "simaout-c-printfile",
+          "section_id": "simaout-c-printfile-nodaloutput",
+          "match": "semantic",
+          "record_id": "simaout-c-printfile#simaout-c-printfile-nodaloutput:chunk-068",
+          "section_title": "Specifying the Directions for Nodal Output",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/Explicit"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-printfile.htm#simaout-c-printfile-nodaloutput",
+          "content_sha256": "bf43722ae1a6276a1fb5c3435bb3cd734d97e25be9560c929d9b4d7ff88e3b7c",
+          "delivered_excerpt_sha256": "7df918f3814198b1113097885cc0262a279fd9ec5dc81436f373c2b20581753d",
+          "delivered_excerpt_characters": 599
+        }
+      ],
+      "new": [
+        {
+          "rank": 1,
+          "document_id": "simaout-c-std-nodalvariables",
+          "section_id": "simaout-c-std-nodalvariables__simaout-c-genxsl-U",
+          "match": "exact",
+          "record_id": "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-U:output_variable-001",
+          "section_title": "Nodal Variables",
+          "heading_path": [
+            "Nodal Variables"
+          ],
+          "page_products": [
+            "Abaqus/Standard"
+          ],
+          "page_products_source": "document_id_inference",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-U",
+          "content_sha256": "7642f3a19affb877d0f91dfa6332a6292bbfb09e4a0ae692cc83366034cfbecb",
+          "delivered_excerpt_sha256": "1140830f011236a5b5535f833def031c7e6affb41c87062960b7fb4d235caa0d",
+          "delivered_excerpt_characters": 290
+        },
+        {
+          "rank": 2,
+          "document_id": "simakey-r-nodeoutput",
+          "section_id": "simakey-r-nodeoutput",
+          "match": "semantic",
+          "record_id": "simakey-r-nodeoutput#simakey-r-nodeoutput:chunk-008",
+          "section_title": "Optional parameter when the NODE OUTPUT option is used in conjunction with the OUTPUT, HISTORY option",
+          "heading_path": [
+            "*NODE OUTPUT",
+            "Optional parameter when the NODE OUTPUT option is used in conjunction with the OUTPUT, HISTORY option"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/Explicit",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-nodeoutput.htm#simakey-r-nodeoutput",
+          "content_sha256": "75ceda93ecb9634f9baace073bb82430549c07aa5043ba2a9afdaa516480bc11",
+          "delivered_excerpt_sha256": "d873cff70e5165aa9fad2c51f4f801374dc119bf5de3b7ac4f7d4b964417df95",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 3,
+          "document_id": "simaout-c-output",
+          "section_id": "simaout-c-output-t-TheResultsFile-sma-topic10",
+          "match": "semantic",
+          "record_id": "simaout-c-output#simaout-c-output-t-TheResultsFile-sma-topic10:chunk-038",
+          "section_title": "Part and Assembly Information",
+          "heading_path": [
+            "About Output",
+            "The Results File",
+            "Part and Assembly Information"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/Explicit",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-output.htm#simaout-c-output-t-TheResultsFile-sma-topic10",
+          "content_sha256": "562e450dc0067a004452bedd6c130f77abb0047796907f289cdbdd566a85698d",
+          "delivered_excerpt_sha256": "867a76ad95753a0576f34397561e7345fe954c249bb2f416611d67f81f1e1197",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 4,
+          "document_id": "simaout-c-printfile",
+          "section_id": "simaout-c-printfile-nodaloutput",
+          "match": "semantic",
+          "record_id": "simaout-c-printfile#simaout-c-printfile-nodaloutput:chunk-068",
+          "section_title": "Specifying the Directions for Nodal Output",
+          "heading_path": [
+            "Output to the Data and Results Files",
+            "Node Output",
+            "Specifying the Directions for Nodal Output"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/Explicit"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-printfile.htm#simaout-c-printfile-nodaloutput",
+          "content_sha256": "db3d4c3f7ffc9a3b8f6ed0806fe5ed10b4027f868731635ccfd4e7205bc720e6",
+          "delivered_excerpt_sha256": "9b3867ed028351ac935d48ea047fb16faa06d0fc40a39b0e2099ffeae7e60062",
+          "delivered_excerpt_characters": 600
+        }
+      ]
+    },
+    {
+      "id": "domain-procedure-applicability-1",
+      "question": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?",
+      "observed_context": "Abaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation.",
+      "exact_terms": [
+        "*STATIC",
+        "LPF"
+      ],
+      "products": [
+        "Abaqus/Standard"
+      ],
+      "assessment": "partial_evidence_improvement",
+      "finding": "The postbuckling hit changes from Material Options at rank 4 to The Riks Method > Incrementation at rank 3. The delivered 600-character excerpt now includes arc-length increment information. LPF and proportional-loading context remain, but the core Riks derivation and dead/reference-load qualifications are not fully delivered; this is not a complete answer pass.",
+      "old": [
+        {
+          "rank": 1,
+          "document_id": "simakey-r-static",
+          "section_id": "simakey-r-static",
+          "match": "exact",
+          "record_id": "simakey-r-static#keyword",
+          "section_title": "*STATIC",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static",
+          "content_sha256": "af5cc91b2d6038564feab4be72e56e83c3bd5533b7f7b33d7dc1de2fa1b6c7ca",
+          "delivered_excerpt_sha256": "98176f323359813624fff81120d74eedd2f46ab2dc18bee6531a269c8ff7ea7c",
+          "delivered_excerpt_characters": 132
+        },
+        {
+          "rank": 2,
+          "document_id": "simaout-c-std-solutiondependentamplitudevariables",
+          "section_id": "simaout-c-std-solutiondependentamplitudevariables__simaout-c-genxsl-LPF",
+          "match": "exact",
+          "record_id": "simaout-c-std-solutiondependentamplitudevariables#simaout-c-std-solutiondependentamplitudevariables__simaout-c-genxsl-LPF:output_variable-001",
+          "section_title": "Solution-Dependent Amplitude Variables",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-solutiondependentamplitudevariables.htm#simaout-c-std-solutiondependentamplitudevariables__simaout-c-genxsl-LPF",
+          "content_sha256": "b7add717f7be91401801f09e0284b159652df9cc8052c1dc67043d1d37708f07",
+          "delivered_excerpt_sha256": "61e0857416c915b50ac328691ef3b46f7e3e376ecf6472bdd9243c6309bb1bbc",
+          "delivered_excerpt_characters": 217
+        },
+        {
+          "rank": 3,
+          "document_id": "simaanl-c-static",
+          "section_id": "simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+          "match": "semantic",
+          "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+          "section_title": "Unstable Problems",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+          "content_sha256": "d97a0c4997aa12a910d5720c6b954b5df5bf3b4fc5770e3ae7adebed897c5325",
+          "delivered_excerpt_sha256": "cba9238b9b47f44bef63465080a6bd8059d11ff4c8462651bef7698f4aef2d0c",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 4,
+          "document_id": "simaanl-c-postbuckling",
+          "section_id": "simaanl-c-postbuckling-t-matsect1",
+          "match": "semantic",
+          "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-matsect1:chunk-033",
+          "section_title": "Material Options",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-matsect1",
+          "content_sha256": "fc9663f9d7809828da8a31c887d6ecb0f7846ee687b8aad7c679914370ebb3eb",
+          "delivered_excerpt_sha256": "badbc2070d08f415deee3a74ca858fb054f12dab51ff1196a99c789d2076436c",
+          "delivered_excerpt_characters": 600
+        }
+      ],
+      "new": [
+        {
+          "rank": 1,
+          "document_id": "simakey-r-static",
+          "section_id": "simakey-r-static",
+          "match": "exact",
+          "record_id": "simakey-r-static#keyword",
+          "section_title": "*STATIC",
+          "heading_path": [
+            "*STATIC"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static",
+          "content_sha256": "af5cc91b2d6038564feab4be72e56e83c3bd5533b7f7b33d7dc1de2fa1b6c7ca",
+          "delivered_excerpt_sha256": "98176f323359813624fff81120d74eedd2f46ab2dc18bee6531a269c8ff7ea7c",
+          "delivered_excerpt_characters": 132
+        },
+        {
+          "rank": 2,
+          "document_id": "simaout-c-std-solutiondependentamplitudevariables",
+          "section_id": "simaout-c-std-solutiondependentamplitudevariables__simaout-c-genxsl-LPF",
+          "match": "exact",
+          "record_id": "simaout-c-std-solutiondependentamplitudevariables#simaout-c-std-solutiondependentamplitudevariables__simaout-c-genxsl-LPF:output_variable-001",
+          "section_title": "Solution-Dependent Amplitude Variables",
+          "heading_path": [
+            "Solution-Dependent Amplitude Variables"
+          ],
+          "page_products": [
+            "Abaqus/Standard"
+          ],
+          "page_products_source": "document_id_inference",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-solutiondependentamplitudevariables.htm#simaout-c-std-solutiondependentamplitudevariables__simaout-c-genxsl-LPF",
+          "content_sha256": "b7add717f7be91401801f09e0284b159652df9cc8052c1dc67043d1d37708f07",
+          "delivered_excerpt_sha256": "61e0857416c915b50ac328691ef3b46f7e3e376ecf6472bdd9243c6309bb1bbc",
+          "delivered_excerpt_characters": 217
+        },
+        {
+          "rank": 3,
+          "document_id": "simaanl-c-postbuckling",
+          "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+          "match": "semantic",
+          "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-009",
+          "section_title": "Incrementation",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "The Riks Method",
+            "Incrementation"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+          "content_sha256": "7ecfccf7903e628ff40920d7cbb18a4fc70b3a65514197a3ee3c906ba92350cc",
+          "delivered_excerpt_sha256": "23de7fb06db2a95eea0b8cd965df48f3fb9a4441f5d387f08677b3c624835e5f",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 4,
+          "document_id": "simaanl-c-static",
+          "section_id": "simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+          "match": "semantic",
+          "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+          "section_title": "Unstable Problems",
+          "heading_path": [
+            "Static Stress Analysis",
+            "Nonlinear Static Analysis",
+            "Unstable Problems"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+          "content_sha256": "655627877cfd8bc97b15a7b1aed63998db3234fecef8cbea093dc831c185833a",
+          "delivered_excerpt_sha256": "3f73bdedfd8372be69c5802084ef4a8e197a4861678e6f8077a65b5bc410761c",
+          "delivered_excerpt_characters": 600
+        }
+      ]
+    },
+    {
+      "id": "domain-procedure-applicability-2",
+      "question": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?",
+      "observed_context": "Abaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step.",
+      "exact_terms": [
+        "*STATIC"
+      ],
+      "products": [
+        "Abaqus/Standard"
+      ],
+      "assessment": "rank_change_without_resolving_need",
+      "finding": "The same Loads passage moves from rank 3 to rank 2. Boundary Conditions is still absent. The source supports BC application and the restriction on varying BC magnitudes with amplitudes, not an unsupported blanket ban on all nonzero prescribed displacements.",
+      "old": [
+        {
+          "rank": 1,
+          "document_id": "simakey-r-static",
+          "section_id": "simakey-r-static",
+          "match": "exact",
+          "record_id": "simakey-r-static#keyword",
+          "section_title": "*STATIC",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static",
+          "content_sha256": "af5cc91b2d6038564feab4be72e56e83c3bd5533b7f7b33d7dc1de2fa1b6c7ca",
+          "delivered_excerpt_sha256": "98176f323359813624fff81120d74eedd2f46ab2dc18bee6531a269c8ff7ea7c",
+          "delivered_excerpt_characters": 132
+        },
+        {
+          "rank": 2,
+          "document_id": "simaanl-c-static",
+          "section_id": "simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+          "match": "semantic",
+          "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+          "section_title": "Unstable Problems",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+          "content_sha256": "d97a0c4997aa12a910d5720c6b954b5df5bf3b4fc5770e3ae7adebed897c5325",
+          "delivered_excerpt_sha256": "cba9238b9b47f44bef63465080a6bd8059d11ff4c8462651bef7698f4aef2d0c",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 3,
+          "document_id": "simaanl-c-postbuckling",
+          "section_id": "simaanl-c-postbuckling-t-loadsect1",
+          "match": "semantic",
+          "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+          "section_title": "Loads",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+          "content_sha256": "4d6b8c0465eb13e7995165f664c7e3bbcadfd707e4624f808773756d9b326245",
+          "delivered_excerpt_sha256": "1d5e6be40a8a01e66dd4aaf5fd118bf737955a71ab0bdf87ecbcf744dcf490f4",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 4,
+          "document_id": "simaanl-c-visco",
+          "section_id": "simaanl-c-visco-t-loadsect1",
+          "match": "semantic",
+          "record_id": "simaanl-c-visco#simaanl-c-visco-t-loadsect1:chunk-017",
+          "section_title": "Loads",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-visco.htm#simaanl-c-visco-t-loadsect1",
+          "content_sha256": "6a438c767845b82efc89af88d49233d58883ecd8f9dbcfa5cf292b9c07b2ce42",
+          "delivered_excerpt_sha256": "a25cc3beceb6a749bfc3582ecf306cc0e619f1a94d4f0c2d28ad6df6387b2682",
+          "delivered_excerpt_characters": 421
+        }
+      ],
+      "new": [
+        {
+          "rank": 1,
+          "document_id": "simakey-r-static",
+          "section_id": "simakey-r-static",
+          "match": "exact",
+          "record_id": "simakey-r-static#keyword",
+          "section_title": "*STATIC",
+          "heading_path": [
+            "*STATIC"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static",
+          "content_sha256": "af5cc91b2d6038564feab4be72e56e83c3bd5533b7f7b33d7dc1de2fa1b6c7ca",
+          "delivered_excerpt_sha256": "98176f323359813624fff81120d74eedd2f46ab2dc18bee6531a269c8ff7ea7c",
+          "delivered_excerpt_characters": 132
+        },
+        {
+          "rank": 2,
+          "document_id": "simaanl-c-postbuckling",
+          "section_id": "simaanl-c-postbuckling-t-loadsect1",
+          "match": "semantic",
+          "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+          "section_title": "Loads",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "Loads"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+          "content_sha256": "c9744322b6d889baa303f418191fb071b91feaccd0933890b7646a967fabab5d",
+          "delivered_excerpt_sha256": "bac945dad81c538e6534efadcaa4e0ff645f1662942352e4c0b110ab19a771c8",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 3,
+          "document_id": "simaanl-c-static",
+          "section_id": "simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+          "match": "semantic",
+          "record_id": "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+          "section_title": "Unstable Problems",
+          "heading_path": [
+            "Static Stress Analysis",
+            "Nonlinear Static Analysis",
+            "Unstable Problems"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3",
+          "content_sha256": "655627877cfd8bc97b15a7b1aed63998db3234fecef8cbea093dc831c185833a",
+          "delivered_excerpt_sha256": "3f73bdedfd8372be69c5802084ef4a8e197a4861678e6f8077a65b5bc410761c",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 4,
+          "document_id": "simaanl-c-visco",
+          "section_id": "simaanl-c-visco-t-loadsect1",
+          "match": "semantic",
+          "record_id": "simaanl-c-visco#simaanl-c-visco-t-loadsect1:chunk-017",
+          "section_title": "Loads",
+          "heading_path": [
+            "Quasi-Static Analysis",
+            "Loads"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-visco.htm#simaanl-c-visco-t-loadsect1",
+          "content_sha256": "01dde9263a42f87d872a82f091588fa5ef7752637b281ed8e84bf6a0378d24b7",
+          "delivered_excerpt_sha256": "f49d27056fb00d2bfd0d46148e2861c6ae820c2be049d7826f1f92d61952d002",
+          "delivered_excerpt_characters": 445
+        }
+      ]
+    },
+    {
+      "id": "recorded-solver-diagnostic-1",
+      "question": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?",
+      "observed_context": "recorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+      "exact_terms": [
+        "AT"
+      ],
+      "products": [
+        "Abaqus/Standard"
+      ],
+      "assessment": "unresolved_with_more_wrong_product_context",
+      "finding": "AT remains an unrelated exact hit at rank 1. The correct Standard exact-time increment-adjustment section is absent. An Explicit section of the dual-product OUTPUT page newly appears at rank 2; the already-wrong Explicit-only incrementation page remains at rank 3. The latter delivered snippet is only a repeated heading, with no explanation.",
+      "old": [
+        {
+          "rank": 1,
+          "document_id": "simaout-c-std-nodalvariables",
+          "section_id": "simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+          "match": "exact",
+          "record_id": "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "section_title": "Nodal Variables",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+          "content_sha256": "eb98554eec07a4c5cdd8927bedbc7929ace1f142076da354c7b714c8a30d531e",
+          "delivered_excerpt_sha256": "9130c8f24a6ec2acff99bb3c975b5eb3501188af3619ddc00918610b1e7a9c65",
+          "delivered_excerpt_characters": 146
+        },
+        {
+          "rank": 2,
+          "document_id": "simaout-c-dboutput-incrementation",
+          "section_id": "simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83",
+          "match": "semantic",
+          "record_id": "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83:chunk-005",
+          "section_title": "Requesting Preselected Output",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Explicit",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-incrementation.htm#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83",
+          "content_sha256": "21d76b17efa1b3ce2f6d9aaeca08c3dfe621a5b85d7581228ceadb97d2851188",
+          "delivered_excerpt_sha256": "d5e1ddd65f9f9c1d835c78b06f00b8fe481800c2c2e62ceb1490d839005d9fa8",
+          "delivered_excerpt_characters": 124
+        },
+        {
+          "rank": 3,
+          "document_id": "simaout-c-output",
+          "section_id": "simaout-c-output-message",
+          "match": "semantic",
+          "record_id": "simaout-c-output#simaout-c-output-message:chunk-054",
+          "section_title": "The Message File",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/Explicit",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-output.htm#simaout-c-output-message",
+          "content_sha256": "d9afbf535632ce8b4d7562dbdd6d483f7cb5a003a071ea8f7df635a95d47600e",
+          "delivered_excerpt_sha256": "2a93f1d8667a6f9d9b6277511c64295ae76813c294ea21cf7443310a5e469480",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 4,
+          "document_id": "simaout-c-ov",
+          "section_id": "simaout-c-ov",
+          "match": "semantic",
+          "record_id": "simaout-c-ov#simaout-c-ov:chunk-002",
+          "section_title": "Abaqus Output Guide",
+          "heading_path": [],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-ov.htm#simaout-c-ov",
+          "content_sha256": "a6927656cecd0529a400091167b53e59f198e917161692865fea95669b43fefb",
+          "delivered_excerpt_sha256": "ad71a4fee00ca4c774044cb66764e1bdb1d58559f1edaebff71f1e94974144e1",
+          "delivered_excerpt_characters": 333
+        }
+      ],
+      "new": [
+        {
+          "rank": 1,
+          "document_id": "simaout-c-std-nodalvariables",
+          "section_id": "simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+          "match": "exact",
+          "record_id": "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "section_title": "Nodal Variables",
+          "heading_path": [
+            "Nodal Variables"
+          ],
+          "page_products": [
+            "Abaqus/Standard"
+          ],
+          "page_products_source": "document_id_inference",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+          "content_sha256": "eb98554eec07a4c5cdd8927bedbc7929ace1f142076da354c7b714c8a30d531e",
+          "delivered_excerpt_sha256": "9130c8f24a6ec2acff99bb3c975b5eb3501188af3619ddc00918610b1e7a9c65",
+          "delivered_excerpt_characters": 146
+        },
+        {
+          "rank": 2,
+          "document_id": "simakey-r-output",
+          "section_id": "simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2",
+          "match": "semantic",
+          "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-023",
+          "section_title": "The following parameters are optional and valid only if the FIELD parameter is included",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Explicit analysis",
+            "The following parameters are optional and valid only if the FIELD parameter is included"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/Explicit",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [
+            "Abaqus/Explicit"
+          ],
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2",
+          "content_sha256": "10e3e108fea9acf7a157610e42546eef7da520b9d541ab59e40533184204f68b",
+          "delivered_excerpt_sha256": "3636de102517cd317d441deea9dc2c12706b6de9a9a23d1ad685f11aebb156d3",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 3,
+          "document_id": "simaout-c-dboutput-incrementation",
+          "section_id": "simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83",
+          "match": "semantic",
+          "record_id": "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83:chunk-005",
+          "section_title": "Requesting Preselected Output",
+          "heading_path": [
+            "Time Incrementation Output in Abaqus/Explicit",
+            "Requesting Preselected Output"
+          ],
+          "page_products": [
+            "Abaqus/Explicit",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-incrementation.htm#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83",
+          "content_sha256": "f87dbc20ca5dae96107d1e7cddc56a121861786c3ae1d2fd64786818cc583527",
+          "delivered_excerpt_sha256": "259831e09218df464fb517c7922642ea832f004cd65b03fca268e467839749bc",
+          "delivered_excerpt_characters": 172
+        },
+        {
+          "rank": 4,
+          "document_id": "simaout-c-ov",
+          "section_id": "simaout-c-ov",
+          "match": "semantic",
+          "record_id": "simaout-c-ov#simaout-c-ov:chunk-002",
+          "section_title": "Abaqus Output Guide",
+          "heading_path": [
+            "Abaqus Output Guide"
+          ],
+          "page_products": [],
+          "page_products_source": "unknown",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-ov.htm#simaout-c-ov",
+          "content_sha256": "a6927656cecd0529a400091167b53e59f198e917161692865fea95669b43fefb",
+          "delivered_excerpt_sha256": "ad71a4fee00ca4c774044cb66764e1bdb1d58559f1edaebff71f1e94974144e1",
+          "delivered_excerpt_characters": 333
+        }
+      ]
+    },
+    {
+      "id": "recorded-solver-diagnostic-2",
+      "question": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?",
+      "observed_context": "Abaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt.",
+      "exact_terms": [
+        "AT"
+      ],
+      "products": [
+        "Abaqus/Standard"
+      ],
+      "assessment": "unresolved_with_new_wrong_product_context",
+      "finding": "AT remains an unrelated exact hit at rank 1. The correct Standard exact-time section is absent. An Explicit section of the dual-product OUTPUT page newly appears at rank 2; generic time-stepping and convergence material cannot establish this warning meaning.",
+      "old": [
+        {
+          "rank": 1,
+          "document_id": "simaout-c-std-nodalvariables",
+          "section_id": "simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+          "match": "exact",
+          "record_id": "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "section_title": "Nodal Variables",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+          "content_sha256": "eb98554eec07a4c5cdd8927bedbc7929ace1f142076da354c7b714c8a30d531e",
+          "delivered_excerpt_sha256": "9130c8f24a6ec2acff99bb3c975b5eb3501188af3619ddc00918610b1e7a9c65",
+          "delivered_excerpt_characters": 146
+        },
+        {
+          "rank": 2,
+          "document_id": "simakey-r-static",
+          "section_id": "simakey-r-static",
+          "match": "semantic",
+          "record_id": "simakey-r-static#simakey-r-static:chunk-013",
+          "section_title": "Data line for a general static analysis",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static",
+          "content_sha256": "d1c9affa0aa2c87b46a47d274e145c6acd7f1e846cab1c1708a472d664aad2ab",
+          "delivered_excerpt_sha256": "d3687c6484b69d75ff60a9882aad434b423eaf42996e7e5335e132acea5feed7",
+          "delivered_excerpt_characters": 599
+        },
+        {
+          "rank": 3,
+          "document_id": "simakey-r-geostatic",
+          "section_id": "simakey-r-geostatic",
+          "match": "semantic",
+          "record_id": "simakey-r-geostatic#simakey-r-geostatic:chunk-007",
+          "section_title": "Data line to define automatic time incrementation",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-geostatic.htm#simakey-r-geostatic",
+          "content_sha256": "00b35d1d5e2aa4c457fec406eee5c7b71302eb753c7a8a2ed5ba72468e22d8ce",
+          "delivered_excerpt_sha256": "830d8b510512df69f92bd42f3c6e33c665486c78d00678693939454f76bb656f",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 4,
+          "document_id": "simaout-c-errorindicatoroutput",
+          "section_id": "simaout-c-errorindicatoroutput-t-ErrorIndicatorAndBaseSolutionVariablesAvailableInAS-sma-topic3",
+          "match": "semantic",
+          "record_id": "simaout-c-errorindicatoroutput#simaout-c-errorindicatoroutput-t-ErrorIndicatorAndBaseSolutionVariablesAvailableInAS-sma-topic3:chunk-010",
+          "section_title": "Effect of Error Indicator Output Requests on Solution Time",
+          "heading_path": [],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-errorindicatoroutput.htm#simaout-c-errorindicatoroutput-t-ErrorIndicatorAndBaseSolutionVariablesAvailableInAS-sma-topic3",
+          "content_sha256": "389539aba6ecdbb68412ae5a175180c6ae5d43ff870080924ba634bfb0b51a1f",
+          "delivered_excerpt_sha256": "bb04031480133eb7781e9f8503b66666e6cfaecf5e378b6531108eb5e87f4263",
+          "delivered_excerpt_characters": 247
+        }
+      ],
+      "new": [
+        {
+          "rank": 1,
+          "document_id": "simaout-c-std-nodalvariables",
+          "section_id": "simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+          "match": "exact",
+          "record_id": "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "section_title": "Nodal Variables",
+          "heading_path": [
+            "Nodal Variables"
+          ],
+          "page_products": [
+            "Abaqus/Standard"
+          ],
+          "page_products_source": "document_id_inference",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm#simaout-c-std-nodalvariables__simaout-c-genxsl-AT",
+          "content_sha256": "eb98554eec07a4c5cdd8927bedbc7929ace1f142076da354c7b714c8a30d531e",
+          "delivered_excerpt_sha256": "9130c8f24a6ec2acff99bb3c975b5eb3501188af3619ddc00918610b1e7a9c65",
+          "delivered_excerpt_characters": 146
+        },
+        {
+          "rank": 2,
+          "document_id": "simakey-r-output",
+          "section_id": "simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2",
+          "match": "semantic",
+          "record_id": "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-023",
+          "section_title": "The following parameters are optional and valid only if the FIELD parameter is included",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Explicit analysis",
+            "The following parameters are optional and valid only if the FIELD parameter is included"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/Explicit",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [
+            "Abaqus/Explicit"
+          ],
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2",
+          "content_sha256": "10e3e108fea9acf7a157610e42546eef7da520b9d541ab59e40533184204f68b",
+          "delivered_excerpt_sha256": "3636de102517cd317d441deea9dc2c12706b6de9a9a23d1ad685f11aebb156d3",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 3,
+          "document_id": "simakey-r-static",
+          "section_id": "simakey-r-static",
+          "match": "semantic",
+          "record_id": "simakey-r-static#simakey-r-static:chunk-013",
+          "section_title": "Data line for a general static analysis",
+          "heading_path": [
+            "*STATIC",
+            "Data line for a general static analysis"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static",
+          "content_sha256": "6a3b6568f4f3c9c55f1be1b51257a0259e26460e67096df7466e5530867b5708",
+          "delivered_excerpt_sha256": "60b1f44755f7e7b1115cbaa9df923bd45d031b3ec011133d59d522300a2b6e22",
+          "delivered_excerpt_characters": 600
+        },
+        {
+          "rank": 4,
+          "document_id": "simaanl-c-convergencechecktype",
+          "section_id": "simaanl-c-convergencechecktype",
+          "match": "semantic",
+          "record_id": "simaanl-c-convergencechecktype#summary",
+          "section_title": "Modifying the Default Convergence Checks",
+          "heading_path": [
+            "Modifying the Default Convergence Checks"
+          ],
+          "page_products": [
+            "Abaqus/Standard",
+            "Abaqus/CAE"
+          ],
+          "page_products_source": "official_page_header",
+          "section_product_mentions": [],
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-convergencechecktype.htm#simaanl-c-convergencechecktype",
+          "content_sha256": "1808efe84d632e304b444ee944d1935ec17c6c55972a486a66f142cda9c99f03",
+          "delivered_excerpt_sha256": "2698fcf6f0be9958077c1e9e2bb24ffb9b632e62257168f3a797bc15a137ebb1",
+          "delivered_excerpt_characters": 219
+        }
+      ]
+    }
+  ],
+  "existing_but_unretrieved_targets": [
+    {
+      "document_id": "simaanl-c-postbuckling",
+      "section_title": "Boundary Conditions",
+      "records": [
+        {
+          "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-bcsect1:chunk-026",
+          "section_id": "simaanl-c-postbuckling-t-bcsect1",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "Boundary Conditions"
+          ],
+          "content_sha256": "d133ad220d9350402c7ba2c61d9649dd17871bad07dac07f15317177b5e059b0",
+          "source_path": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm"
+        },
+        {
+          "record_id": "simaanl-c-postbuckling#simaanl-c-postbuckling-t-bcsect1:chunk-027",
+          "section_id": "simaanl-c-postbuckling-t-bcsect1",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "Boundary Conditions"
+          ],
+          "content_sha256": "729acb8b850b1c44358a96bc24bb9ec728330dfa0817d04dfacedfa337fcb314",
+          "source_path": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm"
+        }
+      ],
+      "inspection": "Read actual body-bearing records as well as heading-only records; these answer sections exist in the new index but are absent from the five returned Top-4 lists."
+    },
+    {
+      "document_id": "simaout-c-dboutput-frequency",
+      "section_title": "Time Domain Analysis: Time Incrementation",
+      "records": [
+        {
+          "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-025",
+          "section_id": "simaout-c-dboutput-freq-std",
+          "heading_path": [
+            "Controlling the Frequency of Output to the Output Database",
+            "Controlling the Output Frequency in Abaqus/Standard",
+            "Time Domain Analysis: Time Incrementation"
+          ],
+          "content_sha256": "0be69133fb9dc11dd1c0803b65f105b24434e83e647a08cf5afbcfa9f362446f",
+          "source_path": "SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm"
+        },
+        {
+          "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+          "section_id": "simaout-c-dboutput-freq-std",
+          "heading_path": [
+            "Controlling the Frequency of Output to the Output Database",
+            "Controlling the Output Frequency in Abaqus/Standard",
+            "Time Domain Analysis: Time Incrementation"
+          ],
+          "content_sha256": "a8df2c35939b40737b8b5952e29eeb3f22295d47ff18f8d728e0a00607348562",
+          "source_path": "SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm"
+        },
+        {
+          "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-027",
+          "section_id": "simaout-c-dboutput-freq-std",
+          "heading_path": [
+            "Controlling the Frequency of Output to the Output Database",
+            "Controlling the Output Frequency in Abaqus/Standard",
+            "Time Domain Analysis: Time Incrementation"
+          ],
+          "content_sha256": "8da3f8fa11582f5bf8c75316e566bc4d011afad6597c221a56ac19e4e374f13f",
+          "source_path": "SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm"
+        }
+      ],
+      "inspection": "Read actual body-bearing records as well as heading-only records; these answer sections exist in the new index but are absent from the five returned Top-4 lists."
+    }
+  ],
+  "cross_cutting_findings": [
+    "Page/section metadata provenance is clearer, but no product hard filter was introduced. Two new warning hits visibly name Explicit in a dual-product page. Across the two warning queries, reviewed wrong-product hits increase from 1 to 3; shared-page labels alone would not exclude the two new ones.",
+    "AT false extraction is unchanged by design. It consumes rank 1 in both warning queries in both arms; this comparison does not isolate its causal contribution to the missing answer.",
+    "Longer heading paths also consume the existing 600-character excerpt budget. In the Riks Unstable Problems snippet the old excerpt includes the modified-Riks name while the new excerpt truncates before it; in the Loads snippet the Riks-specific ignored-amplitude sentence is cut earlier. Do not equate richer metadata with more delivered body evidence.",
+    "The Explicit Requesting Preselected Output hit is a heading-only record in both versions, exposing a separate content-quality problem left unchanged.",
+    "The old and new index builds have different HNSW graphs and chunk content. This is an index-version comparison, not a factorial experiment attributing ranking deltas to one metadata field."
+  ],
+  "decision": "Preserve the new full index as a separate development artifact; do not switch the default index. Retain context provenance work, but do not claim overall retrieval improvement or Agent benefit from these five queries.",
+  "not_changed": [
+    "AT extraction",
+    "product filtering",
+    "ranking/top-k/exact-prefix policy",
+    "Catalog member coverage",
+    "Agent prompt",
+    "default index and historical reports"
+  ],
+  "limits": [
+    "Five observed queries from three development scenarios, not five independent held-out tasks.",
+    "BM25 was built and corpus-verified but not ranked in this active-tool comparison; no new Hybrid/BM25 benefit claim.",
+    "No Agent continuation, model call, solver run, or physical validation in this batch."
+  ]
+}

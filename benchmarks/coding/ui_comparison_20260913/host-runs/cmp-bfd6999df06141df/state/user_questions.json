@@ -1,0 +1,24 @@
+{
+  "schema_version": "user-questions-v1",
+  "run_id": "cmp-bfd6999df06141df",
+  "questions": [
+    {
+      "question_id": "cmp-bfd6999df06141df-q1",
+      "question": "Plate thickness? Please include units.",
+      "task_revision": 0,
+      "turn": 1,
+      "abaqus_calls_before": 0,
+      "revision_had_runtime": false,
+      "goal_at_question": "UI-COMP external FAIL",
+      "execution_count": 0,
+      "history_sha256": "306f0401411d6484777602282e0b9b25cc9f0bea7f9de86110dc9eeaabf1b978",
+      "workspace_sha256": "602e35a92eec4bc0a2ec6ae113f07bfc6933322fb69fe8dee416e5a67217e2a2",
+      "asked_at": "2026-09-13T15:39:27.263778Z",
+      "answer": "1 mm",
+      "source": "file",
+      "resolved_at": "2026-09-13T15:39:29.210104Z",
+      "cancelled": false,
+      "answer_revision": 0
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-exact-api-catalog-final15",
+  "date": "2026-08-28",
+  "supersedes_for_new_experiments": "var/api-catalog/abaqus-2024-final13",
+  "intermediate_artifact": "final14 was built before the new BeamSection observation was split from the immutable final13 evidence file; it is retained locally but is not recommended.",
+  "question": "Can a BeamSection keyword failure from a real B31 trajectory be promoted without mutating final13 evidence or adding model-specific content to Skill?",
+  "trigger_evidence": {
+    "path": "benchmarks/coding/beam_tension_b31_final13_evaluation_20260828.json",
+    "sha256": "fc93400aecc0f184f9cf666170c52743dc00062b77472a4c81e137c4c04d3701",
+    "result": "The only task-started attempt passed the full oracle but spent its first CAE call on Model.BeamSection(beamOrientation=...). The overall smoke was 1/3 because two attempts timed out before files."
+  },
+  "licensed_evidence": {
+    "api_consumer": {
+      "path": "benchmarks/api_catalog/abaqus_2024_api_consumer_observations.json",
+      "sha256": "a96b7017b154e80006922dec7f9f4d42ff0241d0765bcc48353d6835344c83a5",
+      "fixture": "tests/fixtures/abaqus2024/api_consumer_probe.py",
+      "fixture_sha256": "0cf8decfd95c7f8aa40f49ba0a92faee5ee41e48c22a8a28a58cd31bf2dc8a43",
+      "licensed_result": "historical final13 1/1"
+    },
+    "odb_behavior": {
+      "path": "benchmarks/api_catalog/abaqus_2024_odb_behavior_observations.json",
+      "sha256": "cd8a265b5b10f0acc398ed0045bb6a4abd3fa20f34c6047a9c04ddec9e72b933",
+      "fixture": "tests/fixtures/abaqus2024/odb_behavior_probe.py",
+      "fixture_sha256": "817f0b306e578611dd406dd6b4063de1d670a2dcb9bf4a8390c2fb7d9647ae3d",
+      "licensed_result": "1/1"
+    },
+    "region_consumer": {
+      "path": "benchmarks/api_catalog/abaqus_2024_region_consumer_observations.json",
+      "sha256": "e5acb10e645d0f5116ade1e313be27062896b115cd746f85834a8c3a2890a79b",
+      "fixture": "tests/fixtures/abaqus2024/api_region_consumer_probe.py",
+      "fixture_sha256": "c8f0df23f87964377eafe5ce544e31dfd942275152a4ea612daf17114d72724c",
+      "licensed_result": "1/1"
+    },
+    "beam_section_orientation": {
+      "path": "benchmarks/api_catalog/abaqus_2024_beam_section_orientation_observations.json",
+      "sha256": "a8cffbcee964367888a096c09e38527a9eb2a0283c78c7b6f0d13ef81aa97356",
+      "fixture": "tests/fixtures/abaqus2024/beam_section_orientation_probe.py",
+      "fixture_sha256": "7f4ffd1caf616cbe76af0237d9aab3fb748d3e0292a4d5e4a21f23e81dd1a2e5",
+      "licensed_result": "1/1; ordinary constructor accepted and orientation, beamOrientation, geometricType each rejected with a keyword TypeError"
+    }
+  },
+  "verified_notes_added_since_final9": [
+    "runtime:2024:Part.setElementType:region-dispatch",
+    "runtime:2024:Part.assignBeamSectionOrientation:region-binding",
+    "runtime:2024:Assembly.Surface:side1-edge-container",
+    "runtime:2024:Model.FieldOutputRequest:b31-companion-fields",
+    "runtime:2024:FieldOutput.getSubset:field-value-boundaries",
+    "runtime:2024:openOdb:node-array-nesting",
+    "runtime:2024:Assembly.Surface:side1-face-container",
+    "runtime:2024:Assembly.Surface:side2-edge-container",
+    "runtime:2024:Assembly.Surface:side2-face-container",
+    "runtime:2024:Model.BeamSection:orientation-boundary"
+  ],
+  "note_policy": {
+    "runtime_notes_total": 16,
+    "new_notes_since_final9": 10,
+    "final15_change": "No new note id was added. beamOrientation joined the existing BeamSection orientation-boundary scope only after the real B31 failure and licensed micro-regression.",
+    "beam_section_parameters": ["orientation", "beamOrientation", "geometricType"],
+    "pruned_after_product_evaluation": [
+      {
+        "note_id": "runtime:2024:Part.SectionAssignment:direct-region",
+        "reason": "Duplicated normal Skill/official guidance and increased CAE calls in the focused comparison."
+      },
+      {
+        "note_id": "runtime:2024:Model.DisplacementBC:region-object",
+        "reason": "No Product treatment and duplicated the assembly-owned normal path in Skill."
+      },
+      {
+        "note_id": "runtime:2024:Model.ConcentratedForce:region-object",
+        "reason": "No Product treatment and duplicated the assembly-owned normal path in Skill."
+      }
+    ],
+    "physical_non_goals": "The note does not choose profile dimensions, beam n1, element type, load, boundary condition, or any B31 task template."
+  },
+  "immutable_catalog": {
+    "path": "var/api-catalog/abaqus-2024-final15",
+    "manifest_sha256": "ad5ddd379c112c80c70c4430ed5e59e7c39139d9b18148ec741bbdb24ab3dc4c",
+    "cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+    "card_count": 5480,
+    "conflict_count": 48,
+    "source_digests": {
+      "official_scripting_reference": "12f12f146b7d6241085fa981358a9b8b0e64f8e4d852a4a5ac4fa205dacbb313",
+      "abqpy_source": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504",
+      "runtime_notes": "d0afabd8d54f322a12dcecf3d160c5cddee4f56dbef525b27361cb29b96f621a"
+    }
+  },
+  "deterministic_evaluation": {
+    "benchmark": "benchmarks/api_catalog/abaqus_api_queries.jsonl",
+    "benchmark_sha256": "17f485a14d71850b994021d21e75dbd10ff0d1247e2c6351572bcc455ddca3d8",
+    "result": "benchmarks/api_catalog/abaqus_api_evaluation_final15.json",
+    "result_sha256": "62b392dbae0aa6f423a2077ba6ce21b3d69b7808f1ca25effaa03511983412c7",
+    "pass_count": 27,
+    "total": 27
+  },
+  "convergence_policy": {
+    "version": "same-api-occurrence-scan-v1",
+    "trigger": "The B31 success received the FieldOutput.position note, fixed u_field.position, but left sf_field.position and spent another Abaqus Python call.",
+    "behavior": "Before the next runtime call, inspect the target script for every occurrence of the same proven-absent owner/attribute or invalid callable/keyword and apply the same narrow repair.",
+    "evidence_boundary": "The first final15 B31 Product batch was 0/3. The later runtime-allowlist profile passed 2/3, but neither passing trajectory triggered a same-occurrence repair, so no independent benefit is attributed to this instruction."
+  },
+  "b31_treatment_evidence": {
+    "path": "benchmarks/coding/beam_tension_b31_final15_evaluation_20260828.json",
+    "sha256": "c53b6de72fc87b1d9408556da0b4a6bfe1151f0507832f66f7ae80e32266bf57",
+    "result": "0/3: one 31-model/12-Abaqus/0-Solver runtime-budget failure, one pre-file HTTP 500, and one pre-file timeout.",
+    "boundary": "The task-started run adopted BeamSection and beam-orientation notes but shifted into independent-instance, mesh ownership, Set, and probe/check-script failures. Its process also used the pre-fix over-broad MeshNodeArray ODB route; current source now limits that route to exact OdbMeshNodeArray."
+  },
+  "b31_runtime_allowlist_evidence": {
+    "path": "benchmarks/coding/beam_tension_b31_runtime_allowlist_evaluation_20260829.json",
+    "sha256": "aaa3359fc1ae321a75c3eaa8e2b0258fd0b9940f16642bb339fdfbbbe7f25ed5",
+    "result": "2/3 gate pass; passing attempts used 9/3 and 11/4 model/Abaqus calls, while one 31/12/0 production-only failure remained.",
+    "boundary": "All attempts complied without a policy denial. Product evidence proves normal-path compatibility and absence of diagnostic vendor scripts; deterministic tests prove denied scripts are blocked before budget. Stochastic variation prevents a single-cause success claim."
+  },
+  "interpretation": {
+    "capability": "final15 preserves final13's 16 licensed notes and expands one BeamSection note with a real-task-triggered, licensed beamOrientation boundary.",
+    "limits": [
+      "The final13 B31 batch was 1/3 and the unrestricted final15 treatment was 0/3; the later task-specific runtime-allowlist profile passed 2/3 and is the current B31 profile, without a single-cause improvement claim.",
+      "The successful final13 B31 trajectory proves FieldOutput note delivery and eventual adoption, not causal call savings.",
+      "same-api-occurrence-scan-v1 has no independent Product benefit claim; the v7 passing attempts did not exercise that repair pattern.",
+      "final15 remains an explicit experimental Catalog and does not replace host verification or user physics intent."
+    ]
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "schema_version": "1",
+  "observed_at": "2026-08-23",
+  "scope": "Minimal CAE/noGUI geometry-only probe; no job submission or solve.",
+  "runtimes": [
+    {
+      "release": "2024",
+      "launcher": "D:/SIMULIA/Commands/abq2024.bat",
+      "python": "3.10.5"
+    },
+    {
+      "release": "2026LE",
+      "launcher": "D:/SIMULIA/Commands/abq2026le.bat",
+      "python": "3.10.5"
+    }
+  ],
+  "raw_evidence": [
+    {
+      "path": "D:/abaqus-runs/findat-probe-20260823-v1/findat_probe.json",
+      "sha256": "bb29f6af6867814bc3866a0ea53bcd831ac38e9db5785473a134c88f57738223"
+    },
+    {
+      "path": "D:/abaqus-runs/findat-probe-20260823-v1/findat_followup_2024.json",
+      "sha256": "32f820a6ff2810616967628b65c36db2649ed7e4d1e8e32b10ff8b5f8976e8a5"
+    },
+    {
+      "path": "D:/abaqus-runs/findat-probe-20260823-v1/findat_followup_2026le.json",
+      "sha256": "08650accd6ec8bf3a5ead49f8b878fb1dc77feef7db0290c285ace19298bb38f"
+    },
+    {
+      "path": "D:/abaqus-runs/findat-probe-20260823-v1/face_findat_probe_2024.json",
+      "sha256": "c9733ca8d1b68ce3f48f64b5704e55af584d5827eabe2597c52d2659f6f4d5f0"
+    },
+    {
+      "path": "D:/abaqus-runs/findat-probe-20260823-v1/face_findat_probe_2026le.json",
+      "sha256": "2bb11128f950fd400de657a639200fceb2eba7d3b0895dc46e15746303029fdd"
+    },
+    {
+      "path": "D:/abaqus-runs/findat-probe-20260823-v1/seed_consumer_probe.json",
+      "sha256": "df3aa857b6b193e65c502857d7dfa2eff356211939612521ccb4d39c5992b374"
+    }
+  ],
+  "observations": {
+    "edge_array": {
+      "flat_coordinate": "Edge; a miss with printWarning=False returns None",
+      "one_nested_coordinate": "builtins.Sequence with length 1; a miss returns an empty Sequence",
+      "multiple_nested_positional_coordinates": "builtins.Sequence containing matched entities",
+      "partial_multi_miss": "unmatched coordinates are omitted from the returned Sequence",
+      "keyword_multi_container": "TypeError; multiple coordinates must be separate nested positional arguments",
+      "two_dimensional_geometry": "coordinates still require three components including z=0.0",
+      "ambiguous_shared_point": "returns one encountered edge; selection is not stable",
+      "malformed_shapes": "some malformed calls silently return only the first match or None",
+      "inspect_signature": "ValueError for AbaqusMethod"
+    },
+    "subset_search": {
+      "full_array_control": "right-edge point matched in the full EdgeArray",
+      "slice_and_mask": "the same point outside the subset returned None or an empty Sequence",
+      "set_edges": "the same point outside Set.edges returned None or an empty Sequence",
+      "release_comparison": "2024 and 2026LE behaved the same, contrary to the owner-wide official wording"
+    },
+    "face_array": {
+      "flat_coordinate_and_optional_normal": "returned one Face for both positive and negative normal probes",
+      "nested_coordinate_or_coordinate_normal_pair": "returned a native Sequence",
+      "multiple_pairs": "returned a native Sequence containing both faces",
+      "keyword_multi_container": "TypeError"
+    },
+    "consumers": {
+      "Part.Set": "accepted native Sequence and tuples of native Sequences; rejected flat Python tuple/list of Edge",
+      "Assembly.Set": "matched Part.Set behavior in this probe",
+      "Part.seedEdgeByNumber": "getEdgeSeeds verified native Sequence and flat tuple/list of Edge updated the selected edges; a single Edge and tuple containing a native Sequence were rejected"
+    }
+  }
+}

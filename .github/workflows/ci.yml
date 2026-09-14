@@ -65,7 +65,7 @@ jobs:
 
 
       - name: Install type-check dependencies
-        run: uv sync --locked --no-dev --group type
+        run: uv sync --locked --no-dev --group type --group eval
 
       - name: BasedPyright
         run: uv run --no-sync basedpyright
@@ -95,7 +95,7 @@ jobs:
 
 
       - name: Install test dependencies
-        run: uv sync --locked --no-dev --group test
+        run: uv sync --locked --no-dev --group test --group eval
 
       - name: pytest
         run: uv run --no-sync pytest

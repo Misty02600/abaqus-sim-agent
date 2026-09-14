@@ -1,0 +1,1694 @@
+{
+  "schema_version": "1",
+  "evaluated_at": "2026-09-03T08:18:02.876597Z",
+  "top_k": 5,
+  "fetch_k": 20,
+  "rrf_k": 60,
+  "case_count": 31,
+  "primary_slice": "natural_language",
+  "provenance": {
+    "benchmark_sha256": "233dd81a92d7b6cd01946debfe68e8ea0106e32c927bf61a2dde94f0fea0d11f",
+    "dense_manifest_sha256": "9671bd588940438ef1edfc067ac9bb8b26b96d6be57c0c4740b70bd2aafb5cc1",
+    "bm25_manifest_sha256": "8007bdc46139ffb7bda308c44ef49356b32d3c59810d861e94d81fc469867738",
+    "bm25_database_sha256": "75db127594586c96c95f158f5a3266ab570bfe920d85d356eb68102eb4588bd5",
+    "bm25_semantic_corpus_sha256": "2f68cc586e829ab068fd173aaaff87a749f3fbfb257b25cee249b5d5ef09acc2",
+    "release": "2026 FD02",
+    "collection_name": "abaqus_docs_2026_fd02",
+    "dense_embedding": "chromadb.DefaultEmbeddingFunction/all-MiniLM-L6-v2",
+    "bm25_algorithm": "bm25-okapi-v1",
+    "bm25_tokenizer": "abaqus-lexical-v1",
+    "bm25_k1": 1.2,
+    "bm25_b": 0.75
+  },
+  "bm25": {
+    "all": {
+      "cases": 31,
+      "hit_rate_at_k": 0.6129032258064516,
+      "recall_at_k": 0.6129032258064516,
+      "mrr": 0.4553763440860215,
+      "p50_latency_ms": 219.5009000133723,
+      "p95_latency_ms": 447.6311500184238
+    },
+    "natural_language": {
+      "cases": 21,
+      "hit_rate_at_k": 0.7142857142857143,
+      "recall_at_k": 0.7142857142857143,
+      "mrr": 0.48174603174603176,
+      "p50_latency_ms": 249.12330001825467,
+      "p95_latency_ms": 458.7187999859452
+    },
+    "concept": {
+      "cases": 10,
+      "hit_rate_at_k": 0.8,
+      "recall_at_k": 0.8,
+      "mrr": 0.5416666666666667,
+      "p50_latency_ms": 256.8803499743808,
+      "p95_latency_ms": 448.73991501517594
+    },
+    "identifier_context": {
+      "cases": 11,
+      "hit_rate_at_k": 0.6363636363636364,
+      "recall_at_k": 0.6363636363636364,
+      "mrr": 0.4272727272727273,
+      "p50_latency_ms": 249.12330001825467,
+      "p95_latency_ms": 526.2524499848951
+    },
+    "identifier_lookup": {
+      "cases": 10,
+      "hit_rate_at_k": 0.4,
+      "recall_at_k": 0.4,
+      "mrr": 0.4,
+      "p50_latency_ms": 6.832800019765273,
+      "p95_latency_ms": 312.15628501668107
+    }
+  },
+  "dense": {
+    "all": {
+      "cases": 31,
+      "hit_rate_at_k": 0.8387096774193549,
+      "recall_at_k": 0.8387096774193549,
+      "mrr": 0.7403225806451613,
+      "p50_latency_ms": 299.01450005127117,
+      "p95_latency_ms": 595.544650015654
+    },
+    "natural_language": {
+      "cases": 21,
+      "hit_rate_at_k": 0.8571428571428571,
+      "recall_at_k": 0.8571428571428571,
+      "mrr": 0.7357142857142857,
+      "p50_latency_ms": 298.1778999674134,
+      "p95_latency_ms": 599.6320000267588
+    },
+    "concept": {
+      "cases": 10,
+      "hit_rate_at_k": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 0.825,
+      "p50_latency_ms": 303.7025000085123,
+      "p95_latency_ms": 601.3355700328248
+    },
+    "identifier_context": {
+      "cases": 11,
+      "hit_rate_at_k": 0.7272727272727273,
+      "recall_at_k": 0.7272727272727273,
+      "mrr": 0.6545454545454545,
+      "p50_latency_ms": 295.9893999504857,
+      "p95_latency_ms": 302.3647000081837
+    },
+    "identifier_lookup": {
+      "cases": 10,
+      "hit_rate_at_k": 0.8,
+      "recall_at_k": 0.8,
+      "mrr": 0.75,
+      "p50_latency_ms": 303.9038000279106,
+      "p95_latency_ms": 339.425750009832
+    }
+  },
+  "hybrid": {
+    "all": {
+      "cases": 31,
+      "hit_rate_at_k": 0.7096774193548387,
+      "recall_at_k": 0.7096774193548387,
+      "mrr": 0.5870967741935483,
+      "p50_latency_ms": 539.4633999676444,
+      "p95_latency_ms": 940.5898500117473
+    },
+    "natural_language": {
+      "cases": 21,
+      "hit_rate_at_k": 0.7619047619047619,
+      "recall_at_k": 0.7619047619047619,
+      "mrr": 0.6428571428571429,
+      "p50_latency_ms": 545.4097000183538,
+      "p95_latency_ms": 942.0387999853119
+    },
+    "concept": {
+      "cases": 10,
+      "hit_rate_at_k": 0.8,
+      "recall_at_k": 0.8,
+      "mrr": 0.75,
+      "p50_latency_ms": 633.2419999816921,
+      "p95_latency_ms": 994.2477100383256
+    },
+    "identifier_context": {
+      "cases": 11,
+      "hit_rate_at_k": 0.7272727272727273,
+      "recall_at_k": 0.7272727272727273,
+      "mrr": 0.5454545454545454,
+      "p50_latency_ms": 545.1846999931149,
+      "p95_latency_ms": 821.5463500237092
+    },
+    "identifier_lookup": {
+      "cases": 10,
+      "hit_rate_at_k": 0.6,
+      "recall_at_k": 0.6,
+      "mrr": 0.47000000000000003,
+      "p50_latency_ms": 307.88104998646304,
+      "p95_latency_ms": 647.7643700956833
+    }
+  },
+  "bm25_vs_dense": {
+    "cases": 21,
+    "recall_at_k": {
+      "mean_delta": -0.14285714285714285,
+      "wins": 1,
+      "ties": 16,
+      "losses": 4
+    },
+    "reciprocal_rank": {
+      "mean_delta": -0.253968253968254,
+      "wins": 4,
+      "ties": 7,
+      "losses": 10
+    }
+  },
+  "hybrid_vs_dense": {
+    "cases": 21,
+    "recall_at_k": {
+      "mean_delta": -0.09523809523809523,
+      "wins": 1,
+      "ties": 17,
+      "losses": 3
+    },
+    "reciprocal_rank": {
+      "mean_delta": -0.09285714285714286,
+      "wins": 4,
+      "ties": 12,
+      "losses": 5
+    }
+  },
+  "hybrid_vs_bm25": {
+    "cases": 21,
+    "recall_at_k": {
+      "mean_delta": 0.047619047619047616,
+      "wins": 1,
+      "ties": 20,
+      "losses": 0
+    },
+    "reciprocal_rank": {
+      "mean_delta": 0.16111111111111112,
+      "wins": 7,
+      "ties": 13,
+      "losses": 1
+    }
+  },
+  "natural_language_hit_complementarity": {
+    "cases": 21,
+    "bm25_only": 1,
+    "dense_only": 4,
+    "both": 14,
+    "neither": 2
+  },
+  "cases": [
+    {
+      "case_id": "concept-static-purpose",
+      "query_kind": "concept",
+      "query": "When is a static stress analysis appropriate if inertia can be neglected?",
+      "gold_document_ids": [
+        "simaanl-c-static"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-static",
+          "simaanl-c-staticproc",
+          "simaanl-c-visco",
+          "simaanl-c-inertiarelief",
+          "simaanl-c-linearnonlinear"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 458.7187999859452
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-staticproc",
+          "simaanl-c-static",
+          "simaanl-c-stdtostd",
+          "simaanl-c-inertiarelief",
+          "simaanl-c-exptostd"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 310.57779997354373
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-static",
+          "simaanl-c-staticproc",
+          "simaanl-c-inertiarelief",
+          "simaanl-c-visco",
+          "simaanl-c-stdtostd"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 769.3568999529816
+      },
+      "fusion_elapsed_ms": 0.06029999349266291
+    },
+    {
+      "case_id": "concept-solid-elements",
+      "query_kind": "concept",
+      "query": "How do continuum solid elements represent three-dimensional bodies?",
+      "gold_document_ids": [
+        "simaelm-c-solidcont"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-r-infinitelib",
+          "simamod-c-orientation",
+          "simaelm-c-solidcont",
+          "simacst-c-shelltosolidcoup",
+          "simaanl-c-injectionmoldingstressanl"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.3333333333333333,
+        "elapsed_ms": 100.02909996546805
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-c-solidcont",
+          "simaelm-r-infinitelib",
+          "simaelm-r-3delem",
+          "simaelm-c-shelloverview",
+          "simamod-c-orientation"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 599.6320000267588
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-r-infinitelib",
+          "simaelm-c-solidcont",
+          "simamod-c-orientation",
+          "simaelm-c-shellelem",
+          "simaelm-r-3delem"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 699.7332000173628
+      },
+      "fusion_elapsed_ms": 0.07210002513602376
+    },
+    {
+      "case_id": "concept-linear-elastic",
+      "query_kind": "concept",
+      "query": "How is isotropic linear elastic material behavior defined?",
+      "gold_document_ids": [
+        "simamat-c-linearelastic"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simamat-c-matmodels",
+          "simamat-c-linearelastic",
+          "simamat-c-timevisco",
+          "simaanl-c-optabaqus",
+          "simamat-m-LinearElasticity-sb"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 212.48889999696985
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simamat-c-linearelastic",
+          "simamat-m-LinearElasticity-sb",
+          "simamat-c-timevisco",
+          "simamat-c-hyperelastic",
+          "simamat-c-anisohyperelastic"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 306.55139998998493
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simamat-c-linearelastic",
+          "simamat-c-timevisco",
+          "simamat-m-LinearElasticity-sb",
+          "simamod-c-definingdistributions",
+          "simamat-c-freqvisco"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 519.1027999971993
+      },
+      "fusion_elapsed_ms": 0.06250001024454832
+    },
+    {
+      "case_id": "concept-coupling",
+      "query_kind": "concept",
+      "query": "When should a surface be coupled to a reference point?",
+      "gold_document_ids": [
+        "simacst-c-coupling"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simacst-c-coupling",
+          "simamod-c-integratedoutputsect",
+          "simamod-c-adjust",
+          "simaanl-c-acoustic",
+          "simacst-c-fastener"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 372.9238999658264
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-coupling",
+          "simacst-c-coupling",
+          "simamod-c-orientation",
+          "simacst-m-SurfacebasedConstraints-sb",
+          "simaanl-c-fieldmapper"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 300.85360002703965
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simacst-c-coupling",
+          "simakey-r-coupling",
+          "simacst-c-fastener",
+          "simacst-c-tiedconstraint",
+          "simaitn-c-irselem"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 673.8629000028595
+      },
+      "fusion_elapsed_ms": 0.08540000999346375
+    },
+    {
+      "case_id": "concept-contact",
+      "query_kind": "concept",
+      "query": "What are the main choices when defining mechanical contact?",
+      "gold_document_ids": [
+        "simaitn-c-contactoverview"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaitn-c-expcontactpairform",
+          "simamod-c-orientation",
+          "simaitn-c-contactpair",
+          "simaitn-c-contactpairform",
+          "simaitn-c-contactmechanical"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 296.75649997079745
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaitn-c-contactmechanical",
+          "simaitn-c-contactgeneralstd",
+          "simaitn-c-contactpropassign",
+          "simaitn-c-contactoverview",
+          "simamod-c-rigidoverview"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.25,
+        "elapsed_ms": 295.79499998362735
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaitn-c-contactmechanical",
+          "simaitn-c-contactgeneralstd",
+          "simaitn-c-contactpair",
+          "simaitn-c-tiedcontact",
+          "simamod-c-orientation"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 592.6210999605246
+      },
+      "fusion_elapsed_ms": 0.06960000609979033
+    },
+    {
+      "case_id": "concept-distributed-load",
+      "query_kind": "concept",
+      "query": "How are distributed loads applied over elements or surfaces?",
+      "gold_document_ids": [
+        "simaprc-c-loaddistributed"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaprc-c-loaddistributed",
+          "simaanl-c-dynamic",
+          "simaanl-c-aqua",
+          "simaanl-c-steadystdyndirect",
+          "simaanl-c-crackpropagation"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 211.9115000241436
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaprc-c-loaddistributed",
+          "simaprc-c-loading",
+          "simaelm-r-surfacelibrary",
+          "simaprc-c-surfacetension",
+          "simaelm-r-cylsurfacelibrary"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 299.01450005127117
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaprc-c-loaddistributed",
+          "simaprc-c-loading",
+          "simaelm-r-discreteparticleelemlib",
+          "simaanl-c-dynamic",
+          "simaanl-c-aqua"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 510.990800044965
+      },
+      "fusion_elapsed_ms": 0.06479996955022216
+    },
+    {
+      "case_id": "concept-odb-output",
+      "query_kind": "concept",
+      "query": "How do I request field and history results in the output database?",
+      "gold_document_ids": [
+        "simaout-c-dboutput-requestingoutput-odb"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-gatherresults",
+          "simaout-c-dboutput-frequency",
+          "simaout-c-dboutput-examples",
+          "simaanl-c-studyoutput",
+          "simaout-c-std-wholeandpartialmodelvariables"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 436.54350005090237
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaout-c-dboutput-requestingoutput-odb",
+          "simaout-c-dboutput-examples",
+          "simaout-c-dboutput-defaultoutput",
+          "simaout-c-dboutput-frequency",
+          "simaout-c-output"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 602.7294000377879
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaout-c-dboutput-examples",
+          "simaout-c-dboutput-frequency",
+          "simaout-c-dboutput-elementoutput",
+          "simaanl-c-gatherresults",
+          "simaanl-c-studyoutput"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 1039.3351000384428
+      },
+      "fusion_elapsed_ms": 0.062199949752539396
+    },
+    {
+      "case_id": "concept-boundary",
+      "query_kind": "concept",
+      "query": "How are displacement boundary conditions prescribed and modified?",
+      "gold_document_ids": [
+        "simaprc-c-boundary"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaprc-c-ov",
+          "simaanl-c-static",
+          "simaprc-c-boundary",
+          "simaanl-c-fatiguecrackgrowth",
+          "simaanl-c-directcyclic"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.3333333333333333,
+        "elapsed_ms": 217.00419997796416
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaprc-c-boundary",
+          "simaprc-c-prescribedover",
+          "simakey-r-boundary",
+          "simaanl-c-adiabaticanal",
+          "simaanl-c-inertiarelief"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 290.2576000196859
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaprc-c-boundary",
+          "simaprc-c-prescribedover",
+          "simaanl-c-visco",
+          "simaanl-c-static",
+          "simaanl-c-directcyclic"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 507.32209999114275
+      },
+      "fusion_elapsed_ms": 0.06029999349266291
+    },
+    {
+      "case_id": "concept-nonlinear-solution",
+      "query_kind": "concept",
+      "query": "How does Abaqus solve nonlinear equilibrium equations incrementally?",
+      "gold_document_ids": [
+        "simaanl-c-nonlineareqns"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simakey-r-print",
+          "simaanl-c-convergcriteria",
+          "simaanl-c-steadystatetransport",
+          "simaanl-c-nonlineareqns",
+          "simaanl-c-ov"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.25,
+        "elapsed_ms": 100.50910001154989
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-nonlineareqns",
+          "simaanl-c-convergencechecktype",
+          "simaanl-c-linearnonlinear",
+          "simaprc-c-initialcond-t-SpecifyingTheTypeOfInitialConditionBeingDefined-sma-topic1",
+          "simaanl-c-over"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 299.1051999852061
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-nonlineareqns",
+          "simaanl-c-convergcriteria",
+          "simaprc-c-initialcond-t-SpecifyingTheTypeOfInitialConditionBeingDefined-sma-topic1",
+          "simaanl-c-aleremesh",
+          "simakey-r-print"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 399.6785000199452
+      },
+      "fusion_elapsed_ms": 0.06420002318918705
+    },
+    {
+      "case_id": "concept-part-instance",
+      "query_kind": "concept",
+      "query": "What is the relationship between parts, instances, and the assembly?",
+      "gold_document_ids": [
+        "simamod-c-partassy"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simamod-c-partassy",
+          "simaout-c-output",
+          "simaelm-c-connectorelem",
+          "simamod-c-rigidoverview",
+          "simamod-c-node"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 347.6107000024058
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simamod-c-partassy",
+          "simamod-c-element",
+          "simaout-c-output",
+          "simaprc-c-pretension",
+          "simamod-c-node"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 591.4573000045493
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simamod-c-partassy",
+          "simaout-c-output",
+          "simamod-c-element",
+          "simaelm-c-connectorelem",
+          "simamod-c-node"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 939.1409000381827
+      },
+      "fusion_elapsed_ms": 0.07290003122761846
+    },
+    {
+      "case_id": "identifier-context-cps4r",
+      "query_kind": "identifier_context",
+      "query": "Is CPS4R a reduced-integration plane stress quadrilateral?",
+      "gold_document_ids": [
+        "simaelm-r-2delem"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-c-stdelementindex",
+          "simaelm-c-expelementindex",
+          "simaelm-r-asymmaxisymm",
+          "simaelm-c-solidcont",
+          "simaelm-c-shellelem"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 241.2264000158757
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-r-2delem",
+          "simaelm-c-solidcont",
+          "simaelm-c-stdelementindex",
+          "simaelm-r-asymmaxisymm",
+          "simaanl-c-aledomains"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 298.1778999674134
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-c-stdelementindex",
+          "simaelm-c-solidcont",
+          "simaelm-r-asymmaxisymm",
+          "simaelm-r-2delem",
+          "simaelm-c-shellelem"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.25,
+        "elapsed_ms": 539.4633999676444
+      },
+      "fusion_elapsed_ms": 0.05909998435527086
+    },
+    {
+      "case_id": "identifier-context-cpe4r",
+      "query_kind": "identifier_context",
+      "query": "Which library entry defines the CPE4R plane strain element?",
+      "gold_document_ids": [
+        "simaelm-r-2delem"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-c-stdelementindex",
+          "simaelm-c-expelementindex",
+          "simaelm-r-infinitelib",
+          "simaelm-r-2delem",
+          "simakey-r-rebar"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.25,
+        "elapsed_ms": 248.95009997999296
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-r-2delem",
+          "simaelm-c-dimension",
+          "simaelm-r-contshellgeneral",
+          "simaelm-c-infinite",
+          "simaelm-r-sphelemlib"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 301.28489999333397
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-r-2delem",
+          "simaelm-c-dimension",
+          "simaelm-c-stdelementindex",
+          "simaelm-r-infinitelib",
+          "simaelm-r-contshellgeneral"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 550.3353999811225
+      },
+      "fusion_elapsed_ms": 0.10040000779554248
+    },
+    {
+      "case_id": "identifier-context-c3d8r",
+      "query_kind": "identifier_context",
+      "query": "Where is the C3D8R reduced-integration brick documented?",
+      "gold_document_ids": [
+        "simaelm-r-3delem"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-c-stdelementindex",
+          "simaelm-c-solidcont",
+          "simaelm-c-expelementindex",
+          "simaelm-r-3delem",
+          "simaelm-c-membrane"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.25,
+        "elapsed_ms": 250.65549998544157
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-c-expelementindex",
+          "simaelm-c-solidcont",
+          "simaelm-r-eulerianelemlib",
+          "simaelm-c-stdelementindex",
+          "simaelm-r-3delem"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.2,
+        "elapsed_ms": 294.69230002723634
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-c-expelementindex",
+          "simaelm-c-solidcont",
+          "simaelm-c-stdelementindex",
+          "simaelm-r-3delem",
+          "simaelm-r-eulerianelemlib"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.25,
+        "elapsed_ms": 545.4097000183538
+      },
+      "fusion_elapsed_ms": 0.0619000056758523
+    },
+    {
+      "case_id": "identifier-context-static",
+      "query_kind": "identifier_context",
+      "query": "What does the *STATIC procedure keyword configure?",
+      "gold_document_ids": [
+        "simakey-r-static"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simakey-r-static",
+          "simaitn-r-wn",
+          "simaanl-c-adiabaticanal",
+          "simakey-c-ov",
+          "simaanl-c-beamtosurfacesubmodel"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 158.83999998914078
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-static",
+          "simaout-c-proctypekeys",
+          "simaanl-c-expdynamic",
+          "simaprc-c-initialcond-t-SpecifyingTheTypeOfInitialConditionBeingDefined-sma-topic1",
+          "simaanl-c-convergecontrol"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 303.44450002303347
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simakey-r-static",
+          "simaanl-c-linearnonlinear",
+          "simaitn-r-wn",
+          "simaout-c-proctypekeys",
+          "simaanl-c-adiabaticanal"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 462.35510002588853
+      },
+      "fusion_elapsed_ms": 0.0706000137142837
+    },
+    {
+      "case_id": "identifier-context-dload",
+      "query_kind": "identifier_context",
+      "query": "How is *DLOAD used for distributed loading?",
+      "gold_document_ids": [
+        "simakey-r-dload"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-r-linespringlibrary",
+          "simaelm-r-fluidpipelibrary",
+          "simaelm-r-masslibrary",
+          "simaelm-r-framelibrary",
+          "simakey-r-dload"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.2,
+        "elapsed_ms": 249.55429998226464
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-dload",
+          "simakey-r-dsload",
+          "simaprc-c-loaddistributed",
+          "simaelm-r-elbowlibrary",
+          "simaelm-r-contshellgeneral"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 293.3150999597274
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simakey-r-dload",
+          "simaelm-r-fluidpipelibrary",
+          "simaelm-r-elbowlibrary",
+          "simaelm-r-beamlibrary",
+          "simaelm-r-masslibrary"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 542.9350999766029
+      },
+      "fusion_elapsed_ms": 0.0657000346109271
+    },
+    {
+      "case_id": "identifier-context-cload",
+      "query_kind": "identifier_context",
+      "query": "How is *CLOAD used for concentrated nodal loading?",
+      "gold_document_ids": [
+        "simakey-r-cload"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simakey-r-cload",
+          "simaelm-r-rigidlibrary",
+          "simaelm-r-framelibrary",
+          "simaelm-r-elbowlibrary",
+          "simaelm-r-trusslibrary"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 249.12330001825467
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-cload",
+          "simakey-r-nodalthickness",
+          "simamod-c-nodalthickness",
+          "simakey-c-aqua-prodidx",
+          "simaanl-c-surfacebasedcavityover"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 295.9893999504857
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simakey-r-cload",
+          "simakey-c-aqua-prodidx",
+          "simaprc-c-acoustic",
+          "simaprc-c-loadgeneral",
+          "simakey-r-dload"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 545.1846999931149
+      },
+      "fusion_elapsed_ms": 0.07200002437457442
+    },
+    {
+      "case_id": "identifier-context-output-u",
+      "query_kind": "identifier_context",
+      "query": "Which Abaqus/Standard output variable requests nodal displacement U?",
+      "gold_document_ids": [
+        "simaout-c-std-nodalvariables"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-onestepinverse",
+          "simaout-c-dboutput-preselect",
+          "simaout-c-printfile",
+          "simaanl-c-mapsolution",
+          "simaanl-c-submodeloverview"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 219.5009000133723
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaout-c-printfile",
+          "simaout-c-stdoutputvar",
+          "simaout-c-expoutputvar",
+          "simaout-c-stdoutindex",
+          "simaitn-c-contactgeneralstd"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 297.92909999378026
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaout-c-printfile",
+          "simaout-c-stdoutindex",
+          "simaout-c-stdoutputvar",
+          "simaitn-c-contactgeneralstd",
+          "simaout-c-expoutindex"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 517.4909000052139
+      },
+      "fusion_elapsed_ms": 0.06089999806135893
+    },
+    {
+      "case_id": "identifier-context-output-rf",
+      "query_kind": "identifier_context",
+      "query": "Which Abaqus/Standard output variable requests nodal reaction force RF?",
+      "gold_document_ids": [
+        "simaout-c-std-nodalvariables"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaout-c-std-nodalvariables",
+          "simaout-c-exp-nodalvariables",
+          "simaout-c-printfile",
+          "simaout-c-dboutput-preselect",
+          "simaout-c-expoutindex"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 205.96789999399334
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-nodalenergyrate",
+          "simakey-r-impedanceproperty",
+          "simakey-r-impedance",
+          "simaitn-c-contactgeneralstd",
+          "simaanl-c-randomresponse"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 295.33599998103455
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaout-c-printfile",
+          "simaout-c-std-nodalvariables",
+          "simaitn-c-contactpair",
+          "simakey-r-nodalenergyrate",
+          "simakey-r-impedanceproperty"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 501.3634999631904
+      },
+      "fusion_elapsed_ms": 0.05959998816251755
+    },
+    {
+      "case_id": "identifier-context-output-s",
+      "query_kind": "identifier_context",
+      "query": "Which Abaqus/Standard output variable requests stress components S at integration points?",
+      "gold_document_ids": [
+        "simaout-c-std-elementintegrationpointvariables"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaout-c-dboutput-requestingoutput-odb",
+          "simaout-c-dboutput-elementoutput",
+          "simamod-c-rebarlayer",
+          "simamod-c-rebar",
+          "simaout-c-printfile"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 292.224700038787
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaout-c-std-elementintegrationpointvariables",
+          "simamod-c-conventions",
+          "simaanl-c-couptempdisp",
+          "simaanl-c-injectionmoldingstressanl",
+          "simaout-c-std-structuraloptimizationvariables"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 291.1852999823168
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaout-c-dboutput-requestingoutput-odb",
+          "simaout-c-printfile",
+          "simaout-c-exp-elementintegrationpointvariables",
+          "simaout-c-stdoutputvar",
+          "simaout-c-expoutputvar"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 583.4947000257671
+      },
+      "fusion_elapsed_ms": 0.0847000046633184
+    },
+    {
+      "case_id": "identifier-context-allsdtol",
+      "query_kind": "identifier_context",
+      "query": "Where is the ALLSDTOL parameter of *STATIC defined?",
+      "gold_document_ids": [
+        "simakey-r-static"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simakey-r-static",
+          "simaanl-c-nonlineareqns",
+          "simakey-r-steadystatetransport",
+          "simakey-r-visco",
+          "simakey-r-coupledtemperature-displacement"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 403.16809999058023
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-static",
+          "simaanl-c-amspecialpurpose-type-thermomech-define",
+          "simakey-r-steadystatetransport",
+          "simakey-r-coupledtemperature-displacement",
+          "simaanl-c-solidelectrode-type-echem-lmb-arrhenius"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 297.82560002058744
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simakey-r-static",
+          "simakey-r-steadystatetransport",
+          "simakey-r-coupledtemperature-displacement",
+          "simaanl-c-amspecialpurpose-type-thermomech-define",
+          "simaanl-c-nonlineareqns"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 701.0539000621065
+      },
+      "fusion_elapsed_ms": 0.06020005093887448
+    },
+    {
+      "case_id": "identifier-context-combined-static-plate",
+      "query_kind": "identifier_context",
+      "query": "Find the Abaqus/Standard procedure, element, and output references for a CPS4R static plate requesting U S and RF.",
+      "gold_document_ids": [
+        "simakey-r-static",
+        "simaelm-r-2delem",
+        "simaout-c-std-nodalvariables",
+        "simaout-c-std-elementintegrationpointvariables"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaout-c-dboutput-preselect",
+          "simaanl-c-dsa",
+          "simaanl-c-nonlineareqns",
+          "simaout-c-dboutput-requestingoutput-odb",
+          "simaout-c-dboutput-examples"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 649.3367999792099
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-impedance",
+          "simakey-r-electromagnetic",
+          "simaout-c-output",
+          "simaanl-c-exptostd",
+          "simakey-r-radiationoutput"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 292.6422000164166
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simakey-r-impedance",
+          "simaout-c-dboutput-preselect",
+          "simaanl-c-dsa",
+          "simakey-r-electromagnetic",
+          "simaanl-c-nonlineareqns"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 942.0387999853119
+      },
+      "fusion_elapsed_ms": 0.05979998968541622
+    },
+    {
+      "case_id": "identifier-lookup-static",
+      "query_kind": "identifier_lookup",
+      "query": "*STATIC",
+      "gold_document_ids": [
+        "simakey-r-static"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simakey-r-static",
+          "simaanl-c-adiabaticanal",
+          "simaanl-c-beamtosurfacesubmodel",
+          "simakey-c-cae-prodidx",
+          "simakey-c-std-prodidx"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 8.98450001841411
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-static",
+          "simakey-r-static",
+          "simaanl-c-visco",
+          "simaanl-c-staticproc",
+          "simaanl-c-superelements"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 290.7920000143349
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simakey-r-static",
+          "simaanl-c-static",
+          "simaanl-c-stdtostd",
+          "simaanl-c-superelements",
+          "simaanl-c-staticproc"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 299.8390000429936
+      },
+      "fusion_elapsed_ms": 0.06250001024454832
+    },
+    {
+      "case_id": "identifier-lookup-dload",
+      "query_kind": "identifier_lookup",
+      "query": "*DLOAD",
+      "gold_document_ids": [
+        "simakey-r-dload"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-r-framelibrary",
+          "simaelm-r-cylindricallibrary",
+          "simaelm-r-cylmembranelibrary",
+          "simaelm-r-asymmaxisymm",
+          "simaelm-r-elbowlibrary"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 4.6811000211164355
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-dload",
+          "simakey-c-aqua-prodidx",
+          "simaelm-r-elbowlibrary",
+          "simakey-r-sload",
+          "simaelm-r-rotinertialibrary"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 297.1358000067994
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-r-elbowlibrary",
+          "simaelm-r-rigidlibrary",
+          "simaelm-r-beamlibrary",
+          "simaelm-r-membranelibrary",
+          "simaelm-r-eulerianelemlib"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 301.87790002673864
+      },
+      "fusion_elapsed_ms": 0.060999998822808266
+    },
+    {
+      "case_id": "identifier-lookup-cload",
+      "query_kind": "identifier_lookup",
+      "query": "*CLOAD",
+      "gold_document_ids": [
+        "simakey-r-cload"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-r-framelibrary",
+          "simaelm-r-elbowlibrary",
+          "simaelm-r-rigidlibrary",
+          "simaelm-r-trusslibrary",
+          "simaelm-r-beamlibrary"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 2.0921999821439385
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-cload",
+          "simakey-c-aqua-prodidx",
+          "simakey-r-dload",
+          "simakey-r-sload",
+          "simaelm-r-framelibrary"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 307.1674000239
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-r-framelibrary",
+          "simakey-r-cload",
+          "simaelm-r-elbowlibrary",
+          "simakey-c-aqua-prodidx",
+          "simaelm-r-trusslibrary"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 309.3327999813482
+      },
+      "fusion_elapsed_ms": 0.07319997530430555
+    },
+    {
+      "case_id": "identifier-lookup-elastic",
+      "query_kind": "identifier_lookup",
+      "query": "*ELASTIC",
+      "gold_document_ids": [
+        "simakey-r-elastic"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simakey-r-elastic",
+          "simakey-r-wn",
+          "simaanl-c-fullycoupthermalelecchemstruct",
+          "simaanl-c-fullycoupthermalelecchemstructpore",
+          "simakey-c-exp-prodidx"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 12.772299989592284
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-elastic",
+          "simamat-c-elasticbehav",
+          "simamat-c-linearelastic",
+          "simakey-r-hyperelastic",
+          "simamat-c-nocompnoten"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 292.2958999988623
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simakey-r-elastic",
+          "simamat-c-elasticbehav",
+          "simamat-c-linearelastic",
+          "simaelm-c-connelastbehav",
+          "simamat-c-plastic"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 305.17270002746955
+      },
+      "fusion_elapsed_ms": 0.1045000390149653
+    },
+    {
+      "case_id": "identifier-lookup-boundary",
+      "query_kind": "identifier_lookup",
+      "query": "*BOUNDARY",
+      "gold_document_ids": [
+        "simakey-r-boundary"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simakey-r-boundary",
+          "simakey-c-cae-prodidx",
+          "simakey-c-exp-prodidx",
+          "simaanl-c-mtxgenerationgeneral",
+          "simakey-c-std-prodidx"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 11.022799997590482
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-boundary",
+          "simaprc-c-boundary",
+          "simaanl-c-eulerianboundary",
+          "simaanl-c-superelementdef",
+          "simaanl-c-fluidcavities"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 295.3484000172466
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simakey-r-boundary",
+          "simaprc-c-boundary",
+          "simaanl-c-aledomains",
+          "simakey-r-eulerianboundary",
+          "simaanl-c-acoustic"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 306.42929999157786
+      },
+      "fusion_elapsed_ms": 0.05809997674077749
+    },
+    {
+      "case_id": "identifier-lookup-cps4r",
+      "query_kind": "identifier_lookup",
+      "query": "CPS4R",
+      "gold_document_ids": [
+        "simaelm-r-2delem"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-r-2delem",
+          "simaanl-c-stdtostd",
+          "simaanl-c-exptostd",
+          "simaanl-c-optabaqus",
+          "simaelm-c-stdelementindex"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 0.7920999778434634
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-r-2delem",
+          "simaelm-c-shellelem",
+          "simaelm-c-stdelementindex",
+          "simaelm-r-shellgeneral",
+          "simaelm-c-solidcont"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 300.64020003192127
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-r-2delem",
+          "simaelm-c-stdelementindex",
+          "simaanl-c-exptostd",
+          "simaanl-c-stdtostd",
+          "simaelm-c-solidcont"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 301.47690000012517
+      },
+      "fusion_elapsed_ms": 0.044599990360438824
+    },
+    {
+      "case_id": "identifier-lookup-cpe4r",
+      "query_kind": "identifier_lookup",
+      "query": "CPE4R",
+      "gold_document_ids": [
+        "simaelm-r-2delem"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-exptostd",
+          "simaanl-c-optabaqus",
+          "simaanl-c-aledomains",
+          "simaelm-c-stdelementindex",
+          "simaanl-c-stdtostd"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 0.7739000138826668
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-r-2delem",
+          "simaelm-c-stdelementindex",
+          "simaanl-c-contintegral",
+          "simaanl-c-optabaqus",
+          "simaanl-c-exptostd"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 315.0325000169687
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-exptostd",
+          "simaanl-c-optabaqus",
+          "simaelm-c-stdelementindex",
+          "simaanl-c-contintegral",
+          "simaelm-r-2delem"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 0.2,
+        "elapsed_ms": 315.8584000193514
+      },
+      "fusion_elapsed_ms": 0.05199998850002885
+    },
+    {
+      "case_id": "identifier-lookup-c3d8r",
+      "query_kind": "identifier_lookup",
+      "query": "C3D8R",
+      "gold_document_ids": [
+        "simaelm-r-3delem"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-steadystatedetection",
+          "simaanl-c-transferoverview",
+          "simaanl-r-wn",
+          "simamod-c-element",
+          "simaanl-c-aximodelgen"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 1.076500047929585
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-r-3delem",
+          "simaelm-c-solidcont",
+          "simaelm-r-acousticlibrary",
+          "simaelm-r-eulerianelemlib",
+          "simaelm-r-wn"
+        ],
+        "hit": true,
+        "recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 338.86530000017956
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-c-solidcont",
+          "simaanl-c-aximodelgen",
+          "simaanl-c-optabaqus",
+          "simaanl-c-euleriananalysis",
+          "simaelm-c-general"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 340.02490009879693
+      },
+      "fusion_elapsed_ms": 0.08310005068778992
+    },
+    {
+      "case_id": "identifier-lookup-u-standard",
+      "query_kind": "identifier_lookup",
+      "query": "Which Abaqus/Standard output variable is U?",
+      "gold_document_ids": [
+        "simaout-c-std-nodalvariables"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaout-c-stdoutindex",
+          "simaanl-c-gatherresults",
+          "simaout-c-expoutindex",
+          "simaanl-c-scriptparstudies",
+          "simaanl-c-onestepinverse"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 318.2298000319861
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaout-c-stdoutindex",
+          "simaout-c-expoutindex",
+          "simaout-c-stdoutputvar",
+          "simakey-m-U-sb",
+          "simakey-c-std-prodidx"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 331.9535000482574
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaout-c-stdoutindex",
+          "simaout-c-expoutindex",
+          "simaout-c-output",
+          "simaout-c-stdoutputvar",
+          "simaout-c-printfile"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 650.2661001286469
+      },
+      "fusion_elapsed_ms": 0.0828000484034419
+    },
+    {
+      "case_id": "identifier-lookup-rf-standard",
+      "query_kind": "identifier_lookup",
+      "query": "Which Abaqus/Standard output variable is RF?",
+      "gold_document_ids": [
+        "simaout-c-std-nodalvariables"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaout-c-expoutindex",
+          "simaout-c-dboutput-examples",
+          "simaout-c-dboutput-preselect",
+          "simaout-c-output",
+          "simaelm-c-conndamagebehav"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 304.73309999797493
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaout-c-output",
+          "simaout-c-stdoutputvar",
+          "simaout-c-dboutput-radiation",
+          "simaout-c-stdoutindex",
+          "simakey-r-radiationoutput"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 339.8843000177294
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaout-c-output",
+          "simaout-c-stdoutindex",
+          "simaout-c-expoutindex",
+          "simaout-c-stdoutputvar",
+          "simaout-c-dboutput-examples"
+        ],
+        "hit": false,
+        "recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 644.7067000553943
+      },
+      "fusion_elapsed_ms": 0.0893000396899879
+    }
+  ]
+}

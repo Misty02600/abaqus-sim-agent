@@ -1,0 +1,1925 @@
+{
+  "schema_version": "1",
+  "dataset_id": "abaqus-2026-bm25-dense-rrf-heldout-v3",
+  "evaluated_at": "2026-09-03T17:57:14.870996+08:00",
+  "seal_sha256": "00e43e6dc0274d3ee60cf94c74d457004cf2172ad31d7fd19a0b248b92ff7d39",
+  "top_k": 5,
+  "fetch_k": 20,
+  "rrf_k": 60,
+  "audit": {
+    "dataset_id": "abaqus-2026-bm25-dense-rrf-heldout-v3",
+    "query_count": 30,
+    "label_count": 30,
+    "requirement_count": 40,
+    "acceptable_page_count": 40,
+    "unique_gold_document_count": 38,
+    "stratum_counts": {
+      "concept": 12,
+      "identifier_context": 12,
+      "multi_document": 6
+    },
+    "document_disjoint": true,
+    "declared_family_disjoint": true,
+    "html_sources_verified": 38,
+    "semantic_gold_documents_verified": 38
+  },
+  "bm25": {
+    "all": {
+      "cases": 30,
+      "complete_hit_rate_at_k": 0.7666666666666667,
+      "requirement_recall_at_k": 0.8388888888888889,
+      "mrr": 0.5955555555555556,
+      "p50_latency_ms": 459.80554999550804,
+      "p95_latency_ms": 717.9798399854917
+    },
+    "concept": {
+      "cases": 12,
+      "complete_hit_rate_at_k": 1.0,
+      "requirement_recall_at_k": 1.0,
+      "mrr": 0.7291666666666666,
+      "p50_latency_ms": 427.7453500253614,
+      "p95_latency_ms": 624.1949400107841
+    },
+    "identifier_context": {
+      "cases": 12,
+      "complete_hit_rate_at_k": 0.75,
+      "requirement_recall_at_k": 0.7916666666666666,
+      "mrr": 0.44027777777777777,
+      "p50_latency_ms": 436.2055500096176,
+      "p95_latency_ms": 765.4394050012343
+    },
+    "multi_document": {
+      "cases": 6,
+      "complete_hit_rate_at_k": 0.3333333333333333,
+      "requirement_recall_at_k": 0.611111111111111,
+      "mrr": 0.638888888888889,
+      "p50_latency_ms": 586.9045500003267,
+      "p95_latency_ms": 705.4373999708332
+    }
+  },
+  "dense": {
+    "all": {
+      "cases": 30,
+      "complete_hit_rate_at_k": 0.8,
+      "requirement_recall_at_k": 0.8777777777777778,
+      "mrr": 0.6561111111111111,
+      "p50_latency_ms": 623.3588499890175,
+      "p95_latency_ms": 945.8212200086564
+    },
+    "concept": {
+      "cases": 12,
+      "complete_hit_rate_at_k": 1.0,
+      "requirement_recall_at_k": 1.0,
+      "mrr": 0.748611111111111,
+      "p50_latency_ms": 632.8707500069868,
+      "p95_latency_ms": 933.7424499797635
+    },
+    "identifier_context": {
+      "cases": 12,
+      "complete_hit_rate_at_k": 0.75,
+      "requirement_recall_at_k": 0.7916666666666666,
+      "mrr": 0.47500000000000003,
+      "p50_latency_ms": 326.67720000608824,
+      "p95_latency_ms": 995.6626900064293
+    },
+    "multi_document": {
+      "cases": 6,
+      "complete_hit_rate_at_k": 0.5,
+      "requirement_recall_at_k": 0.8055555555555555,
+      "mrr": 0.8333333333333334,
+      "p50_latency_ms": 636.8065500282682,
+      "p95_latency_ms": 947.494350024499
+    }
+  },
+  "hybrid": {
+    "all": {
+      "cases": 30,
+      "complete_hit_rate_at_k": 0.8333333333333334,
+      "requirement_recall_at_k": 0.9055555555555556,
+      "mrr": 0.7022222222222222,
+      "p50_latency_ms": 1058.9659500110429,
+      "p95_latency_ms": 1435.1526599872154
+    },
+    "concept": {
+      "cases": 12,
+      "complete_hit_rate_at_k": 1.0,
+      "requirement_recall_at_k": 1.0,
+      "mrr": 0.7708333333333334,
+      "p50_latency_ms": 1139.3815499905031,
+      "p95_latency_ms": 1314.0641099686036
+    },
+    "identifier_context": {
+      "cases": 12,
+      "complete_hit_rate_at_k": 0.8333333333333334,
+      "requirement_recall_at_k": 0.875,
+      "mrr": 0.5819444444444445,
+      "p50_latency_ms": 940.4428500274662,
+      "p95_latency_ms": 1255.0495449599111
+    },
+    "multi_document": {
+      "cases": 6,
+      "complete_hit_rate_at_k": 0.5,
+      "requirement_recall_at_k": 0.7777777777777778,
+      "mrr": 0.8055555555555555,
+      "p50_latency_ms": 1166.893000015989,
+      "p95_latency_ms": 1633.2200999604538
+    }
+  },
+  "bm25_vs_dense": {
+    "cases": 30,
+    "complete_hit_at_k": {
+      "mean_delta": -0.03333333333333333,
+      "wins": 2,
+      "ties": 25,
+      "losses": 3
+    },
+    "requirement_recall_at_k": {
+      "mean_delta": -0.03888888888888888,
+      "wins": 2,
+      "ties": 25,
+      "losses": 3
+    },
+    "reciprocal_rank": {
+      "mean_delta": -0.06055555555555556,
+      "wins": 11,
+      "ties": 8,
+      "losses": 11
+    }
+  },
+  "hybrid_vs_dense": {
+    "cases": 30,
+    "complete_hit_at_k": {
+      "mean_delta": 0.03333333333333333,
+      "wins": 3,
+      "ties": 25,
+      "losses": 2
+    },
+    "requirement_recall_at_k": {
+      "mean_delta": 0.02777777777777778,
+      "wins": 3,
+      "ties": 25,
+      "losses": 2
+    },
+    "reciprocal_rank": {
+      "mean_delta": 0.04611111111111111,
+      "wins": 10,
+      "ties": 14,
+      "losses": 6
+    }
+  },
+  "hybrid_vs_bm25": {
+    "cases": 30,
+    "complete_hit_at_k": {
+      "mean_delta": 0.06666666666666667,
+      "wins": 2,
+      "ties": 28,
+      "losses": 0
+    },
+    "requirement_recall_at_k": {
+      "mean_delta": 0.06666666666666667,
+      "wins": 3,
+      "ties": 27,
+      "losses": 0
+    },
+    "reciprocal_rank": {
+      "mean_delta": 0.10666666666666667,
+      "wins": 8,
+      "ties": 19,
+      "losses": 3
+    }
+  },
+  "complete_hit_complementarity": {
+    "cases": 30,
+    "bm25_only": 2,
+    "dense_only": 3,
+    "both": 21,
+    "neither": 4
+  },
+  "cases": [
+    {
+      "case_id": "heldout-concept-submodeling",
+      "stratum": "concept",
+      "query": "How are boundary conditions transferred from a coarse global analysis to a refined local submodel?",
+      "requirement_ids": [
+        "global-to-local-boundary-transfer"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-submodeldisp",
+          "simaanl-c-submodeloverview",
+          "simaanl-c-definingmatrices",
+          "simaanl-c-submodelstress",
+          "simaanl-r-wn"
+        ],
+        "covered_requirement_ids": [
+          "global-to-local-boundary-transfer"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 388.6246000183746
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-submodeldisp",
+          "simakey-r-boundary",
+          "simaprc-c-boundary",
+          "simakey-r-submodel",
+          "simaanl-c-submodeloverview"
+        ],
+        "covered_requirement_ids": [
+          "global-to-local-boundary-transfer"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.2,
+        "elapsed_ms": 930.2886999794282
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-submodeldisp",
+          "simaanl-c-submodeloverview",
+          "simakey-r-boundary",
+          "simaanl-c-submodelstress",
+          "simaanl-r-wn"
+        ],
+        "covered_requirement_ids": [
+          "global-to-local-boundary-transfer"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 1318.9721999806352
+      },
+      "fusion_elapsed_ms": 0.05889998283237219
+    },
+    {
+      "case_id": "heldout-concept-direct-cyclic",
+      "stratum": "concept",
+      "query": "How does direct cyclic analysis obtain a stabilized periodic response without simulating every physical cycle?",
+      "requirement_ids": [
+        "direct-stabilized-cycle-solution"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-directcyclicfatigue",
+          "simaanl-c-directcyclic",
+          "simakey-r-directcyclic",
+          "simaanl-c-staticproc",
+          "simamat-c-damageoverview"
+        ],
+        "covered_requirement_ids": [
+          "direct-stabilized-cycle-solution"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 194.95229999301955
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-directcyclic",
+          "simakey-r-directcyclic",
+          "simaanl-c-directcyclicfatigue",
+          "simaanl-c-cyclicsymmetry",
+          "simaanl-c-convergecontrol"
+        ],
+        "covered_requirement_ids": [
+          "direct-stabilized-cycle-solution"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 608.7245999951847
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-directcyclic",
+          "simaanl-c-directcyclicfatigue",
+          "simakey-r-directcyclic",
+          "simakey-r-postoutput",
+          "simaanl-c-convergecontrol"
+        ],
+        "covered_requirement_ids": [
+          "direct-stabilized-cycle-solution"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 803.751099971123
+      },
+      "fusion_elapsed_ms": 0.07419998291879892
+    },
+    {
+      "case_id": "heldout-concept-response-spectrum",
+      "stratum": "concept",
+      "query": "When is response spectrum analysis appropriate for estimating a structure's peak response to base motion?",
+      "requirement_ids": [
+        "response-spectrum-applicability"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-responsespectrum",
+          "simaanl-c-dynamicproc",
+          "simaanl-c-randomresponse",
+          "simaanl-c-modaldynamic",
+          "simaprc-c-amplitude"
+        ],
+        "covered_requirement_ids": [
+          "response-spectrum-applicability"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 515.2396999765188
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-responsespectrum",
+          "simaanl-c-dynamicproc",
+          "simaanl-c-modaldynamic",
+          "simaanl-c-randomresponse",
+          "simaanl-c-steadystdyn"
+        ],
+        "covered_requirement_ids": [
+          "response-spectrum-applicability"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 629.8964999732561
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-responsespectrum",
+          "simaanl-c-dynamicproc",
+          "simaanl-c-modaldynamic",
+          "simaanl-c-randomresponse",
+          "simakey-r-responsespectrum"
+        ],
+        "covered_requirement_ids": [
+          "response-spectrum-applicability"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 1145.193099975586
+      },
+      "fusion_elapsed_ms": 0.05690002581104636
+    },
+    {
+      "case_id": "heldout-concept-steady-state-dynamics",
+      "stratum": "concept",
+      "query": "When should modal steady-state dynamics be used for a structure under harmonic excitation?",
+      "requirement_ids": [
+        "modal-harmonic-response-applicability"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simakey-r-steadystatedynamics",
+          "simaanl-c-steadystdyndirect",
+          "simaanl-c-dynamicproc",
+          "simaanl-c-steadystdyn",
+          "simakey-r-pressurepenetration"
+        ],
+        "covered_requirement_ids": [
+          "modal-harmonic-response-applicability"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.25,
+        "elapsed_ms": 378.2790999975987
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-steadystatedynamics",
+          "simaanl-c-steadystdyndirect",
+          "simaanl-c-modaldynamic",
+          "simaanl-c-dynamicproc",
+          "simaanl-c-steadystdyn"
+        ],
+        "covered_requirement_ids": [
+          "modal-harmonic-response-applicability"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.2,
+        "elapsed_ms": 332.9704999923706
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simakey-r-steadystatedynamics",
+          "simaanl-c-steadystdyndirect",
+          "simaanl-c-dynamicproc",
+          "simaanl-c-steadystdyn",
+          "simaanl-c-acoustic"
+        ],
+        "covered_requirement_ids": [
+          "modal-harmonic-response-applicability"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.25,
+        "elapsed_ms": 711.3117999979295
+      },
+      "fusion_elapsed_ms": 0.06220000796020031
+    },
+    {
+      "case_id": "heldout-concept-creep-laws",
+      "stratum": "concept",
+      "query": "How is time-dependent creep modeled under sustained loading, and when is a time-hardening law preferred over a strain-hardening law?",
+      "requirement_ids": [
+        "creep-law-and-hardening-choice"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simamat-c-ratedepcreep",
+          "simamat-c-ornl",
+          "simamat-c-druckerprager",
+          "simamat-c-viscous",
+          "simamat-c-capplastic"
+        ],
+        "covered_requirement_ids": [
+          "creep-law-and-hardening-choice"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 435.21600001258776
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simamat-c-ratedepcreep",
+          "simakey-r-creepstrainratecontrol",
+          "simamat-c-druckerprager",
+          "simamat-c-capplastic",
+          "simamat-c-hysteresis"
+        ],
+        "covered_requirement_ids": [
+          "creep-law-and-hardening-choice"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 328.5287999897264
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simamat-c-ratedepcreep",
+          "simamat-c-druckerprager",
+          "simamat-c-capplastic",
+          "simamat-c-viscous",
+          "simaanl-c-contintegral"
+        ],
+        "covered_requirement_ids": [
+          "creep-law-and-hardening-choice"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 763.8164999661967
+      },
+      "fusion_elapsed_ms": 0.0716999638825655
+    },
+    {
+      "case_id": "heldout-concept-mass-scaling",
+      "stratum": "concept",
+      "query": "What does mass scaling change in an explicit analysis, and how should the added mass be monitored?",
+      "requirement_ids": [
+        "mass-scaling-effect-and-monitoring"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaitn-r-wn",
+          "simaanl-c-massscaling",
+          "simaanl-c-expdynamic",
+          "simaanl-c-exptostd",
+          "simamat-c-density"
+        ],
+        "covered_requirement_ids": [
+          "mass-scaling-effect-and-monitoring"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 577.718399988953
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-massscaling",
+          "simakey-r-variablemassscaling",
+          "simakey-r-fixedmassscaling",
+          "simamod-c-massadjust",
+          "simaanl-c-exptostd"
+        ],
+        "covered_requirement_ids": [
+          "mass-scaling-effect-and-monitoring"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 618.4313999838196
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-massscaling",
+          "simaanl-c-exptostd",
+          "simakey-r-fixedmassscaling",
+          "simaanl-c-expdynamic",
+          "simamod-c-massadjust"
+        ],
+        "covered_requirement_ids": [
+          "mass-scaling-effect-and-monitoring"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 1196.2077000061981
+      },
+      "fusion_elapsed_ms": 0.05790003342553973
+    },
+    {
+      "case_id": "heldout-concept-ale-adaptive-meshing",
+      "stratum": "concept",
+      "query": "How does ALE adaptive meshing reduce element distortion while allowing material to flow through the mesh?",
+      "requirement_ids": [
+        "ale-mesh-material-motion"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-adpchoicesover",
+          "simaanl-c-aleover",
+          "simamat-r-wn",
+          "simaanl-c-aleremesh",
+          "simaanl-c-aledomains"
+        ],
+        "covered_requirement_ids": [
+          "ale-mesh-material-motion"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 371.97769997874275
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-aleover",
+          "simaanl-c-adpchoicesover",
+          "simaanl-c-aleoutput",
+          "simaanl-c-aledomains",
+          "simaanl-c-alestdremesh"
+        ],
+        "covered_requirement_ids": [
+          "ale-mesh-material-motion"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 937.9636999801733
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-adpchoicesover",
+          "simaanl-c-aleover",
+          "simaanl-c-aledomains",
+          "simaanl-c-aleremesh",
+          "simaanl-c-alestdremesh"
+        ],
+        "covered_requirement_ids": [
+          "ale-mesh-material-motion"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 1310.0483999587595
+      },
+      "fusion_elapsed_ms": 0.10699999984353781
+    },
+    {
+      "case_id": "heldout-concept-hyperelastic-calibration",
+      "stratum": "concept",
+      "query": "How are hyperelastic material coefficients fitted from test data, and how is the stability of the fitted model assessed?",
+      "requirement_ids": [
+        "hyperelastic-fit-and-stability"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simakey-r-hyperelastic",
+          "simamat-c-hyperelastic",
+          "simakey-r-mullinseffect",
+          "simamat-c-hyperfoam",
+          "simamat-c-timevisco"
+        ],
+        "covered_requirement_ids": [
+          "hyperelastic-fit-and-stability"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 680.9996000374667
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-volumetrictestdata",
+          "simakey-r-hyperelastic",
+          "simamat-c-hyperelastic",
+          "simaanl-c-dsa",
+          "simamat-c-hyperfoam"
+        ],
+        "covered_requirement_ids": [
+          "hyperelastic-fit-and-stability"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.3333333333333333,
+        "elapsed_ms": 628.3582999603823
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simakey-r-hyperelastic",
+          "simamat-c-hyperelastic",
+          "simakey-r-volumetrictestdata",
+          "simamat-c-hyperfoam",
+          "simaanl-c-dsa"
+        ],
+        "covered_requirement_ids": [
+          "hyperelastic-fit-and-stability"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 1309.4164000358433
+      },
+      "fusion_elapsed_ms": 0.058500037994235754
+    },
+    {
+      "case_id": "heldout-concept-ductile-damage",
+      "stratum": "concept",
+      "query": "How are damage initiation and damage evolution combined to represent progressive failure of a ductile metal?",
+      "requirement_ids": [
+        "ductile-initiation-and-evolution"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simamat-c-damageductile",
+          "simamat-c-damageevolductile",
+          "simamat-c-metalplastic",
+          "simamat-c-damageinitductile",
+          "simamat-c-damageoverview"
+        ],
+        "covered_requirement_ids": [
+          "ductile-initiation-and-evolution"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 519.9222000082955
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simamat-c-damageductile",
+          "simamat-c-damageoverview",
+          "simamat-c-damageinitductile",
+          "simamat-c-metalplastic",
+          "simamat-c-damageevolductile"
+        ],
+        "covered_requirement_ids": [
+          "ductile-initiation-and-evolution"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 635.8450000407174
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simamat-c-damageductile",
+          "simamat-c-damageevolductile",
+          "simamat-c-damageoverview",
+          "simamat-c-damageinitductile",
+          "simamat-c-metalplastic"
+        ],
+        "covered_requirement_ids": [
+          "ductile-initiation-and-evolution"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 1155.8283000485972
+      },
+      "fusion_elapsed_ms": 0.0610999995842576
+    },
+    {
+      "case_id": "heldout-concept-composite-layup",
+      "stratum": "concept",
+      "query": "How is a composite shell layup defined when its plies have different materials, thicknesses, and fiber orientations?",
+      "requirement_ids": [
+        "per-ply-shell-layup-definition"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-c-usingshellgensect",
+          "simaelm-c-usingshellsection",
+          "simamod-c-definingdistributions",
+          "simakey-r-shellsection",
+          "simaelm-c-solidcont"
+        ],
+        "covered_requirement_ids": [
+          "per-ply-shell-layup-definition"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 420.27470003813505
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-c-usingshellsection",
+          "simakey-r-shellgeneralsection",
+          "simamod-c-nodalthickness",
+          "simaelm-c-usingshellgensect",
+          "simaelm-c-shelloverview"
+        ],
+        "covered_requirement_ids": [
+          "per-ply-shell-layup-definition"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.25,
+        "elapsed_ms": 639.7424999740906
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-c-usingshellsection",
+          "simaelm-c-usingshellgensect",
+          "simakey-r-shellsection",
+          "simamod-c-nodalthickness",
+          "simakey-r-shellgeneralsection"
+        ],
+        "covered_requirement_ids": [
+          "per-ply-shell-layup-definition"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 1060.1295999949798
+      },
+      "fusion_elapsed_ms": 0.11239998275414109
+    },
+    {
+      "case_id": "heldout-concept-coupled-pore-fluid-stress",
+      "stratum": "concept",
+      "query": "What physical problems require a coupled pore-fluid diffusion and stress analysis in saturated porous media?",
+      "requirement_ids": [
+        "porous-media-coupled-applications"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-coupdiffstress",
+          "simamat-c-sorption",
+          "simamat-c-gelswelling",
+          "simaanl-c-undrainedanalysis",
+          "simamat-c-moistureswell"
+        ],
+        "covered_requirement_ids": [
+          "porous-media-coupled-applications"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 479.35949999373406
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-coupdiffstress",
+          "simaout-c-std-sectionvariables",
+          "simamat-c-porefluidpressure",
+          "simaanl-c-undrainedanalysis",
+          "simaprc-c-porousflow"
+        ],
+        "covered_requirement_ids": [
+          "porous-media-coupled-applications"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 654.148300003726
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-coupdiffstress",
+          "simaanl-c-undrainedanalysis",
+          "simamat-c-porefluidpressure",
+          "simaout-c-std-sectionvariables",
+          "simaanl-r-wn"
+        ],
+        "covered_requirement_ids": [
+          "porous-media-coupled-applications"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 1133.5700000054203
+      },
+      "fusion_elapsed_ms": 0.06220000796020031
+    },
+    {
+      "case_id": "heldout-concept-restart-analysis",
+      "stratum": "concept",
+      "query": "How can an interrupted analysis be continued from saved results without rerunning all earlier increments?",
+      "requirement_ids": [
+        "saved-state-analysis-continuation"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-restart",
+          "simaanl-c-stdtostd",
+          "simaanl-c-exptoexp",
+          "simaanl-c-submodeldisp",
+          "simaanl-c-techniquesover"
+        ],
+        "covered_requirement_ids": [
+          "saved-state-analysis-continuation"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 359.5834000152536
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-restart",
+          "simaout-c-dboutput-frequency",
+          "simaanl-c-techniquesover",
+          "simaanl-c-stepcycling",
+          "simakey-r-restart"
+        ],
+        "covered_requirement_ids": [
+          "saved-state-analysis-continuation"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 653.5142000066116
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-restart",
+          "simaanl-c-techniquesover",
+          "simaanl-c-transferoverview",
+          "simaout-c-dboutput-frequency",
+          "simaanl-c-over"
+        ],
+        "covered_requirement_ids": [
+          "saved-state-analysis-continuation"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 1013.1544000469148
+      },
+      "fusion_elapsed_ms": 0.056800025049597025
+    },
+    {
+      "case_id": "heldout-identifier-b31",
+      "stratum": "identifier_context",
+      "query": "For a slender three-dimensional frame member that must carry bending, torsion, and axial force, when is the B31 element appropriate?",
+      "requirement_ids": [
+        "b31-three-dimensional-beam-applicability"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-c-beamoverview",
+          "simaelm-c-frame",
+          "simaelm-c-beamelem",
+          "simaelm-c-truss",
+          "simaelm-r-framelibrary"
+        ],
+        "covered_requirement_ids": [
+          "b31-three-dimensional-beam-applicability"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.3333333333333333,
+        "elapsed_ms": 720.2185000060126
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-c-beamelem",
+          "simaelm-c-frame",
+          "simaelm-c-rigid",
+          "simaelm-c-usingframesection",
+          "simaelm-c-solidcont"
+        ],
+        "covered_requirement_ids": [
+          "b31-three-dimensional-beam-applicability"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 321.42100000055507
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-c-beamelem",
+          "simaelm-c-frame",
+          "simaelm-c-beamoverview",
+          "simaelm-c-usingframesection",
+          "simaelm-r-framelibrary"
+        ],
+        "covered_requirement_ids": [
+          "b31-three-dimensional-beam-applicability"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 1041.7016000137664
+      },
+      "fusion_elapsed_ms": 0.06210000719875097
+    },
+    {
+      "case_id": "heldout-identifier-s4r",
+      "stratum": "identifier_context",
+      "query": "Can S4R represent transverse shear and finite membrane strain in a thin-walled structure?",
+      "requirement_ids": [
+        "s4r-transverse-shear-finite-membrane"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-c-beamsections",
+          "simaelm-c-shellsectionbehavior",
+          "simaelm-c-beamcrosssectlib",
+          "simaelm-r-shellgeneral",
+          "simaelm-c-beamelem"
+        ],
+        "covered_requirement_ids": [],
+        "complete_hit": false,
+        "requirement_recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 432.15950002195314
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-r-shellgeneral",
+          "simaelm-c-shellelem",
+          "simaelm-r-cohesiveaxi",
+          "simaelm-c-shellsectionbehavior",
+          "simaelm-r-cohesive2d"
+        ],
+        "covered_requirement_ids": [
+          "s4r-transverse-shear-finite-membrane"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 312.991900020279
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-r-shellgeneral",
+          "simaelm-c-shellsectionbehavior",
+          "simaelm-c-shellelem",
+          "simaelm-r-cohesive3d",
+          "simaelm-r-cohesiveaxi"
+        ],
+        "covered_requirement_ids": [
+          "s4r-transverse-shear-finite-membrane"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.3333333333333333,
+        "elapsed_ms": 745.2141000539996
+      },
+      "fusion_elapsed_ms": 0.062700011767447
+    },
+    {
+      "case_id": "heldout-identifier-t3d2",
+      "stratum": "identifier_context",
+      "query": "Is T3D2 suitable for a pin-jointed member that should transmit axial force but no bending moment?",
+      "requirement_ids": [
+        "t3d2-axial-only-truss"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-r-framelibrary",
+          "simaelm-r-elbowlibrary",
+          "simaelm-c-usingframesection",
+          "simaout-c-std-wholeelementvariables",
+          "simaelm-c-frame"
+        ],
+        "covered_requirement_ids": [],
+        "complete_hit": false,
+        "requirement_recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 397.39339996594936
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-r-rigidlibrary",
+          "simakey-r-m2",
+          "simaelm-r-elbowlibrary",
+          "simaitn-r-axirslibrary",
+          "simaelm-r-beamlibrary"
+        ],
+        "covered_requirement_ids": [],
+        "complete_hit": false,
+        "requirement_recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 299.31570001645014
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-r-elbowlibrary",
+          "simaelm-r-beamlibrary",
+          "simaelm-c-truss",
+          "simakey-r-m2",
+          "simakey-r-axial"
+        ],
+        "covered_requirement_ids": [],
+        "complete_hit": false,
+        "requirement_recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 696.7769999755546
+      },
+      "fusion_elapsed_ms": 0.0678999931551516
+    },
+    {
+      "case_id": "heldout-identifier-coh3d8",
+      "stratum": "identifier_context",
+      "query": "How does COH3D8 represent a three-dimensional cohesive layer governed by traction-separation behavior?",
+      "requirement_ids": [
+        "coh3d8-traction-separation-layer"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-r-cohesive3d",
+          "simaelm-c-cohesivebehavior",
+          "simaelm-r-cohesive2d",
+          "simaanl-c-enrichment-xfem-based-cohesive-behavior",
+          "simaelm-c-cohesiveoverview"
+        ],
+        "covered_requirement_ids": [
+          "coh3d8-traction-separation-layer"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 230.3793999599293
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-c-cohesivebehavior",
+          "simaelm-c-cohesiveoverview",
+          "simaelm-r-cohesive3d",
+          "simaelm-c-cohesiveinit",
+          "simaelm-r-cohesive2d"
+        ],
+        "covered_requirement_ids": [
+          "coh3d8-traction-separation-layer"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.3333333333333333,
+        "elapsed_ms": 1072.0544999931008
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-c-cohesivebehavior",
+          "simaelm-r-cohesive3d",
+          "simaelm-c-cohesiveoverview",
+          "simaelm-r-cohesive2d",
+          "simaelm-c-cohesiveinit"
+        ],
+        "covered_requirement_ids": [
+          "coh3d8-traction-separation-layer"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 1302.4958999594674
+      },
+      "fusion_elapsed_ms": 0.062000006437301636
+    },
+    {
+      "case_id": "heldout-identifier-m3d4r",
+      "stratum": "identifier_context",
+      "query": "When is M3D4R appropriate for a membrane that carries in-plane force but should have no bending stiffness?",
+      "requirement_ids": [
+        "m3d4r-in-plane-no-bending"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-c-membrane",
+          "simaelm-c-surface",
+          "simaelm-c-shellelem",
+          "simaelm-c-solidcont",
+          "simaelm-c-usingshellgensect"
+        ],
+        "covered_requirement_ids": [
+          "m3d4r-in-plane-no-bending"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 605.7956000440754
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-r-aximembranelibrary",
+          "simaelm-c-membrane",
+          "simaelm-r-cylmembranelibrary",
+          "simaelm-r-membranelibrary",
+          "simaelm-c-sectioncontrol"
+        ],
+        "covered_requirement_ids": [
+          "m3d4r-in-plane-no-bending"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 322.41760002216324
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-c-membrane",
+          "simaelm-c-usingshellgensect",
+          "simaelm-c-shellelem",
+          "simakey-r-shellgeneralsection",
+          "simaelm-r-shellaxiasymm"
+        ],
+        "covered_requirement_ids": [
+          "m3d4r-in-plane-no-bending"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 928.2895000651479
+      },
+      "fusion_elapsed_ms": 0.076299998909235
+    },
+    {
+      "case_id": "heldout-identifier-cin3d8",
+      "stratum": "identifier_context",
+      "query": "When should CIN3D8 be placed at the exterior boundary of an unbounded three-dimensional domain?",
+      "requirement_ids": [
+        "cin3d8-element-identity",
+        "infinite-element-boundary-application"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaprc-c-acoustic",
+          "simaanl-c-axiresulttransfer",
+          "simaanl-c-eulerianboundary",
+          "simamod-c-rigidoverview",
+          "simaelm-c-infinite"
+        ],
+        "covered_requirement_ids": [
+          "infinite-element-boundary-application"
+        ],
+        "complete_hit": false,
+        "requirement_recall": 0.5,
+        "reciprocal_rank": 0.2,
+        "elapsed_ms": 565.7262000022456
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-axiresulttransfer",
+          "simaelm-r-3delem",
+          "simaelm-r-infinitelib",
+          "simaanl-c-aleeulertechniques",
+          "simaanl-c-aledomains"
+        ],
+        "covered_requirement_ids": [
+          "cin3d8-element-identity"
+        ],
+        "complete_hit": false,
+        "requirement_recall": 0.5,
+        "reciprocal_rank": 0.3333333333333333,
+        "elapsed_ms": 386.7997999768704
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-axiresulttransfer",
+          "simaprc-c-acoustic",
+          "simaanl-c-eulerianboundary",
+          "simaanl-c-aledomains",
+          "simaelm-c-infinite"
+        ],
+        "covered_requirement_ids": [
+          "infinite-element-boundary-application"
+        ],
+        "complete_hit": false,
+        "requirement_recall": 0.5,
+        "reciprocal_rank": 0.2,
+        "elapsed_ms": 952.5961999897845
+      },
+      "fusion_elapsed_ms": 0.07020001066848636
+    },
+    {
+      "case_id": "heldout-identifier-pretension-section",
+      "stratum": "identifier_context",
+      "query": "How is *PRE-TENSION SECTION used to define the cut through which a bolt preload is applied?",
+      "requirement_ids": [
+        "pretension-section-cut-definition"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simakey-r-pre-tensionsection",
+          "simaprc-c-pretension",
+          "simakey-c-std-prodidx",
+          "simakey-c-cae-prodidx",
+          "simaout-c-printfile"
+        ],
+        "covered_requirement_ids": [
+          "pretension-section-cut-definition"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 820.709399995394
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaprc-c-pretension",
+          "simakey-r-pre-tensionsection",
+          "simaitn-c-contactclearanceoverclosure",
+          "simakey-r-clearance",
+          "simaelm-c-connectorbehavior"
+        ],
+        "covered_requirement_ids": [
+          "pretension-section-cut-definition"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 395.4481999971904
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simakey-r-pre-tensionsection",
+          "simaprc-c-pretension",
+          "simaitn-c-contactclearanceoverclosure",
+          "simakey-r-clearance",
+          "simaitn-c-expadjustsurfaces"
+        ],
+        "covered_requirement_ids": [
+          "pretension-section-cut-definition"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 1216.2297999602742
+      },
+      "fusion_elapsed_ms": 0.07219996768981218
+    },
+    {
+      "case_id": "heldout-identifier-connector-section",
+      "stratum": "identifier_context",
+      "query": "What behavior is assigned with *CONNECTOR SECTION when translational and rotational connector components are needed?",
+      "requirement_ids": [
+        "connector-section-translational-rotational-components"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaelm-c-connectiontypecomponents",
+          "simakey-r-connectorsection",
+          "simaelm-c-connectorelem",
+          "simaelm-c-connectorbehavior",
+          "simaanl-c-superelementdef"
+        ],
+        "covered_requirement_ids": [
+          "connector-section-translational-rotational-components"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 556.4409000216983
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simakey-r-connectorsection",
+          "simaelm-c-connectiontypecomponents",
+          "simaelm-c-connectorelem",
+          "simaelm-c-connderivedandpotential",
+          "simaelm-c-connectoroverview"
+        ],
+        "covered_requirement_ids": [
+          "connector-section-translational-rotational-components"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 330.93679999001324
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaelm-c-connectiontypecomponents",
+          "simakey-r-connectorsection",
+          "simaelm-c-connectorelem",
+          "simaelm-c-connectorbehavior",
+          "simaelm-c-connderivedandpotential"
+        ],
+        "covered_requirement_ids": [
+          "connector-section-translational-rotational-components"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 887.4412000295706
+      },
+      "fusion_elapsed_ms": 0.06350001785904169
+    },
+    {
+      "case_id": "heldout-identifier-equation",
+      "stratum": "identifier_context",
+      "query": "How does *EQUATION impose a linear relationship among degrees of freedom at several nodes?",
+      "requirement_ids": [
+        "equation-linear-multipoint-constraint"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simacst-c-coupling",
+          "simacst-c-equation",
+          "simaanl-c-superelements",
+          "simakey-r-equation",
+          "simaelm-c-usingshellsection"
+        ],
+        "covered_requirement_ids": [
+          "equation-linear-multipoint-constraint"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.25,
+        "elapsed_ms": 310.1592999882996
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaelm-c-userelem",
+          "simamod-c-conventions",
+          "simacst-c-equation",
+          "simaanl-c-superelements",
+          "simakey-r-equation"
+        ],
+        "covered_requirement_ids": [
+          "equation-linear-multipoint-constraint"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.2,
+        "elapsed_ms": 316.2550000124611
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simacst-c-equation",
+          "simacst-c-coupling",
+          "simaelm-c-userelem",
+          "simaanl-c-superelements",
+          "simakey-r-equation"
+        ],
+        "covered_requirement_ids": [
+          "equation-linear-multipoint-constraint"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.2,
+        "elapsed_ms": 626.4978999970481
+      },
+      "fusion_elapsed_ms": 0.08359999628737569
+    },
+    {
+      "case_id": "heldout-identifier-substructure-generate",
+      "stratum": "identifier_context",
+      "query": "What does *SUBSTRUCTURE GENERATE retain when creating a reusable reduced-order substructure?",
+      "requirement_ids": [
+        "substructure-generation-retained-content"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simakey-r-substructuregenerate",
+          "simaanl-c-superelementdef",
+          "simakey-c-std-prodidx",
+          "simakey-r-substructurematrixoutput",
+          "simakey-r-substructurechange"
+        ],
+        "covered_requirement_ids": [
+          "substructure-generation-retained-content"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 155.5542999994941
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-superelements",
+          "simakey-r-substructureproperty",
+          "simaanl-c-superelementdef",
+          "simakey-r-retainednodaldofs",
+          "simakey-r-substructuregenerate"
+        ],
+        "covered_requirement_ids": [
+          "substructure-generation-retained-content"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.3333333333333333,
+        "elapsed_ms": 933.1603000173345
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-superelementdef",
+          "simakey-r-substructuregenerate",
+          "simakey-r-substructureproperty",
+          "simaanl-c-superelements",
+          "simakey-r-substructurechange"
+        ],
+        "covered_requirement_ids": [
+          "substructure-generation-retained-content"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 1088.7788999825716
+      },
+      "fusion_elapsed_ms": 0.06429996574297547
+    },
+    {
+      "case_id": "heldout-identifier-imperfection",
+      "stratum": "identifier_context",
+      "query": "How can *IMPERFECTION introduce a scaled buckling mode into the geometry before a nonlinear collapse analysis?",
+      "requirement_ids": [
+        "imperfection-scaled-buckling-mode"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-imperfection",
+          "simaanl-c-eigenbuckling",
+          "simaanl-c-postbuckling",
+          "simakey-r-imperfection",
+          "simaanl-c-static"
+        ],
+        "covered_requirement_ids": [
+          "imperfection-scaled-buckling-mode"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.25,
+        "elapsed_ms": 369.3232000223361
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-imperfection",
+          "simaanl-c-postbuckling",
+          "simaanl-c-eigenbuckling",
+          "simaprc-c-boundary",
+          "simaanl-c-linearnonlinear"
+        ],
+        "covered_requirement_ids": [],
+        "complete_hit": false,
+        "requirement_recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 307.19759996281937
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-imperfection",
+          "simaanl-c-eigenbuckling",
+          "simaanl-c-postbuckling",
+          "simakey-r-imperfection",
+          "simaanl-c-inertiarelief"
+        ],
+        "covered_requirement_ids": [
+          "imperfection-scaled-buckling-mode"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.25,
+        "elapsed_ms": 676.6067999997176
+      },
+      "fusion_elapsed_ms": 0.08600001456215978
+    },
+    {
+      "case_id": "heldout-identifier-cyclic-symmetry-model",
+      "stratum": "identifier_context",
+      "query": "How does *CYCLIC SYMMETRY MODEL define the two faces of a repeated sector?",
+      "requirement_ids": [
+        "cyclic-symmetry-model-faces-and-axis"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simacst-c-tiedconstraint",
+          "simakey-r-cyclic",
+          "simakey-r-cyclicsymmetrymodel",
+          "simaanl-c-cyclicsymmetry",
+          "simakey-c-std-prodidx"
+        ],
+        "covered_requirement_ids": [
+          "cyclic-symmetry-model-faces-and-axis"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.25,
+        "elapsed_ms": 440.251599997282
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-cyclicsymmetry",
+          "simakey-r-cyclicsymmetrymodel",
+          "simakey-r-symmetricmodelgeneration",
+          "simaanl-c-aximodelgen",
+          "simacst-c-tiedconstraint"
+        ],
+        "covered_requirement_ids": [
+          "cyclic-symmetry-model-faces-and-axis"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 617.482400033623
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-cyclicsymmetry",
+          "simakey-r-cyclicsymmetrymodel",
+          "simacst-c-tiedconstraint",
+          "simakey-r-cyclic",
+          "simaanl-c-aximodelgen"
+        ],
+        "covered_requirement_ids": [
+          "cyclic-symmetry-model-faces-and-axis"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 1057.802300027106
+      },
+      "fusion_elapsed_ms": 0.06829999620094895
+    },
+    {
+      "case_id": "heldout-multidoc-sequential-thermal-stress",
+      "stratum": "multi_document",
+      "query": "How should I run a transient heat-transfer analysis and then use its temperature history to calculate thermal expansion and stress in a structural model?",
+      "requirement_ids": [
+        "transient-heat-transfer-procedure",
+        "temperature-history-transfer-and-thermal-strain"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-submodeldisp",
+          "simaanl-c-coupthermalelecstruct",
+          "simaanl-c-over",
+          "simaanl-c-heatproc",
+          "simamat-c-specificheat"
+        ],
+        "covered_requirement_ids": [],
+        "complete_hit": false,
+        "requirement_recall": 0.0,
+        "reciprocal_rank": 0.0,
+        "elapsed_ms": 676.0185000021011
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-couptempdisp",
+          "simaanl-c-thermstressanal",
+          "simaanl-c-heatproc",
+          "simaanl-c-heattransfer",
+          "simakey-r-coupledtemperature-displacement"
+        ],
+        "covered_requirement_ids": [
+          "transient-heat-transfer-procedure",
+          "temperature-history-transfer-and-thermal-strain"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 298.4027999918908
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-heatproc",
+          "simaanl-c-coupthermalelecstruct",
+          "simaanl-c-thermstressanal",
+          "simaanl-c-couptempdisp",
+          "simaanl-c-submodeldisp"
+        ],
+        "covered_requirement_ids": [
+          "temperature-history-transfer-and-thermal-strain"
+        ],
+        "complete_hit": false,
+        "requirement_recall": 0.5,
+        "reciprocal_rank": 0.3333333333333333,
+        "elapsed_ms": 974.4893999886699
+      },
+      "fusion_elapsed_ms": 0.06809999467805028
+    },
+    {
+      "case_id": "heldout-multidoc-xfem-crack-growth",
+      "stratum": "multi_document",
+      "query": "How do I model a crack that initiates and propagates along an unknown path with XFEM, including the fracture criterion and results needed to track growth?",
+      "requirement_ids": [
+        "xfem-enrichment-for-solution-dependent-path",
+        "xfem-fracture-initiation-and-evolution",
+        "xfem-crack-growth-observables"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simamat-c-fatigue-crack-growth-law",
+          "simaanl-c-fatiguecrackgrowth",
+          "simaanl-c-enrichment",
+          "simaanl-m-UsingXFEM-sb",
+          "simaanl-c-directcyclicfatigue"
+        ],
+        "covered_requirement_ids": [
+          "xfem-enrichment-for-solution-dependent-path",
+          "xfem-crack-growth-observables"
+        ],
+        "complete_hit": false,
+        "requirement_recall": 0.6666666666666666,
+        "reciprocal_rank": 0.3333333333333333,
+        "elapsed_ms": 715.2436999604106
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-enrichment",
+          "simaanl-c-enrichment-xfem-based-lefm",
+          "simaanl-m-UsingXFEM-sb",
+          "simaanl-c-contintegral",
+          "simaanl-c-fractureproc"
+        ],
+        "covered_requirement_ids": [
+          "xfem-enrichment-for-solution-dependent-path",
+          "xfem-crack-growth-observables"
+        ],
+        "complete_hit": false,
+        "requirement_recall": 0.6666666666666666,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 952.2501000319608
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-enrichment",
+          "simaanl-m-UsingXFEM-sb",
+          "simaanl-c-enrichment-xfem-based-lefm",
+          "simamat-c-fatigue-crack-growth-law",
+          "simaanl-c-fractureproc"
+        ],
+        "covered_requirement_ids": [
+          "xfem-enrichment-for-solution-dependent-path",
+          "xfem-crack-growth-observables"
+        ],
+        "complete_hit": false,
+        "requirement_recall": 0.6666666666666666,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 1667.5569999497384
+      },
+      "fusion_elapsed_ms": 0.06319995736703277
+    },
+    {
+      "case_id": "heldout-multidoc-fluid-cavity-inflation",
+      "stratum": "multi_document",
+      "query": "How do I represent a sealed gas-filled cavity whose pressure changes as its deformable enclosing surface expands?",
+      "requirement_ids": [
+        "closed-deformable-surface-cavity-coupling",
+        "pneumatic-fluid-cavity-properties",
+        "fluid-cavity-pressure-volume-history"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-fluidcavities",
+          "simaanl-c-surfacebasedcavityover",
+          "simaanl-c-fluidcavityexchange",
+          "simaprc-c-initialcond-t-SpecifyingTheTypeOfInitialConditionBeingDefined-sma-topic1",
+          "simaanl-c-lkmanalysis"
+        ],
+        "covered_requirement_ids": [
+          "closed-deformable-surface-cavity-coupling",
+          "pneumatic-fluid-cavity-properties",
+          "fluid-cavity-pressure-volume-history"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 235.0579000194557
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-surfacebasedcavityover",
+          "simaanl-c-fluidcavities",
+          "simaprc-c-pressurepenetration",
+          "simaelm-c-gasketbehavior",
+          "simaanl-c-fluidcavityexchange"
+        ],
+        "covered_requirement_ids": [
+          "closed-deformable-surface-cavity-coupling",
+          "pneumatic-fluid-cavity-properties",
+          "fluid-cavity-pressure-volume-history"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 637.9916000296362
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-fluidcavities",
+          "simaanl-c-surfacebasedcavityover",
+          "simaanl-c-fluidcavityexchange",
+          "simaprc-c-pressurepenetration",
+          "simamat-c-eos"
+        ],
+        "covered_requirement_ids": [
+          "closed-deformable-surface-cavity-coupling",
+          "pneumatic-fluid-cavity-properties",
+          "fluid-cavity-pressure-volume-history"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 873.1609000242315
+      },
+      "fusion_elapsed_ms": 0.11139997513964772
+    },
+    {
+      "case_id": "heldout-multidoc-frequency-random-response",
+      "stratum": "multi_document",
+      "query": "How should *FREQUENCY and *RANDOM RESPONSE be combined to predict vibration caused by a prescribed power spectral density?",
+      "requirement_ids": [
+        "frequency-step-modal-basis",
+        "random-response-step-and-psd-loading"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-randomresponse",
+          "simakey-r-psd-definition",
+          "simaanl-c-dynamicproc",
+          "simakey-r-randomresponse",
+          "simaanl-c-steadystdynsubspace"
+        ],
+        "covered_requirement_ids": [
+          "random-response-step-and-psd-loading"
+        ],
+        "complete_hit": false,
+        "requirement_recall": 0.5,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 492.87179997190833
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-dynamicproc",
+          "simaanl-c-randomresponse",
+          "simaanl-c-responsespectrum",
+          "simakey-r-psd-definition",
+          "simaanl-c-freqextraction"
+        ],
+        "covered_requirement_ids": [
+          "frequency-step-modal-basis",
+          "random-response-step-and-psd-loading"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 635.6215000269003
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-randomresponse",
+          "simaanl-c-dynamicproc",
+          "simakey-r-psd-definition",
+          "simakey-r-randomresponse",
+          "simaanl-c-steadystdynsubspace"
+        ],
+        "covered_requirement_ids": [
+          "random-response-step-and-psd-loading"
+        ],
+        "complete_hit": false,
+        "requirement_recall": 0.5,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 1128.5557000082918
+      },
+      "fusion_elapsed_ms": 0.062400009483098984
+    },
+    {
+      "case_id": "heldout-multidoc-geostatic-consolidation",
+      "stratum": "multi_document",
+      "query": "How should a geostatic stress-initialization step be followed by a *SOILS consolidation step so the model starts in equilibrium before transient pore-fluid diffusion?",
+      "requirement_ids": [
+        "geostatic-initial-equilibrium",
+        "subsequent-soils-consolidation"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-coupdiffstress",
+          "simaanl-c-geostatstress",
+          "simaprc-c-initialcond-t-SpecifyingTheTypeOfInitialConditionBeingDefined-sma-topic1",
+          "simaanl-c-enrichment-slurry-flow",
+          "simaelm-c-cohesiveslurrytransport"
+        ],
+        "covered_requirement_ids": [
+          "geostatic-initial-equilibrium"
+        ],
+        "complete_hit": false,
+        "requirement_recall": 0.5,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 576.8858999945223
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-geostatstress",
+          "simaanl-c-coupdiffstress",
+          "simaprc-c-initialcond-t-SpecifyingTheTypeOfInitialConditionBeingDefined-sma-topic1",
+          "simaelm-c-infinite",
+          "simaprc-c-porousflow"
+        ],
+        "covered_requirement_ids": [
+          "geostatic-initial-equilibrium"
+        ],
+        "complete_hit": false,
+        "requirement_recall": 0.5,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 628.2862999942154
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-coupdiffstress",
+          "simaanl-c-geostatstress",
+          "simaprc-c-initialcond-t-SpecifyingTheTypeOfInitialConditionBeingDefined-sma-topic1",
+          "simaprc-c-porousflow",
+          "simakey-r-soils"
+        ],
+        "covered_requirement_ids": [
+          "geostatic-initial-equilibrium",
+          "subsequent-soils-consolidation"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 0.5,
+        "elapsed_ms": 1205.2303000236861
+      },
+      "fusion_elapsed_ms": 0.058100034948438406
+    },
+    {
+      "case_id": "heldout-multidoc-import-explicit-standard",
+      "stratum": "multi_document",
+      "query": "How can *IMPORT transfer the deformed state from an Abaqus/Explicit forming analysis into a subsequent Abaqus/Standard springback analysis?",
+      "requirement_ids": [
+        "saved-explicit-state-and-model-transfer",
+        "explicit-to-standard-springback-procedure",
+        "import-state-selection-contract"
+      ],
+      "bm25": {
+        "retrieved_document_ids": [
+          "simaanl-c-transferoverview",
+          "simaanl-c-exptostd",
+          "simakey-r-import",
+          "simakey-r-importsurface",
+          "simakey-r-importelset"
+        ],
+        "covered_requirement_ids": [
+          "saved-explicit-state-and-model-transfer",
+          "explicit-to-standard-springback-procedure",
+          "import-state-selection-contract"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 596.9232000061311
+      },
+      "dense": {
+        "retrieved_document_ids": [
+          "simaanl-c-transferoverview",
+          "simaanl-c-exptostd",
+          "simaanl-c-stdtostd",
+          "simaanl-c-exptoexp",
+          "simamod-c-partassy"
+        ],
+        "covered_requirement_ids": [
+          "saved-explicit-state-and-model-transfer",
+          "explicit-to-standard-springback-procedure"
+        ],
+        "complete_hit": false,
+        "requirement_recall": 0.6666666666666666,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 933.2271000021137
+      },
+      "hybrid": {
+        "retrieved_document_ids": [
+          "simaanl-c-transferoverview",
+          "simaanl-c-exptostd",
+          "simakey-r-import",
+          "simaanl-c-stdtostd",
+          "simakey-r-importsurface"
+        ],
+        "covered_requirement_ids": [
+          "saved-explicit-state-and-model-transfer",
+          "explicit-to-standard-springback-procedure",
+          "import-state-selection-contract"
+        ],
+        "complete_hit": true,
+        "requirement_recall": 1.0,
+        "reciprocal_rank": 1.0,
+        "elapsed_ms": 1530.2093999926
+      },
+      "fusion_elapsed_ms": 0.05909998435527086
+    }
+  ]
+}

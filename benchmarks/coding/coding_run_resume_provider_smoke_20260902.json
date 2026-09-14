@@ -1,0 +1,60 @@
+{
+  "schema_version": "coding-run-resume-provider-smoke-v1",
+  "recorded_at": "2026-09-02",
+  "purpose": "Validate that a real provider can continue a persisted CodingRun after a deterministic infrastructure interruption without manual workspace edits.",
+  "scope": {
+    "provider": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "http_retries": 10,
+    "verification_scope": "execution_evidence",
+    "licensed_abaqus_used": false
+  },
+  "fault_injection": {
+    "first_turn_model": "pydantic_ai.models.function.FunctionModel",
+    "completed_tool": "write_file(resume_probe.py)",
+    "failure": "ConnectionError after the completed file tool and before the next model response",
+    "interrupted_status": "interrupted",
+    "interrupted_turn": 1,
+    "interrupted_model_requests": 1,
+    "manual_workspace_edits": false
+  },
+  "resume": {
+    "entrypoint": "abaqus-sim-agent --resume <state_dir>",
+    "conversation_id": "resume-provider-smoke-v1",
+    "turn_run_ids": [
+      "resume-provider-smoke-v1-turn-1",
+      "resume-provider-smoke-v1-turn-2"
+    ],
+    "event_sequence": [
+      "infrastructure_error",
+      "run_resumed",
+      "agent_decision",
+      "verification"
+    ],
+    "final_status": "completed"
+  },
+  "result": {
+    "model_requests": 3,
+    "input_tokens": 9293,
+    "output_tokens": 397,
+    "tool_calls": 3,
+    "abaqus_calls": 0,
+    "solver_calls": 0,
+    "active_wall_time_seconds": 6.954512300028,
+    "artifact": {
+      "relative_path": "resume_probe.py",
+      "size_bytes": 18,
+      "sha256": "016d1b20225b6acbf000e0bf0166bf095db3aefefc8348ce38b33032e1184e4a",
+      "fresh": true
+    }
+  },
+  "state_sha256": {
+    "request.json": "61e1528ae9e8172dd5faca49c1b2d0448c07267b3a504f552e4b35ed8bfdda97",
+    "launch.json": "2912f9288485d403e46e3dbfaa4e68c99dd29357252d09e038423fc3b238927a",
+    "history.json": "34e4ea894bd97b8515ed39757abd691faed7854b6832a762f0926b02bbcfe12e",
+    "resume_state.json": "7d695c16f5bbd093084035481041bf1bd8713652d58a1e62043c13d29413a992",
+    "outcome.json": "d2d7d0263698556decac14092ac089e0843adb3668851bd17a34f33e8ff7d88d",
+    "events.jsonl": "d36477159939b93b32177c4d415bbef9ebdb1dec9c2667a19dfc6e1d4a144c2f"
+  },
+  "claim_boundary": "This proves real-provider continuation for one plain-Python file task after deterministic interruption. It does not prove a naturally occurring gateway failure, licensed Abaqus continuation, external Job reconciliation, or exactly-once execution."
+}

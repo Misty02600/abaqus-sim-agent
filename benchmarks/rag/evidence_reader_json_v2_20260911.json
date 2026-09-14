@@ -1,0 +1,172 @@
+{
+  "date": "2026-09-11",
+  "profile": "evidence-reader-json-v2",
+  "status": "offline_interface_fix_verified",
+  "scope": "Independent v2 evidence readers only; preserve v1 code/results and product defaults.",
+  "changes": [
+    "Use Pydantic AI PromptedOutput with required JSON-object profile; no output/function tools or tool-choice override, zero output retries and one model-request limit.",
+    "Validate quotes and follow-up input anchors before returning typed output; preserve original product, source release and context.",
+    "Allow insufficient answers to include cited background claims, without relabeling them as answered or partial.",
+    "Add nonblocking limitations separate from unresolved material questions; answered plus unresolved remains rejected. No status auto-repair."
+  ],
+  "verification": {
+    "new_tests_passed": 30,
+    "full_pytest_passed": 923,
+    "licensed_tests_skipped": 27,
+    "full_pytest_seconds": 59.14,
+    "basedpyright_errors": 0,
+    "basedpyright_warnings": 0,
+    "offline_replay_expected_matches": 9,
+    "offline_replay_accepted": 7,
+    "offline_replay_rejected": 2,
+    "real_model_requests": 0,
+    "new_retrievals": 0,
+    "abaqus_calls": 0
+  },
+  "replay": {
+    "profile": "evidence-reader-json-v2",
+    "manifest_sha256": "c1480221c7d88b03db15f449e5741f9386681aa1f04984cfe5778d561570e640",
+    "network_calls": 0,
+    "real_model_requests": 0,
+    "retrieval_calls": 0,
+    "expected_results_matched": 9,
+    "rows": [
+      {
+        "trial": "c01-gap",
+        "source_kind": "original_text_unchanged",
+        "source_response_sha256": "7e74c0668b57be634e03da369beb9f61b1163aa6dacef14a992a560538596d10",
+        "expected_accepted": true,
+        "accepted_by_new_interface": true,
+        "output_status": "follow_up",
+        "error": null,
+        "mock_requests": 1,
+        "new_retrievals": 0,
+        "old_result_rewritten": false
+      },
+      {
+        "trial": "c03-gap",
+        "source_kind": "original_text_unchanged",
+        "source_response_sha256": "80e642d10bdbf016312547bac5af2dabe7bbf321a5f471a4b310fbd175034146",
+        "expected_accepted": true,
+        "accepted_by_new_interface": true,
+        "output_status": "sufficient",
+        "error": null,
+        "mock_requests": 1,
+        "new_retrievals": 0,
+        "old_result_rewritten": false
+      },
+      {
+        "trial": "c04-gap",
+        "source_kind": "original_text_unchanged",
+        "source_response_sha256": "c6b7a0f419cd29feabfb78931f6ea253e81bf1f3d601686e0a488fa227ec3909",
+        "expected_accepted": true,
+        "accepted_by_new_interface": true,
+        "output_status": "sufficient",
+        "error": null,
+        "mock_requests": 1,
+        "new_retrievals": 0,
+        "old_result_rewritten": false
+      },
+      {
+        "trial": "c05-gap",
+        "source_kind": "original_text_unchanged",
+        "source_response_sha256": "c589bcb9bf120ce459321e1cc2135bf64d715bc402d7c81617192d8165d8135a",
+        "expected_accepted": true,
+        "accepted_by_new_interface": true,
+        "output_status": "sufficient",
+        "error": null,
+        "mock_requests": 1,
+        "new_retrievals": 0,
+        "old_result_rewritten": false
+      },
+      {
+        "trial": "c06-baseline",
+        "source_kind": "tool_arguments_as_text",
+        "source_response_sha256": "8e6f896ac406bf43cfb4c8b59b1595b67b4c3c00675e03ee8b0f8894bc46a5f2",
+        "expected_accepted": true,
+        "accepted_by_new_interface": true,
+        "output_status": "insufficient",
+        "error": null,
+        "mock_requests": 1,
+        "new_retrievals": 0,
+        "old_result_rewritten": false
+      },
+      {
+        "trial": "c06-answer",
+        "source_kind": "tool_arguments_as_text",
+        "source_response_sha256": "8145c416f88168e20f84d1da53937a835c71f64840447e03bb163004fbe9b343",
+        "expected_accepted": true,
+        "accepted_by_new_interface": true,
+        "output_status": "insufficient",
+        "error": null,
+        "mock_requests": 1,
+        "new_retrievals": 0,
+        "old_result_rewritten": false
+      },
+      {
+        "trial": "c02-baseline",
+        "source_kind": "tool_arguments_as_text",
+        "source_response_sha256": "9bff11db05f66e8c86d3d8130a8ac8ea643cd2d0c44414845a15bc748ec9069e",
+        "expected_accepted": true,
+        "accepted_by_new_interface": true,
+        "output_status": "answered",
+        "error": null,
+        "mock_requests": 1,
+        "new_retrievals": 0,
+        "old_result_rewritten": false
+      },
+      {
+        "trial": "c04-baseline",
+        "source_kind": "tool_arguments_as_text",
+        "source_response_sha256": "a25e8076dfa6e887ac5c2e0ca7bf729ec154a927495676d96f0aa0ca5bf62ed5",
+        "expected_accepted": false,
+        "accepted_by_new_interface": false,
+        "output_status": null,
+        "error": {
+          "type": "UnexpectedModelBehavior",
+          "message": "Exceeded maximum output retries (0)"
+        },
+        "mock_requests": 1,
+        "new_retrievals": 0,
+        "old_result_rewritten": false
+      },
+      {
+        "trial": "c05-baseline",
+        "source_kind": "tool_arguments_as_text",
+        "source_response_sha256": "ceafff8d32857603749c5dea0da006333c00544a93751a9caa02ebb546255078",
+        "expected_accepted": false,
+        "accepted_by_new_interface": false,
+        "output_status": null,
+        "error": {
+          "type": "UnexpectedModelBehavior",
+          "message": "Exceeded maximum output retries (0)"
+        },
+        "mock_requests": 1,
+        "new_retrievals": 0,
+        "old_result_rewritten": false
+      }
+    ],
+    "limits": "The two known false-sufficient gap outputs also pass the same structural/quote checks. No improvement in semantic sufficiency is claimed. Real Go/provider behavior under JSON mode has not been requalified by this local replay. V1 frozen files and all raw outcomes were revalidated unchanged."
+  },
+  "implementation_sha256": {
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\verify_evidence_reader_json_v2.py": "c3c94b266f785f712367f9fe334c57ad3a988e3a7c95ddab173700e47fbcc17c",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\src\\abaqus_sim_agent\\evaluation\\evidence_followup_v2.py": "1c7a3a5d93b65463dc1c8741ccea73ca061cc6de0908a7a111070727315f1fca",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\tests\\test_evidence_followup_v2.py": "148f79bced8ba32ce4bfd0dabc18ebd2a8dc869d144deb69f5c85e8f904cf6e4",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\uv.lock": "6d8af39f4e6dfe7535f5610c0b85ed3ef023bc1ab2965ad320bc6ccc9713ca82",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\evidence-followup-v1\\manifest.json": "0955a4848083f624bad100c969cd1537ee3c5f60f74e4af681985a97a611c40e",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\evidence-followup-v1\\batch_summary.json": "236691bd741fa8d370ceb1e2bda0bc447573e9ab58cca96dfc0c5eb809f65f90",
+    "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\benchmarks\\rag\\evidence_followup_v1_20260910.json": "4727dc5dda4e4e75dcb19e7936ca68ec4c4792bdb3bd1b8f22e65d6258d3109a"
+  },
+  "source_reference": {
+    "url": "https://pydantic.dev/docs/ai/core-concepts/output/#prompted-output",
+    "installed_pydantic_ai_slim": "2.33.0",
+    "application": "Official PromptedOutput injects a schema, requests JSON object format when supported, and leaves schema validation to the host. Installed implementation and Mock HTTP requests were checked; native JSON-schema enforcement is not claimed."
+  },
+  "remaining": [
+    "Real Go/provider behavior with this new JSON mode has not been requalified; no fresh model generation or formal A/B batch ran.",
+    "The two historical false-sufficient decisions still pass structural and exact-quote checks; semantic sufficiency is not fixed.",
+    "Missing execution-guide page, deferred math explanation and literal XML quote mismatch remain unchanged.",
+    "No v1 failure was resumed or backfilled; no RAG, CodingRun, Skill or product verifier default was changed."
+  ],
+  "artifact_note": "A preliminary local replay was preserved; the final verification driver binds loop callbacks explicitly and passes Ruff. Both runs used mock HTTP only."
+}

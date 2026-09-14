@@ -1,0 +1,10 @@
+{
+  "schema_version": "1",
+  "prompt_version": "plate-hole-change-v2",
+  "source_contract": "A completed and independently verified plate-tension-v4 CodingRun",
+  "agent_visible_seed_files": [
+    "build_model.py",
+    "extract_results.py"
+  ],
+  "goal": "当前工作区提供了一份已经在 Abaqus 2024 中完成物理验收的二维矩形板拉伸模型。请理解已有模型并只修改\nbuild_model.py，不要从空目录另写一个无关模型，也不要修改 extract_results.py。\n\n在现有完整板上增加一个圆形贯穿孔：外轮廓仍为 (0, 0) 到 (100, 20) mm，孔心为\n(50, 10) mm，孔半径为 3 mm；不得改成四分之一或二分之一对称模型。\n\n必须保留 mm-N-MPa 单位制、二维平面应力、厚度 1 mm、E=210000 MPa、泊松比 0.3、\nAbaqus/Standard、唯一 Static, General 分析步、NLGEOM=OFF、左边界 U1=0、左下角 U2=0、\n右边界 U1=0.1 mm，以及 U、S、RF 输出。不得增加压力、集中力、体力或其他机械载荷。\n\n原来的 20×4 结构化网格不再是保留项。最终网格必须只使用 CPS4R，孔边界至少由 24 条单元边离散，\n并在孔附近合理加密；partition、seed 方法和总单元数由你决定。\n\n保持现有文件和阶段合同：build_model.py 只能经 CAE noGUI 生成 plate_tension.cae 和\nplate_tension.inp，不得提交 Job；Solver 必须从 plate_tension.inp 启动 plate_tension；\nextract_results.py 必须经独立 abaqus python/odbAccess 读取 plate_tension.odb 并生成 results.json。\n\nresults.json 继续使用已有 extract_results.py 生成，只保留原有的 right_mean_u1、mean_s11、\nleft_sum_rf1。孔洞拓扑、孔边离散和应力集中由宿主的独立隐藏 oracle 从 ODB 验收，不要求、也不允许\n你在 extract_results.py 中实现这些验收。所有物理输入已经给全，不要请求澄清。只有新需求、原合同、\n运行产物和原结果提取都完成后才请求验证。"
+}

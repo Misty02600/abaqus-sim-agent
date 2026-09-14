@@ -1,0 +1,212 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-bar-tension-3d-final8-baseline",
+  "date": "2026-08-24",
+  "model": "opencode-go/deepseek-v4-flash",
+  "runtime": "Abaqus 2024",
+  "prompt_version": "bar-tension-3d-v1",
+  "historical_r2_configuration": {
+    "api_catalog_mode": "automatic_verified_only",
+    "catalog_card_count": 5481,
+    "catalog_cards_sha256": "b557c9cb79c2a593afbb0c6ed332c664001f880cc5667d465729252e3635fd5e",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "http_retries": 2,
+    "model_request_budget": 40,
+    "abaqus_call_budget": 12,
+    "solver_call_budget": 3,
+    "harness_windows_newline_hash_patch": "harness-0.24.0-windows-newline-hash-v1"
+  },
+  "diagnostic_run_before_shell_patch": {
+    "attempts": 3,
+    "passes": 1,
+    "gate_passed": false,
+    "failures": [
+      {
+        "attempt": 1,
+        "stage": "infrastructure",
+        "error": "AttributeError: module 'os' has no attribute 'killpg'",
+        "partial_result": "The Agent generated fresh bar_tension.cae and bar_tension.inp before Harness Shell timeout cleanup failed."
+      },
+      {
+        "attempt": 2,
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out",
+        "abaqus_calls": 0,
+        "workspace_files": 0
+      }
+    ],
+    "successful_attempt": {
+      "attempt": 3,
+      "run_id": "bar3d-83e667c39b23",
+      "model_requests": 27,
+      "input_tokens": 351794,
+      "output_tokens": 18626,
+      "tool_calls": 28,
+      "abaqus_calls": 10,
+      "solver_calls": 1,
+      "abaqus_runtime_seconds": 22.914271800022107,
+      "task_duration_seconds": 357.52969049999956,
+      "oracle_passed": true
+    }
+  },
+  "final_run_with_shell_patch": {
+    "harness_windows_shell_tree_patch": "harness-0.24.0-windows-shell-tree-v1",
+    "attempts": 3,
+    "passes": 1,
+    "gate_passed": false,
+    "transport_successful_attempts": 1,
+    "task_passes_given_transport": "1/1",
+    "stale_hash_conflicts": 0,
+    "killpg_failures": 0,
+    "generic_shell_calls": 0,
+    "failures": [
+      {
+        "attempt": 1,
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out",
+        "abaqus_calls": 0,
+        "workspace_files": 0
+      },
+      {
+        "attempt": 3,
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out",
+        "abaqus_calls": 0,
+        "workspace_files": 0
+      }
+    ],
+    "successful_attempt": {
+      "attempt": 2,
+      "run_id": "bar3d-eb3edb97508f",
+      "model_requests": 9,
+      "input_tokens": 77416,
+      "output_tokens": 13451,
+      "tool_calls": 12,
+      "abaqus_calls": 3,
+      "solver_calls": 1,
+      "abaqus_runtime_seconds": 18.440828299964778,
+      "task_duration_seconds": 236.96136400004616,
+      "oracle_passed": true,
+      "measurements": {
+        "element_type_counts": {
+          "C3D8R": 80
+        },
+        "node_count": 189,
+        "axis_spans": [
+          100.0,
+          10.0,
+          10.0
+        ],
+        "coordinate_layer_counts": [
+          21,
+          3,
+          3
+        ],
+        "right_mean_u1": 0.10000000149011612,
+        "mean_s11": 210.0,
+        "left_sum_rf1": -21000.0,
+        "y_face_mean_u2_delta": -0.003000000026077447,
+        "z_face_mean_u3_delta": -0.0030000000260830013
+      }
+    }
+  },
+  "current_r3_45m_product_run": {
+    "configuration": {
+      "http_retries": 3,
+      "wall_time_seconds": 2700.0,
+      "harness_windows_newline_hash_patch": "harness-0.24.0-windows-newline-hash-v1",
+      "harness_windows_shell_tree_patch": "harness-0.24.0-windows-shell-tree-v1"
+    },
+    "attempts": 3,
+    "passes": 2,
+    "gate_passed": true,
+    "transport_successful_attempts": 2,
+    "task_passes_given_transport": "2/2",
+    "failures": [
+      {
+        "attempt": 1,
+        "run_id": "bar3d-ad62d8197a57",
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out",
+        "abaqus_calls": 0,
+        "workspace_files": 0,
+        "unfinished_request_wait_seconds": 484.258,
+        "observed_result": "The additional fourth HTTP attempt did not recover this logical model request."
+      }
+    ],
+    "successful_attempts": [
+      {
+        "attempt": 2,
+        "run_id": "bar3d-6265a5c2ad7c",
+        "model_requests": 19,
+        "input_tokens": 203097,
+        "output_tokens": 14967,
+        "tool_calls": 20,
+        "abaqus_calls": 5,
+        "solver_calls": 1,
+        "abaqus_runtime_seconds": 19.528897899959702,
+        "task_duration_seconds": 435.21199430001434,
+        "oracle_passed": true,
+        "legitimate_concurrent_edit_conflicts": 1,
+        "repair_chain": [
+          "CAE authoring succeeded on the first call.",
+          "Solver succeeded on the first call.",
+          "ODB extraction failed on an invalid component keyword, then on a Sequence index, and succeeded on the third extraction call.",
+          "Two same-turn edits used the same expected hash; the first changed the file and the second was correctly rejected as a real optimistic-concurrency conflict."
+        ]
+      },
+      {
+        "attempt": 3,
+        "run_id": "bar3d-8a6f27f2443b",
+        "model_requests": 29,
+        "input_tokens": 448679,
+        "output_tokens": 23803,
+        "tool_calls": 32,
+        "abaqus_calls": 9,
+        "solver_calls": 2,
+        "abaqus_runtime_seconds": 36.45694939995883,
+        "task_duration_seconds": 257.9249898000271,
+        "oracle_passed": true,
+        "repair_chain": [
+          "Four CAE authoring calls failed before the fifth succeeded.",
+          "The first Solver call reported 80 elements with missing property definitions; diagnostics led to a section repair.",
+          "The repair CAE call (#6) and second Solver call succeeded, followed by one successful ODB extraction."
+        ]
+      }
+    ],
+    "successful_attempt_means": {
+      "model_requests": 24.0,
+      "input_tokens": 325888.0,
+      "output_tokens": 19385.0,
+      "tool_calls": 26.0,
+      "abaqus_calls": 7.0,
+      "solver_calls": 1.5,
+      "abaqus_runtime_seconds": 27.992923649959266,
+      "task_duration_seconds": 346.5684920500207
+    }
+  },
+  "interpretation": {
+    "product_gate_result": "The current r3/45m OpenCode Go configuration observed 2/3 and passed the required product smoke gate for this 3D Gold.",
+    "model_task_result": "Both attempts that reached the Agent task completed end-to-end and passed every hidden oracle check; task pass given transport was 2/2.",
+    "shell_patch_result": "A dedicated real Windows Shell timeout regression verifies the version-scoped taskkill process-tree patch. The final three Product-Agent attempts recorded the patch and no killpg error, but made zero generic Shell calls, so they did not re-exercise that cleanup path.",
+    "transport_result": "One of three r3 attempts still timed out before any file or Abaqus side effect. Increasing max_retries from 2 to 3 extended its terminal wait from roughly 362 seconds to 484 seconds but did not recover that request.",
+    "retry_policy": "No eval-level task retry was used. The r3/45m treatment ran once in a fresh root and was not repeated until it passed.",
+    "historical_comparison": "The r3/45m treatment reached the 2/3 gate while the immediately preceding r2/30m treatment observed 1/3. The runs are sequential, unseeded, and provider conditions changed. Neither successful r3 attempt demonstrably required the additional fourth HTTP attempt, and every r3 attempt finished far below 1800 seconds, so neither the extra retry nor the 45-minute ceiling can be credited causally.",
+    "baseline_status": "The current configuration is accepted for this single 3D Gold smoke, while transport remains only 2/3 and broader Baseline-v1 acceptance still requires the other task families."
+  },
+  "source_summaries": [
+    {
+      "path": "D:/abaqus-runs/bar3d-baseline-final8-20260824-v1/evaluation_summary.json",
+      "sha256": "89d27dd1ddbe7929b74c024dad53cf8aa6702fa4d8b70d3ebd33643224e32f1c"
+    },
+    {
+      "path": "D:/abaqus-runs/bar3d-baseline-final8-shellfix-20260824-v2/evaluation_summary.json",
+      "sha256": "0511374b62215d5bf716464664f61b7dfa41c1ed2bd821e008606449b90ecc58"
+    },
+    {
+      "path": "D:/abaqus-runs/bar3d-baseline-final8-go-r3-45m-20260824-v3/evaluation_summary.json",
+      "sha256": "42fed908cf3bf74daa7a7733b82eac9e830bda3973730637185f83a8868ed8ec"
+    }
+  ]
+}

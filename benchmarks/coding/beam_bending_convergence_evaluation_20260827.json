@@ -1,0 +1,274 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-b31-bending-convergence-and-contract-disclosure-v1",
+  "date": "2026-08-27",
+  "question": "Why did three correct B31 bending changes require 8/9/6 Abaqus calls, and can the same physical task converge at the three-stage minimum without adding a case template to the global Skill?",
+  "controlled_conditions": {
+    "verified_source_run_id": "beam-1f4ef88fd5dc",
+    "model": "opencode-go/deepseek-v4-flash",
+    "runtime": "Abaqus 2024",
+    "skill_sha256": "5dffe84954008bec534179a85d97d448a1ad9647716cd3f8f33c5f02528bf374",
+    "coder_general_shell_policy": "coder-general-shell-disabled-v1",
+    "api_catalog_mode": "off",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "model_request_budget": 36,
+    "abaqus_call_budget": 12,
+    "solver_call_budget": 3,
+    "repeat": 3,
+    "required_passes": 2,
+    "unchanged_acceptance_physics": "one +Y 1000 N tip load, U2=1.9190475940704346 mm, left RF2=-1000 N, left RM3=-100000 N*mm, maximum SM vector magnitude=97500 N*mm, plus source-model regressions"
+  },
+  "control_diagnosis": {
+    "arm": "implicit off control",
+    "prompt_version": "beam-bending-change-v1",
+    "request_path": "benchmarks/coding/beam_bending_change_request.json",
+    "request_sha256": "9913cdca4ac88ad41d756379829f9cdc33a74be358f92892d815a2d96585f99d",
+    "run_root": "D:/abaqus-runs/beam-bending-change-go-flash-off-20260827-v1",
+    "summary_sha256": "2ea05860530bbd81da545a4cc06d955473f58f9334dc0efdfdd1d5bc4f4031b3",
+    "gate_sha256": "b8a11330829855c2646f8fc98a64b2103f811ac26fe4aca4cecf4e6a395235bd",
+    "formal_result": "3/3",
+    "current_strict_replay_result": "3/3",
+    "aggregate": {
+      "model_requests": 74,
+      "input_tokens": 1272232,
+      "output_tokens": 52271,
+      "tool_calls": 92,
+      "abaqus_calls": 23,
+      "solver_calls": 3
+    },
+    "abaqus_calls_by_attempt": [
+      8,
+      9,
+      6
+    ],
+    "repeated_failures": [
+      "The first production extractor failed 3/3 because it looked for RM3 at a guessed position inside the three-component RF FieldOutput; the same unexecuted assumption would also mis-bind SM to SF.",
+      "The first diagnostic probe failed 3/3 because it sliced an Abaqus FieldValue sequence, which is indexable/iterable but not sliceable in the licensed runtime.",
+      "Vendor numeric or symbolic values caused JSON serialization failures in 2/3 traces.",
+      "One successful run spent one additional Abaqus Python call on a duplicate ODB cross-check even though independent acceptance belongs to the host verifier."
+    ],
+    "attempts": [
+      {
+        "run_id": "beam-bending-e831aa5568",
+        "abaqus_calls": 8,
+        "diagnostic_abaqus_python_calls": 4,
+        "first_production_extractor_succeeded": false
+      },
+      {
+        "run_id": "beam-bending-9ec3d478fe",
+        "abaqus_calls": 9,
+        "diagnostic_abaqus_python_calls": 4,
+        "first_production_extractor_succeeded": false
+      },
+      {
+        "run_id": "beam-bending-959b639f68",
+        "abaqus_calls": 6,
+        "diagnostic_abaqus_python_calls": 2,
+        "first_production_extractor_succeeded": false
+      }
+    ]
+  },
+  "treatments": [
+    {
+      "name": "production_first_odb_v1",
+      "prompt_version": "beam-bending-change-v1",
+      "change": "Add only generic production-first, componentLabels, no-slice, float-conversion, adoption, and host-handoff instructions; do not disclose the RF/RM or SF/SM ownership contract.",
+      "task_instructions_sha256": "9a9d496478069253b94200158d9388dbc1a93691fe09ab658187275a3a047fb4",
+      "run_root": "D:/abaqus-runs/beam-bending-change-go-flash-production-first-20260827-v1",
+      "summary_sha256": "82ce60b5b80b1f1bbd8371f7fede0a5939b695771ddebf6bb40117eb26d1276d",
+      "gate_sha256": "b8a11330829855c2646f8fc98a64b2103f811ac26fe4aca4cecf4e6a395235bd",
+      "formal_result": "3/3",
+      "current_strict_replay_result": "3/3",
+      "aggregate": {
+        "model_requests": 62,
+        "input_tokens": 847042,
+        "output_tokens": 44824,
+        "tool_calls": 73,
+        "abaqus_calls": 22,
+        "solver_calls": 3
+      },
+      "abaqus_calls_by_attempt": [
+        7,
+        7,
+        8
+      ],
+      "first_production_extractor_succeeded": "0/3",
+      "result": "Rejected as a convergence treatment: total Abaqus calls changed only from 23 to 22 and all three runs repeated the RF/RM ownership error."
+    },
+    {
+      "name": "verified_b31_odb_contract_v1",
+      "prompt_version": "beam-bending-change-v1",
+      "change": "Add the reproduced RF/RM and SF/SM read-side binding card to task instructions, while the v1 user request still leaves author-side output ownership and max_section_moment semantics implicit.",
+      "task_instructions_sha256": "ec2f368d7fbb419e1afc70e0f12ee15496240a1849ce39280dda5a5447b386d8",
+      "run_root": "D:/abaqus-runs/beam-bending-change-go-flash-verified-odb-contract-20260827-v1",
+      "summary_sha256": "cb093a4eb0224901e450c0c018ddf19097fe2a94fc5b149a9bb1cf03e480a13c",
+      "gate_sha256": "b8a11330829855c2646f8fc98a64b2103f811ac26fe4aca4cecf4e6a395235bd",
+      "original_formal_result": "3/3 under the then-current subset output check",
+      "current_strict_replay_result": "1/3",
+      "aggregate": {
+        "model_requests": 81,
+        "input_tokens": 1559278,
+        "output_tokens": 72188,
+        "tool_calls": 96,
+        "abaqus_calls": 22,
+        "solver_calls": 3
+      },
+      "abaqus_calls_by_attempt": [
+        3,
+        9,
+        10
+      ],
+      "strict_output_variables_by_attempt": [
+        [
+          "RF",
+          "SF",
+          "U"
+        ],
+        [
+          "RF",
+          "RM",
+          "SF",
+          "U"
+        ],
+        [
+          "RF",
+          "RM",
+          "SF",
+          "U"
+        ]
+      ],
+      "result": "Rejected. The read-side card polluted authoring in 2/3 runs, introduced repeated CAE output-request probes, and exposed that the verifier accepted extra RM output because it used a subset check."
+    },
+    {
+      "name": "declared_odb_contract_v2",
+      "prompt_version": "beam-bending-change-v2",
+      "legacy_report_name": "opencode-go-deepseek-v4-flash-abaqus2024-beam-bending-change-v1",
+      "legacy_report_name_note": "The frozen report display name still used the v1 constant; experiment metadata correctly records beam-bending-change-v2. The evaluator now derives future report names from the resolved prompt version.",
+      "request_path": "benchmarks/coding/beam_bending_change_request_v2.json",
+      "request_sha256": "22cb7f1abaedd51a920e6ae9e7517cae2a59194c777167637274aa67fa141ae8",
+      "change": "Declare the previously hidden consumer contract in the request: authoring remains exactly U/RF/SF; RF/RM and SF/SM are separate companion ODB fields; max_section_moment is the maximum SM vector magnitude; generic production-first and host-handoff instructions remain enabled.",
+      "task_instructions_sha256": "8c72b740daf4e475dfc30df0bf987831e869c895eda86e65d5ced29b1f94c65e",
+      "run_root": "D:/abaqus-runs/beam-bending-change-go-flash-declared-contract-v2-20260827-v1",
+      "summary_sha256": "68b450a2ee6c2bdbe8f50db4d5470db61aab7a2a6f3421eeb423d4ae498318b5",
+      "gate_sha256": "b8a11330829855c2646f8fc98a64b2103f811ac26fe4aca4cecf4e6a395235bd",
+      "formal_result": "3/3",
+      "current_strict_replay_result": "3/3",
+      "aggregate": {
+        "model_requests": 35,
+        "input_tokens": 371492,
+        "output_tokens": 23589,
+        "tool_calls": 46,
+        "abaqus_calls": 9,
+        "solver_calls": 3
+      },
+      "behavior": {
+        "abaqus_calls_by_attempt": [
+          3,
+          3,
+          3
+        ],
+        "first_production_extractor_succeeded": "3/3",
+        "diagnostic_abaqus_python_calls": "0/3",
+        "exact_u_rf_sf_output": "3/3",
+        "only_build_and_extractor_python_files": "3/3",
+        "both_source_patches_nonempty": "3/3",
+        "three_stage_provenance_and_host_oracle": "3/3"
+      },
+      "attempts": [
+        {
+          "run_id": "beam-bending-438b693ca1",
+          "model_requests": 12,
+          "input_tokens": 133878,
+          "output_tokens": 8277,
+          "tool_calls": 14,
+          "abaqus_calls": 3,
+          "solver_calls": 1,
+          "build_patch_bytes": 1303,
+          "extract_patch_bytes": 5911,
+          "outcome_sha256": "bf10cf65fc4269e9404791195aaf4c0a452fa518581b374919fdbb53dadee9e5",
+          "history_sha256": "6ce8277c08483f1cb2935f8ff1ace7135b2378e5396233c0f36300a94102e91e",
+          "verification_sha256": "ccc947f685cda9d9837898b5f856c58c0e7af8355f519b800c873ac3ecf11769",
+          "workspace_diff_sha256": "991bae85139d9db9a60b66432698135d2f6e4b6e2a24252c986f1ffe4c09e00e"
+        },
+        {
+          "run_id": "beam-bending-ea3fdcb99e",
+          "model_requests": 12,
+          "input_tokens": 126687,
+          "output_tokens": 9386,
+          "tool_calls": 19,
+          "abaqus_calls": 3,
+          "solver_calls": 1,
+          "build_patch_bytes": 1495,
+          "extract_patch_bytes": 5798,
+          "outcome_sha256": "01990d7681e3546a63581a05e8fce798dbb31d66991f12972e39349d177458e9",
+          "history_sha256": "d8f42f8ec894131ff7fccb39ce9fe09e10a2e66c37864ee0207d83e06b34f0d2",
+          "verification_sha256": "ccc947f685cda9d9837898b5f856c58c0e7af8355f519b800c873ac3ecf11769",
+          "workspace_diff_sha256": "6e5a334fdd36a7ad6a47d78c3a2ad89a620e9a9e6b15943da95a3541ed336e6c"
+        },
+        {
+          "run_id": "beam-bending-b1ca0181bf",
+          "model_requests": 11,
+          "input_tokens": 110927,
+          "output_tokens": 5926,
+          "tool_calls": 13,
+          "abaqus_calls": 3,
+          "solver_calls": 1,
+          "build_patch_bytes": 1248,
+          "extract_patch_bytes": 5467,
+          "outcome_sha256": "b97251b9bf9194b32a56a176c7bf0933b3bc0465e0d2466fe944a7baaa155b70",
+          "history_sha256": "42e93d9d802d5465a83483b730847744c4fbf71d7850d6bb2b77ec51e2cad50e",
+          "verification_sha256": "ccc947f685cda9d9837898b5f856c58c0e7af8355f519b800c873ac3ecf11769",
+          "workspace_diff_sha256": "096a1b2d86c28c668b104a8257aef71dd94249a23599e71507e078140505762f"
+        }
+      ],
+      "result": "Recommended for this evaluator. It reached the three-stage minimum in all three attempts without changing the global Skill or using retrieval."
+    }
+  ],
+  "verifier_correction_and_replay": {
+    "correction": "Beam bending input acceptance now requires the parsed field-output set to equal U/RF/SF instead of merely containing those variables.",
+    "verifier_path": "src/abaqus_sim_agent/verification/beam_bending_change.py",
+    "verifier_sha256": "2a8e0cd8d65109af3cb99665914f501da9965cc8ac758fdbad6098eaa694d0c7",
+    "replay_method": "Reparse each frozen INP, reuse its frozen host-only ODB measurements and results.json, and rerun the current pure verifier with the recorded source/diff/provenance pass flags; no model or vendor runtime call is involved.",
+    "strict_replay": {
+      "control": "3/3",
+      "production_first_odb_v1": "3/3",
+      "verified_b31_odb_contract_v1": "1/3",
+      "declared_odb_contract_v2": "3/3"
+    },
+    "licensed_current_verifier_reference": {
+      "result": "1/1",
+      "run_root": "D:/abaqus-runs/beam-bending-change-reference-exact-output-20260827-v1/test_abaqus2024_beam_bending_c0",
+      "verification_sha256": "35aa709a056e649958ed1beeaab11a1706fdf12ad9efe24f8d96d57a8e85851f",
+      "oracle_results_sha256": "04c6678f233707020d98a69dee7b2fe8d33f97fe0f4cf417cf13009bac1cc0a4",
+      "inp_sha256": "52c3aca6deb92752ee81d284936306f03685e8bfa26b0694655a0f65ab31435f",
+      "odb_sha256": "e8f9317c9fc68584e7b94dbea70feee591bfb11ecec4461c03883a194200aee3",
+      "results_sha256": "c5f81b1cd1442bdf1b813b914400cceff402d645120141ab2484c441e89ba9d6"
+    }
+  },
+  "control_to_recommended_comparison": {
+    "formal_gate": "3/3 to 3/3",
+    "current_strict_gate": "3/3 to 3/3",
+    "abaqus_calls": "23 to 9",
+    "abaqus_call_reduction_pct": 60.87,
+    "model_requests": "74 to 35",
+    "model_request_reduction_pct": 52.7,
+    "input_tokens": "1272232 to 371492",
+    "input_token_reduction_pct": 70.8,
+    "output_tokens": "52271 to 23589",
+    "output_token_reduction_pct": 54.87,
+    "tool_calls": "92 to 46",
+    "tool_call_reduction_pct": 50.0
+  },
+  "interpretation": {
+    "primary_result": "The expensive tail was not solved by telling the Agent to probe less. It was removed only after the host disclosed result-field meaning and the author/read ownership boundary that its verifier already expected.",
+    "engineering_result": "Trajectory analysis exposed both an underspecified result contract and a permissive subset verifier. Correcting those two interfaces produced repeatable three-stage execution without adding a B31 recipe to the global Skill.",
+    "causal_boundary": "The recommended arm changes the model-visible request contract as well as enabling the generic production-first instruction. It demonstrates the effect of the complete declared contract package; it does not isolate which sentence caused the reduction or prove a general prompting law.",
+    "limits": [
+      "Each arm has only three same-day attempts on one linear B31 task and one model gateway; this is a smoke comparison, not a stable rate estimate.",
+      "The declared RF/RM and SF/SM relationship is bounded to this verified B31/Abaqus 2024 result contract and was not promoted to the global Skill.",
+      "The v2 Product runs were originally accepted by a now-corrected subset check; only the post-hoc strict replay result should be used for their contract compliance.",
+      "Token and elapsed-time comparisons are exposed but can be affected by provider latency and sampling; the strongest direct evidence is the typed runtime-call sequence and frozen artifacts."
+    ]
+  }
+}

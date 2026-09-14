@@ -2,7 +2,7 @@
 
 ## 状态
 
-已采纳
+已替代
 
 ## 日期
 
@@ -63,6 +63,12 @@ PostgreSQL。因此 SQLite 首版若让 API 与独立 worker 并发写，会与�
   API、数据库和 Composition Root 尚未实现。
 - 当前代码：`domain/`、`agents/`、`application/state.py` 和 `execution/` 是可继续演进的骨架，不为目录外观
   预先创建空模块。
+
+## 替代关系
+
+- 被替代：[ADR-0008：首轮采用 Pydantic AI Harness 单 Coder 的原生 Abaqus CodingRun](0008-pydantic-ai-harness-abaqus-coding-run.md)。
+- 模块化单体、FastAPI 和 SQL 控制面的设计保留为历史候选，不再构成首轮或后续默认承诺；引入时需由
+  真实消费者、并发、查询或恢复需求重新决策。
 
 ## 相关文档
 

@@ -1,0 +1,66 @@
+{
+  "schema_version": "evidence-units-review-v1",
+  "status": "parent_unit_construction_implemented_and_validated_not_default_promoted",
+  "initial_pilot": "benchmarks/rag/abaqus_2026_evidence_units_pilot_20260906.json",
+  "initial_pilot_sha256": "05ada229cb42ae7c8e6941aa5566340faf77985f658c00572066267c52418ee6",
+  "corrected_parser_pilot": "benchmarks/rag/abaqus_2026_evidence_units_parser_v2_pilot_20260906.json",
+  "corrected_parser_pilot_sha256": "fc3c3f551ec07261f7390907af7f11b832ed965edc1e58058f838f2119b2fdf8",
+  "full_parse_audit": "benchmarks/rag/abaqus_2026_evidence_units_full_parse_20260906.json",
+  "full_parse_audit_sha256": "6329b92726a560003b0afe58c6ea6fd0124bf491e19423e511289bed21f23820",
+  "contract": {
+    "parent_unit": "A prebuilt, persisted EvidenceUnit over ordered source blocks, not a paragraph-only parent or a runtime reading-window expansion.",
+    "prose": "Combine contiguous content with the same page/version/source hash/heading and anchor. Block-count and character guards bound composition; they do not prove semantic completeness or hard-truncate source atoms.",
+    "definitions": "Keep each named definition together, without merging unrelated parameters. Preserve its entry context in retrieval children.",
+    "lists": "Combine a directly attached colon lead with the complete list. Preserve an unpaired list atom and mark that no lead was detected instead of inventing one.",
+    "code": "Preserve explicit usage containers containing instructions and alternative pre examples as one code unit, or a direct lead/pre pair. Otherwise retain the code atom and record the missing detected lead.",
+    "tables": "Retain table structure and explicitly associated footnotes. Do not claim arbitrary footnote inference or table retrieval projection.",
+    "formulas": "Retain connected equation, connector and adjacent variable-definition context as a formula unit, with retrieval explicitly deferred rather than dropping unsupported pieces to create an apparently complete text unit.",
+    "provenance": "Each emitted source block belongs to exactly one unit. The builder checks source order/identity, the complete supplied node inventory, XPath correspondence and member sequence. Persistent unit files are hash-bound and exclusive-create.",
+    "children_and_delivery": "Generate tokenizer-bounded children from each unit's validated projection; rank children, dedupe by prebuilt parent and restore the stored unit. No runtime neighbor stitching is used in the new pilot. The existing shared body-delivery budget still applies."
+  },
+  "additional_fidelity_fix": {
+    "finding": "The earlier structural prototype treated unknown containers such as figure.usage as inline text. In the twelve-page source, 52 of 203 pre texts were not literal matches in any earlier block, including multiline examples; this count includes whitespace differences and is not claimed as 52 semantic failures.",
+    "fix": "Traverse containers containing block descendants instead of flattening them, while retaining inline MathML behavior. Recognize explicit usage containers during parent construction.",
+    "sample_verification": "All 203 nonempty source pre texts are preserved in a source-owning block after the fix: 201 as direct code blocks and two inside preserved structured XML. Checks compare parsed DOM code text with leading/trailing newline normalization, not original HTML bytes or executable behavior.",
+    "history": "The earlier 941-block registry and its pilot are retained unchanged. The corrected source registry has 1332 blocks from the same twelve pages because previously flattened structure is now represented explicitly."
+  },
+  "corrected_small_pilot": {
+    "source_pages":12,
+    "source_blocks":1332,
+    "parent_units":743,
+    "retrieval_children":707,
+    "maximum_child_tokens_including_context":255,
+    "unit_types":{"prose":317,"code":168,"list":42,"excluded":13,"formula":70,"definition":129,"table":4},
+    "query_runs":14,
+    "truncated_reranker_pairs":0,
+    "truncated_returned_bodies":0,
+    "median_returned_body_characters":4347,
+    "maximum_returned_body_characters":5254,
+    "checks":"Membership, body reconstruction, persisted child/unit reopening and actual retrieval/expansion were checked.",
+    "results":"Plane-strain definition plus thickness-stress statement, coupling comparison and the complete second-warning explanation remain delivered. First-warning selection, Tie permanence and the BC query remain unresolved. The same predeclared requirement probes have the same delivered/not-delivered outcomes as the preceding runtime-window pilot; no overall gain is claimed.",
+    "limits":"This compares exposed questions on a small selected corpus. Parser representation, parent identities, candidate distribution and HNSW change; it is not a single-factor chunk-size A/B or held-out evaluation."
+  },
+  "full_source_structural_dry_run": {
+    "pages_attempted":1480,
+    "pages_passed":1480,
+    "errors":0,
+    "source_blocks":63074,
+    "parent_units":36897,
+    "potential_retrieval_children":31047,
+    "nonempty_pre_dom_texts_verified":7011,
+    "pages_with_no_blocks":0,
+    "pages_with_no_children":0,
+    "projection_status_counts":{"text_including_excluded_units":32568,"deferred_math":3982,"deferred_table":316,"deferred_list":31},
+    "scope":"Parsing, source membership, child length/coverage and code-text preservation only. These counts are a dry run: no full new index or embeddings were built, and passing does not prove mathematical, table, semantic or retrieval correctness."
+  },
+  "remaining_boundaries": [
+    "A structural unit is not automatically a complete engineering answer. Cross-section dependencies, unrecognized lead-ins or implicit qualifications can remain outside it.",
+    "Some code units still have no detected lead; footnote association covers only explicit structural markers.",
+    "Formula and table retrieval projections remain deferred. Two otherwise textual source blocks in the small corpus are withheld with unverified formula units; that is an explicit coverage tradeoff.",
+    "Lists/definitions may retain raw XML in the full evidence body. Faithful storage is not the same as an optimal human/Agent reading representation.",
+    "The exact API Catalog and its member-coverage gap are separate from this parent-unit pipeline.",
+    "Default product parser, full indices, Agent tools and model settings remain unchanged. These are tested retrieval components and a pilot, not a deployed Agent outcome improvement."
+  ],
+  "verification":{"new_unit_tests":9,"new_nested_code_tests":2,"full_suite_passed":621,"licensed_tests_skipped":27,"ruff_and_basedpyright":"passed","generative_model_calls":0,"abaqus_calls":0},
+  "decision":"Keep the small-child/full-parent route and the explicit unit-construction contract. This stage is complete enough to stop treating chunk strategy as an open-ended choice; next work should address full-index candidate validation and the remaining structured projections/selection failures, not repeatedly reinterpret token bounds as semantic quality. Do not switch the product default solely on structural checks."
+}

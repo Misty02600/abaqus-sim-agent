@@ -1,0 +1,70 @@
+import { readFileSync } from 'node:fs'
+import { extname, resolve } from 'node:path'
+import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react'
+import type { Plugin } from 'vite'
+import { defineConfig } from 'vite'
+import { viteSingleFile } from 'vite-plugin-singlefile'
+import tsconfigPaths from 'vite-tsconfig-paths'
+// import { analyzer } from 'vite-bundle-analyzer'
+
+// 8000 is quite common for backend, avoid the clash
+const BACKEND_DEV_SERVER_PORT = process.env.BACKEND_PORT ?? 38800
+
+const API_PROXY = {
+  '/api': {
+    target: `http://localhost:${BACKEND_DEV_SERVER_PORT}/`,
+    changeOrigin: true,
+  },
+}
+
+const FAVICON_MIME_TYPES: Record<string, string | undefined> = {
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.ico': 'image/x-icon',
+}
+
+// Keep upstream icons self-contained: the comparison host mounts /official/assets,
+// while other /official/* paths serve the task page.
+function inlineFavicons(): Plugin {
+  return {
+    name: 'inline-favicons',
+    transformIndexHtml(html) {
+      return html.replace(/href="(?:\.\/|\/official\/|\/)([\w-]+\.(?:svg|png|ico))"/g, (link, fileName: string) => {
+        const mimeType = FAVICON_MIME_TYPES[extname(fileName)]
+        if (mimeType === undefined) return link
+        const base64 = readFileSync(resolve(__dirname, 'public', fileName)).toString('base64')
+        return `href="data:${mimeType};base64,${base64}"`
+      })
+    },
+  }
+}
+
+// https://vite.dev/config/
+export default defineConfig(({ mode }) => {
+  // `--mode offline` emits a single self-contained index.html for air-gapped hosting
+  // (pydantic-ai's `to_web(html_source=...)` takes one file). Everything is inlined:
+  // the lazily-imported chunks and the KaTeX fonts referenced by its stylesheet.
+  const offline = mode === 'offline'
+
+  return {
+    plugins: [
+      react(),
+      tailwindcss(),
+      tsconfigPaths({ root: __dirname }),
+      inlineFavicons(),
+      ...(offline ? [viteSingleFile()] : []),
+    ],
+    base: offline ? './' : '/official/',
+    build: {
+      assetsDir: 'assets',
+      // The favicons are inlined above, so nothing should be copied next to index.html --
+      // the artifact is meant to be exactly one file.
+      ...(offline ? { outDir: 'offline', copyPublicDir: false } : {}),
+    },
+    server: { proxy: API_PROXY },
+    // The offline E2E spec serves the built artifact with `vite preview`, which needs the
+    // same /api proxy the dev server has.
+    preview: { proxy: API_PROXY },
+  }
+})

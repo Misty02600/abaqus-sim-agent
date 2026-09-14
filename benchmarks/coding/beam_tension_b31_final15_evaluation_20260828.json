@@ -1,0 +1,183 @@
+{
+  "schema_version": "1",
+  "experiment": "beam-tension-b31-final15-auto-convergence-v1",
+  "date": "2026-08-28",
+  "question": "Does final15 plus same-api-occurrence-scan-v1 improve the time-neighbor final13 automatic B31 smoke under the same model, request, Skill, budget, and oracle?",
+  "frozen_configuration": {
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "prompt_version": "beam-tension-b31-v1",
+    "api_catalog_mode": "automatic_verified_only",
+    "api_catalog": "var/api-catalog/abaqus-2024-final15",
+    "api_catalog_cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "coder_general_shell_policy": "coder-general-shell-disabled-v1",
+    "coding_decision_output_policy": "decision-output-tool-clarification-v1",
+    "evidence_repair_convergence_policy": "same-api-occurrence-scan-v1",
+    "budget": {
+      "max_model_requests": 40,
+      "max_api_lookup_calls": 4,
+      "max_abaqus_calls": 12,
+      "max_solver_calls": 3,
+      "wall_time_seconds": 2700.0
+    },
+    "repeat": 3,
+    "eval_retry": false
+  },
+  "raw_evidence": {
+    "run_root": "D:/abaqus-runs/beam-b31-final15-auto-convergence-v1-20260828",
+    "evaluation_summary_sha256": "7eb5a4fa291103eba793a53c4944dfef84d74d6909234fd35442755cd8b148a1",
+    "gate_sha256": "8fc4410a4ab8c700147fa2dbc52d435885a50c4487f64246a5c7d4b0b8872164",
+    "evaluation_report_sha256": "9aaa2d91df726ba6afeddb67f7f76fcb202003b450541a87a0044bbc062414f6"
+  },
+  "result": {
+    "attempts": 3,
+    "passes": 0,
+    "required_passes": 2,
+    "gate_passed": false,
+    "attempts_detail": [
+      {
+        "ordinal": 1,
+        "run_id": "beam-a13ad8f53298",
+        "stage": "runtime_budget",
+        "model_requests": 31,
+        "input_tokens": 426221,
+        "output_tokens": 19899,
+        "tool_calls": 31,
+        "api_lookup_calls": 3,
+        "abaqus_calls": 12,
+        "solver_calls": 0,
+        "workspace_files": 19,
+        "history_sha256": "89b4acd605163885de2f1ea9554ad3b95363068e245cc27270c9918900fa56e5"
+      },
+      {
+        "ordinal": 2,
+        "run_id": "beam-1d3b7fbc9a61",
+        "stage": "infrastructure",
+        "error": "ModelHTTPError: status_code 500, internal server error",
+        "workspace_files": 0,
+        "abaqus_calls": 0,
+        "history_sha256": "039ddfbef8d145f37b19882f0df1c807bc0af77a617efceceb17da4c2ad2836f"
+      },
+      {
+        "ordinal": 3,
+        "run_id": "beam-a68d047d0a44",
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out.",
+        "workspace_files": 0,
+        "abaqus_calls": 0,
+        "history_sha256": "4989e6f2a3d002c3aa63de6988bbafe65ce5c8e40a4783fd3c1d8c313aab1eb4"
+      }
+    ]
+  },
+  "task_started_call_timeline": [
+    {
+      "call": 1,
+      "result": "failed",
+      "error": "Model.BeamSection orientation keyword",
+      "note": "runtime:2024:Model.BeamSection:orientation-boundary"
+    },
+    {
+      "call": 2,
+      "result": "failed",
+      "error": "BeamSection profile received a RectangularProfile object instead of its string repository key"
+    },
+    {
+      "call": 3,
+      "result": "failed",
+      "error": "assignBeamSectionOrientation omitted all three required arguments",
+      "note": "runtime:2024:Part.assignBeamSectionOrientation:region-binding"
+    },
+    {
+      "call": 4,
+      "result": "failed",
+      "error": "CAE MeshNodeArray.findAt does not exist",
+      "note": "openOdb node-array note was delivered by an over-broad pre-fix route"
+    },
+    {
+      "call": 5,
+      "result": "failed",
+      "error": "Assembly.Set(vertices=...) keyword binding failed"
+    },
+    {
+      "call": 6,
+      "result": "probe passed",
+      "script": "probe_set.py"
+    },
+    {
+      "call": 7,
+      "result": "probe passed",
+      "script": "probe_set.py"
+    },
+    {
+      "call": 8,
+      "result": "authoring passed",
+      "artifacts": ["beam_tension.cae", "beam_tension.inp"]
+    },
+    {
+      "call": 9,
+      "result": "failed",
+      "error": "Mdb.open does not exist",
+      "script": "check_model.py"
+    },
+    {
+      "call": 10,
+      "result": "failed",
+      "error": "PartInstance.isDependent does not exist",
+      "script": "check_model.py"
+    },
+    {
+      "call": 11,
+      "result": "check script passed",
+      "script": "check_model.py"
+    },
+    {
+      "call": 12,
+      "result": "failed",
+      "error": "The part could not receive mesh attributes after an independent instance had been created"
+    },
+    {
+      "call": 13,
+      "result": "blocked before execution",
+      "error": "Abaqus invocation budget exhausted"
+    }
+  ],
+  "lookup_adoption": {
+    "counted_lookups": 3,
+    "delivered_note_ids": [
+      "runtime:2024:Model.BeamSection:orientation-boundary",
+      "runtime:2024:Part.assignBeamSectionOrientation:region-binding",
+      "runtime:2024:openOdb:node-array-nesting"
+    ],
+    "useful_notes": [
+      "runtime:2024:Model.BeamSection:orientation-boundary",
+      "runtime:2024:Part.assignBeamSectionOrientation:region-binding"
+    ],
+    "misrouted_note": "runtime:2024:openOdb:node-array-nesting",
+    "interpretation": "The two relevant notes repaired their local API boundaries, but the run shifted into independent-instance, mesh ownership, Set, and probe/check-script failures and never reached Solver."
+  },
+  "router_correction_after_batch": {
+    "problem": "The batch process matched CAE MeshNodeArray.findAt with an ODB-only behavior regex that allowed an optional Odb prefix.",
+    "fix": "Current source routes only the exact OdbMeshNodeArray runtime type to openOdb; plain MeshNodeArray now receives no ODB note.",
+    "validation": "tests/test_api_traceback.py and tests/test_coding_agent.py passed after the change.",
+    "batch_boundary": "The evaluator process imported the old regex before the source edit, so this frozen final15 batch still contains the misroute and must not be described as post-fix Product evidence."
+  },
+  "comparison": {
+    "historical_accepted_v6": "full final9/no-Shell passed 2/3; its two task-started attempts passed with 28/10 and 12/3 model/Abaqus calls",
+    "final13_time_neighbor": "automatic final13 passed 1/3; two pre-file timeouts and one 24/8 task-started oracle pass",
+    "final15_treatment": "0/3; one 31/12/0 runtime-budget failure, one pre-file HTTP 500, and one pre-file timeout",
+    "interpretation": "final15 plus the convergence instruction did not improve B31. Transport remains stochastic, while the only task-started treatment run regressed into a new ownership/probe loop. The accepted B31 configuration remains historical v6."
+  },
+  "decision": {
+    "b31_default": "Do not replace full-final9/no-Shell v6 with final13 or final15 automatic.",
+    "catalog_status": "final15 remains the current general experimental Catalog because its added BeamSection scope is licensed and narrow, but B31 routing must stay task-evaluated rather than globally assumed beneficial.",
+    "next_b31_action": "No additional B31 rerun is justified by this batch. Further work should target the independent-instance/mesh ownership failure only if it repeats in another formal task or a bounded treatment is defined."
+  },
+  "limits": [
+    "The batch used the pre-fix over-broad MeshNodeArray ODB route; current source is narrower but has no post-fix B31 Product batch.",
+    "Two attempts failed in transport, so the task-started sample size is one.",
+    "Note delivery and local adoption did not imply Solver entry or task success.",
+    "The treatment changes both the Catalog artifact and convergence instruction relative to final13, so their effects cannot be separated."
+  ]
+}

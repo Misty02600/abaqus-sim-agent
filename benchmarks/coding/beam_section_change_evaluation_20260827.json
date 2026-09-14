@@ -1,0 +1,170 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-verified-b31-section-change-v1",
+  "date": "2026-08-27",
+  "question": "Can the Agent make a minimal section-size requirement change to an independently verified B31 project, predict and reproduce the changed axial response, preserve the extractor byte-for-byte, and pass host-owned regression checks?",
+  "frozen_request": {
+    "path": "benchmarks/coding/beam_section_change_request.json",
+    "sha256": "31fde11e0f03ce1113906ee76348c5fbf10184eda8628f3c45475232d1a650f5",
+    "prompt_version": "beam-section-change-v1",
+    "requested_change": "RectangularProfile a=10,b=10 mm to a=20,b=10 mm",
+    "expected_physics_not_in_prompt": "A=200 mm^2, strain=0.1/100=0.001, |RF1|=mean SF1=E*A*strain=42000 N"
+  },
+  "verified_source": {
+    "run_root": "D:/abaqus-runs/beam-b31-go-flash-final9-no-shell-parameter-20260827-v1/beam-1f4ef88fd5dc",
+    "run_id": "beam-1f4ef88fd5dc",
+    "request_sha256": "c1b7fd12dae6217de36a8f3f0a79c21c203412c7cdb5dc6687ac676cc4cddf60",
+    "outcome_sha256": "f94930d74427f43a7dc359dd34f5a854b88ad6f31d12ea31d4ff4bad3234107c",
+    "verification_sha256": "fdb373435de7f9b315a26a812fc1ea1ead4b0bad408ca2510886145dca156321",
+    "artifact_sha256": {
+      "build_model.py": "7bb1d4a5f62954958de72b756950bf6b16fcb3bfe37a101a03bc1d80d363616a",
+      "extract_results.py": "6c805c07ca3b75a442cd6d232d37416564fa2afea08f9dbaba932dcc8a7aa120",
+      "beam_tension.cae": "d3791034064142490db00c9c2f95017c8154fe359b7e18536c2c0d8d4f50c8f8",
+      "beam_tension.inp": "abaf86cc5ce40af3dbc5b2eea6f0b928bec6b6f15d12968571260a0d833a7837",
+      "beam_tension.odb": "5412f463149dfc46925438669762689b8a58184e12ec25c45199dc7e07ee3e95",
+      "results.json": "827c35e4b22cd62bff042bc3b7e4ff7505ef34e4fda8c2ad8576bde90f1c2022"
+    },
+    "seeded_files": [
+      "build_model.py",
+      "extract_results.py"
+    ],
+    "loader_result": "request, completed outcome, passing verification, no clarifications, and all six fresh artifact hashes revalidated before copying"
+  },
+  "responsibility_contract": {
+    "agent_may_change": [
+      "build_model.py"
+    ],
+    "agent_must_preserve": [
+      "extract_results.py"
+    ],
+    "host_owns": [
+      "verified source acceptance",
+      "initial/final snapshots and source patches",
+      "CAE/Solver/extraction provenance",
+      "profile dimensions and section linkage",
+      "wire geometry, mesh chain, orientation, material, step, BC and output regression",
+      "U1, RF1, SF1 and results.json-to-ODB agreement"
+    ]
+  },
+  "deterministic_reference": {
+    "result": "1/1",
+    "run_root": "D:/abaqus-runs/beam-section-change-reference-20260827-v1/test_abaqus2024_beam_section_c0",
+    "profile_a": 20.0,
+    "profile_b": 10.0,
+    "right_mean_u1": 0.10000000149011612,
+    "left_sum_rf1": -42000.0,
+    "right_sum_rf1": 42000.0,
+    "mean_sf1": 42000.0,
+    "build_script_changed": true,
+    "extractor_preserved": true,
+    "execution_provenance_passed": true,
+    "fixture_sha256": "5bfd9082db3e13482fae94bb27f49ecf09af2514d2d47daba9e91eb2606abf15",
+    "reference_extractor_sha256": "1e083c5b3bece72cfb454c88d19c424774e42f2aee61968fff0e29ed7b162043",
+    "verification_sha256": "9f4c49a6bd46bd2ad823120b2362d7da94bcb23b2dac04b7ce83f3c861d93534",
+    "oracle_results_sha256": "d0137821b581e9758b713a32846ab589ce3f1171a1b7bc2fb99b393b6eb2256a",
+    "inp_sha256": "4849d7265ea4f3cb34d2a92026f19f6c63102b0dc3d71d3864f349d74d0f63db",
+    "odb_sha256": "34584632ccdb1597f16d8d28000cdb78f167cbf3299f501c9f34f90125442c71",
+    "results_sha256": "6042d2ac7234e61d39e874ef9099266fb5383d7c652ec1b3bf667225833b1547"
+  },
+  "product_agent_batch": {
+    "run_root": "D:/abaqus-runs/beam-section-change-go-flash-off-20260827-v1",
+    "model": "opencode-go/deepseek-v4-flash",
+    "http_retries": 3,
+    "skill_sha256": "5dffe84954008bec534179a85d97d448a1ad9647716cd3f8f33c5f02528bf374",
+    "api_catalog_mode": "off",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "coder_general_shell_policy": "coder-general-shell-disabled-v1",
+    "model_request_budget": 36,
+    "abaqus_call_budget": 12,
+    "solver_call_budget": 3,
+    "repeat": 3,
+    "required_passes": 2,
+    "result": "3/3",
+    "gate_passed": true,
+    "summary_sha256": "42171fb8f59fc634401f99cf1f770eb7f39ff22192cf2fc73d62df72aa50904a",
+    "gate_sha256": "b8a11330829855c2646f8fc98a64b2103f811ac26fe4aca4cecf4e6a395235bd",
+    "aggregate": {
+      "model_requests": 31,
+      "input_tokens": 281306,
+      "output_tokens": 8969,
+      "tool_calls": 43,
+      "api_lookup_calls": 0,
+      "abaqus_calls": 9,
+      "solver_calls": 3
+    },
+    "behavioral_adoption": {
+      "build_model_changed": "3/3",
+      "extract_results_byte_preserved": "3/3",
+      "three_stage_provenance_passed": "3/3",
+      "profile_20x10_passed": "3/3",
+      "u1_and_42kn_response_passed": "3/3",
+      "run_command_tool_calls": "0/3",
+      "budget_exhaustion_finalizations": "0/3"
+    },
+    "attempts": [
+      {
+        "attempt": 1,
+        "run_id": "beam-section-58ea1e0824",
+        "status": "passed",
+        "model_requests": 12,
+        "input_tokens": 112812,
+        "output_tokens": 3189,
+        "tool_calls": 16,
+        "abaqus_calls": 3,
+        "solver_calls": 1,
+        "build_patch_bytes": 1103,
+        "extract_patch_bytes": 0,
+        "outcome_sha256": "42cbe5a5d997d8e303b2c0b3f3f471fe28c0d0e1044e676b0bb44e58cb5d9229",
+        "history_sha256": "2d78ba42d5b10d3774fcf92726c2bd66d79da1fd000a5f02be5ed95bddb1402a",
+        "verification_sha256": "93cdc7a431a495d618c2f07e10553a0100da4c3eb651227e41e97715447e4ef4",
+        "workspace_diff_sha256": "2529034464d738476bf9c504d2a83e8c1180b2f25243888ca3a820a7a591074f"
+      },
+      {
+        "attempt": 2,
+        "run_id": "beam-section-bf4308a2af",
+        "status": "passed",
+        "model_requests": 9,
+        "input_tokens": 73593,
+        "output_tokens": 2630,
+        "tool_calls": 11,
+        "abaqus_calls": 3,
+        "solver_calls": 1,
+        "build_patch_bytes": 455,
+        "extract_patch_bytes": 0,
+        "outcome_sha256": "68053107bbae18f63bbc14c2de77aec04adfd4b11d56b2d884edc84106d0942b",
+        "history_sha256": "db971de214eb193ea3595c1dc6553f654497141e3e794996e76a0cfc3542b83b",
+        "verification_sha256": "93cdc7a431a495d618c2f07e10553a0100da4c3eb651227e41e97715447e4ef4",
+        "workspace_diff_sha256": "d021e238431a9ae61117f11a3911001901bebb9e28faa1a715502a0d72e2cc14"
+      },
+      {
+        "attempt": 3,
+        "run_id": "beam-section-9e13fee7e4",
+        "status": "passed",
+        "model_requests": 10,
+        "input_tokens": 94901,
+        "output_tokens": 3150,
+        "tool_calls": 16,
+        "abaqus_calls": 3,
+        "solver_calls": 1,
+        "build_patch_bytes": 870,
+        "extract_patch_bytes": 0,
+        "outcome_sha256": "59d86c038a3cddd379c7b298eda47be0ec09dfce9cff85075fd9623f05efbe2f",
+        "history_sha256": "5a89bfb20952e6c461a62c82e6329fd39134405fce7dafbca141fbfdd1a807c4",
+        "verification_sha256": "93cdc7a431a495d618c2f07e10553a0100da4c3eb651227e41e97715447e4ef4",
+        "workspace_diff_sha256": "c8f7380c4a10867b9edf317c8e455c83c2c0602e44b3fbf9ea915f8f87f4b0f5"
+      }
+    ]
+  },
+  "interpretation": {
+    "capability_result": "The Agent repeatedly changed an existing verified B31 project rather than recreating a fresh answer: all three attempts modified the build script, preserved the existing extractor, regenerated current artifacts, and passed both the new 20x10 requirement and original behavior regressions.",
+    "engineering_value": "This demonstrates verified-seed loading, minimal source responsibility, deterministic physics prediction, byte-faithful compatibility, three-stage side-effect provenance, hidden ODB acceptance, and repeated evaluation without retrieval assistance.",
+    "retrieval_result": "Catalog and Concept retrieval were off with zero lookup budget. No retrieval benefit or requirement is claimed for this case.",
+    "limits": [
+      "The task is one linear axial B31 section-size change from one verified source; it does not establish arbitrary beam editing, bending, contact, nonlinear sections, or generic CAE modification.",
+      "Three attempts are a smoke gate, not a stable success-rate estimate.",
+      "All attempts passed on the first verification request, so this batch does not exercise verifier-feedback repair or budget-exhaustion finalization.",
+      "The deterministic reference extractor and Product source extractor are different verified implementations; each respective change run preserves its own extractor bytes."
+    ]
+  }
+}

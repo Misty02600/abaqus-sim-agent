@@ -1,0 +1,64 @@
+{
+  "schema_version": "parent-child-pilot-review-v1",
+  "status": "bounded_persistence_retrieval_and_expansion_pilot_completed_not_default_ready",
+  "report": "benchmarks/rag/abaqus_2026_parent_child_pilot_20260905.json",
+  "report_sha256": "2fd0f3dc53c66b7aa8720b6bbabd7b4040a4aa0c67d6bc2799ea69c010dc7436",
+  "review_method": "Primary assistant review of evidence bodies, reconstruction checks and the observed regression; no automated answer-success or physics score.",
+  "implemented": [
+    "Hash-bound persisted EvidenceBlock records preserve full source-block bodies, release, source hash, DOM XPath and anchor.",
+    "Text projections generate tokenizer-bounded children with title/heading/definition-entry context included. Child spans reconstruct the entire searchable projection without gaps or overlap; offsets are explicitly projection characters, not HTML byte offsets.",
+    "BM25 search_passages returns raw passage ranking through a public method; the existing search method retains page deduplication and ranking behavior.",
+    "Ranked child IDs resolve to full parent blocks, deduplicating the same parent after ranking while allowing different parents from the same page.",
+    "The pilot connects real persisted Chroma Dense, BM25, fixed local Cross-Encoder, parent-store reopening and the existing shared-budget evidence renderer. This is not registered as an Agent tool profile."
+  ],
+  "sample_and_storage": {
+    "source_pages": 12,
+    "control_records": 934,
+    "control_semantic_records": 757,
+    "stored_parent_blocks": 941,
+    "searchable_text_parents": 762,
+    "retrieval_children": 771,
+    "max_measured_child_tokens_including_context_and_special_tokens": 255,
+    "encoder_limit": 256,
+    "deferred_blocks": {"math_including_mixed_prose_math":134,"complex_lists":41,"tables":4},
+    "deferred_behavior": "All deferred source bodies remain stored with explicit status; no children are generated for them. This is a coverage limitation, not implemented formula/table/list retrieval.",
+    "control_index": "var/rag-parent-child-pilot-v1/control",
+    "candidate_index": "var/rag-parent-child-pilot-v1/candidate",
+    "parent_store": "var/audits/parent-child-pilot-v1/parents.jsonl",
+    "manifest_boundary": "Dedicated pilot manifests are intentionally not the product IndexManifest schema; the ordinary document tool cannot silently treat child records as a complete supported index."
+  },
+  "comparison_limits": [
+    "Both small indices use exactly the same twelve source pages, the same existing encoder and the same raw Dense20/BM2520 plus fixed reranker recipe. They differ in parser output, coverage, record identity and parent expansion, not only one chunk-size parameter.",
+    "The corpus is much smaller than either full historical index. Do not attribute differences against full-index reports to this design or claim full-corpus recall improvements.",
+    "Fourteen exposed development queries per arm produce twenty-eight runs; the known MESHING PREDICTOR cutoff is an added development probe, not held-out.",
+    "No default index, production document parser, active query formulation or Agent tool was switched. The additive BM25 passage API does not change default search results."
+  ],
+  "content_findings": [
+    {"case":"domain-procedure-applicability-1","finding":"The candidate returns the full Riks method paragraph first, including simultaneous load/displacement solution and arc length, with product names in correct position. It also returns proportional-loading context; not all LPF/dead-load requirements are covered by this small corpus or Top-4."},
+    {"case":"recorded-solver-diagnostic-2","finding":"The candidate's actual rank-3 returned parent contains the full increment-adjustment rule, exception list and after-time-point fallback with no delivery truncation. Parent reconstruction is confirmed, not merely a direct fixture."},
+    {"case":"meshing-predictor-tail","finding":"The candidate actually retrieves the MESHING PREDICTOR parent first and returns both Standard/Explicit interpretations, including the original-mesh tail lost by the old exact record. This parent is currently serialized DefinitionXML, so raw evidence remains more verbose than a polished reading view."},
+    {"case":"hybrid-pressure","finding":"The returned parents include pressure indeterminacy, independently interpolated pressure and scoped incompressibility qualifications. This is more coherent evidence, but does not establish general element-selection correctness."},
+    {"case":"reduced-integration-hourglass","finding":"A complete source paragraph explaining one-point integration, zero computed strain and uncontrolled distortion is returned first. The block also retains the mesh/mitigation qualification."},
+    {"case":"mass-scaling-inertia","finding":"The full quasi-static mass-scaling paragraph is returned first, retaining the inertial-force and solution-change qualifications together."},
+    {"case":"recorded-solver-diagnostic-1","finding":"Regression relative to this pilot control: parameter definitions occupy the candidate Top-4 instead of the explanatory paragraph. Follow-up read-only inspection shows the correct 905-character parent was already in the candidate pool: raw Dense rank 13 and BM25 rank 7; Cross-Encoder puts its child at rank 5, logit 2.2375528812408447. This failure is final selection, not missing source or token truncation. No K/weight/model tuning was performed afterward."},
+    {"case":"coupling-deformation","finding":"The candidate prefers load-distribution and uniform-coupling material and does not directly return the clean rigidity-versus-deformation comparison. The control has useful comparison context. Whole-parent storage does not guarantee selecting the right parent."},
+    {"case":"plane-strain-meaning","finding":"The zero out-of-plane strain paragraph is complete, but the separate thickness-stress example is not returned. A complete paragraph is not a complete answer across paragraphs."},
+    {"case":"tie-separation","finding":"The result contains definitions and untied-node qualifications but emphasizes special constraint details over a concise permanent-bond explanation. The introductory preservation work alone does not ensure the main fact is selected."},
+    {"case":"exact-api-region-1 and domain-procedure-applicability-2","finding":"The Scripting Reference member is outside this corpus, and the BC query remains unsatisfied by the returned Riks context. Parent-child retrieval cannot manufacture an absent source or guarantee a missing requirement is selected."}
+  ],
+  "verification": {
+    "full_test_suite_passed": 593,
+    "licensed_tests_skipped": 27,
+    "ruff_and_basedpyright": "passed for changed retrieval modules and tests",
+    "retrieval_runs": 28,
+    "reranker_pair_truncations": 0,
+    "returned_body_truncations": 0,
+    "parent_store_hash_and_reopened_child_mapping": "verified",
+    "control_median_total_seconds": 0.9657043499755673,
+    "candidate_median_total_seconds": 0.9867922000121325,
+    "latency_scope": "Single local CPU execution per exposed query, retrieval/scoring/rendering inside the pilot; not production p95 or an Agent latency claim.",
+    "generative_model_calls": 0,
+    "abaqus_calls": 0
+  },
+  "decision": "Keep the parent-child implementation and pilot as a working evidence-preservation path, but do not promote the pilot index to the product default. RAG is not finished: final evidence selection still has regressions, deferred structured coverage needs its own representation work, and source-block completeness is not answer completeness. Preserve these failures rather than changing K or claims to make this batch pass."
+}

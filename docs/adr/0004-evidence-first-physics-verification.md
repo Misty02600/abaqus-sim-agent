@@ -58,10 +58,16 @@ RAG、MCP、前端和微调只有在这个固定评测体系中证明收益或�
 
 ## 落实与确认
 
-- 实施情况：已有 VerificationReport 和 VerifierAgent 协议；分层 validator、Gold benchmark、Trace 指纹与消融 runner 尚未实现。
-- 代码或测试：`src/abaqus_sim_agent/domain/models.py`、`src/abaqus_sim_agent/agents/contracts.py`。
+- 实施情况：首个二维板拉伸 Gold 已实现宿主确定性 verifier、模型不可见的 ODB oracle、artifact freshness、
+  solver/`.sta` 完成证据、element type/count、U/S/RF 数值和 Agent `results.json` 交叉检查；pydantic-evals
+  smoke 连续运行三次并要求至少两次通过。确定性 reference model 已在本机 Abaqus 2024 通过一次持证
+  integration，验证真实 solver/oracle；通用 specification fidelity、更多 Gold、分布外案例、消融和三次
+  Agent 持证运行仍待完成。
+- 代码或测试：`src/abaqus_sim_agent/verification/`、`src/abaqus_sim_agent/evaluation/plate_tension.py`、
+  `benchmarks/coding/`、`tests/test_plate_tension_verification.py`、
+  `tests/test_plate_tension_evaluation.py`。
 
 ## 相关文档
 
 - [项目架构](../architecture/overview.md)
-- [生态、框架与求职项目调研](../scratch/ecosystem-research-20260819.md)
+- [ADR-0008：首轮采用 Pydantic AI Harness 单 Coder 的原生 Abaqus CodingRun](0008-pydantic-ai-harness-abaqus-coding-run.md)

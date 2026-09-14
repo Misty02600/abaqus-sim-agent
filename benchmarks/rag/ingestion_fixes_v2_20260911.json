@@ -1,0 +1,1450 @@
+{
+  "profile": "rag-ingestion-fixes-v2-development",
+  "date": "2026-09-11",
+  "metrics": {
+    "cases_per_arm": 16,
+    "source_targets": [
+      {
+        "case_id": "odb-history-precision",
+        "old": {
+          "id": "history_only_single_precision",
+          "unit_id": null,
+          "in_dense": false,
+          "in_bm25": false,
+          "in_pool": false,
+          "best_child_rerank": null,
+          "delivered": false,
+          "delivered_exact_atomic_body": false,
+          "context_reference_delivered": false
+        },
+        "new": {
+          "id": "history_only_single_precision",
+          "unit_id": "86ee4b38acae1e8f8f192698ee674318b212c285d286fcbb6cd46926e6630029",
+          "in_dense": true,
+          "in_bm25": true,
+          "in_pool": true,
+          "best_child_rerank": 1,
+          "delivered": true,
+          "delivered_exact_atomic_body": true,
+          "context_reference_delivered": false
+        }
+      },
+      {
+        "case_id": "temperature-thermal-expansion",
+        "old": {
+          "id": "initial_reference_distinction_prose",
+          "unit_id": "d893b1b34ca62529ef73f655225f829582e64e0f5ef7667714b622bd54fb86b5",
+          "in_dense": false,
+          "in_bm25": false,
+          "in_pool": false,
+          "best_child_rerank": null,
+          "delivered": false,
+          "delivered_exact_atomic_body": false,
+          "context_reference_delivered": false
+        },
+        "new": {
+          "id": "initial_reference_distinction_prose",
+          "unit_id": "5f3eb790275affb9673e4e42d25a828ccfc8ca362f8d572f88a8217a261ee6d9",
+          "in_dense": false,
+          "in_bm25": true,
+          "in_pool": true,
+          "best_child_rerank": 63,
+          "delivered": false,
+          "delivered_exact_atomic_body": false,
+          "context_reference_delivered": false
+        }
+      }
+    ],
+    "preexisting_requirement_checks": 10,
+    "preexisting_requirement_deliveries_old": 6,
+    "preexisting_requirement_deliveries_new": 6,
+    "preexisting_requirement_gains": 0,
+    "preexisting_requirement_losses": 0,
+    "guard_checks": 10,
+    "guard_checks_pass": 10,
+    "ordered_evidence_unchanged_cases": 14,
+    "reranked_pairs": {
+      "old": 640,
+      "new": 640
+    },
+    "max_serialized_context_proxy_tokens": 2568,
+    "equation_context_units_delivered": 0
+  },
+  "coverage": {
+    "source_pages": 1481,
+    "source_blocks": 63142,
+    "units": 37606,
+    "children": 33871,
+    "preserved_searchable_units": 34307,
+    "preserved_children": 33383,
+    "split_groups": 438,
+    "explanations": 578,
+    "searchable_explanations": 362,
+    "projection_status": {
+      "text": 34763,
+      "deferred_math": 2663,
+      "deferred_list": 31,
+      "deferred_table": 149
+    },
+    "unit_types": {
+      "list": 2668,
+      "prose": 14011,
+      "code": 5612,
+      "excluded": 3033,
+      "formula": 3926,
+      "table": 316,
+      "definition": 8040
+    },
+    "unsupported_reasons": {
+      "math_token_content": 112,
+      "math_element:mtable": 148,
+      "math_element:mpadded": 100,
+      "math_element:munderover": 13,
+      "structure_not_in_profile": 31,
+      "table_merged_cells": 80,
+      "math_element:mover": 737,
+      "math_outside_supported_wrapper": 1293,
+      "math_attribute:accent": 22,
+      "table_ambiguous_header": 11,
+      "math_attribute:mathsize": 4,
+      "math_attribute:other": 58,
+      "table_headerless_requires_two_columns": 45,
+      "table_missing_single_header": 1,
+      "math_element:mstyle": 67,
+      "math_nested_structure": 25,
+      "math_attribute:movablelimits": 14,
+      "math_element:mmultiscripts": 29,
+      "math_element:mspace": 14,
+      "table_nonrectangular": 3,
+      "math_element:munder": 25,
+      "math_arity:mrow": 8,
+      "math_attribute:minsize": 1,
+      "table_inline_element:div": 1,
+      "table_inline_element:cite": 1
+    },
+    "prepare_seconds": 97.01668670005165
+  },
+  "added_source_coverage": {
+    "source": "SIMACAEEXCRefMap/simaexc-c-analysisproc.htm",
+    "blocks": 68,
+    "units": 57,
+    "children": 59,
+    "eligible_formula_groups": 0,
+    "split_groups": 0,
+    "explanations": 0,
+    "searchable_explanations": 0,
+    "projection_status": {
+      "text": 57
+    }
+  },
+  "embedding_reuse": {
+    "old_index_binding_sha256": "d28c3f29df45418a5c0056c6fdfc9ee2a247ddd679698212b64921edaf0d80a8",
+    "identical_record_embeddings_reused": 33383,
+    "new_record_embeddings": 488
+  },
+  "cases": [
+    {
+      "id": "riks-loading-regression",
+      "request": {
+        "kind": "question",
+        "question": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?",
+        "product": "Abaqus/Standard",
+        "observed_context": "Abaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step."
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "riks-loading-regression",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "riks_load_scaling",
+            "units": [
+              {
+                "unit_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 17,
+                "delivered": false
+              }
+            ],
+            "delivered_complete": false
+          },
+          {
+            "id": "riks_bc_amplitude",
+            "units": [
+              {
+                "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+                "in_dense": false,
+                "in_bm25": false,
+                "in_pool": true,
+                "best_child_rerank": 21,
+                "delivered": false
+              }
+            ],
+            "delivered_complete": false
+          }
+        ],
+        "targets": [],
+        "delivered_ids": [
+          "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+          "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+          "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060"
+        ],
+        "context_tokens": 2023,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "riks-loading-regression",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "riks_load_scaling",
+            "units": [
+              {
+                "unit_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 17,
+                "delivered": false
+              }
+            ],
+            "delivered_complete": false
+          },
+          {
+            "id": "riks_bc_amplitude",
+            "units": [
+              {
+                "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+                "in_dense": false,
+                "in_bm25": false,
+                "in_pool": true,
+                "best_child_rerank": 21,
+                "delivered": false
+              }
+            ],
+            "delivered_complete": false
+          }
+        ],
+        "targets": [],
+        "delivered_ids": [
+          "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+          "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+          "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060"
+        ],
+        "context_tokens": 2023,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "requirements": [
+        {
+          "id": "riks_load_scaling",
+          "old": false,
+          "new": false
+        },
+        {
+          "id": "riks_bc_amplitude",
+          "old": false,
+          "new": false
+        }
+      ],
+      "ordered_evidence_unchanged": true
+    },
+    {
+      "id": "consistent-unit-system",
+      "request": {
+        "kind": "question",
+        "question": "Does Abaqus/Standard impose a built-in system of physical units, or must model inputs use a consistent unit system chosen by the analyst?",
+        "product": "Abaqus/Standard",
+        "observed_context": "This is a documentation question about the unit convention, not a request to choose material values or run a model."
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "consistent-unit-system",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "unit_convention",
+            "units": [
+              {
+                "unit_id": "c0cee566bb76c7f17644a9005c2715226ec5132f70b666bd040a43ab71ae6b50",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 1,
+                "delivered": true
+              }
+            ],
+            "delivered_complete": true
+          }
+        ],
+        "targets": [],
+        "delivered_ids": [
+          "c0cee566bb76c7f17644a9005c2715226ec5132f70b666bd040a43ab71ae6b50",
+          "ed88a1bd4209697567d0f4cf6a803be3f2a1879be142cd2d5a27604e683fa89f",
+          "87f02dd6735524775ba3624e2329740243fb061b624ab13b285c39cbfe5658de",
+          "b2f00b66845a4ee20c0d2c576279235b3b12b7911f94c1833916fc526defda38"
+        ],
+        "context_tokens": 1954,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "consistent-unit-system",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "unit_convention",
+            "units": [
+              {
+                "unit_id": "c0cee566bb76c7f17644a9005c2715226ec5132f70b666bd040a43ab71ae6b50",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 1,
+                "delivered": true
+              }
+            ],
+            "delivered_complete": true
+          }
+        ],
+        "targets": [],
+        "delivered_ids": [
+          "c0cee566bb76c7f17644a9005c2715226ec5132f70b666bd040a43ab71ae6b50",
+          "ed88a1bd4209697567d0f4cf6a803be3f2a1879be142cd2d5a27604e683fa89f",
+          "87f02dd6735524775ba3624e2329740243fb061b624ab13b285c39cbfe5658de",
+          "b2f00b66845a4ee20c0d2c576279235b3b12b7911f94c1833916fc526defda38"
+        ],
+        "context_tokens": 1954,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "requirements": [
+        {
+          "id": "unit_convention",
+          "old": true,
+          "new": true
+        }
+      ],
+      "ordered_evidence_unchanged": true
+    },
+    {
+      "id": "odb-history-precision",
+      "request": {
+        "kind": "question",
+        "question": "In an Abaqus/Standard output database, what numerical precision is used to store nodal history output, and can requesting full nodal output precision change it?",
+        "product": "Abaqus/Standard",
+        "observed_context": "I want to understand stored ODB history data precision, not printed decimal places or the solver executable's floating-point mode."
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "odb-history-precision",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "odb_default_precision",
+            "units": [
+              {
+                "unit_id": "75c5496178929b9fe98e5758ff5b84985acbfe4e20c9582cb703456efcbf3ee4",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 6,
+                "delivered": false
+              }
+            ],
+            "delivered_complete": false
+          }
+        ],
+        "targets": [
+          {
+            "id": "history_only_single_precision",
+            "unit_id": null,
+            "in_dense": false,
+            "in_bm25": false,
+            "in_pool": false,
+            "best_child_rerank": null,
+            "delivered": false,
+            "delivered_exact_atomic_body": false,
+            "context_reference_delivered": false
+          }
+        ],
+        "delivered_ids": [
+          "f7f4e62c45efbd577f9eddc5c473a099d40b7c5fd15fef9de526805fcd942d6c",
+          "5591d04891dbfd8d5d0229c6e54b9693e2ec938a3b9b5ad6ac1a54dd5aff0111",
+          "d9287cff6d33b48622012ad969c13978d4163d4924d35f26e76009e5e9a484fa",
+          "8e378cbcbf579a7c13489e19c771fac0099b70c889c9bab41622882bb5c29078"
+        ],
+        "context_tokens": 1839,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "odb-history-precision",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "odb_default_precision",
+            "units": [
+              {
+                "unit_id": "75c5496178929b9fe98e5758ff5b84985acbfe4e20c9582cb703456efcbf3ee4",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 7,
+                "delivered": false
+              }
+            ],
+            "delivered_complete": false
+          }
+        ],
+        "targets": [
+          {
+            "id": "history_only_single_precision",
+            "unit_id": "86ee4b38acae1e8f8f192698ee674318b212c285d286fcbb6cd46926e6630029",
+            "in_dense": true,
+            "in_bm25": true,
+            "in_pool": true,
+            "best_child_rerank": 1,
+            "delivered": true,
+            "delivered_exact_atomic_body": true,
+            "context_reference_delivered": false
+          }
+        ],
+        "delivered_ids": [
+          "86ee4b38acae1e8f8f192698ee674318b212c285d286fcbb6cd46926e6630029",
+          "f7f4e62c45efbd577f9eddc5c473a099d40b7c5fd15fef9de526805fcd942d6c",
+          "5591d04891dbfd8d5d0229c6e54b9693e2ec938a3b9b5ad6ac1a54dd5aff0111",
+          "d9287cff6d33b48622012ad969c13978d4163d4924d35f26e76009e5e9a484fa"
+        ],
+        "context_tokens": 2090,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "requirements": [
+        {
+          "id": "odb_default_precision",
+          "old": false,
+          "new": false
+        }
+      ],
+      "ordered_evidence_unchanged": false
+    },
+    {
+      "id": "steady-transient-heat-properties",
+      "request": {
+        "kind": "question",
+        "question": "For an uncoupled heat transfer analysis in Abaqus/Standard, are density and specific heat needed in steady state, and how do these material requirements differ for a transient analysis?",
+        "product": "Abaqus/Standard",
+        "observed_context": "Compare the two procedures' material requirements. No geometry, material values, latent heat data or results are supplied; do not choose any numerical properties."
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "steady-transient-heat-properties",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "steady_internal_energy",
+            "units": [
+              {
+                "unit_id": "41b62d2766366b032da2c5884e8d5d288338be9d07ecca9fd799e7bbeb15809e",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 1,
+                "delivered": true
+              }
+            ],
+            "delivered_complete": true
+          },
+          {
+            "id": "transient_material_requirements",
+            "units": [
+              {
+                "unit_id": "a32e837dd84d53266aea7f866dbe8f8b8e74f9d31cb9e2120f036e7a3ff960f5",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 2,
+                "delivered": true
+              }
+            ],
+            "delivered_complete": true
+          }
+        ],
+        "targets": [],
+        "delivered_ids": [
+          "41b62d2766366b032da2c5884e8d5d288338be9d07ecca9fd799e7bbeb15809e",
+          "a32e837dd84d53266aea7f866dbe8f8b8e74f9d31cb9e2120f036e7a3ff960f5",
+          "45397bf8d67866860992d33bd1a06e7c8bd20cb81e380d25ee74c3d04c05a241",
+          "a0bf9425784497cff7ff8b83c0c261ffdc0a2ecb27850670d48c607a06c910db"
+        ],
+        "context_tokens": 2077,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "steady-transient-heat-properties",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "steady_internal_energy",
+            "units": [
+              {
+                "unit_id": "41b62d2766366b032da2c5884e8d5d288338be9d07ecca9fd799e7bbeb15809e",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 1,
+                "delivered": true
+              }
+            ],
+            "delivered_complete": true
+          },
+          {
+            "id": "transient_material_requirements",
+            "units": [
+              {
+                "unit_id": "a32e837dd84d53266aea7f866dbe8f8b8e74f9d31cb9e2120f036e7a3ff960f5",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 2,
+                "delivered": true
+              }
+            ],
+            "delivered_complete": true
+          }
+        ],
+        "targets": [],
+        "delivered_ids": [
+          "41b62d2766366b032da2c5884e8d5d288338be9d07ecca9fd799e7bbeb15809e",
+          "a32e837dd84d53266aea7f866dbe8f8b8e74f9d31cb9e2120f036e7a3ff960f5",
+          "45397bf8d67866860992d33bd1a06e7c8bd20cb81e380d25ee74c3d04c05a241",
+          "a0bf9425784497cff7ff8b83c0c261ffdc0a2ecb27850670d48c607a06c910db"
+        ],
+        "context_tokens": 2077,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "requirements": [
+        {
+          "id": "steady_internal_energy",
+          "old": true,
+          "new": true
+        },
+        {
+          "id": "transient_material_requirements",
+          "old": true,
+          "new": true
+        }
+      ],
+      "ordered_evidence_unchanged": true
+    },
+    {
+      "id": "temperature-thermal-expansion",
+      "request": {
+        "kind": "question",
+        "question": "In an Abaqus/Standard stress analysis, is changing a predefined temperature field by itself enough to produce thermal strains? What additional material definition is needed, and what role does a stress-free reference temperature play?",
+        "product": "Abaqus/Standard",
+        "observed_context": "This is a conceptual explanation of thermal strain generation. Do not invent expansion coefficients, initial temperatures or reference temperatures for a particular model."
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "temperature-thermal-expansion",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "temperature_requires_expansion",
+            "units": [
+              {
+                "unit_id": "31b79082e8bc7ad279ba1d9c0d44acbc9b01e2a259b8ed90117f4b9c2e5c80dc",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 1,
+                "delivered": true
+              }
+            ],
+            "delivered_complete": true
+          },
+          {
+            "id": "coefficient_reference",
+            "units": [
+              {
+                "unit_id": "4f3812d78afa585e3f2626bf5be4de721af3e324fdcc6891285038db915da082",
+                "in_dense": false,
+                "in_bm25": false,
+                "in_pool": false,
+                "best_child_rerank": null,
+                "delivered": false
+              },
+              {
+                "unit_id": "9ba719366138f868ec6a154f5c02ed4f5556d39362d956e7ba8d1843f0235cd9",
+                "in_dense": false,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 64,
+                "delivered": false
+              }
+            ],
+            "delivered_complete": false
+          }
+        ],
+        "targets": [
+          {
+            "id": "initial_reference_distinction_prose",
+            "unit_id": "d893b1b34ca62529ef73f655225f829582e64e0f5ef7667714b622bd54fb86b5",
+            "in_dense": false,
+            "in_bm25": false,
+            "in_pool": false,
+            "best_child_rerank": null,
+            "delivered": false,
+            "delivered_exact_atomic_body": false,
+            "context_reference_delivered": false
+          }
+        ],
+        "delivered_ids": [
+          "31b79082e8bc7ad279ba1d9c0d44acbc9b01e2a259b8ed90117f4b9c2e5c80dc",
+          "6da7622f40a4422086dc95bf1973a29a42ae2c9fbb22a6d4aa1aece7f999aed2",
+          "207539a50bdefb805c3e8b68a5f0a021063af668ec49d63b37d4c32b3362a1b2",
+          "7af16dfba793a189ea08fb03ea2fa886dffc13dbdc2d178cc5030869eef879b4"
+        ],
+        "context_tokens": 1890,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "temperature-thermal-expansion",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "temperature_requires_expansion",
+            "units": [
+              {
+                "unit_id": "31b79082e8bc7ad279ba1d9c0d44acbc9b01e2a259b8ed90117f4b9c2e5c80dc",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 1,
+                "delivered": true
+              }
+            ],
+            "delivered_complete": true
+          },
+          {
+            "id": "coefficient_reference",
+            "units": [
+              {
+                "unit_id": "4f3812d78afa585e3f2626bf5be4de721af3e324fdcc6891285038db915da082",
+                "in_dense": false,
+                "in_bm25": false,
+                "in_pool": false,
+                "best_child_rerank": null,
+                "delivered": false
+              },
+              {
+                "unit_id": "9ba719366138f868ec6a154f5c02ed4f5556d39362d956e7ba8d1843f0235cd9",
+                "in_dense": false,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 64,
+                "delivered": false
+              }
+            ],
+            "delivered_complete": false
+          }
+        ],
+        "targets": [
+          {
+            "id": "initial_reference_distinction_prose",
+            "unit_id": "5f3eb790275affb9673e4e42d25a828ccfc8ca362f8d572f88a8217a261ee6d9",
+            "in_dense": false,
+            "in_bm25": true,
+            "in_pool": true,
+            "best_child_rerank": 63,
+            "delivered": false,
+            "delivered_exact_atomic_body": false,
+            "context_reference_delivered": false
+          }
+        ],
+        "delivered_ids": [
+          "31b79082e8bc7ad279ba1d9c0d44acbc9b01e2a259b8ed90117f4b9c2e5c80dc",
+          "6da7622f40a4422086dc95bf1973a29a42ae2c9fbb22a6d4aa1aece7f999aed2",
+          "207539a50bdefb805c3e8b68a5f0a021063af668ec49d63b37d4c32b3362a1b2",
+          "7af16dfba793a189ea08fb03ea2fa886dffc13dbdc2d178cc5030869eef879b4"
+        ],
+        "context_tokens": 1890,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "requirements": [
+        {
+          "id": "temperature_requires_expansion",
+          "old": true,
+          "new": true
+        },
+        {
+          "id": "coefficient_reference",
+          "old": false,
+          "new": false
+        }
+      ],
+      "ordered_evidence_unchanged": true
+    },
+    {
+      "id": "missing-project-stress-result",
+      "request": {
+        "kind": "question",
+        "question": "What is the exact maximum von Mises stress in MPa in my bracket after the load step?",
+        "product": "Abaqus/Standard",
+        "observed_context": "No model files, ODB, geometry, material properties, loads, boundary conditions or previous run results have been provided. Only generic Abaqus documentation is available."
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "missing-project-stress-result",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [
+          "1d4f03ece48e4c61b5ad7fb0c9f3c0393667efc7ebf6932c9f8be31272fe1964",
+          "514179ed47485a480b3ef9512b19fa3db2d1b01c0aca74eb4e65d3ab00659cbf",
+          "49bffc036ba9104bd52e3c5c1be7151ae2a1c6b6f4c8a3cc0856b05d3b21b163",
+          "8fb890cdca3c95746882426d7dd42301afc2914eaf1748a06a31daa3f8a34dee"
+        ],
+        "context_tokens": 2172,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "unknown": 3,
+          "official_page": 1
+        }
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "missing-project-stress-result",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [
+          "1d4f03ece48e4c61b5ad7fb0c9f3c0393667efc7ebf6932c9f8be31272fe1964",
+          "514179ed47485a480b3ef9512b19fa3db2d1b01c0aca74eb4e65d3ab00659cbf",
+          "49bffc036ba9104bd52e3c5c1be7151ae2a1c6b6f4c8a3cc0856b05d3b21b163",
+          "8fb890cdca3c95746882426d7dd42301afc2914eaf1748a06a31daa3f8a34dee"
+        ],
+        "context_tokens": 2172,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "unknown": 3,
+          "official_page": 1
+        }
+      },
+      "requirements": [],
+      "ordered_evidence_unchanged": true
+    },
+    {
+      "id": "unavailable-2024-release-evidence",
+      "request": {
+        "kind": "question",
+        "question": "Using Abaqus 2024 documentation specifically, confirm the material requirements for transient uncoupled heat transfer in Abaqus/Standard. I need 2024 evidence, not an assumption that another release behaves identically.",
+        "product": "Abaqus/Standard",
+        "source_release": "2024",
+        "observed_context": "The available local documentation corpus is Abaqus 2026 FD02. No Abaqus 2024 manual or runtime compatibility test is supplied."
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "unavailable-2024-release-evidence",
+        "status": "not_found",
+        "guard_pass": null,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [],
+        "context_tokens": 0,
+        "reranked_pairs": 0,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {}
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "unavailable-2024-release-evidence",
+        "status": "not_found",
+        "guard_pass": null,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [],
+        "context_tokens": 0,
+        "reranked_pairs": 0,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {}
+      },
+      "requirements": [],
+      "ordered_evidence_unchanged": true
+    },
+    {
+      "id": "exact-api-region-1",
+      "request": {
+        "kind": "question",
+        "question": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?",
+        "product": null,
+        "observed_context": "extract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT."
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "exact-api-region-1",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [
+          "466b7d130e8cdca5148417f8d2539d3693fe96135573596020d95cc129e3a442",
+          "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+          "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+          "1c2b80d94c5cc40f1f590c67baee896fe96cab9f2f1e96923dfbe99c819735f0"
+        ],
+        "context_tokens": 2568,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "exact-api-region-1",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [
+          "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+          "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+          "1c2b80d94c5cc40f1f590c67baee896fe96cab9f2f1e96923dfbe99c819735f0",
+          "b535bb5ece41b4b0f34d5568eeb345c2979d033b25259a319b55e32f49b9298d"
+        ],
+        "context_tokens": 2324,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "requirements": [],
+      "ordered_evidence_unchanged": false
+    },
+    {
+      "id": "domain-procedure-applicability-1",
+      "request": {
+        "kind": "question",
+        "question": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?",
+        "product": "Abaqus/Standard",
+        "observed_context": "Abaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation."
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "domain-procedure-applicability-1",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [
+          "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+          "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+          "9304e3884f2dc97f5cc593fb08daeb2f79bbdd18db94e8411e6981f391534279"
+        ],
+        "context_tokens": 1952,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "domain-procedure-applicability-1",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [
+          "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+          "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+          "9304e3884f2dc97f5cc593fb08daeb2f79bbdd18db94e8411e6981f391534279"
+        ],
+        "context_tokens": 1952,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 4
+        }
+      },
+      "requirements": [],
+      "ordered_evidence_unchanged": true
+    },
+    {
+      "id": "recorded-solver-diagnostic-1",
+      "request": {
+        "kind": "question",
+        "question": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?",
+        "product": "Abaqus/Standard",
+        "observed_context": "recorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt."
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "recorded-solver-diagnostic-1",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "complete_time_adjustment",
+            "units": [
+              {
+                "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 1,
+                "delivered": true
+              }
+            ],
+            "delivered_complete": true
+          }
+        ],
+        "targets": [],
+        "delivered_ids": [
+          "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "69f59177d9101623ef372831c4516cc664552c4acd0a9324116f463e2b231a0c",
+          "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+          "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2"
+        ],
+        "context_tokens": 2050,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "verified_section": 3,
+          "official_page": 1
+        }
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "recorded-solver-diagnostic-1",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "complete_time_adjustment",
+            "units": [
+              {
+                "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 1,
+                "delivered": true
+              }
+            ],
+            "delivered_complete": true
+          }
+        ],
+        "targets": [],
+        "delivered_ids": [
+          "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "69f59177d9101623ef372831c4516cc664552c4acd0a9324116f463e2b231a0c",
+          "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+          "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2"
+        ],
+        "context_tokens": 2050,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "verified_section": 3,
+          "official_page": 1
+        }
+      },
+      "requirements": [
+        {
+          "id": "complete_time_adjustment",
+          "old": true,
+          "new": true
+        }
+      ],
+      "ordered_evidence_unchanged": true
+    },
+    {
+      "id": "recorded-solver-diagnostic-2",
+      "request": {
+        "kind": "question",
+        "question": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?",
+        "product": "Abaqus/Standard",
+        "observed_context": "Abaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt."
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "recorded-solver-diagnostic-2",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "complete_time_adjustment",
+            "units": [
+              {
+                "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 4,
+                "delivered": true
+              }
+            ],
+            "delivered_complete": true
+          }
+        ],
+        "targets": [],
+        "delivered_ids": [
+          "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+          "9af9b454bad0d830b1c569ce052062505f8bd9f3f31878e36885d9300ab3e2e6",
+          "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+          "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc"
+        ],
+        "context_tokens": 1796,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 2,
+          "verified_section": 2
+        }
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "recorded-solver-diagnostic-2",
+        "status": "found",
+        "guard_pass": null,
+        "requirements": [
+          {
+            "id": "complete_time_adjustment",
+            "units": [
+              {
+                "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+                "in_dense": true,
+                "in_bm25": true,
+                "in_pool": true,
+                "best_child_rerank": 4,
+                "delivered": true
+              }
+            ],
+            "delivered_complete": true
+          }
+        ],
+        "targets": [],
+        "delivered_ids": [
+          "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+          "9af9b454bad0d830b1c569ce052062505f8bd9f3f31878e36885d9300ab3e2e6",
+          "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+          "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc"
+        ],
+        "context_tokens": 1796,
+        "reranked_pairs": 64,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 2,
+          "verified_section": 2
+        }
+      },
+      "requirements": [
+        {
+          "id": "complete_time_adjustment",
+          "old": true,
+          "new": true
+        }
+      ],
+      "ordered_evidence_unchanged": true
+    },
+    {
+      "id": "explicit-at",
+      "request": {
+        "kind": "symbol",
+        "symbol": "AT",
+        "symbol_kind": "output_variable"
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "explicit-at",
+        "status": "found",
+        "guard_pass": true,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [
+          "simaout-c-exp-nodalvariables#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016"
+        ],
+        "context_tokens": 669,
+        "reranked_pairs": 0,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "unknown": 2
+        }
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "explicit-at",
+        "status": "found",
+        "guard_pass": true,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [
+          "simaout-c-exp-nodalvariables#simaout-c-exp-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+          "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016"
+        ],
+        "context_tokens": 669,
+        "reranked_pairs": 0,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "unknown": 2
+        }
+      },
+      "requirements": [],
+      "ordered_evidence_unchanged": true
+    },
+    {
+      "id": "explicit-static",
+      "request": {
+        "kind": "symbol",
+        "symbol": "*STATIC",
+        "symbol_kind": "keyword",
+        "product": "Abaqus/Standard"
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "explicit-static",
+        "status": "found",
+        "guard_pass": true,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [
+          "simakey-r-static#keyword"
+        ],
+        "context_tokens": 287,
+        "reranked_pairs": 0,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 1
+        }
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "explicit-static",
+        "status": "found",
+        "guard_pass": true,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [
+          "simakey-r-static#keyword"
+        ],
+        "context_tokens": 287,
+        "reranked_pairs": 0,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {
+          "official_page": 1
+        }
+      },
+      "requirements": [],
+      "ordered_evidence_unchanged": true
+    },
+    {
+      "id": "unknown-symbol",
+      "request": {
+        "kind": "symbol",
+        "symbol": "NOT_A_REAL_ABAQUS_SYMBOL",
+        "symbol_kind": "output_variable"
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "unknown-symbol",
+        "status": "not_found",
+        "guard_pass": true,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [],
+        "context_tokens": 2,
+        "reranked_pairs": 0,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {}
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "unknown-symbol",
+        "status": "not_found",
+        "guard_pass": true,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [],
+        "context_tokens": 2,
+        "reranked_pairs": 0,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {}
+      },
+      "requirements": [],
+      "ordered_evidence_unchanged": true
+    },
+    {
+      "id": "unavailable-release",
+      "request": {
+        "kind": "question",
+        "question": "Explain exact output timing",
+        "source_release": "2024"
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "unavailable-release",
+        "status": "not_found",
+        "guard_pass": true,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [],
+        "context_tokens": 0,
+        "reranked_pairs": 0,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {}
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "unavailable-release",
+        "status": "not_found",
+        "guard_pass": true,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [],
+        "context_tokens": 0,
+        "reranked_pairs": 0,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {}
+      },
+      "requirements": [],
+      "ordered_evidence_unchanged": true
+    },
+    {
+      "id": "query-over-encoder-budget",
+      "request": {
+        "kind": "question",
+        "question": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word "
+      },
+      "old": {
+        "arm": "old",
+        "case_id": "query-over-encoder-budget",
+        "status": "query_too_long",
+        "guard_pass": true,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [],
+        "context_tokens": 0,
+        "reranked_pairs": 0,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {}
+      },
+      "new": {
+        "arm": "new",
+        "case_id": "query-over-encoder-budget",
+        "status": "query_too_long",
+        "guard_pass": true,
+        "requirements": [],
+        "targets": [],
+        "delivered_ids": [],
+        "context_tokens": 0,
+        "reranked_pairs": 0,
+        "equation_context_unit_count": 0,
+        "applicability_origins": {}
+      },
+      "requirements": [],
+      "ordered_evidence_unchanged": true
+    }
+  ],
+  "source_targets": [
+    {
+      "case_id": "odb-history-precision",
+      "id": "history_only_single_precision",
+      "member_id": "8804a16c495d7f476831eaf7726e65abe74c46cc7619e67baefa55a222469fdf",
+      "source": "http://localhost:4040/English/SIMACAEEXCRefMap/simaexc-c-analysisproc.htm#simaexc-c-analysisproc-t-commandlineopts1__simaexc-c-analysisproc-s-AdditionalOptionsAvailableForTheAnalysisModule-comlineoptcustom3",
+      "source_sha256": "14f7c94e2f64b961f9d6780ba440a9afaf7fa346a4e909abda685cff79a0bdb7",
+      "source_xpath": "/html/body/table/tr/td/article[2]/div/div[3]/dl/dd[21]",
+      "body_sha256": "17d47e677a3fb6fbcf71666753b0fb3be8bbdbb7d421c1328938de9929b3d4cd",
+      "require_context_reference": false,
+      "arms": {
+        "old": {
+          "unit_id": null,
+          "projection_status": null,
+          "children": 0,
+          "whole_atomic_body_preserved": false,
+          "unit_body_characters": null
+        },
+        "new": {
+          "unit_id": "86ee4b38acae1e8f8f192698ee674318b212c285d286fcbb6cd46926e6630029",
+          "projection_status": "text",
+          "children": 1,
+          "whole_atomic_body_preserved": true,
+          "unit_body_characters": 1330
+        }
+      }
+    },
+    {
+      "case_id": "temperature-thermal-expansion",
+      "id": "initial_reference_distinction_prose",
+      "member_id": "898a33bf802b49f86c9c7c53d36239f54fc2fe414f7dcb6bcb2238a9767cb920",
+      "source": "http://localhost:4040/English/SIMACAEMATRefMap/simamat-c-thermalexpan.htm#simamat-c-secant-thermal-expansion",
+      "source_sha256": "62d45f2071b66171bf118dc84848953dc726cc8c903511599a4515c7a4985808",
+      "source_xpath": "/html/body/table/tr/td/article[1]/article[2]/div/p[4]",
+      "body_sha256": "ea964155b523929b5b66c2a4a9f8e342b0a7e436fe2c3af2b7c917e7bc065a88",
+      "require_context_reference": true,
+      "arms": {
+        "old": {
+          "unit_id": "d893b1b34ca62529ef73f655225f829582e64e0f5ef7667714b622bd54fb86b5",
+          "projection_status": "deferred_math",
+          "children": 0,
+          "whole_atomic_body_preserved": true,
+          "unit_body_characters": 5963
+        },
+        "new": {
+          "unit_id": "5f3eb790275affb9673e4e42d25a828ccfc8ca362f8d572f88a8217a261ee6d9",
+          "projection_status": "text",
+          "children": 1,
+          "whole_atomic_body_preserved": true,
+          "unit_body_characters": 761
+        }
+      }
+    }
+  ],
+  "options": {
+    "retrieval_mode": "hybrid",
+    "query_text_mode": "rerank_question_only",
+    "pool_policy": "page_lexical"
+  },
+  "budget": {
+    "candidates": 64,
+    "output_units": 4,
+    "embedding_tokens": 256,
+    "reranker_pair_tokens": 512,
+    "unit_body_tokens": 1200,
+    "context_tokens": 4000
+  },
+  "limits": [
+    "All questions were already exposed development cases. No held-out or complete-answer claim.",
+    "No generated query/answer, Provider, Agent, Abaqus, threshold tuning or default switch.",
+    "Both arms use original request and identical retrieval/reranker/budget settings.",
+    "Two repaired source targets are predeclared independently of current rankings; annotations never enter retrieval or reranking.",
+    "Formula context references are structural, not formula text or semantic independence; full enriched evidence counts against the same budget, with whole-unit rejection and no fifth-place refill.",
+    "New corpus changes global IDF and rebuilds an independent approximate HNSW graph even though all identical old vectors are reused.",
+    "Prepared v1 detected zero splits because outer layout table was mistaken for a content table. It was never indexed/ranked; original v1 preparation artifacts are retained, and its implementation hash is superseded by the fix."
+  ],
+  "validation": {
+    "new_deterministic_tests": 22,
+    "full_suite_passed": 945,
+    "licensed_tests_skipped": 27,
+    "ruff": "passed",
+    "basedpyright": "0 errors, 0 warnings",
+    "no_old_searchable_units_or_children_changed": true,
+    "source_block_order_and_body_preserved": true,
+    "model_calls": 0,
+    "abaqus_calls": 0,
+    "default_index_switched": false
+  },
+  "evidence_sha256": {
+    "var\\audits\\rag-ingestion-fixes-v2\\manifest.json": "34e5bf68ea9f1bac59c4ea5dbae792596b1a76c1aa26133d68e3e7ac3d8566d3",
+    "var\\audits\\rag-ingestion-fixes-v2\\summary.json": "be665cfb01a4b78b00cba574b30ad4b1bd9c1677b5f32e9ae953948a8e47b2bf",
+    "var\\rag-headerless-pairs-v1\\manifest.json": "cdd92c955d96e93f21ed0d9a256976678337cf44eb99f13a6ed9cca57ae25e57",
+    "var\\rag-headerless-pairs-v1\\prepared.json": "6ec20d960265f3f05690a7b71436d574ca97e84a02478782dd63ce84f43d9afd",
+    "var\\rag-headerless-pairs-v1\\index-binding.json": "d28c3f29df45418a5c0056c6fdfc9ee2a247ddd679698212b64921edaf0d80a8",
+    "var\\rag-ingestion-fixes-v2\\manifest.json": "4c7bed55eb8d05d7e1de4db6294462567216e297beea7edf303dd40cf3bc5811",
+    "var\\rag-ingestion-fixes-v2\\prepared.json": "fed06ace27237275abec5b1c29e973761093af0650fa21b0070da49dc3c28a0b",
+    "var\\rag-ingestion-fixes-v2\\index-binding.json": "a266e22ca3805f8fea7efbb3f25d87163b679d6006260102ce82c2c8ae7811eb",
+    "var\\rag-ingestion-fixes-v2\\coverage.json": "66144edf368590b705b4f0708a0a4af7fc840506e6da88c82ad090fde693726c",
+    "var\\rag-ingestion-fixes-v2\\equation_context_relations.json": "ba8826f371092f7324fc7730419b57b0bf5cd7814822889a0f50e826b6a3bb94",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\consistent-unit-system.json": "144213d4f58d9e37da74b93679b6c029635352aec6cdc32b6959102e57b7948a",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\domain-procedure-applicability-1.json": "30321b93b4a3e74df1dd6e23d146c05211b1ae24ae0a64542291bef645c07cfa",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\exact-api-region-1.json": "7a789307fd5e495c8e9e950a2ba44b3e2aeacee44ccf8029e6cf6c3e36d4e5ef",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\explicit-at.json": "d451ce260d5e77d592bf826fe1ec1c55af17bf6626051210d112bd758d8b6555",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\explicit-static.json": "6ff4107c59ecd89946408fec93144dce274fcd0e4c46fc5fc894c1cb6f2c661a",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\missing-project-stress-result.json": "34c7bd8c5b924dd820672b41e7a75304a94189128387ea21de99f18d501ec09e",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\odb-history-precision.json": "176e9c6b23b3c8198b95692cc2ed5d3a99877f069ffced51588095311d5479b5",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\query-over-encoder-budget.json": "e7fc3db4c9ad3f693b54d1947ce7cf7b7a23d0ddd54d9c403ce052a979934132",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\recorded-solver-diagnostic-1.json": "95e84cf622e8e1de22ccb421249debf7ff372a55aa56a0d2e35c24cc9ab50651",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\recorded-solver-diagnostic-2.json": "8602e3127a783235252c0c03e866cb4cb94efa02340e53a8839558c8f7ff5c06",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\riks-loading-regression.json": "f14664b1030b11a49f9d59db613f0a4c0edaf22c1dcd67d7d8cf86ac88401189",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\steady-transient-heat-properties.json": "232cc1af0d929d57a0c8b35fc9b80fb2803cf3720492e87bce9c9a49a454d668",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\temperature-thermal-expansion.json": "916bce551332992a397a29fad8c66d6d51ee9ebb135e8bda320c42b3682dd71c",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\unavailable-2024-release-evidence.json": "cef344a063753d34439544d0dc953be8af92ab1d2fcc701d8d7c5203d0898244",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\unavailable-release.json": "8450f0a8f827378e99b66f62c9ab46bc2c7d6539bfd12643140a24c67d222a10",
+    "var\\audits\\rag-ingestion-fixes-v2\\new\\unknown-symbol.json": "63d971fe7d2f7f99ff3050b1a3f9dd73c2fb6a5440f1b4f5e2465997ab7f64c7",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\consistent-unit-system.json": "3ba57c261f0df7ba4b4b635fe854f30ee174e06d27e3641443173a1dd9899350",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\domain-procedure-applicability-1.json": "07e8b2aca8cdbc7752118c198d9dbae83a495e9e20b04364ef27f44804aba82d",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\exact-api-region-1.json": "5829cfc666dcf2315716632b0fb144d0a89657d4987c6dd6d44d2dfd5f417882",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\explicit-at.json": "c19e53ec0b9eefbb8f986340dc62a170e3d94fe0c53cf4635bcadbdcffd5fa6f",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\explicit-static.json": "2f49158ce461f947747664ae4e3685dbfadb622f7752a80d5b902d96a4a7b4fc",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\missing-project-stress-result.json": "99aec4f96b3ba17a75db97188c21530b6c8d8fae10627a9d5498ae49b2485c8f",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\odb-history-precision.json": "ebfe3db9da38f6e5abd08b9d05412128cad3cda244de4266dc405aa03322d37b",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\query-over-encoder-budget.json": "be56a0ec70c06d08fb7c13e5d26562d9549821cf97e4140ded86c28e446f1f17",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\recorded-solver-diagnostic-1.json": "e8758154df6d9570182142ec8d6c585cd7687226c77a3b500faf4d9cc4e608dc",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\recorded-solver-diagnostic-2.json": "6a6f13fa3f091e4a1245ae4ae7bd4aad525e27568217606a75bdff28e2ecf0bc",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\riks-loading-regression.json": "4dbc79a1d0c4fee75a942ba33d99c77b410ae2bd331f572ebd1414e9cc1bb46c",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\steady-transient-heat-properties.json": "8f716bd677ed2f211b5481aa31f1ed7f1f7f2f0f994b5939f5f00d637a604bd6",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\temperature-thermal-expansion.json": "89df3854c1cde05ecf698c22339687bda1b7b7ae67f18d96a2069568cfa8d4b0",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\unavailable-2024-release-evidence.json": "fa7d891e7b59a910a5882211d1d07c4397969a0ee4b50a47479a059088b0d678",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\unavailable-release.json": "47e079007b7b179e0fa43ecea570eecf8358269d5828c911f2fb3b5e9de3ce8e",
+    "var\\audits\\rag-ingestion-fixes-v2\\old\\unknown-symbol.json": "ac87444827b68dd2462aec59a36bc7f4e8ace51622788a8b4e10f4023f37afcf",
+    "var\\audits\\summarize_ingestion_fixes_v2.py": "9339882fd68b0f1d36171009e0bdb4d21feb5da0c00c5e774cb3d79753b1ee89",
+    "tests\\test_equation_prose.py": "f1b9a41c00b33dc03b113c3d842bda84f5b1fc2d0c6f94dc7e81ebb3b3ee0776",
+    "tests\\test_equation_context_delivery.py": "2a8498d1687a96d34359a5af0c27ff5a218d1d44040ea249e94a35f07039bbf5",
+    "tests\\test_ingestion_fixes_candidate.py": "a4ea98863163a117fc969db667e240f2b076bdc1b802e681fd9db0c4de1b17bb"
+  }
+}

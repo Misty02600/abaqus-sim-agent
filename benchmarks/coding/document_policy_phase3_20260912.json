@@ -1,0 +1,74 @@
+{
+  "profile": "document-policy-live-behavior-v1",
+  "date": "2026-09-12",
+  "plan": "PLAN-0003",
+  "batch": "var/audits/document-policy-live-v1/batch-1",
+  "seal_sha256": "760e67a2e738b9b42b89db9959e74333f922a369d5aafe7dcd2d674da3afcc57",
+  "report_sha256": "d19ff236e8b7cfe9f12df49acbca826ef73c3f495b7a2896f09f03d7dcb5a045",
+  "completion_sha256": "dfc7f355a39391f8b6b38d14b3be619a54cb97406b97baff15b89eb592a13ac7",
+  "status": "provider_rejected_all_cases_before_generation",
+  "behavior_gate": "inconclusive_no_valid_samples",
+  "behavior_pass_rate": null,
+  "new_runs_attempted": 8,
+  "http_requests": 8,
+  "http_400_responses": 8,
+  "provider_error_type": "MissingSessionID",
+  "valid_model_behavior_samples": 0,
+  "invalid_provider_samples": 8,
+  "model_responses": 0,
+  "model_tool_calls": 0,
+  "controlled_evidence_queries": 0,
+  "live_ranking_queries": 0,
+  "abaqus_calls": 0,
+  "planned_resume_branch_reached": false,
+  "case_ids": [
+    "local-evidence",
+    "direct-support",
+    "partial-followup",
+    "unresolved-stop",
+    "missing-release",
+    "missing-physical-input",
+    "technical-failure-independent-work",
+    "citation-duplicate-resume"
+  ],
+  "method": {
+    "provider": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "max_model_requests_per_run": 12,
+    "max_lookup_calls_per_run": 2,
+    "wall_seconds_per_run": 360,
+    "http_timeout_seconds": 60,
+    "http_retries": 0,
+    "requested_max_output_tokens": 2400,
+    "requested_thinking": "disabled",
+    "evidence_selection": "controlled replay of complete verified official paragraphs or explicit injected failure; not live retrieval rankings",
+    "source_and_implementation_unchanged": true,
+    "extra_runs_after_failure": 0
+  },
+  "root_cause": {
+    "observed": "The gateway rejected every first request because x-opencode-session was missing.",
+    "local_code": "coding/model.py creates AsyncOpenAI without a conversation session header or an application-specific User-Agent.",
+    "user_agent_note": "Installed Pydantic AI supplies its framework User-Agent unless overridden; the observed rejection establishes the missing session header, not a second independently observed User-Agent rejection.",
+    "official_source": "https://opencode.ai/docs/go/#where-can-i-use-it",
+    "current_documented_requirements": [
+      "Identify the actual coding client with its own User-Agent.",
+      "Send a stable x-opencode-session per conversation."
+    ],
+    "not_claimed": [
+      "when the requirement changed",
+      "model reasoning quality or RAG regression",
+      "provider usage/billing for rejected requests"
+    ]
+  },
+  "next_step_requires_confirmation": "Fix the OpenCode Go transport with truthful application identity and a session ID stable across same-run resume; run offline header tests first, then authorize a separate new batch without rewriting this consumed batch.",
+  "whole_plan_status": "in_progress",
+  "deterministic_verification": {
+    "new_tests_passed": 8,
+    "whole_repository_passed": 1090,
+    "licensed_tests_skipped": 27,
+    "pytest_seconds": 98.53,
+    "basedpyright_errors": 0,
+    "ruff_rule_check": "passed"
+  },
+  "default_product_mode_changed": false
+}

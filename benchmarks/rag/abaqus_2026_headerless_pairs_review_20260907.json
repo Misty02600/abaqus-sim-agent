@@ -1,0 +1,781 @@
+{
+  "schema_version": "headerless-pairs-review-v1",
+  "date": "2026-09-07",
+  "scope": "One reusable, opt-in source-structure rule; no page-specific handlers, DOF constants, guessed column names or handwritten evidence bodies.",
+  "rule": "A table without declared headers may produce ordered two-cell rows only when every row has exactly two nonempty td cells and no header associations, merged cells, unmodeled nesting or presentational role. Keep source caption, heading, attached notes, row order and complete original XML. Atomic rows under real tokenizer budget. This does not classify a row as a domain-specific mapping or infer an implicit header.",
+  "implementation": {
+    "path": "src/abaqus_sim_agent/retrieval/structured_projection.py",
+    "mode": "--headerless-pairs",
+    "default_enabled": false,
+    "projection_version": "headerless-two-column-rows-v1"
+  },
+  "coverage": {
+    "source_pages": 1480,
+    "source_blocks": 63074,
+    "units": 36897,
+    "children": 33383,
+    "new_searchable_units": 1739,
+    "unit_types": {
+      "list": 2668,
+      "prose": 13428,
+      "code": 5602,
+      "excluded": 3031,
+      "formula": 3852,
+      "table": 316,
+      "definition": 8000
+    },
+    "projection_status": {
+      "text": 34307,
+      "deferred_math": 2410,
+      "deferred_list": 31,
+      "deferred_table": 149
+    },
+    "new_supported_types": {
+      "formula": 1513,
+      "table": 167,
+      "code": 59
+    },
+    "unsupported_reasons": {
+      "math_token_content": 101,
+      "math_element:mtable": 144,
+      "math_element:mpadded": 94,
+      "math_element:munderover": 13,
+      "structure_not_in_profile": 31,
+      "table_merged_cells": 80,
+      "math_element:mover": 539,
+      "math_outside_supported_wrapper": 1289,
+      "math_attribute:accent": 20,
+      "table_ambiguous_header": 11,
+      "math_attribute:mathsize": 4,
+      "math_attribute:other": 49,
+      "table_headerless_requires_two_columns": 45,
+      "table_missing_single_header": 1,
+      "math_element:mstyle": 59,
+      "math_nested_structure": 25,
+      "math_attribute:movablelimits": 13,
+      "math_element:mmultiscripts": 25,
+      "math_element:mspace": 13,
+      "table_nonrectangular": 3,
+      "math_element:munder": 23,
+      "math_arity:mrow": 5,
+      "math_attribute:minsize": 1,
+      "table_inline_element:div": 1,
+      "table_inline_element:cite": 1
+    },
+    "max_child_tokens": 256,
+    "prepare_seconds": 99.71825110004283
+  },
+  "delta": {
+    "new_searchable_units": 33,
+    "source_pages": 15,
+    "new_children": 36,
+    "unchanged_old_children": 33347,
+    "units_by_page": {
+      "simamod-c-conventions": 3,
+      "simamod-c-partassy": 3,
+      "simaanl-c-amtoolpathmeshintersect-activating-toolpath-mesh": 2,
+      "simaanl-c-freqextraction": 1,
+      "simaanl-r-wn": 1,
+      "simaelm-r-2delem": 2,
+      "simaelm-r-3delem": 6,
+      "simaelm-r-asymmaxisymm": 1,
+      "simaelm-r-axisymelem": 3,
+      "simaelm-r-cohesive2d": 1,
+      "simaelm-r-cohesive3d": 2,
+      "simaelm-r-cohesiveaxi": 1,
+      "simaelm-r-cylindricallibrary": 2,
+      "simaelm-r-eulerianelemlib": 1,
+      "simaelm-r-gasket3d": 4
+    }
+  },
+  "checks": {
+    "original_bodies_and_source_context_unchanged": true,
+    "all_old_searchable_records_unchanged": true,
+    "no_page_ids_or_domain_values_in_projection_rule": true
+  },
+  "index_binding": {
+    "prepared_sha256": "6ec20d960265f3f05690a7b71436d574ca97e84a02478782dd63ce84f43d9afd",
+    "semantic_corpus_sha256": "7434f9f24f51bb9a3f4681a22af64d8b6e5c101912c4433d5a78a9abefc3af67",
+    "embeddings_sha256": "b0b3eca70e20cbf5067f1128f4f371507d51123fd46c8ed5e803e941f9b503d2",
+    "index_manifest_sha256": "6c1eb76113af9514aee37be31d84777280605a8a96f019964c3007d03c0da610",
+    "bm25_manifest_sha256": "508cf5c9c49eb1e677171b2ad23f23aa24d446a5a275204d788ecb5ac000a0f2",
+    "bm25_database_sha256": "193e28380b92b904e2dc29d5035b23be1422c9137b14c5ca51f1419274489dfd",
+    "vector": {
+      "algorithm": "chroma-target-hnsw-segment-bytes-v1",
+      "collection_name": "abaqus_evidence_candidate_v1",
+      "collection_id": "13ea39fe-0c29-4d6f-adb5-1f3ed88826f3",
+      "dimension": 384,
+      "collection_config_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "collection_schema_sha256": "0db3ca25ce51112fef2b68eab910ee4c5cf3ceea60fa5858b990f9af8c74c8fa",
+      "segment_ids": [
+        "f3feb45f-8a38-4d1a-a72a-2c87b8b2202f"
+      ],
+      "sha256": "b4479cb23c23d2064dbec15de74c230c582438c1f4726f8bc4a1bd0bb0a86bad",
+      "files": [
+        {
+          "path": "f3feb45f-8a38-4d1a-a72a-2c87b8b2202f/data_level0.bin",
+          "size_bytes": 55949908,
+          "sha256": "9448e0934dcfda63ade56e859b98e7d8b9c29c325f4f87dd3656d3ddd23d8cde"
+        },
+        {
+          "path": "f3feb45f-8a38-4d1a-a72a-2c87b8b2202f/header.bin",
+          "size_bytes": 100,
+          "sha256": "cd6fb947bbe55e5caba803b672af05b49dadbcde801ea335bf5ebeea61d8e036"
+        },
+        {
+          "path": "f3feb45f-8a38-4d1a-a72a-2c87b8b2202f/index_metadata.pickle",
+          "size_bytes": 5342852,
+          "sha256": "fd3115e2eb1ad21a5107d9b360fa820e1149c512a429bb0d910610db59f2470a"
+        },
+        {
+          "path": "f3feb45f-8a38-4d1a-a72a-2c87b8b2202f/length.bin",
+          "size_bytes": 133532,
+          "sha256": "5571723852ef5067786bdf19827b44e31bade3614210af252f6d87c70e05e2fc"
+        },
+        {
+          "path": "f3feb45f-8a38-4d1a-a72a-2c87b8b2202f/link_lists.bin",
+          "size_bytes": 286328,
+          "sha256": "6d01d480e94e9233f50114f41da874ba98dfdf84e02d5c075e7cded776334f6f"
+        }
+      ]
+    },
+    "documents": 33383,
+    "build_seconds": 510.22640330006834,
+    "reuse": {
+      "old_index_binding_sha256": "65649f91bd6a0a8dbf5b200059589eefbe0e2a6f3d2bc8e96af40e75bf300d32",
+      "identical_record_embeddings_reused": 33347,
+      "new_record_embeddings": 36,
+      "driver_sha256": "f55dab9d0545ea7641bd1364101b715c95faaf804cc83df10922d034fc5ec33c"
+    }
+  },
+  "fixed_development_replay": [
+    {
+      "id": "exact-api-region-1",
+      "before_selected": [
+        "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+        "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad",
+        "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+        "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2"
+      ],
+      "after_selected": [
+        "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+        "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad",
+        "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+        "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2"
+      ],
+      "requirements": [],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    },
+    {
+      "id": "domain-procedure-applicability-1",
+      "before_selected": [
+        "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+        "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+        "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+        "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b"
+      ],
+      "after_selected": [
+        "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+        "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+        "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+        "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b"
+      ],
+      "requirements": [],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    },
+    {
+      "id": "domain-procedure-applicability-2",
+      "before_selected": [
+        "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+        "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+        "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+        "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0"
+      ],
+      "after_selected": [
+        "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+        "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+        "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+        "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0"
+      ],
+      "requirements": [
+        {
+          "need": "boundary_condition_magnitude",
+          "before": false,
+          "after": false,
+          "in_pool": false
+        }
+      ],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    },
+    {
+      "id": "recorded-solver-diagnostic-1",
+      "before_selected": [
+        "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+        "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+        "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+        "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370"
+      ],
+      "after_selected": [
+        "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+        "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+        "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+        "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370"
+      ],
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "before": false,
+          "after": false,
+          "in_pool": true
+        }
+      ],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    },
+    {
+      "id": "recorded-solver-diagnostic-2",
+      "before_selected": [
+        "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+        "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+        "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+        "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503"
+      ],
+      "after_selected": [
+        "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+        "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+        "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+        "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503"
+      ],
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "before": true,
+          "after": true,
+          "in_pool": true
+        }
+      ],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    },
+    {
+      "id": "tie-separation",
+      "before_selected": [
+        "7d6b7d15157839d3c8179560b80c9b314746ec42e0c98260d51c5b0128aa7f81",
+        "2be2a4bb3f48eefa502ac42995077bb073e77297bf2dbe61948541e1a8c2483b",
+        "0e398cb1bb049a41e8087e8cdabbe58a2d483028939198b71a3f58301fc7a074",
+        "89e88217e505c560134bac78b539201ba664970a632edc25b65d2d91c114cd31"
+      ],
+      "after_selected": [
+        "7d6b7d15157839d3c8179560b80c9b314746ec42e0c98260d51c5b0128aa7f81",
+        "2be2a4bb3f48eefa502ac42995077bb073e77297bf2dbe61948541e1a8c2483b",
+        "0e398cb1bb049a41e8087e8cdabbe58a2d483028939198b71a3f58301fc7a074",
+        "89e88217e505c560134bac78b539201ba664970a632edc25b65d2d91c114cd31"
+      ],
+      "requirements": [
+        {
+          "need": "permanent_bond",
+          "before": false,
+          "after": false,
+          "in_pool": false
+        }
+      ],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    },
+    {
+      "id": "coupling-deformation",
+      "before_selected": [
+        "0eddea6b0c101fbf022456953218b80eb9fa1b8df8b7fe2509de885c6a2c928b",
+        "50c30d6c9945bc901192a4b77237cc5387974fd89bbbc9080edb5896f922d57c",
+        "b22fb8bb5a037a4bec1ead339ea04f6c4ac72837b4b26c26ea96636e31f84a8a",
+        "6b8494c36d24ff3dab03566d18007fddcac412df7dade69039033ddd3b00fe99"
+      ],
+      "after_selected": [
+        "0eddea6b0c101fbf022456953218b80eb9fa1b8df8b7fe2509de885c6a2c928b",
+        "50c30d6c9945bc901192a4b77237cc5387974fd89bbbc9080edb5896f922d57c",
+        "b22fb8bb5a037a4bec1ead339ea04f6c4ac72837b4b26c26ea96636e31f84a8a",
+        "6b8494c36d24ff3dab03566d18007fddcac412df7dade69039033ddd3b00fe99"
+      ],
+      "requirements": [
+        {
+          "need": "rigidity_contrast",
+          "before": true,
+          "after": true,
+          "in_pool": true
+        }
+      ],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    },
+    {
+      "id": "mass-scaling-inertia",
+      "before_selected": [
+        "03fbc8eb38afa13d3ce594810e6faaac80c15bd3dca51abdab6298205ed8b2a3",
+        "102c0bd2e21e57b33a54d17ea54f9ea88374d443072e0d354f5e41dd6d3af027",
+        "7eaeef51074eb87bfef3c1ce82d4d1069309459df9ea7060814252f0f74e2b9f",
+        "93be2263217b076d1978490ce18cb39f262a4044c4d02fcd0e797054a12f5c5a"
+      ],
+      "after_selected": [
+        "03fbc8eb38afa13d3ce594810e6faaac80c15bd3dca51abdab6298205ed8b2a3",
+        "102c0bd2e21e57b33a54d17ea54f9ea88374d443072e0d354f5e41dd6d3af027",
+        "7eaeef51074eb87bfef3c1ce82d4d1069309459df9ea7060814252f0f74e2b9f",
+        "93be2263217b076d1978490ce18cb39f262a4044c4d02fcd0e797054a12f5c5a"
+      ],
+      "requirements": [],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    },
+    {
+      "id": "hybrid-pressure",
+      "before_selected": [
+        "9960bd72a0766a518ce51654ae3165f7bfdec48fe7fc334841fb05e1186f07db",
+        "34a3fc7e87d585a588ed83cc471a4f95df2bf90d0b13a093bfcbcde98a22dd33",
+        "9e053fb288ad1628cacee3ba9ddb17db1963979c4a9de53bbb7725c60b52c6c3",
+        "b3dcc054b54a1ff5f817c579fff575d940c44ec0cc9b553ee3a66ca442d0523b"
+      ],
+      "after_selected": [
+        "9960bd72a0766a518ce51654ae3165f7bfdec48fe7fc334841fb05e1186f07db",
+        "34a3fc7e87d585a588ed83cc471a4f95df2bf90d0b13a093bfcbcde98a22dd33",
+        "9e053fb288ad1628cacee3ba9ddb17db1963979c4a9de53bbb7725c60b52c6c3",
+        "b3dcc054b54a1ff5f817c579fff575d940c44ec0cc9b553ee3a66ca442d0523b"
+      ],
+      "requirements": [
+        {
+          "need": "independent_pressure",
+          "before": false,
+          "after": false,
+          "in_pool": true
+        }
+      ],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    },
+    {
+      "id": "plane-strain-meaning",
+      "before_selected": [
+        "36478d39f5a87a59b87404a64089a8f40e4de6523ad3a1b5f1e938e405d13cd3",
+        "e53f8bc20fe26a0a98f7a63e7124b83f0713be945da330fa46e7ebf4a4851d3d",
+        "f5da4d72a124fb21590f5b265b923b7d8df2449aee7fd16c25e77304b998ca2f",
+        "746c2a6fd52ac20dd5ec0c1e4408618b70adbc8485f6618a06d0069601c2c789"
+      ],
+      "after_selected": [
+        "36478d39f5a87a59b87404a64089a8f40e4de6523ad3a1b5f1e938e405d13cd3",
+        "e53f8bc20fe26a0a98f7a63e7124b83f0713be945da330fa46e7ebf4a4851d3d",
+        "f5da4d72a124fb21590f5b265b923b7d8df2449aee7fd16c25e77304b998ca2f",
+        "746c2a6fd52ac20dd5ec0c1e4408618b70adbc8485f6618a06d0069601c2c789"
+      ],
+      "requirements": [
+        {
+          "need": "zero_out_of_plane_strain",
+          "before": true,
+          "after": true,
+          "in_pool": true
+        },
+        {
+          "need": "nonzero_thickness_stress",
+          "before": true,
+          "after": true,
+          "in_pool": true
+        }
+      ],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    },
+    {
+      "id": "reduced-integration-hourglass",
+      "before_selected": [
+        "29be22b2f9b95045d83207641a373e8467117b68979c28d782eae0f3e2734bfa",
+        "7ff4d439c410138ef26cf910f6101ab1f927e7e77ad8a84f0dbcb6cf77a4861c",
+        "1a3aa5fccae8b4604d2ea3694add995cd65c7df4c75356f05432339bc2ad88d4",
+        "c0ec4e19cd9dcf5c98983eb0832eb28d3a39b94601e1f2089d0fb171fda5f723"
+      ],
+      "after_selected": [
+        "29be22b2f9b95045d83207641a373e8467117b68979c28d782eae0f3e2734bfa",
+        "7ff4d439c410138ef26cf910f6101ab1f927e7e77ad8a84f0dbcb6cf77a4861c",
+        "1a3aa5fccae8b4604d2ea3694add995cd65c7df4c75356f05432339bc2ad88d4",
+        "c0ec4e19cd9dcf5c98983eb0832eb28d3a39b94601e1f2089d0fb171fda5f723"
+      ],
+      "requirements": [],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    },
+    {
+      "id": "nodal-stress-extrapolation",
+      "before_selected": [
+        "03577d7d3143384b628e4f16c6222f62f5baceab24ff912b5cec146c71ecbc0c",
+        "033f498c6c1f2daa0deceb1fd558344ebe2c37a117dae015aff2319ff0ce2041",
+        "514179ed47485a480b3ef9512b19fa3db2d1b01c0aca74eb4e65d3ab00659cbf",
+        "8f9944247e5e58644388fb3c912a73e2c041c24c5b653ab11b694ef4980eb708"
+      ],
+      "after_selected": [
+        "03577d7d3143384b628e4f16c6222f62f5baceab24ff912b5cec146c71ecbc0c",
+        "033f498c6c1f2daa0deceb1fd558344ebe2c37a117dae015aff2319ff0ce2041",
+        "514179ed47485a480b3ef9512b19fa3db2d1b01c0aca74eb4e65d3ab00659cbf",
+        "8f9944247e5e58644388fb3c912a73e2c041c24c5b653ab11b694ef4980eb708"
+      ],
+      "requirements": [],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    },
+    {
+      "id": "explicit-stable-increment",
+      "before_selected": [
+        "bcb063a08edc448829bdf5cdea56ddd481ad363e35b8b29185adc3835bca4b55",
+        "03fbc8eb38afa13d3ce594810e6faaac80c15bd3dca51abdab6298205ed8b2a3",
+        "f0dcbc76e62544da27c3dbed048f278a25ee7c068ae1778b2ed75b623c12bef8",
+        "c50a707c863b068149a680fd4f395639755ec837d9c4c4a13cb163140e7d5cca"
+      ],
+      "after_selected": [
+        "bcb063a08edc448829bdf5cdea56ddd481ad363e35b8b29185adc3835bca4b55",
+        "03fbc8eb38afa13d3ce594810e6faaac80c15bd3dca51abdab6298205ed8b2a3",
+        "f0dcbc76e62544da27c3dbed048f278a25ee7c068ae1778b2ed75b623c12bef8",
+        "c50a707c863b068149a680fd4f395639755ec837d9c4c4a13cb163140e7d5cca"
+      ],
+      "requirements": [],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    },
+    {
+      "id": "meshing-predictor-tail",
+      "before_selected": [
+        "87739b856f2c639f7e91efab028fff9ec4da03fcf8864e8c78276eeb65005acd",
+        "c2465f74f5b52494c1ea0c75450f32432a761f274f2d12a4e51a48612028f5b8",
+        "859dc8162c7f0b3362de1494e93c0156918b479f45bc1bff73c86da75228c2f2",
+        "02c285869828d2baed86ce1ce02fc6b6e6cdb947a4a3340fa9ada6b45f89a761"
+      ],
+      "after_selected": [
+        "87739b856f2c639f7e91efab028fff9ec4da03fcf8864e8c78276eeb65005acd",
+        "c2465f74f5b52494c1ea0c75450f32432a761f274f2d12a4e51a48612028f5b8",
+        "859dc8162c7f0b3362de1494e93c0156918b479f45bc1bff73c86da75228c2f2",
+        "02c285869828d2baed86ce1ce02fc6b6e6cdb947a4a3340fa9ada6b45f89a761"
+      ],
+      "requirements": [],
+      "body_truncations": 0,
+      "reranker_truncations": 0
+    }
+  ],
+  "previous_structure_probes": {
+    "before": [
+      {
+        "id": "tie-formulation-table",
+        "query": "Which tie formulation in Abaqus/Explicit allows a mixture of rigid and deformable subregions?",
+        "target_unit_id": "c9c1f44e6db2188691f3fe1cee2da266111ed862416f64fdfcb7449e7bc926ac",
+        "target_type": "table",
+        "in_pool": true,
+        "selected": true,
+        "delivered_complete_unit": true,
+        "selected_units": [
+          "c9c1f44e6db2188691f3fe1cee2da266111ed862416f64fdfcb7449e7bc926ac",
+          "f1ae1c56f2d2a6bb7e6dc77d180a9b666f6e60df5b1406d01a1930d701835962",
+          "e25d58c68bf6c2bafabab8d8d8e7ab39c68b6f9b02a91536dc8b375eacb619ec",
+          "5a3374a294c71c62f8926238cbfa30e6d08288c404137fe7755c2af53ef4ef3b"
+        ],
+        "seconds": 0.920820500003174
+      },
+      {
+        "id": "riks-total-load-formula",
+        "query": "How is total load formed from dead load, reference load and the load proportionality factor in a Riks step?",
+        "target_unit_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+        "target_type": "formula",
+        "in_pool": true,
+        "selected": true,
+        "delivered_complete_unit": true,
+        "selected_units": [
+          "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+          "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+          "989236baa5e1a0781e1f5716e226fee5ad0063d7471615e63031712bdbb195fa",
+          "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b"
+        ],
+        "seconds": 0.8632310000248253
+      },
+      {
+        "id": "riks-initial-increment-formula",
+        "query": "How is the initial load proportionality factor computed from the initial arc length increment and the total arc length scale factor?",
+        "target_unit_id": "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b",
+        "target_type": "formula",
+        "in_pool": true,
+        "selected": true,
+        "delivered_complete_unit": true,
+        "selected_units": [
+          "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b",
+          "9e31f4fe6f31c8b7935f0547a971d60d09b36eefbabd5630c7b6445f19ce2ceb",
+          "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+          "4d352a916ac8df7d23ac2e21d7794fe1ddd6092205c53163485e71cf89778821"
+        ],
+        "seconds": 0.8359462000662461
+      },
+      {
+        "id": "fourier-nodal-planes-table",
+        "query": "For two Fourier modes in asymmetric-axisymmetric solid elements, how many nodal planes are used and at which angular locations?",
+        "target_unit_id": "0209f77654c456c750957bb4094f25a1e59290d6f3c532d40feae02a5dc5f660",
+        "target_type": "table",
+        "in_pool": true,
+        "selected": true,
+        "delivered_complete_unit": true,
+        "selected_units": [
+          "0209f77654c456c750957bb4094f25a1e59290d6f3c532d40feae02a5dc5f660",
+          "d1d3c32033dfa24b6cecb22bf6e23897d86fbe8ee67a5a048a597625bc1ea226",
+          "ef6310f9e197e4507815dad157c0ad7553682a1439a9049fb95a92b49e962ca6",
+          "322ddc096f2139d04ec68168241050e8d2c5411448922b2c737500aeccd89d79"
+        ],
+        "seconds": 0.6821393000427634
+      }
+    ],
+    "after": [
+      {
+        "id": "tie-formulation-table",
+        "query": "Which tie formulation in Abaqus/Explicit allows a mixture of rigid and deformable subregions?",
+        "target_unit_id": "c9c1f44e6db2188691f3fe1cee2da266111ed862416f64fdfcb7449e7bc926ac",
+        "target_type": "table",
+        "in_pool": true,
+        "selected": true,
+        "delivered_complete_unit": true,
+        "selected_units": [
+          "c9c1f44e6db2188691f3fe1cee2da266111ed862416f64fdfcb7449e7bc926ac",
+          "f1ae1c56f2d2a6bb7e6dc77d180a9b666f6e60df5b1406d01a1930d701835962",
+          "e25d58c68bf6c2bafabab8d8d8e7ab39c68b6f9b02a91536dc8b375eacb619ec",
+          "5a3374a294c71c62f8926238cbfa30e6d08288c404137fe7755c2af53ef4ef3b"
+        ],
+        "seconds": 0.893062699935399
+      },
+      {
+        "id": "riks-total-load-formula",
+        "query": "How is total load formed from dead load, reference load and the load proportionality factor in a Riks step?",
+        "target_unit_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+        "target_type": "formula",
+        "in_pool": true,
+        "selected": true,
+        "delivered_complete_unit": true,
+        "selected_units": [
+          "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+          "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+          "989236baa5e1a0781e1f5716e226fee5ad0063d7471615e63031712bdbb195fa",
+          "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b"
+        ],
+        "seconds": 0.8716842000139877
+      },
+      {
+        "id": "riks-initial-increment-formula",
+        "query": "How is the initial load proportionality factor computed from the initial arc length increment and the total arc length scale factor?",
+        "target_unit_id": "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b",
+        "target_type": "formula",
+        "in_pool": true,
+        "selected": true,
+        "delivered_complete_unit": true,
+        "selected_units": [
+          "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b",
+          "9e31f4fe6f31c8b7935f0547a971d60d09b36eefbabd5630c7b6445f19ce2ceb",
+          "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+          "4d352a916ac8df7d23ac2e21d7794fe1ddd6092205c53163485e71cf89778821"
+        ],
+        "seconds": 0.8726357999257743
+      },
+      {
+        "id": "fourier-nodal-planes-table",
+        "query": "For two Fourier modes in asymmetric-axisymmetric solid elements, how many nodal planes are used and at which angular locations?",
+        "target_unit_id": "0209f77654c456c750957bb4094f25a1e59290d6f3c532d40feae02a5dc5f660",
+        "target_type": "table",
+        "in_pool": true,
+        "selected": true,
+        "delivered_complete_unit": true,
+        "selected_units": [
+          "0209f77654c456c750957bb4094f25a1e59290d6f3c532d40feae02a5dc5f660",
+          "d1d3c32033dfa24b6cecb22bf6e23897d86fbe8ee67a5a048a597625bc1ea226",
+          "ef6310f9e197e4507815dad157c0ad7553682a1439a9049fb95a92b49e962ca6",
+          "322ddc096f2139d04ec68168241050e8d2c5411448922b2c737500aeccd89d79"
+        ],
+        "seconds": 0.6646383000770584
+      }
+    ]
+  },
+  "new_pair_probes": [
+    {
+      "id": "general-dof-components",
+      "query": "Under the general Abaqus degree-of-freedom numbering convention, which numbers identify translations and rotations about the three Cartesian axes?",
+      "target_unit_id": "b5e95c2f9a78b2e6b530bcc754a323be9c3963c35764a01cd1efd2cc49cc2b56",
+      "in_pool": false,
+      "selected": false,
+      "delivered_complete_unit": false,
+      "selected_units": [
+        "5c1445b8795a18d5ad896e46be9b9e2defc8390fa90a210da7cb04977636933d",
+        "dab444ead0d9f14539d4e04c36aca93def17222f69e298f816821adbefb5d586",
+        "13c0072bff17e5bb6bd9487800cacac23d7d03a54586f05c43e5255c1ee0f9a9",
+        "6a6cc351556956924797ecf266f4812c9963d96a137b7806a45ca6ea5f8a17f9"
+      ],
+      "seconds": 0.8611542999278754,
+      "caution": null,
+      "truncated_bodies": 0,
+      "best_target_child_rank": null,
+      "failure_stage": "candidate_recall"
+    },
+    {
+      "id": "axisymmetric-dof-components",
+      "query": "For axisymmetric Abaqus elements, what do degrees of freedom 1 and 2 represent, and how are rotational degrees of freedom distinguished for twist and shells?",
+      "target_unit_id": "c597218c009a72c168f9c8c18f8b00fb99672e107ee382dd334bb8fea0fda195",
+      "in_pool": true,
+      "selected": false,
+      "delivered_complete_unit": false,
+      "selected_units": [
+        "a6173785c1a2aabc974af1b47699d7b238724f82d3827b7dcd499c2c76eeea73",
+        "41b271d2c70daaec344e32116d2ff889b7cb1d1c1cb55b01b2678ae72ef2b973",
+        "4898ff30dd9809c81a4c4886c06bdaf5c022f91f9947765410ff70ee42713084",
+        "d21f317bc9055f3f84aaac94302dc8e6647943b312f68d81df52676684b7e34c"
+      ],
+      "seconds": 0.6088540999917313,
+      "caution": null,
+      "truncated_bodies": 0,
+      "best_target_child_rank": 5,
+      "failure_stage": "reranking_top4"
+    },
+    {
+      "id": "assembly-qualified-names",
+      "query": "In Abaqus input-file assembly naming conventions, how do qualified names distinguish a set belonging to a part instance from one belonging to an assembly?",
+      "target_unit_id": "c8bc64f5a942218aa6812bf34843c8e43a11aabfc3661bdcea7f9b3446b0dba0",
+      "in_pool": true,
+      "selected": false,
+      "delivered_complete_unit": false,
+      "selected_units": [
+        "8c61f070a9c98fdea52e1f111c5826755b45215182d5aea91fc397fba5d84e3b",
+        "98e036c69133b515638828e817895e7cec03e6a6fb4f795b94256edf1f2f62fd",
+        "08b6018fff5dd4c74d2493945cd304ce75774c46554595ba9bb4151d9d3fc5a0",
+        "0cf2e9d23fde719ec2032a7b3b2c8c3ddd97a14b363098cbfdf24cebb847413f"
+      ],
+      "seconds": 0.7222187999868765,
+      "caution": null,
+      "truncated_bodies": 0,
+      "best_target_child_rank": 10,
+      "failure_stage": "reranking_top4"
+    },
+    {
+      "id": "deposition-callback-roles",
+      "query": "When using the toolpath-mesh intersection module for controlled material deposition, which user subroutines set up the module data and determine element activation or deposited volume?",
+      "target_unit_id": "9d41567ad29846d3aed5f0a324333dd058a8bd45004aa88548cfda690a40ee47",
+      "in_pool": true,
+      "selected": true,
+      "delivered_complete_unit": true,
+      "selected_units": [
+        "9d41567ad29846d3aed5f0a324333dd058a8bd45004aa88548cfda690a40ee47",
+        "bec2faeb2124356b93d6713ee699e999401591d702e12bc5d2c6d9e0da070941",
+        "a4054e1d8e488e9e50ababd113251634b7835c7fbb10bf074832d6958bf60009",
+        "d4dcc926ce0b4e10afd1d4e859a2ebed61b25af387f0096feb6e21f5507202e7"
+      ],
+      "seconds": 0.6839733999222517,
+      "caution": null,
+      "truncated_bodies": 0,
+      "best_target_child_rank": 1,
+      "failure_stage": "delivered"
+    },
+    {
+      "id": "lanczos-block-size",
+      "query": "In Lanczos natural frequency extraction, how does the block size affect the maximum number of block Lanczos steps?",
+      "target_unit_id": "3d28d179c3711448a4f525bc177518f8fe1b25f7cb1290c8ccb2fdce84244283",
+      "in_pool": true,
+      "selected": true,
+      "delivered_complete_unit": true,
+      "selected_units": [
+        "b63a95e251526827d2a1aaec07c03732ac8a29755a2af51a2de4364612f7251c",
+        "51b026dc5beec5a3b511866ea03ba5a32526b33dfb40c77e438b86f808088f4e",
+        "3d28d179c3711448a4f525bc177518f8fe1b25f7cb1290c8ccb2fdce84244283",
+        "2a63f266e9c2284ebc55079b7978a9ea611c4a9d0ade9fc7b587a98415d14d4c"
+      ],
+      "seconds": 0.7176277000689879,
+      "caution": null,
+      "truncated_bodies": 0,
+      "best_target_child_rank": 3,
+      "failure_stage": "delivered"
+    },
+    {
+      "id": "triangular-face-numbering",
+      "query": "For triangular two-dimensional solid elements, how are face numbers associated with corner-node pairs?",
+      "target_unit_id": "f1d49d0689557c7a010d40e11a51668a3022cf62d56f1fd54eb89d9c5093d607",
+      "in_pool": true,
+      "selected": true,
+      "delivered_complete_unit": true,
+      "selected_units": [
+        "f1d49d0689557c7a010d40e11a51668a3022cf62d56f1fd54eb89d9c5093d607",
+        "270c59527d5d2350cd228f4508208d062d95d71c5cfab16dd92337bd65d598fd",
+        "d00b893850fb221ebe6419c8ef6258dbd4c830f31611918af87bd5d04bdc00eb",
+        "da2fb30bd621d937f7577f02d813f88a2ecfde7acec1d6ca6d4bf6c5850a1336"
+      ],
+      "seconds": 0.6099809999577701,
+      "caution": "Topology is explicitly declared by the source caption; preserve that caption, do not infer topology from the number of rows.",
+      "truncated_bodies": 0,
+      "best_target_child_rank": 1,
+      "failure_stage": "delivered"
+    }
+  ],
+  "verification": {
+    "pytest_passed": 671,
+    "pytest_skipped": 27,
+    "ruff": "passed",
+    "basedpyright": "0 errors",
+    "agent_calls": 0,
+    "abaqus_calls": 0
+  },
+  "raw": {
+    "directory": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\headerless-pairs-v1-review",
+    "sha256": {
+      "added-units.json": "2becbbc859551844b839341087a5f3f56e1ae7489d1a69c20410aebcc798873a",
+      "implementation\\uv.lock": "6d8af39f4e6dfe7535f5610c0b85ed3ef023bc1ab2965ad320bc6ccc9713ca82",
+      "implementation\\src\\abaqus_sim_agent\\coding\\concept_lookup.py": "7215a6556c87b3515bb19da031367f86a78e45ec5cdb713119f8ec6e81ba15f9",
+      "implementation\\src\\abaqus_sim_agent\\coding\\document_evidence.py": "412f29d877c575e9ac153adaf99268c31ee93b958ac3148b4e3568ccb2584ed9",
+      "implementation\\src\\abaqus_sim_agent\\evaluation\\cross_encoder.py": "17e40fd5fda159e0131c039198a56582251aacb7a6fe6c7ae67f8fe0f8d2acfb",
+      "implementation\\src\\abaqus_sim_agent\\evaluation\\evidence_candidate.py": "debc4a198fc42b451ead13affe569256c61b4126587ff929c6bc1d2d22d1294c",
+      "implementation\\src\\abaqus_sim_agent\\evaluation\\structural_chunking.py": "8abdd772221dc1b65f6c55dc82c02fed3f83ff46b288241b3ba7e87b6ff19b9d",
+      "implementation\\src\\abaqus_sim_agent\\retrieval\\bm25.py": "406d66bf84d096d4112757d34d762043f05c9e4823d3674ed3b9906baf5ec6e9",
+      "implementation\\src\\abaqus_sim_agent\\retrieval\\evidence_blocks.py": "e66997c9b8f6047be79131cbd22a4aa3a7df6eafeb72a10e7fc30b63c9317d2a",
+      "implementation\\src\\abaqus_sim_agent\\retrieval\\evidence_units.py": "5bccfdd67d0e88326ff133ab4df3f34972229b2f1f7d923652852ddee3f7a63e",
+      "implementation\\src\\abaqus_sim_agent\\retrieval\\evidence_windows.py": "046c355b47bcbf3cd4e904f5c25b8c2c8e32792fee7602c8260a9977b3eff3d9",
+      "implementation\\src\\abaqus_sim_agent\\retrieval\\structured_projection.py": "1997514713dcdcb9c6aacefeb4c6377d67044d2743108160351b0705ce856144"
+    }
+  },
+  "candidate": {
+    "directory": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\rag-headerless-pairs-v1",
+    "prepared_sha256": "6ec20d960265f3f05690a7b71436d574ca97e84a02478782dd63ce84f43d9afd",
+    "manifest_sha256": "cdd92c955d96e93f21ed0d9a256976678337cf44eb99f13a6ed9cca57ae25e57",
+    "old_review_sha256": "019a27cf79673d795695b7dae8b27fd781f6e059bf53eaff99f057b857516377",
+    "result_sha256": {
+      "replay\\coupling-deformation.json": "0b50255dc50bec20aaf6ea1d4a14de2f6d7906522e154efe4cf53be7d589d22f",
+      "replay\\domain-procedure-applicability-1.json": "89a11bd1913c8a3622d0c6a7c1ee4c688c0bcc0058fcd18398392176f4dbcb5f",
+      "replay\\domain-procedure-applicability-2.json": "a26950c94a262e9c2ff1ea4d77b02991e64862ddc2bb6d4fb6d30e230fe69fb7",
+      "replay\\exact-api-region-1.json": "9e55682688d3089e7ec6fd0fd3f0a1de0b58cc8b0eca55ad921a6701a1b73e92",
+      "replay\\explicit-stable-increment.json": "50c63a0e2cf78a5ad93efa2bb8dffbf0cbcf5557a81e4b8f2ab59e87b1517090",
+      "replay\\hybrid-pressure.json": "4fe37ccba134491fb53dadc22df7482cafbafc84539f2d944c6082818711a9d4",
+      "replay\\manifest.json": "d23b644f05aeda8fc0659d49152473dbf1e5c0837702577e84299b2054b2ca5c",
+      "replay\\mass-scaling-inertia.json": "32a89fb87008263a5308e0fcc44e32588d4c7cb9ff5a077bdd5544a6c80e29dd",
+      "replay\\meshing-predictor-tail.json": "538d88168f535dbe684546e37cd66d603b00e64019024215e83b02d5d2f0f4d6",
+      "replay\\nodal-stress-extrapolation.json": "4b59de86f94b567c104871372f06c791e9e17385dd6fc9d0365b7c8c01b5158a",
+      "replay\\plane-strain-meaning.json": "6b6e75e9a6fc318b47363c7f43f230504d37626cb635e8da0c84a40311079794",
+      "replay\\recorded-solver-diagnostic-1.json": "eefde876b77a5cc01b7a24295d1b6228b9d5b1ad537569ea167599a1b2813552",
+      "replay\\recorded-solver-diagnostic-2.json": "1e29b8a20f8f0cccf904077bf04081930bed351f0a1d4ee9d2661e8502138a0d",
+      "replay\\reduced-integration-hourglass.json": "0754d607825e1110b562f4b96c17119e0a7cacf249697cbb7f1533916500ae86",
+      "replay\\summary.json": "50c8b05d76ee0a362e44144d31d1088b6202f2b3bae489897e7bdefc3d158d49",
+      "replay\\tie-separation.json": "7358531ef1308873780336007ae36ef85886a298679e2259c19ce16a70bb5764",
+      "structured-probes\\fourier-nodal-planes-table.json": "deef2db196c08e21af0eadacd39fe0f7ba64d20653b7f7aeae4dfbb2166b93d1",
+      "structured-probes\\manifest.json": "64454e39b37f270e639d20ef1e8e69c07771d04bb42901444d0adbed4e0da4c8",
+      "structured-probes\\riks-initial-increment-formula.json": "8c9b8a983ea4f541e5b27174df4fdf772023a4d7a5fe2387ad521ecb6d80bd26",
+      "structured-probes\\riks-total-load-formula.json": "962f8cd3b8b651c5e592f9bfe07ee146f0b653d465e5359dbb1b47a51817d767",
+      "structured-probes\\summary.json": "063170e34319f28e901f7675a022e6da954d99ceb297b87f4efcd014618c3aaf",
+      "structured-probes\\tie-formulation-table.json": "ae3bc44d759bd77da2712139c06f9d85ac22455415cc35b05a41a2203aa6e25c",
+      "pair-probes\\assembly-qualified-names.json": "0a8cb6dbfd7f4bd609740b9a26165d217a6a746ee563f5f1cb63a2708b468654",
+      "pair-probes\\axisymmetric-dof-components.json": "a93f6942bb8943f29b22556ebdddaf58e19e4e9d0420ff7af4cd24464b48b05e",
+      "pair-probes\\deposition-callback-roles.json": "128323ef353cd27aea5594e8557a866b6df742d069644dadd3ed59e44f96a456",
+      "pair-probes\\general-dof-components.json": "c44efad9d76c1d74596b8e0ea42edf8474628446e3a661836beb896ce15cb7ff",
+      "pair-probes\\lanczos-block-size.json": "63d964101962bb1e0b7e11e3ec3daf6d220221c0b2d6cf43db67206af1852097",
+      "pair-probes\\manifest.json": "419e4efb617a28790c38257676fe075f14edf5c7b0aa558be2619742b5276547",
+      "pair-probes\\summary.json": "b159ef9f93b7f6449e205f2cffa3b3cd449e5c15e8a5c80767e9a7221870ff46",
+      "pair-probes\\triangular-face-numbering.json": "dc95a6fdcd3b81840afd0a59f0e3b91b953517ec9d58e99bf7f3b90e83cd327a"
+    }
+  },
+  "limits": [
+    "Two-column layout preservation is not automatic semantic chunking or proof of knowledge completeness. No inferred key/value roles or physical applicability.",
+    "A first row may function visually as a header without th markup; the rule preserves it as a source row, not a guessed header. Cross-row groups do not automatically repeat such an undeclared header.",
+    "The new source-informed development queries are not held-out and measure annotated-unit delivery, not generated answers or Agent benefit.",
+    "Only captions and already-associated context are included. Arbitrary neighboring paragraphs/images are not automatically incorporated.",
+    "Changed HNSW construction and added candidates prevent attributing arbitrary ranking differences to this rule alone.",
+    "Candidate only; original/default indexes unchanged. Abaqus2026FD02 does not establish Abaqus2024 API compatibility."
+  ]
+}

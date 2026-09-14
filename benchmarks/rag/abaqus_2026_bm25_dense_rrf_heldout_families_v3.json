@@ -1,0 +1,446 @@
+{
+  "schema_version": "1",
+  "dataset_id": "abaqus-2026-bm25-dense-rrf-heldout-v3",
+  "families": [
+    {
+      "family_id": "development-static-analysis",
+      "split": "development",
+      "member_document_ids": [
+        "simaanl-c-nonlineareqns",
+        "simaanl-c-static",
+        "simaanl-c-staticproc",
+        "simakey-r-static"
+      ],
+      "basis": "overview_detail",
+      "rationale": "Static procedure, nonlinear-equilibrium detail, and keyword counterpart used by the development benchmark."
+    },
+    {
+      "family_id": "development-continuum-elements",
+      "split": "development",
+      "member_document_ids": [
+        "simaelm-c-expelementindex",
+        "simaelm-c-solidcont",
+        "simaelm-c-stdelementindex",
+        "simaelm-r-2delem",
+        "simaelm-r-3delem"
+      ],
+      "basis": "overview_detail",
+      "rationale": "Continuum-element overview, product indexes, and two-/three-dimensional libraries used by development element cases."
+    },
+    {
+      "family_id": "development-linear-elasticity",
+      "split": "development",
+      "member_document_ids": [
+        "simakey-r-elastic",
+        "simamat-c-linearelastic",
+        "simamat-m-LinearElasticity-sb"
+      ],
+      "basis": "keyword_counterpart",
+      "rationale": "Linear-elastic material concept and its keyword/navigation counterparts."
+    },
+    {
+      "family_id": "development-coupling-constraint",
+      "split": "development",
+      "member_document_ids": [
+        "simacst-c-coupling",
+        "simakey-r-coupling"
+      ],
+      "basis": "keyword_counterpart",
+      "rationale": "Surface-based coupling concept and keyword counterpart."
+    },
+    {
+      "family_id": "development-contact-overview",
+      "split": "development",
+      "member_document_ids": [
+        "simaitn-c-contactgeneralstd",
+        "simaitn-c-contactmechanical",
+        "simaitn-c-contactoverview"
+      ],
+      "basis": "overview_detail",
+      "rationale": "Mechanical-contact overview and general-contact detail used by the development concept case."
+    },
+    {
+      "family_id": "development-boundary-conditions",
+      "split": "development",
+      "member_document_ids": [
+        "simakey-r-boundary",
+        "simaprc-c-boundary",
+        "simaprc-c-prescribedover"
+      ],
+      "basis": "keyword_counterpart",
+      "rationale": "Prescribed boundary-condition concept, modification detail, and keyword counterpart."
+    },
+    {
+      "family_id": "development-load-application",
+      "split": "development",
+      "member_document_ids": [
+        "simakey-r-cload",
+        "simakey-r-dload",
+        "simakey-r-dsload",
+        "simaprc-c-loaddistributed",
+        "simaprc-c-loading"
+      ],
+      "basis": "keyword_counterpart",
+      "rationale": "Concentrated/distributed load keywords and load-application concept pages."
+    },
+    {
+      "family_id": "development-output-database",
+      "split": "development",
+      "member_document_ids": [
+        "simaout-c-dboutput-defaultoutput",
+        "simaout-c-dboutput-examples",
+        "simaout-c-dboutput-frequency",
+        "simaout-c-dboutput-requestingoutput-odb",
+        "simaout-c-output",
+        "simaout-c-std-elementintegrationpointvariables",
+        "simaout-c-std-nodalvariables",
+        "simaout-c-stdoutputvar"
+      ],
+      "basis": "overview_detail",
+      "rationale": "ODB request overview and Standard nodal/element variable reference pages used by development output cases."
+    },
+    {
+      "family_id": "development-part-assembly-organization",
+      "split": "development",
+      "member_document_ids": [
+        "simamod-c-partassy"
+      ],
+      "basis": "same_feature",
+      "rationale": "Part, instance, and assembly organization used by the development concept case."
+    },
+    {
+      "family_id": "heldout-ale-adaptive-meshing",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-aleover"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-beam-elements",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaelm-c-beamelem"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-cohesive-elements",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaelm-r-cohesive3d"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-composite-shell-layup",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaelm-c-usingshellgensect"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-connector-section",
+      "split": "heldout",
+      "member_document_ids": [
+        "simakey-r-connectorsection"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-coupled-pore-fluid-stress",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-coupdiffstress"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-cyclic-symmetry-model",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-cyclicsymmetry"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-direct-cyclic",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-directcyclic"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-ductile-metal-damage",
+      "split": "heldout",
+      "member_document_ids": [
+        "simamat-c-damageductile"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-equation-constraint",
+      "split": "heldout",
+      "member_document_ids": [
+        "simakey-r-equation"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-geometric-imperfection",
+      "split": "heldout",
+      "member_document_ids": [
+        "simakey-r-imperfection"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-hyperelastic-calibration",
+      "split": "heldout",
+      "member_document_ids": [
+        "simamat-c-hyperelastic"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-infinite-elements",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaelm-c-infinite",
+        "simaelm-r-infinitelib"
+      ],
+      "basis": "overview_detail",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-mass-scaling",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-massscaling"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-membrane-elements",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaelm-c-membrane"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-mode-based-steady-state-dynamics",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-steadystdyn"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-page-family-explicit-standard-import-procedure",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-exptostd"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-page-family-fluid-cavity-gas-properties",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-fluidcavities"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-page-family-geostatic-equilibrium",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-geostatstress"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-page-family-import-keyword-contract",
+      "split": "heldout",
+      "member_document_ids": [
+        "simakey-r-import"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-page-family-import-transfer-overview",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-transferoverview"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-page-family-natural-frequency-extraction",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-freqextraction"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-page-family-random-response-psd",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-randomresponse"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-page-family-soils-procedure-keyword",
+      "split": "heldout",
+      "member_document_ids": [
+        "simakey-r-soils"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-page-family-surface-cavity-coupling",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-surfacebasedcavityover"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-page-family-thermal-stress-result-transfer",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-thermstressanal"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-page-family-transient-heat-transfer",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-heattransfer"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-page-family-xfem-cohesive-fracture-law",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-enrichment-xfem-based-cohesive-behavior"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-page-family-xfem-enrichment",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-enrichment"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-pretension-section",
+      "split": "heldout",
+      "member_document_ids": [
+        "simakey-r-pre-tensionsection"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-rate-dependent-creep",
+      "split": "heldout",
+      "member_document_ids": [
+        "simamat-c-ratedepcreep"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-response-spectrum",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-responsespectrum"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-restart-analysis",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-restart"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-shell-elements",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaelm-c-shellelem"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-submodeling",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-submodeloverview"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-substructure-generation",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaanl-c-superelementdef"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    },
+    {
+      "family_id": "heldout-truss-elements",
+      "split": "heldout",
+      "member_document_ids": [
+        "simaelm-r-trusslibrary"
+      ],
+      "basis": "same_feature",
+      "rationale": "Direct-HTML-adjudicated held-out feature family frozen before any retrieval evaluation."
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "schema_version": "1",
+  "experiment": "plate-element-choice-user-authorized-wall-budget-extension-v1",
+  "date": "2026-09-03",
+  "purpose": "Increase the cumulative wall-clock limit of the same repeatedly interrupted CodingRun and resume it again without creating a new run.",
+  "target": {
+    "run_id": "eval-fa0ec40b7b3b",
+    "state_dir": "D:/abaqus-runs/plate-element-choice-resume-once-retry-20260903-v1/eval-fa0ec40b7b3b/state",
+    "pre_extension_archive": "D:/abaqus-runs/plate-element-choice-budget-extension-prestate-20260903-v1/eval-fa0ec40b7b3b",
+    "same_run_id_workspace_state_and_initial_snapshot": true
+  },
+  "authorized_amendment": {
+    "authorized_by": "user",
+    "field": "budget.wall_time_seconds",
+    "old_total_seconds": 2700.0,
+    "new_total_seconds": 5400.0,
+    "additional_seconds": 2700.0,
+    "active_wall_time_at_extension_seconds": 2465.483,
+    "remaining_before_extension_seconds": 234.517,
+    "remaining_after_extension_seconds": 2934.517,
+    "usage_reset": false,
+    "audit_file": "state/budget_extension.json",
+    "original_request_sha256": "3c15840c098703c1bb2c944858b0b2cbf30325826431905db69280310e734e2c",
+    "amended_request_sha256": "0b50179e740fa9d08468842bdb2f61642b90560add6b525022ff877ff4096708",
+    "budget_extension_sha256": "14e238f543607629f5055a4878750b61fc5856fb1b6b704f4ba6dc92c1318c2b"
+  },
+  "resume_composition": {
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "http_retries": 10,
+    "http_timeout_seconds": 60.0,
+    "api_catalog_mode": "automatic_verified_only",
+    "api_catalog_cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "clarification_policy_case": "plate-element-derived",
+    "verifier": "PlateTensionRunVerifier"
+  },
+  "result": {
+    "process_exit_code": 0,
+    "status": "completed",
+    "resumed_from_turn": 3,
+    "completed_turn": 4,
+    "resume_history_source": "step_complete",
+    "total_infrastructure_errors": 3,
+    "total_run_resumed_events": 3,
+    "model_requests": 16,
+    "tool_calls": 20,
+    "abaqus_calls": 6,
+    "solver_calls": 1,
+    "active_wall_time_seconds": 2584.038,
+    "clarifications": 0,
+    "workspace_files": 18,
+    "selected_element_type_counts": {
+      "CPS4R": 80
+    },
+    "verification": {
+      "passed": true,
+      "artifacts_fresh": true,
+      "job_completed": true,
+      "right_mean_u1": 0.10000000149011612,
+      "mean_s11": 210.0,
+      "left_sum_rf1": -4200.0
+    },
+    "resume_state_sha256": "adffe26ff20d38b2283abe803779037445b084f14d1c26b80a51e80605fe64b7",
+    "events_sha256": "b03e745e04292ba777f9313c46b5ba27a827a3520d40552755ea6dbdc2fdac1d",
+    "history_sha256": "68d1024f69e7a11e3e69eb0c83b217b7b52ac7bf1735d54c8b0491d63180e844",
+    "outcome_sha256": "b9c38f587e78305381fd481b9fc3f65d92d2c5b500ad961bc4d5b642ac24064b",
+    "verification_sha256": "8d88741cdbb69151578c742b9c94e2cc40424e94b3b2edc1041a7fff6b26f22a",
+    "oracle_results_sha256": "45f3fdddb3198774cfd06ca44e286382835bf9d28ede8505569e6394fb922df0"
+  },
+  "evaluation_relationship": {
+    "original_batch_gate_remains": "2/3 passed",
+    "original_evaluation_summary_was_not_rewritten": true,
+    "post_batch_completion_is_not_counted_as_a_third_batch_pass": true
+  },
+  "decision": {
+    "status": "After an explicit user-authorized wall-clock amendment, the same CodingRun resumed into turn 4 and passed the complete licensed oracle.",
+    "claims_allowed": [
+      "The run preserved its prior history and 2465.483 seconds of active usage instead of resetting them.",
+      "The same run completed CAE authoring, Solver, ODB extraction and independent verification after three prior Provider interruptions.",
+      "The final state contains 80 CPS4R elements and passing U1, S11 and RF1 measurements."
+    ],
+    "claims_forbidden": [
+      "The original formal batch result changed from 2/3 to 3/3.",
+      "Increasing the wall-clock limit caused the completion.",
+      "The product currently exposes a general budget-extension CLI or immutable-contract amendment API."
+    ]
+  },
+  "limits": [
+    "The final active wall time was 2584.038 seconds, below the original 2700-second limit; the extension removed imminent budget pressure but its causal necessity was not observed.",
+    "This was a manual, audited evaluation-state amendment authorized by the user, not an existing product feature.",
+    "No Abaqus runtime was in flight at any interruption, so external Job reconciliation remains untested."
+  ]
+}

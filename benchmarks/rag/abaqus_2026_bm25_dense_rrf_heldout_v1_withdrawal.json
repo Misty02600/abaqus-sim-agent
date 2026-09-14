@@ -1,0 +1,22 @@
+{
+  "schema_version": "1",
+  "dataset_id": "abaqus-2026-bm25-dense-rrf-heldout-v1",
+  "status": "withdrawn_before_label_seal_and_retrieval",
+  "queries_file": "abaqus_2026_bm25_dense_rrf_heldout_queries_v1.jsonl",
+  "queries_sha256": "6afdc3ace17c1324903e0690cc344e217bd1defe7b765ab11e43a10a3c68bbb9",
+  "withdrawn_at": "2026-09-03T17:21:59.7273165+08:00",
+  "blocked_cases": [
+    {
+      "case_id": "heldout-identifier-dc3d8",
+      "reason": "The only strict element-library gold was the development gold page simaelm-r-3delem."
+    },
+    {
+      "case_id": "heldout-identifier-ac3d8",
+      "reason": "The only strict element-library gold was the development gold page simaelm-r-3delem."
+    }
+  ],
+  "retrieval_rankings_observed": false,
+  "replacement_dataset_id": "abaqus-2026-bm25-dense-rrf-heldout-v2",
+  "replacement_queries_file": "abaqus_2026_bm25_dense_rrf_heldout_queries_v2.jsonl",
+  "replacement_queries_sha256": "ae100f44ebe68cb8f20734b11e6ddb3b1702884ecf9235ec75c86afda781ca36"
+}

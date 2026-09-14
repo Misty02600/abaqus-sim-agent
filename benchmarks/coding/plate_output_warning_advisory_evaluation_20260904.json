@@ -1,0 +1,291 @@
+{
+  "arm_aggregates": {
+    "advisory": {
+      "abaqus_calls_mean": 5.0,
+      "abaqus_calls_total": 15,
+      "attempts": 3,
+      "completed": 3,
+      "diagnostic_retrieval_calls_total": 3,
+      "model_requests_mean": 12.666666666666666,
+      "model_requests_total": 38,
+      "solver_calls_total": 6
+    },
+    "control": {
+      "abaqus_calls_mean": 5.0,
+      "abaqus_calls_total": 15,
+      "attempts": 3,
+      "completed": 3,
+      "diagnostic_retrieval_calls_total": 0,
+      "model_requests_mean": 14.0,
+      "model_requests_total": 42,
+      "solver_calls_total": 6
+    }
+  },
+  "cases": [
+    {
+      "closed_loop_pass": true,
+      "labels": {
+        "advisory_gold_rank": "none",
+        "failure_stage": "none",
+        "repair_kind": "active_rf_override"
+      },
+      "metrics": {
+        "abaqus_calls": 5,
+        "abaqus_runtime_s": 39.602405399899,
+        "input_tokens": 163568,
+        "model_requests": 15,
+        "output_tokens": 4020,
+        "solver_calls": 2,
+        "tool_calls": 17
+      },
+      "name": "rf3-control-r1",
+      "scores": {
+        "advisory_delivered": 0.0,
+        "advisory_relevant": 0.0,
+        "arm_contract_passed": 1.0,
+        "baseline_warning_reproduced": 1.0,
+        "final_warning_removed": 1.0
+      },
+      "task_duration": 82.23185240000021
+    },
+    {
+      "closed_loop_pass": true,
+      "labels": {
+        "advisory_gold_rank": "1",
+        "failure_stage": "none",
+        "repair_kind": "active_rf_override"
+      },
+      "metrics": {
+        "abaqus_calls": 5,
+        "abaqus_runtime_s": 35.58272529998794,
+        "diagnostic_retrieval_calls": 1,
+        "input_tokens": 137392,
+        "model_requests": 11,
+        "output_tokens": 3324,
+        "solver_calls": 2,
+        "tool_calls": 14
+      },
+      "name": "rf3-advisory-r1",
+      "scores": {
+        "advisory_delivered": 1.0,
+        "advisory_relevant": 1.0,
+        "arm_contract_passed": 1.0,
+        "baseline_warning_reproduced": 1.0,
+        "final_warning_removed": 1.0
+      },
+      "task_duration": 84.2958907999564
+    },
+    {
+      "closed_loop_pass": true,
+      "labels": {
+        "advisory_gold_rank": "1",
+        "failure_stage": "none",
+        "repair_kind": "active_rf_override"
+      },
+      "metrics": {
+        "abaqus_calls": 5,
+        "abaqus_runtime_s": 35.84371059993282,
+        "diagnostic_retrieval_calls": 1,
+        "input_tokens": 144446,
+        "model_requests": 13,
+        "output_tokens": 6724,
+        "solver_calls": 2,
+        "tool_calls": 17
+      },
+      "name": "rf3-advisory-r2",
+      "scores": {
+        "advisory_delivered": 1.0,
+        "advisory_relevant": 1.0,
+        "arm_contract_passed": 1.0,
+        "baseline_warning_reproduced": 1.0,
+        "final_warning_removed": 1.0
+      },
+      "task_duration": 81.19515620009042
+    },
+    {
+      "closed_loop_pass": true,
+      "labels": {
+        "advisory_gold_rank": "none",
+        "failure_stage": "none",
+        "repair_kind": "active_rf_override"
+      },
+      "metrics": {
+        "abaqus_calls": 5,
+        "abaqus_runtime_s": 35.495507900137454,
+        "input_tokens": 151284,
+        "model_requests": 14,
+        "output_tokens": 4038,
+        "solver_calls": 2,
+        "tool_calls": 17
+      },
+      "name": "rf3-control-r2",
+      "scores": {
+        "advisory_delivered": 0.0,
+        "advisory_relevant": 0.0,
+        "arm_contract_passed": 1.0,
+        "baseline_warning_reproduced": 1.0,
+        "final_warning_removed": 1.0
+      },
+      "task_duration": 69.59339619998354
+    },
+    {
+      "closed_loop_pass": true,
+      "labels": {
+        "advisory_gold_rank": "none",
+        "failure_stage": "none",
+        "repair_kind": "active_rf_override"
+      },
+      "metrics": {
+        "abaqus_calls": 5,
+        "abaqus_runtime_s": 38.06854829995427,
+        "input_tokens": 137753,
+        "model_requests": 13,
+        "output_tokens": 3749,
+        "solver_calls": 2,
+        "tool_calls": 16
+      },
+      "name": "rf3-control-r3",
+      "scores": {
+        "advisory_delivered": 0.0,
+        "advisory_relevant": 0.0,
+        "arm_contract_passed": 1.0,
+        "baseline_warning_reproduced": 1.0,
+        "final_warning_removed": 1.0
+      },
+      "task_duration": 160.17258199991193
+    },
+    {
+      "closed_loop_pass": true,
+      "labels": {
+        "advisory_gold_rank": "1",
+        "failure_stage": "none",
+        "repair_kind": "active_rf_override"
+      },
+      "metrics": {
+        "abaqus_calls": 5,
+        "abaqus_runtime_s": 36.054859499796294,
+        "diagnostic_retrieval_calls": 1,
+        "input_tokens": 157882,
+        "model_requests": 14,
+        "output_tokens": 4999,
+        "solver_calls": 2,
+        "tool_calls": 19
+      },
+      "name": "rf3-advisory-r3",
+      "scores": {
+        "advisory_delivered": 1.0,
+        "advisory_relevant": 1.0,
+        "arm_contract_passed": 1.0,
+        "baseline_warning_reproduced": 1.0,
+        "final_warning_removed": 1.0
+      },
+      "task_duration": 81.18761259992607
+    }
+  ],
+  "experiment_metadata": {
+    "api_catalog_mode": "off",
+    "base_url": "https://opencode.ai/zen/go/v1",
+    "concept_tool_mode": "off",
+    "defective_seed": {
+      "defective_build_sha256": "2e174640c8b996264adebc5801583e5d8711dff85f10b6404d894ab2f4fc1927",
+      "extractor_sha256": "1374a5675c415be37c319a325c92cb43e97b0c1e6b9be84fcb3d6c4e82c7fdda",
+      "fault_statement_sha256": "8b719ca8c0cc74b2e574f3fead1e2fdba1705b7a2ea48e78283c6910134908d1",
+      "source": {
+        "artifact_sha256": {
+          "build_model.py": "fcc8bd561d788c8294b49aedc76243aea16eadabe6ac3519102563129a94e72b",
+          "extract_results.py": "1374a5675c415be37c319a325c92cb43e97b0c1e6b9be84fcb3d6c4e82c7fdda",
+          "plate_tension.cae": "b90ee0ae5b867ed65f60b0e5be3d2db398515d09af7d4ede832ff7b5eba5a8df",
+          "plate_tension.inp": "e44bf7c9766121f9dcd954adad0688f64d8f3557951f3e7f175b70d78d2e2b0b",
+          "plate_tension.odb": "0aadf5cea98174bd719474b6124b69ae85382fc00c03cd44140fd97dc8d37d09",
+          "results.json": "fa6ec1b4c48bb5c229b1ca82f3f0d3fc14270c3f07235d371ee32bd667c84075"
+        },
+        "outcome_sha256": "e83ef1a16fa0d084287fbb2b9c292f8335b03a9d6b2a878becd0395927dd7b88",
+        "request_sha256": "ec1608bd5dba0b3e5d067e7d369b270b2e2a4237a7420bc9ba1dd72a412c49c5",
+        "source_run_id": "eval-9eae508c0206",
+        "verification_sha256": "8d88741cdbb69151578c742b9c94e2cc40424e94b3b2edc1041a7fff6b26f22a"
+      },
+      "source_build_sha256": "fcc8bd561d788c8294b49aedc76243aea16eadabe6ac3519102563129a94e72b",
+      "transform_version": "inject-rf3-history-output-v1"
+    },
+    "diagnostic_retrieval_py_sha256": "e85718e55d278d2579b14e7effcb2c417a865850975ec0c4a94cccd8e4b0a44a",
+    "environment_seal_sha256": "f2c3552fd4b569847f28c667e5bc4f5c8ff70a2403ba0c6ba0d0ba62310d8958",
+    "experiment_manifest_sha256": "e310c725f49b85c8b1901640eaa0903f5bc672894d7de920ad98f88507271b80",
+    "http_retries": 10,
+    "http_timeout_seconds": 60.0,
+    "model": "deepseek-v4-flash",
+    "model_gateway": "opencode-go",
+    "planning_enabled": false,
+    "prompt_version": "plate-output-warning-repair-v1",
+    "pydantic_ai_harness_version": "0.24.0",
+    "pydantic_ai_version": "2.33.0",
+    "query_gate": {
+      "fetch_k": 20,
+      "formulation_version": "goal-identifier-window-v1",
+      "gold_document_id": "simaelm-r-2delem",
+      "gold_rank": 1,
+      "gold_section_id": "simaelm-r-2delem-t-elemtypes1",
+      "gold_section_title": "Plane Stress Elements",
+      "passed": true,
+      "query": "CPS4R RF3 plane stress plate OUTPUT DOF ACTIVE",
+      "query_sha256": "ca0d8c9ad85ce37cad6cd858e6e669508f774bb8637118e89711f901fe5519f1",
+      "retrieved": [
+        [
+          "simaelm-r-2delem",
+          "simaelm-r-2delem-t-elemtypes1",
+          "Plane Stress Elements"
+        ],
+        [
+          "simamat-c-failuremeasures",
+          "simamat-c-failuremeasures-t-outputsect1",
+          "Output"
+        ],
+        [
+          "simaelm-c-stdelementindex",
+          "simaelm-c-stdelementindex",
+          "Abaqus/Standard Element Index"
+        ],
+        [
+          "simaout-c-recordswrittenforanyelementfileoutputrequest",
+          "simaout-c-format-t-RecordForPlaneStressOrthotropicFailureMeasures-recordlist11",
+          "Record for Plane Stress Orthotropic Failure Measures"
+        ]
+      ],
+      "rrf_k": 60,
+      "top_k": 4
+    },
+    "repeats_per_arm": 3,
+    "required_passes_per_arm": 2,
+    "skill_sha256": "5dffe84954008bec534179a85d97d448a1ad9647716cd3f8f33c5f02528bf374",
+    "source_run_id": "eval-9eae508c0206"
+  },
+  "failures": [],
+  "gate": {
+    "advisory": {
+      "arm": "advisory",
+      "attempts": 3,
+      "passes": 3,
+      "required_passes": 2,
+      "smoke_gate_passed": true
+    },
+    "advisory_pass_delta": 0,
+    "both_arms_smoke_gate_passed": true,
+    "control": {
+      "arm": "control",
+      "attempts": 3,
+      "passes": 3,
+      "required_passes": 2,
+      "smoke_gate_passed": true
+    },
+    "evaluation_complete": true,
+    "observed_pass_improvement": false
+  },
+  "name": "opencode-go-deepseek-v4-flash-abaqus2024-plate-output-warning-repair-v1",
+  "run_ids": [
+    "rf3-control-r1-4da86f9e10",
+    "rf3-advisory-r1-0fe333eabe",
+    "rf3-advisory-r2-3990a58407",
+    "rf3-control-r2-933aacd02c",
+    "rf3-control-r3-1a2e4c5fc8",
+    "rf3-advisory-r3-7dc4ba371a"
+  ]
+}

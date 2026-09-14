@@ -1,0 +1,165 @@
+{
+  "manifest": {
+    "version": "warning-rerank-order-v1",
+    "trace_sha256": "8526c72c06fc25deef44123aee4cce1e231c2118fe77b786973a251882d97f1b",
+    "trace_line": 1,
+    "query": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?\nrecorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+    "exact_terms": [
+      "AT"
+    ],
+    "products": [
+      "Abaqus/Standard"
+    ],
+    "target_record": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+    "candidate_count": 64,
+    "policy": "One posthoc observed development query, not held-out. Dense64 is chosen after prior diagnosis located target at raw rank44; this only tests whether ordering can recover a known in-pool target. Keep AT exact result pinned first in every arm; never fix symbol extraction or product filters here. Compare page-first/no-rerank, page-first/rerank, and fragment-rerank/page-dedup using the SAME raw Dense64 pool. Return four items total using existing12000-character delivery. No query rewrite, chunking change, model/solver call or index rebuild.",
+    "vector_before": {
+      "algorithm": "chroma-target-hnsw-segment-bytes-v1",
+      "collection_name": "abaqus_docs_2026_fd02",
+      "collection_id": "5cda2820-ae05-4933-898b-1786a70027c5",
+      "dimension": 384,
+      "collection_config_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "collection_schema_sha256": "b85d10d97d51bc1d762491b6db52ee8e9702c642f66fe151742f859dbdd92fc2",
+      "segment_ids": [
+        "964893cf-0a0b-4d3c-acca-486e1e4516d1"
+      ],
+      "sha256": "6a4d1d016d4371ddf0016ef6812853369a0225c3ce656fd8ab6c9c2af8c42896",
+      "files": [
+        {
+          "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/data_level0.bin",
+          "size_bytes": 65218188,
+          "sha256": "5bbbcde364205b92c85db002d142efb04e4bd36dd9e89c40859ff43027e26f35"
+        },
+        {
+          "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/header.bin",
+          "size_bytes": 100,
+          "sha256": "46879b16337e25659bd133bd1887bad8917397111084e440c382848c64b179dd"
+        },
+        {
+          "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/index_metadata.pickle",
+          "size_bytes": 7360282,
+          "sha256": "2a6e1843f2725e2ece3eb86ca163f89195d29b3fe6df8adef891e40ab0d679b2"
+        },
+        {
+          "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/length.bin",
+          "size_bytes": 155652,
+          "sha256": "7e566e5c154c3abdf4ba6bbbd08ba36cdf8a221b0921b84d4e60517234091f1b"
+        },
+        {
+          "path": "964893cf-0a0b-4d3c-acca-486e1e4516d1/link_lists.bin",
+          "size_bytes": 334968,
+          "sha256": "378171af8e4133830ea79a75dc6ffb79709e37d8fc42046daac46d6d93729f28"
+        }
+      ]
+    },
+    "stored_embeddings_sha256": "59e6c813a4d3cb919a9643f0eb6472903c266a9fda16d00c2b46c7b602e6bdfa",
+    "model": {
+      "repo": "cross-encoder/ms-marco-MiniLM-L6-v2",
+      "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+      "files": {
+        "config.json": {
+          "sha256": "380e02c93f431831be65d99a4e7e5f67c133985bf2e77d9d4eba46847190bacc",
+          "bytes": 794
+        },
+        "tokenizer.json": {
+          "sha256": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66",
+          "bytes": 711396
+        },
+        "tokenizer_config.json": {
+          "sha256": "a5c2e5a7b1a29a0702cd28c08a399b5ecc110c263009d17f7e3b415f25905fd8",
+          "bytes": 1330
+        },
+        "special_tokens_map.json": {
+          "sha256": "3c3507f36dff57bce437223db3b3081d1e2b52ec3e56ee55438193ecb2c94dd6",
+          "bytes": 132
+        },
+        "README.md": {
+          "sha256": "7c0ec39941d0d1d766ccde671f592971d82fe45b7eea550a80d1ea864ebc3baa",
+          "bytes": 3673
+        },
+        "onnx/model.onnx": {
+          "sha256": "5d3e70fd0c9ff14b9b5169a51e957b7a9c74897afd0a35ce4bd318150c1d4d4a",
+          "bytes": 91011230
+        }
+      },
+      "source_url": "https://huggingface.co/cross-encoder/ms-marco-MiniLM-L6-v2/tree/233902d25c440f23af6f7d6e94d2946bac0bee0a"
+    },
+    "implementation": {
+      "var/audits/probe_warning_rerank_order.py": "260bfcdb56236b7ce98a7c60129f75c9d5ffaf638e3fc81c37083781e194fefd",
+      "src/abaqus_sim_agent/retrieval/index.py": "4fe670b4915cbabbb38e2a7344babd2639cbf1e62c7c5b899ec6f94c46145734",
+      "src/abaqus_sim_agent/evaluation/cross_encoder.py": "17e40fd5fda159e0131c039198a56582251aacb7a6fe6c7ae67f8fe0f8d2acfb",
+      "src/abaqus_sim_agent/evaluation/passage_selection.py": "73e1eb07ae0251dc7cccdbff83d788c5fc4e2dd933bfa9dd82a1169640e086f6",
+      "src/abaqus_sim_agent/coding/concept_lookup.py": "7215a6556c87b3515bb19da031367f86a78e45ec5cdb713119f8ec6e81ba15f9",
+      "src/abaqus_sim_agent/coding/document_evidence.py": "412f29d877c575e9ac153adaf99268c31ee93b958ac3148b4e3568ccb2584ed9",
+      "uv.lock": "6d8af39f4e6dfe7535f5610c0b85ed3ef023bc1ab2965ad320bc6ccc9713ca82"
+    }
+  },
+  "preflight": {
+    "candidate_sha256": "c7fcf8605f9604b853f6742b6cbf88920dd3707c4052e8b41dd6b38e50ee59f3",
+    "target_raw_rank": 44,
+    "max_pair_tokens": 375,
+    "eligible_fragments": 64,
+    "early_unique_pages": 30,
+    "early_contains_target": false
+  },
+  "summary": {
+    "page_first_dense": {
+      "selected_ids": [
+        "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+        "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83:chunk-005",
+        "simaout-c-output#simaout-c-output-message:chunk-054",
+        "simaout-c-ov#simaout-c-ov:chunk-002"
+      ],
+      "target_selected": false,
+      "target_final_rank": null,
+      "target_body_delivered_full": false,
+      "rerank_target_position": null,
+      "rerank_seconds": 0.0,
+      "body_characters": 1378,
+      "body_truncations": 0,
+      "heading_only_selected": 1
+    },
+    "page_first_rerank": {
+      "selected_ids": [
+        "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+        "simaout-c-dboutput-requestingoutput-odb#simaout-c-dboutput-requestingoutput-odb:chunk-002",
+        "simaout-c-output#simaout-c-output-message:chunk-054",
+        "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-023"
+      ],
+      "target_selected": false,
+      "target_final_rank": null,
+      "target_body_delivered_full": false,
+      "rerank_target_position": null,
+      "rerank_seconds": 1.0525370999239385,
+      "body_characters": 2460,
+      "body_truncations": 0,
+      "heading_only_selected": 0
+    },
+    "rerank_then_page": {
+      "selected_ids": [
+        "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+        "simaout-c-dboutput-requestingoutput-odb#simaout-c-dboutput-requestingoutput-odb:chunk-002",
+        "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-027",
+        "simaout-c-output#simaout-c-output-message:chunk-054"
+      ],
+      "target_selected": false,
+      "target_final_rank": null,
+      "target_body_delivered_full": false,
+      "rerank_target_position": 6,
+      "rerank_seconds": 2.2749473000876606,
+      "body_characters": 1839,
+      "body_truncations": 0,
+      "heading_only_selected": 0
+    }
+  },
+  "unchanged_after": true,
+  "raw_directory": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\warning-rerank-order-v1",
+  "raw_sha256": {
+    "candidates.json": "c7fcf8605f9604b853f6742b6cbf88920dd3707c4052e8b41dd6b38e50ee59f3",
+    "manifest.json": "44552548cc07809e76e82c2505015b106f559c76e9e123a797c570c56c5f8a2e",
+    "page_first_dense.json": "de24ffa1a9a56becd9ab599286ed8488653917eb182f4e2182218b2f51f58a5e",
+    "page_first_rerank.json": "5d961e58f8365f8b204211f1101e08c1ac29e1abaa2c8d9034284ce13df35d61",
+    "preflight.json": "9c529343dd8ea2bc194ed18f005455bd2267f835d21add7c6d95475bc7a51569",
+    "rerank_then_page.json": "53bd3353c21a4f70eef134baf016b49875fc2f1eb67254ecc1bb098f548d20ab"
+  }
+}

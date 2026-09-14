@@ -1,0 +1,104 @@
+{
+  "schema_version": "behavior-measurement-stage-a-v1",
+  "date": "2026-09-12",
+  "status": "completed_stage_a_only",
+  "scope": "Offline measurement calibration; no new model, live ranking or licensed trials.",
+  "implementation_files": [
+    {
+      "path": "src/abaqus_sim_agent/evaluation/behavior_measurement.py",
+      "sha256": "85547d0e5be4b9dfb02fed1da25242a0f7d9b83fec1499a8ff025bd231a613c2"
+    },
+    {
+      "path": "src/abaqus_sim_agent/evaluation/document_behavior_audit.py",
+      "sha256": "3eed6ee609dfe677574cd03ba5b0ac8d3525f0b72f254c26cd77bf0943c230a0"
+    },
+    {
+      "path": "src/abaqus_sim_agent/evaluation/document_behavior_profile.py",
+      "sha256": "c0c9195c82df0e4c5724c01420d29020b4c1098b9825ef1efa68e3a2a92683bb"
+    },
+    {
+      "path": "src/abaqus_sim_agent/evaluation/document_behavior_spec.py",
+      "sha256": "fe656ed0763361cc4431c7cf64ed058bb6ebad75967c01c873d6cfe2c6fd31e5"
+    },
+    {
+      "path": "src/abaqus_sim_agent/evaluation/document_policy_behavior.py",
+      "sha256": "b50a8dec790707b81d94a7200cc9a8b1c5dc8d70f40ff3bd4aaee66d864a3677"
+    },
+    {
+      "path": "tests/test_behavior_measurement.py",
+      "sha256": "2aac20fdc9b455dc11263e50865ce9fe2decc00211538ecc51bf47469d2f6cd7"
+    },
+    {
+      "path": "tests/test_document_behavior_profile.py",
+      "sha256": "b839f1c3760b9accf93754a8aea083bcc983dd3833f306e6dedf9328c766272b"
+    },
+    {
+      "path": "benchmarks/coding/document_behavior_batch2_annotations_v2.json",
+      "sha256": "8ebed26a4872724aee2f6547caa814fc2d545f2b4641440e0c0230d91dd7c7dd"
+    }
+  ],
+  "original_files_verified_unchanged": {
+    "count": 557,
+    "drift": []
+  },
+  "tests": [
+    {
+      "command": "uv run --no-sync pytest -q -m 'not abaqus'",
+      "passed": 1126,
+      "deselected": 27,
+      "seconds": 115.74,
+      "note": "Full offline regression before final clarification trace-consistency assertion."
+    },
+    {
+      "command": "uv run --no-sync pytest -q tests/test_behavior_measurement.py tests/test_document_behavior_profile.py",
+      "passed": 35,
+      "seconds": 14.99,
+      "note": "Final focused tests after last trace-consistency change."
+    },
+    {
+      "command": "ruff check and ruff format --check on five implementation files and two test files",
+      "status": "passed"
+    }
+  ],
+  "audit": {
+    "path": "var/audits/behavior-measurement-v2/batch-2-posthoc-final.json",
+    "sha256": "fbf818dba9829eb90e4e2e92c50191cbefe2d9e4f7fb0902e93a5571346768be",
+    "replay_path": "var/audits/behavior-measurement-v2/batch-2-posthoc-final-replay.json",
+    "replay_identical": true,
+    "interpretation": "post_hoc_not_new_trials",
+    "semantic_task_pass": 4,
+    "semantic_task_unknown": 4,
+    "termination": {
+      "normal": 4,
+      "output_truncated": 3,
+      "provider": 1
+    },
+    "legacy_gate": "failed_unchanged",
+    "legacy_counts": {
+      "passed": 3,
+      "failed_model_behavior": 4,
+      "invalid_provider": 1
+    },
+    "note": "Protocol violations remain separate, including repaired schema errors. Conditional 4/4 is not a capability score."
+  },
+  "phase_b_spec": {
+    "path": "var/audits/behavior-measurement-v2/phase-b-spec-final.json",
+    "sha256": "7dea367f49fddd028110d1ec19338280c4c720404225724d74a15de809d12a87",
+    "execution_authorized": false,
+    "planned_trials": 24,
+    "maximum_model_requests": 288,
+    "maximum_trial_wall_seconds_sum": 8640
+  },
+  "new_external_calls": {
+    "model": 0,
+    "live_retrieval": 0,
+    "licensed_abaqus": 0
+  },
+  "limitations": [
+    "Host semantic annotations, not autonomous NLP grading or independent expert validation.",
+    "Historical raw byte hashes bound during this audit, not retroactive original attestation.",
+    "Legacy HTTP attempts and missing response tokens remain unknown, not zero.",
+    "Phase B/C require separate approval and pre-launch binding validation.",
+    "Product policy remains off; old Gold, cases, source batch and gate unchanged."
+  ]
+}

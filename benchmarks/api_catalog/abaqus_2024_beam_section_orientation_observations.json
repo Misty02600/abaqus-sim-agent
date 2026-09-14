@@ -1,0 +1,34 @@
+{
+  "schema_version": "1",
+  "observed_at": "2026-08-28",
+  "scope": "Minimal Abaqus/CAE 2024 noGUI extension of the BeamSection constructor boundary after a real B31 final13 trajectory failed on beamOrientation; no input write, job submission, or solve.",
+  "runtime": {
+    "release": "2024",
+    "launcher": "D:/SIMULIA/Commands/abq2024.bat",
+    "python": "3.10.5"
+  },
+  "trigger": {
+    "evidence": "benchmarks/coding/beam_tension_b31_final13_evaluation_20260828.json",
+    "run_id": "beam-7bb9037529f7",
+    "call": 1,
+    "error": "TypeError: keyword error: beamOrientation on Model.BeamSection"
+  },
+  "reproduction": {
+    "fixture": "tests/fixtures/abaqus2024/beam_section_orientation_probe.py",
+    "fixture_sha256": "7f4ffd1caf616cbe76af0237d9aab3fb748d3e0292a4d5e4a21f23e81dd1a2e5",
+    "pytest": "ABAQUS_LICENSED_TESTS=1 pytest tests/test_abaqus2024_beam_section_orientation_probe.py -m abaqus",
+    "result_file": "beam_section_orientation_probe_results.json"
+  },
+  "raw_evidence": {
+    "path": "D:/abaqus-runs/api-cards-final15-beam-orientation-licensed-20260828-v1/test_abaqus2024_beam_section_o0/workspace/beam_section_orientation_probe_results.json",
+    "sha256": "34c3cd75a14a668a013d819261bea780665b1703b1c7dda0990e5b4c22de43be"
+  },
+  "observations": {
+    "ordinary_section_definition": "accepted and created the BeamSection repository entry",
+    "orientation_keyword": "TypeError: keyword error: orientation",
+    "beamOrientation_keyword": "TypeError: keyword error: beamOrientation",
+    "geometricType_keyword": "TypeError: keyword error: geometricType",
+    "invariant": "Model.BeamSection defines section properties; Part.assignBeamSectionOrientation separately owns the approximate physical n1 direction"
+  },
+  "boundary": "The observation validates API ownership only. It does not choose profile dimensions, the n1 vector, element type, or any other B31 model content."
+}

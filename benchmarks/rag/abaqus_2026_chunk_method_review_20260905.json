@@ -1,0 +1,57 @@
+{
+  "schema_version": "chunk-method-review-v1",
+  "status": "evaluated_with_flat_list_coverage_fix_not_default_ready",
+  "evaluation": "benchmarks/rag/abaqus_2026_chunk_method_evaluation_20260905.json",
+  "evaluation_sha256": "6a5693e0dfa84954cb69305fa1f0fc3282e1eea8c09a207c17e5b8a8ed090fd5",
+  "flat_list_pilot": "benchmarks/rag/abaqus_2026_flat_list_projection_pilot_20260905.json",
+  "flat_list_pilot_sha256": "dfe268fe565df09ac6fecfda81d8ed683fe0ca678a18a59407cf1ee560bc758a",
+  "token_stress": "benchmarks/rag/abaqus_chunk_token_stress_20260905.json",
+  "token_stress_sha256": "d1e5e865cc0e0b602387db808e7a127e5be103c2f400a9b56f9411fc70231360",
+  "overall_assessment": "Separating persistent evidence from bounded retrieval text is useful and its storage/length invariants hold in the tested scope. Current source-block selection and reading-window granularity are not yet adequate as a general production chunk method. Token safety is not semantic completeness.",
+  "evidence_by_layer": [
+    {
+      "layer": "storage and token boundaries",
+      "assessment": "passes tested invariants",
+      "evidence": "All original pilot children map back to their hash-bound parent store and reconstruct searchable projections without gaps. The original 762 searchable parents generated 771 children; only 9 parents actually split, yielding 7 heuristic sentence boundaries and 2 newline boundaries. Four added synthetic long-text/code/definition cases generated 63 children with maximum length 256 and exact reconstruction.",
+      "limit": "This is not exhaustive original-HTML fidelity, semantic sentence segmentation or all-model tokenization proof. Synthetic full-parent reconstruction does not bypass the existing 12000-character delivery budget."
+    },
+    {
+      "layer": "granularity and information density",
+      "assessment": "too many fragmented or metadata-dominated records",
+      "evidence": "Original pilot median total child length is 84 tokens; median body length is 57 tokens. In 103 children the standalone prefix-token estimate exceeds half the total. There are 67 children with body length at most 16 tokens, including isolated where/and, page-discussion navigation and Type/Level metadata. After the list fix there are still 67 such children.",
+      "limit": "Small records and large context fractions are inspection flags, not automatic deletion rules. A short definition may be valid; source structure must distinguish metadata/navigation or dependent fragments from self-contained facts."
+    },
+    {
+      "layer": "parent evidence scope",
+      "assessment": "single paragraph is sometimes too small",
+      "evidence": "Plane-strain zero-strain and thickness-stress qualifications are separate parents. The second is in the retrieved candidate pool but not in Top-4. A no-reranking counterfactual that reads contiguous ordinary text with the identical page, anchor and heading path recovers it under the same delivery budget.",
+      "limit": "This is one concrete reading-window result, not approval to expand every hit to a full section or page. The counterfactual has not been implemented in product delivery and does not fix absent list evidence or unrelated final rankings."
+    },
+    {
+      "layer": "structured-content coverage",
+      "assessment": "confirmed classification error fixed for flat lists",
+      "evidence": "Of the 41 previously deferred list blocks, 40 are structurally flat. Formatting attributes such as class/id were treated too conservatively. The projection now supports these lists, preserves list item order and decimal start/value/reversed numbering, and retains original XML unchanged as evidence. Nested/nondecimal or unmodeled-tail cases still defer explicitly.",
+      "current_counts": {"stored_parents":941,"searchable_parents":802,"children":812,"parents_with_multiple_children":10,"deferred_math_blocks":134,"deferred_nested_list_blocks":1,"deferred_table_blocks":4},
+      "limit": "Counts refer to these twelve pages and do not measure a percentage of domain knowledge covered. Formula-containing prose is included in the deferred-math count."
+    },
+    {
+      "layer": "retrieval effect of the list fix",
+      "assessment": "specific evidence recovery demonstrated",
+      "evidence": "With the same fourteen queries, model, Dense20/BM2520 and Top-4, the coupling rigidity-versus-distributing comparison parent changes from unsearchable to rank 1 with its full original list returned. Three newly searchable lists appear in that Top-4; a restrictions list also appears in the Riks BC follow-up. Other known missing answers were not silently declared solved.",
+      "limit": "The candidate HNSW graph was rebuilt, and the data is exposed development data. The missing-to-searchable coverage transition is direct evidence, but this is not a general success-rate or single-cause ranking claim."
+    },
+    {
+      "layer": "failure attribution",
+      "assessment": "do not blame every failure on chunk splitting",
+      "evidence": "The first warning's complete paragraph was already in the candidate pool and is excluded by final ranking/Top-4. Tie permanence and the Riks BC magnitude paragraph are absent from their candidate pools. The coupling comparison was excluded by projection policy. These need different fixes."
+    }
+  ],
+  "next_priorities_not_implemented_here": [
+    "Separate source metadata/navigation and dependent equation connectors from standalone searchable knowledge units using DOM structure, not a blacklist of short words.",
+    "Evaluate bounded reading units that keep tightly related rules and qualifications together; do not equate a parent with one paragraph or an entire page by default.",
+    "Define validated formula/table/nested-list retrieval projections while retaining full source evidence; do not feed raw XML indiscriminately into the encoder.",
+    "Continue evaluating final evidence selection independently from source preservation and child token length."
+  ],
+  "unchanged": ["default product parser and index", "Agent prompts and tools", "model/Top-K settings", "historical reports and parent stores"],
+  "verification": {"full_suite_passed":598,"licensed_tests_skipped":27,"ruff_and_basedpyright":"passed","flat_list_replay_queries":14,"generative_model_calls":0,"abaqus_calls":0}
+}

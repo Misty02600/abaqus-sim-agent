@@ -1,0 +1,13 @@
+{
+  "role": "Newly authored query-first development transfer checks; not a family-disjoint held-out set or production sample",
+  "queries": [
+    {"id": "tie-separation", "question": "If I tie two surfaces in Abaqus, can they subsequently separate or slide relative to each other, or is a contact interaction needed for that behavior?"},
+    {"id": "coupling-deformation", "question": "What is the difference between kinematic and distributing coupling when a load must be transferred from a reference point while allowing the coupled surface to deform?"},
+    {"id": "mass-scaling-inertia", "question": "In an Abaqus/Explicit quasi-static analysis, why can excessive mass scaling change the physical response even when it reduces the number of stable time increments?"},
+    {"id": "hybrid-pressure", "question": "Why do nearly incompressible materials often need hybrid solid elements in Abaqus/Standard, and what additional variable does the hybrid formulation introduce?"},
+    {"id": "plane-strain-meaning", "question": "For a two-dimensional plane strain model, which out-of-plane strain components are constrained, and can the out-of-plane normal stress still be nonzero?"},
+    {"id": "reduced-integration-hourglass", "question": "Why can first-order reduced-integration elements exhibit hourglass modes, and what does hourglass control attempt to prevent?"},
+    {"id": "nodal-stress-extrapolation", "question": "Why can nodal extrapolated stress values differ from stresses at integration points, especially in a region with a steep stress gradient?"},
+    {"id": "explicit-stable-increment", "question": "Why can a few very small elements control the stable time increment and increase the runtime of an Abaqus/Explicit analysis?"}
+  ]
+}

@@ -1,0 +1,68 @@
+- generic [ref=f1e2]:
+  - generic [ref=f1e3]:
+    - generic [ref=f1e6]:
+      - generic [ref=f1e7]:
+        - button "Toggle Sidebar" [ref=f1e8] [cursor=pointer]
+        - heading "Pydantic AI" [level=1] [ref=f1e11]
+      - generic [ref=f1e14]:
+        - list [ref=f1e15]:
+          - listitem [ref=f1e16]:
+            - link "New conversation" [ref=f1e17] [cursor=pointer]:
+              - /url: ./
+        - list [ref=f1e22]:
+          - listitem [ref=f1e23]:
+            - generic [ref=f1e24]:
+              - 'link "FILES: test native file and st... 2026/9/13 21:27:02"':
+                - /url: ./5SCaHcpZYV94gJmIx4iln
+                - generic:
+                  - generic: "FILES: test native file and st..."
+                  - generic: 2026/9/13 21:27:02
+              - button [ref=f1e25] [cursor=pointer]
+          - listitem [ref=f1e117]:
+            - generic [ref=f1e118]:
+              - 'link "FAIL: declare a missing delive... 2026/9/13 21:26:38" [ref=f1e194] [cursor=pointer]':
+                - /url: ./_8oMqtXZRZtvBLVnm1vXA
+                - generic [ref=f1e122]:
+                  - generic [ref=f1e123]: "FAIL: declare a missing delive..."
+                  - generic [ref=f1e124]: 2026/9/13 21:26:38
+              - button [ref=f1e125] [cursor=pointer]
+          - listitem [ref=f1e195]:
+            - generic [ref=f1e196]:
+              - 'link "BRIDGE: write an output file a... 2026/9/13 21:24:51" [ref=f1e197] [cursor=pointer]':
+                - /url: ./1yimTTwP8jlkBnt8ht6sb
+                - generic [ref=f1e200]:
+                  - generic [ref=f1e201]: "BRIDGE: write an output file a..."
+                  - generic [ref=f1e202]: 2026/9/13 21:24:51
+              - button [ref=f1e203] [cursor=pointer]
+      - button "Toggle theme" [ref=f1e27] [cursor=pointer]
+    - generic [ref=f1e30]:
+      - log [ref=f1e31]:
+        - generic [ref=f1e33]:
+          - generic [ref=f1e234]:
+            - paragraph [ref=f1e238]: "FILES: test native file and structured host data rendering"
+            - button "Edit message" [ref=f1e241] [cursor=pointer]
+          - generic [ref=f1e244]:
+            - generic [ref=f1e247]:
+              - paragraph [ref=f1e248]: Native file and host data chunks precede this text.
+              - generic [ref=f1e249]:
+                - img "Markdown fixture" [ref=f1e250]
+                - button "Download image" [ref=f1e251] [cursor=pointer]
+              - paragraph [ref=f1e255]:
+                - link "Download fixture" [ref=f1e256] [cursor=pointer]:
+                  - /url: /probe-image.png?kind=download
+            - generic [ref=f1e257]:
+              - button "Retry" [ref=f1e258] [cursor=pointer]
+              - button "Copy" [ref=f1e260] [cursor=pointer]
+      - generic [ref=f1e68]:
+        - textbox "What would you like to know?" [ref=f1e69]
+        - generic [ref=f1e70]:
+          - generic [ref=f1e71]:
+            - button "Hidden tools" [ref=f1e72] [cursor=pointer]
+            - combobox [ref=f1e81] [cursor=pointer]:
+              - generic: Deterministic UI probe
+            - combobox [aria-hidden] [ref=f1e82]
+            - combobox [ref=f1e73] [cursor=pointer]:
+              - generic: "Effort: Medium"
+            - combobox [aria-hidden] [ref=f1e74]
+          - button [disabled]
+  - region "Notifications alt+T"

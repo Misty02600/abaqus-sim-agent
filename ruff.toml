@@ -1,1 +1,8 @@
 extend = "ruff.base.toml"
+extend-exclude = [
+    # Archived evidence and source copies must retain their recorded bytes.
+    "benchmarks",
+    "docs/scratch",
+    "tests/fixtures/api_catalog/abqpy",
+    "tests/fixtures/api_container_repair",
+]

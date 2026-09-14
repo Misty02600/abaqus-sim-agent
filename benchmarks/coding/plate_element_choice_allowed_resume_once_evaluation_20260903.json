@@ -1,0 +1,131 @@
+{
+  "schema_version": "1",
+  "experiment": "plate-element-choice-cps4-or-cps4r-resume-once-v1",
+  "date": "2026-09-03",
+  "question": "Can one bounded same-run resume recover a naturally timed-out Provider request without turning the three-repeat evaluation into task retry, and does the corrected autonomous CPS4-or-CPS4R Case pass its existing 2/3 gate?",
+  "configuration": {
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "http_retries": 10,
+    "http_timeout_seconds": 60.0,
+    "prompt_version": "plate-tension-v4",
+    "clarification_policy_version": "physics-materiality-clarification-v1",
+    "clarification_policy_case": "plate-element-derived",
+    "allowed_element_types": [
+      "CPS4",
+      "CPS4R"
+    ],
+    "element_count": 80,
+    "api_catalog_mode": "automatic_verified_only",
+    "api_catalog_cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "repeat": 3,
+    "required_passes": 2,
+    "eval_task_retry": false,
+    "resume_infrastructure_once": true
+  },
+  "resume_policy": {
+    "version": "same-run-infrastructure-once-v1",
+    "default_enabled": false,
+    "eligible_exception": "CodingRunInfrastructureError caused by ModelAPIError",
+    "required_persisted_status": "interrupted",
+    "max_resumes_per_run": 1,
+    "same_run_id_request_workspace_state_and_initial_snapshot": true,
+    "fresh_model_client_agent_dependencies_per_turn": true,
+    "usage_runtime_and_wall_clock_budgets_are_cumulative": true,
+    "second_provider_failure_is_not_retried": true
+  },
+  "raw_evidence": {
+    "run_root": "D:/abaqus-runs/plate-element-choice-resume-once-20260902-v1",
+    "evaluation_summary_sha256": "1176e50612e83b736398ebaceaf40bf8e995c992c9358d16b578da2f9f11205d",
+    "gate_sha256": "fa19c670a4aea48b6ae56de52abbe1e9f10f04967b77194d7157a83452c534e2",
+    "evaluation_report_sha256": "b930cdc57200587e75adc6a0ee4d2d1ec1a9928579010afd980e5fba90eeb885",
+    "process_exit_code": 1
+  },
+  "result": {
+    "attempts": 3,
+    "passes": 1,
+    "required_passes": 2,
+    "gate_passed": false,
+    "attempts_detail": [
+      {
+        "ordinal": 1,
+        "run_id": "eval-4cff8f9f6124",
+        "status": "completed",
+        "closed_loop_pass": true,
+        "turns": 2,
+        "infrastructure_errors": 1,
+        "same_run_resumes": 1,
+        "resume_history_source": "step_complete",
+        "model_requests": 24,
+        "abaqus_calls": 9,
+        "solver_calls": 2,
+        "active_wall_time_seconds": 1273.676,
+        "workspace_files": 20,
+        "clarifications": 0,
+        "selected_element_type_counts": {
+          "CPS4": 80
+        },
+        "verification": {
+          "passed": true,
+          "artifacts_fresh": true,
+          "job_completed": true,
+          "right_mean_u1": 0.10000000149011612,
+          "mean_s11": 210.0,
+          "left_sum_rf1": -4200.0
+        }
+      },
+      {
+        "ordinal": 2,
+        "run_id": "eval-1b4189003445",
+        "status": "infrastructure_error",
+        "persisted_status": "interrupted",
+        "error": "ModelAPIError: Request timed out.",
+        "turns": 2,
+        "infrastructure_errors": 2,
+        "same_run_resumes": 1,
+        "model_requests": 2,
+        "abaqus_calls": 0,
+        "solver_calls": 0,
+        "active_wall_time_seconds": 1675.889,
+        "workspace_files": 0
+      },
+      {
+        "ordinal": 3,
+        "run_id": "eval-a0bc01eaa161",
+        "status": "infrastructure_error",
+        "persisted_status": "interrupted",
+        "error": "ModelAPIError: Request timed out.",
+        "turns": 2,
+        "infrastructure_errors": 2,
+        "same_run_resumes": 1,
+        "model_requests": 2,
+        "abaqus_calls": 0,
+        "solver_calls": 0,
+        "active_wall_time_seconds": 1620.609,
+        "workspace_files": 0
+      }
+    ]
+  },
+  "decision": {
+    "status": "One naturally interrupted CodingRun resumed from its settled step history and then passed the complete licensed oracle, but the formal autonomous element-choice batch remained 1/3 and failed its 2/3 gate.",
+    "claims_allowed": [
+      "The opt-in evaluator path performed a real same-run resume after a natural OpenCode Go ModelAPIError instead of creating a replacement evaluation task.",
+      "The recovered run preserved cumulative usage and later completed the licensed CAE, Solver, ODB extraction and host-oracle path.",
+      "One autonomous run selected 80 uniform CPS4 elements, asked no element question, and passed the corrected CPS4-or-CPS4R contract.",
+      "The other two runs each exhausted the single allowed resume and failed before files or Abaqus execution."
+    ],
+    "claims_forbidden": [
+      "The autonomous element-choice profile passed its Product smoke gate.",
+      "Same-run resume guarantees recovery from Provider outages.",
+      "The 0/3 to 1/3 difference is caused by resume or HTTP retry settings.",
+      "Abaqus or Solver effects interrupted in flight were reconciled or resumed."
+    ]
+  },
+  "limits": [
+    "The recovered interruption occurred after settled read-only capability/directory work and before the first Abaqus invocation; it does not test an in-flight external Job.",
+    "Only this plate evaluator exposes the explicit auto-resume flag; the ordinary CLI retains manual --resume as the general low-level mechanism.",
+    "Three attempts of one Case are a smoke gate, not a stable Provider or model success-rate estimate."
+  ]
+}

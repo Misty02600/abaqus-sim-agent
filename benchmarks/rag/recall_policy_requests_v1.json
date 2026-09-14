@@ -1,0 +1,117 @@
+{
+  "version": "recall-policy-regressions-v1",
+  "role": "Same ten development regressions; five historical question/context concatenations split at their stored separator. Joining fields reconstructs every original query exactly. No answer or expansion term added; no generic runtime newline heuristic.",
+  "cases": [
+    {
+      "id": "exact-api-region-1",
+      "request": {
+        "kind": "question",
+        "question": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?",
+        "product": null,
+        "observed_context": "extract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT."
+      },
+      "requirements": []
+    },
+    {
+      "id": "domain-procedure-applicability-1",
+      "request": {
+        "kind": "question",
+        "question": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?",
+        "product": "Abaqus/Standard",
+        "observed_context": "Abaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation."
+      },
+      "requirements": []
+    },
+    {
+      "id": "domain-procedure-applicability-2",
+      "request": {
+        "kind": "question",
+        "question": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?",
+        "product": "Abaqus/Standard",
+        "observed_context": "Abaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step."
+      },
+      "requirements": [
+        {
+          "need": "boundary_condition_magnitude",
+          "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d"
+        }
+      ]
+    },
+    {
+      "id": "recorded-solver-diagnostic-1",
+      "request": {
+        "kind": "question",
+        "question": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?",
+        "product": "Abaqus/Standard",
+        "observed_context": "recorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt."
+      },
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc"
+        }
+      ]
+    },
+    {
+      "id": "recorded-solver-diagnostic-2",
+      "request": {
+        "kind": "question",
+        "question": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?",
+        "product": "Abaqus/Standard",
+        "observed_context": "Abaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt."
+      },
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc"
+        }
+      ]
+    },
+    {
+      "id": "explicit-at",
+      "request": {
+        "kind": "symbol",
+        "symbol": "AT",
+        "symbol_kind": "output_variable"
+      },
+      "expected_status": "found"
+    },
+    {
+      "id": "explicit-static",
+      "request": {
+        "kind": "symbol",
+        "symbol": "*STATIC",
+        "symbol_kind": "keyword",
+        "product": "Abaqus/Standard"
+      },
+      "expected_status": "found"
+    },
+    {
+      "id": "unknown-symbol",
+      "request": {
+        "kind": "symbol",
+        "symbol": "NOT_A_REAL_ABAQUS_SYMBOL",
+        "symbol_kind": "output_variable"
+      },
+      "expected_status": "not_found"
+    },
+    {
+      "id": "unavailable-release",
+      "request": {
+        "kind": "question",
+        "question": "Explain exact output timing",
+        "source_release": "2024"
+      },
+      "expected_status": "not_found"
+    },
+    {
+      "id": "query-over-encoder-budget",
+      "request": {
+        "kind": "question",
+        "question": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word "
+      },
+      "expected_status": "query_too_long"
+    }
+  ],
+  "source_file": "benchmarks/rag/unified_candidate_requests_v1.json"
+}

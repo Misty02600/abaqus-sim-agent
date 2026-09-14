@@ -1,0 +1,210 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-api-repair-final13",
+  "date": "2026-08-28",
+  "question": "Which licensed runtime notes are reachable and adopted by the Product Agent, and which ones actually reduce long-tail calls rather than merely adding correct fallback knowledge?",
+  "runtime_contract": {
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "api_repair_budget": {
+      "model_requests": 18,
+      "api_lookups": 3,
+      "abaqus_calls": 5,
+      "solver_calls": 0
+    },
+    "catalog_mode": "automatic_verified_only",
+    "catalog": "var/api-catalog/abaqus-2024-final13",
+    "catalog_cards_sha256": "f01e90a53107691c1e5abf82f219b1607a5294fb07e1ff069302a8ff284a2d87",
+    "prompt_before_output_fix": "api-repair-v1",
+    "prompt_after_output_fix": "api-repair-v2-output-decision",
+    "coding_decision_output_policy": "decision-output-tool-clarification-v1"
+  },
+  "six_case_time_neighbor": {
+    "boundary": "This batch used experimental final11 before the final12/final13 pruning. Aggregate differences in cases that received no note are sampling variation and are not attributed to the Catalog.",
+    "off": {
+      "run_root": "D:/abaqus-runs/api-repair-final11-off-20260828-v1",
+      "summary_sha256": "7cf4d772c00050304e6fed779412fe0f283b58dac017b4507a290276fd703a2d",
+      "passes": 5,
+      "attempts": 6,
+      "model_requests": 59,
+      "input_tokens": 410533,
+      "output_tokens": 30143,
+      "tool_calls": 64,
+      "abaqus_calls": 16,
+      "failed_cae_calls": 6
+    },
+    "automatic_final11": {
+      "run_root": "D:/abaqus-runs/api-repair-final11-auto-20260828-v1",
+      "summary_sha256": "a7adffcbe83db9440609de8f7a38aeb074905f2daccc4dd957cc7c310b506374",
+      "passes": 6,
+      "attempts": 6,
+      "model_requests": 41,
+      "input_tokens": 235057,
+      "output_tokens": 13535,
+      "tool_calls": 42,
+      "abaqus_calls": 9,
+      "failed_cae_calls": 3,
+      "delivered_notes": 2
+    }
+  },
+  "focused_three_sample_batches": {
+    "Assembly.Set.native_edge_sequence": {
+      "off": {
+        "passes": 1,
+        "attempts": 3,
+        "abaqus_calls_per_attempt": [5, 4, 5],
+        "model_requests": 49,
+        "input_tokens": 419653,
+        "output_tokens": 29467,
+        "tool_calls": 55,
+        "abaqus_calls": 14
+      },
+      "automatic_final11": {
+        "passes": 3,
+        "attempts": 3,
+        "abaqus_calls_per_attempt": [2, 2, 2],
+        "model_requests": 22,
+        "input_tokens": 134896,
+        "output_tokens": 11685,
+        "tool_calls": 24,
+        "abaqus_calls": 6,
+        "note_deliveries": 3
+      },
+      "interpretation": "Strong small-sample long-tail reduction for the pre-existing Assembly.Set note; later output-protocol evidence below prevents a stable-success guarantee."
+    },
+    "Part.SectionAssignment.direct_region": {
+      "off": {
+        "passes": 3,
+        "attempts": 3,
+        "abaqus_calls_per_attempt": [1, 1, 2],
+        "model_requests": 19,
+        "abaqus_calls": 4
+      },
+      "automatic_final11": {
+        "passes": 3,
+        "attempts": 3,
+        "abaqus_calls_per_attempt": [2, 2, 2],
+        "model_requests": 21,
+        "abaqus_calls": 6,
+        "note_deliveries": 3
+      },
+      "decision": "Pruned from final12/final13 because it duplicated normal Skill/official guidance and increased calls in this batch."
+    },
+    "Part.setElementType.region_dispatch": {
+      "off": {
+        "passes": 3,
+        "attempts": 3,
+        "abaqus_calls_per_attempt": [1, 2, 1],
+        "model_requests": 21,
+        "abaqus_calls": 4
+      },
+      "automatic_final11": {
+        "passes": 3,
+        "attempts": 3,
+        "abaqus_calls_per_attempt": [2, 2, 2],
+        "model_requests": 22,
+        "abaqus_calls": 6,
+        "note_deliveries": 3
+      },
+      "interpretation": "The note is a correct and reliably routed fallback, but the simple fixture showed no call reduction."
+    },
+    "Assembly.Surface.side1Edges": {
+      "off": {
+        "passes": 1,
+        "attempts": 3,
+        "abaqus_calls_per_attempt": [5, 1, 5],
+        "model_requests": 42,
+        "abaqus_calls": 11
+      },
+      "automatic_after_localized_router_fix": {
+        "passes": 3,
+        "attempts": 3,
+        "abaqus_calls_per_attempt": [2, 5, 2],
+        "model_requests": 36,
+        "abaqus_calls": 9,
+        "note_deliveries": 2
+      },
+      "interpretation": "Mixed positive evidence: pass count rose from 1/3 to 3/3 and calls fell from 11 to 9, but one passing automatic run diverted to probes and never received the note."
+    }
+  },
+  "exact_artifact_and_output_protocol": {
+    "final12_set_element_type": {
+      "run_root": "D:/abaqus-runs/api-repair-final12-new-auto-20260828-v1",
+      "summary_sha256": "c7a07c91557943346c4575422b1241d6812f0925f38a2dbcd8a9ca171012febb",
+      "passed": true,
+      "model_requests": 7,
+      "abaqus_calls": 2,
+      "note_delivered": true
+    },
+    "pre_fix_failures_after_functional_repair": [
+      {
+        "case": "assembly_surface_flat_edges",
+        "run_root": "D:/abaqus-runs/api-repair-final12-new-auto-20260828-v1",
+        "functional_repair_abaqus_calls": 2,
+        "terminal_model_requests": 18,
+        "terminal_abaqus_calls": 5,
+        "note_delivered": true,
+        "failure": "The model returned prose instead of the strict decision tool, then misread Pydantic's Invalid JSON retry as a workspace artifact error."
+      },
+      {
+        "case": "assembly_set_scalar_edge",
+        "run_root": "D:/abaqus-runs/api-repair-final12-assembly-set-auto-r1-20260828",
+        "summary_sha256": "dd6374d1065c3d17418434becdc3b83867eed7203202a3a36cc3fff65acfa42c",
+        "functional_repair_abaqus_calls": 2,
+        "terminal_model_requests": 18,
+        "terminal_abaqus_calls": 5,
+        "note_delivered": true,
+        "failure": "The same output retry was mistaken for result-file JSON corruption, causing byte/BOM/atomic-write probes."
+      }
+    ],
+    "output_policy_follow_up": [
+      {
+        "case": "assembly_set_scalar_edge",
+        "run_root": "D:/abaqus-runs/api-repair-final12-output-v2-assembly-set-r1-20260828",
+        "summary_sha256": "701d930e7451a3b19211c7db32aaf77fee42eb84bf005befbd3e8efa9e22269c",
+        "passed": true,
+        "model_requests": 8,
+        "abaqus_calls": 2,
+        "note_delivered": true
+      },
+      {
+        "case": "assembly_surface_flat_edges",
+        "run_root": "D:/abaqus-runs/api-repair-final12-output-v2-surface-r1-20260828",
+        "summary_sha256": "7873b94d001baa8c116fd4c808da85d6992663ba6f05fbaa6540f3fffe8bcfe9",
+        "passed": true,
+        "model_requests": 9,
+        "abaqus_calls": 2,
+        "note_delivered": false,
+        "detail": "The model chose a proactive isolated Surface probe, so automatic error routing was not exercised."
+      }
+    ],
+    "interpretation": "The clarified output-tool descriptions and instructions remove a reproduced source of post-repair probe waste in two one-attempt follow-ups. This is regression evidence, not a stable success-rate estimate."
+  },
+  "final13_beam_section_case": {
+    "manifest": "benchmarks/coding/api_repair_final13_new_cards.jsonl",
+    "manifest_sha256": "4e9d4d73f82fc2665f548c78a6ebe57ddb9d281a3155be53cb859837d635c99f",
+    "licensed_broken_fixture": "1/1 failed before result creation with the expected orientation keyword error",
+    "off": {
+      "run_root": "D:/abaqus-runs/api-repair-final13-beam-off-r1-20260828",
+      "summary_sha256": "6187079005a3a6c84c759abf205e75a42484830532bda0d10a60dacf2e15e6fa",
+      "passed": true,
+      "model_requests": 6,
+      "abaqus_calls": 1
+    },
+    "automatic_final13": {
+      "run_root": "D:/abaqus-runs/api-repair-final13-beam-auto-r1-20260828",
+      "summary_sha256": "c19acf8f3d6c32b83a469f417b7cd2e67a1c2c7e5fbaa6e6774bf69ce76cbfb2",
+      "passed": true,
+      "model_requests": 6,
+      "abaqus_calls": 1,
+      "note_delivered": false
+    },
+    "interpretation": "No Product call benefit was observed because both runs repaired the API boundary from source inspection before the first CAE call. The verified note remains a routed fallback for runtime-error paths."
+  },
+  "limits": [
+    "All Product results are small local samples with one model/gateway and cannot establish a general success rate.",
+    "Automatic notes are reactive. They cannot reduce calls when the model repairs from source inspection or chooses a proactive probe before triggering the broken call.",
+    "A delivered note does not guarantee convergence; structured-output behavior and unrelated model decisions can dominate after the API fix.",
+    "Only verified notes with a repeated or high-cost boundary were retained. Correct but redundant notes were pruned rather than maximizing note count."
+  ]
+}

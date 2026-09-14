@@ -1,0 +1,36 @@
+{
+  "run_id": "cmp-4ea79aaa8e864dde",
+  "task_revision": 0,
+  "amendment_sequence": 0,
+  "status": "completed",
+  "summary": "MODEL_SAYS_COMPLETE",
+  "usage": {
+    "model_requests": 3,
+    "input_tokens": 173,
+    "output_tokens": 63,
+    "tool_calls": 1,
+    "api_lookup_calls": 0,
+    "concept_lookup_calls": 0,
+    "diagnostic_retrieval_calls": 0,
+    "syntax_edit_checks": 0,
+    "syntax_runtime_checks": 0,
+    "syntax_denials": 0,
+    "static_preflight_calls": 0,
+    "abaqus_calls": 0,
+    "solver_calls": 0,
+    "wall_time_seconds": 0.2157353999937186,
+    "estimated_cost_usd": null
+  },
+  "artifacts": [
+    {
+      "relative_path": "out.txt",
+      "size_bytes": 25,
+      "sha256": "b8008a00f13f5e7030290e762acb0a1d9022b776e445fdfb24d55c274be840f7",
+      "kind": "other",
+      "fresh": true
+    }
+  ],
+  "clarifications": [],
+  "verification_scope": "execution_evidence",
+  "failure_stage": null
+}

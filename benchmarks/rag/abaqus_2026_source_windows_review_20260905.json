@@ -1,0 +1,38 @@
+{
+  "schema_version": "source-windows-review-v1",
+  "status": "bounded_pilot_completed_not_default_promoted",
+  "report": "benchmarks/rag/abaqus_2026_source_windows_pilot_20260905.json",
+  "report_sha256": "bd4b73d097d5b5d41034ec70403b65797d393ed9f9e91f8c912341e10e9f928d",
+  "scope": "Twelve existing source pages and fourteen exposed development queries. Source filtering and reading-window expansion are evaluated separately; no Agent or physics success claim.",
+  "source_filter": {
+    "mechanism": "Classify actual source DOM nodes: keygroup ownership marks metadata; an abstract-local list containing only same-page section links marks navigation, including its adjacent colon label; pure-text paragraphs between equations or an equation and variable-definition list remain equation context. No blacklist of where/and or length-based blanket deletion.",
+    "counts": {"all_parents_retained":941,"content":924,"metadata":5,"navigation":8,"equation_context":4,"search_children_before":812,"search_children_after":795},
+    "confirmed_examples": ["This page discusses and its table of contents", "TypeHistory data and LevelStep in keygroup", "where between an equation and variable list", "and between equations"],
+    "effect": "Seventeen source blocks no longer generate standalone search records; their original bodies and source provenance remain stored. All fourteen selected Top-4 parent-ID lists equal the previous flat-list pilot, so no retrieval-answer improvement is attributed to filtering in this batch.",
+    "limits": "This is a structure-specific rule validated on the selected documentation and fixtures, not an exhaustive classifier for every page template. Formula context is retained, not given a supported formula-search implementation."
+  },
+  "reading_windows": {
+    "policy": "Merge at most four adjacent searchable ordinary p/text blocks, with an approximately 3000-character expansion bound. Require the same document, release, source hash, anchor and complete heading path. Definitions/lists/code/formulas or excluded roles break runs. An oversized original atom is not cut by grouping; the existing final body budget still applies.",
+    "selection_control": "Take the same ranked Top-4 parents first, then map them to reading windows and deduplicate. Do not backfill extra low-ranked windows after merging.",
+    "provenance": "Window records retain ordered member parent IDs and source block XPaths. This requires the complete source-ordered parent registry returned by the persisted store; it is not a generic grouping operation over an arbitrary subset or shuffled mapping.",
+    "measured_effect": {
+      "queries":14,
+      "median_added_source_blocks":2.5,
+      "median_body_characters_without_window":2416.5,
+      "median_body_characters_with_window":4245.0,
+      "maximum_returned_body_characters":5456,
+      "truncated_window_bodies":0
+    }
+  },
+  "content_review": [
+    {"case":"plane-strain-meaning","result":"required_cross_paragraph_condition_recovered","finding":"With exactly the same selected parents, the first window now contains zero out-of-plane normal/shear strain, planar assumptions and the separate thermal-expansion/thickness-stress statement. The latter was absent from plain parent delivery. Existing generalized-plane-strain distractors remain in other windows."},
+    {"case":"domain-procedure-applicability-1","result":"more_complete_context_with_extra_material","finding":"The Riks method paragraph is accompanied by its immediate motivation; the material window retains the time/strain-rate limitation. The unstable-response window also adds alternative dynamic/stabilization approaches and a figure caption. More context is not uniformly necessary context."},
+    {"case":"hybrid-pressure","result":"reason_and_formulation_delivered_together","finding":"The almost-incompressible window combines numerical sensitivity with independent pressure interpolation. The fully incompressible window retains the plane-stress and material-behavior qualifications already present in neighboring source paragraphs."},
+    {"case":"recorded-solver-diagnostic-2 and coupling-deformation","result":"previous_useful_evidence_retained","finding":"The complete exact-time paragraph and the full kinematic/distributing contrast list remain delivered. Lists remain atomic, so the window does not pretend to reinterpret their internal structure."},
+    {"case":"recorded-solver-diagnostic-1","result":"still_unresolved","finding":"The necessary explanation is not among the selected parents. Windowing parameter definitions does not promote the separate explanatory paragraph; ranking remains a separate unresolved layer."},
+    {"case":"tie-separation and domain-procedure-applicability-2","result":"still_unresolved","finding":"The declared permanence/BC magnitude evidence is still absent from the selected or retrieved context. Window expansion is not a substitute for missing candidates or proper evidence selection."}
+  ],
+  "assessment": "The two implementation goals have bounded evidence: structural non-content is isolated without destroying originals, and reading windows repair one confirmed cross-paragraph incompleteness without modifying ranks. The window roughly increases typical delivered text volume and can expand existing distractors. This supports continued controlled evaluation, not unconditional adoption or a claim that RAG is finished.",
+  "unchanged": ["default product parser/index/tool profile", "query formulation", "reranker and Top-K", "historical parent stores and reports"],
+  "verification": {"new_window_and_role_tests":12,"full_suite_passed":610,"licensed_tests_skipped":27,"ruff_and_basedpyright":"passed","source_model_and_new_index_hash_checks":"passed","generative_model_calls":0,"abaqus_calls":0}
+}

@@ -1,0 +1,611 @@
+{
+  "version": "evidence-delivery-modes-v1",
+  "role": "five observed development queries; fixed historical candidate rankings, not new retrieval or Agent runs",
+  "source_profile": "Same frozen child ranking and first four unique verified parents in both modes; no page dedup, no neighbor synthesis, no rejected-slot refill, no clipping. Uses existing candidate Dense20+BM2520 cross-encoder history, NOT default-index or prior Dense64 rankings. No inference executed.",
+  "verified_source_files": 71,
+  "same_selected_child_and_unit_slots": true,
+  "metrics": {
+    "passage": {
+      "queries": 5,
+      "selected_slots": 20,
+      "delivered_units": 20,
+      "whole_units": 10,
+      "body_tokens": 1946,
+      "mean_body_tokens": 389.2,
+      "body_characters": 9748,
+      "serialized_evidence_tokens": 8127,
+      "required_paragraph_checks": 3,
+      "required_paragraphs_delivered": 1,
+      "rejections": []
+    },
+    "evidence_unit": {
+      "queries": 5,
+      "selected_slots": 20,
+      "delivered_units": 17,
+      "whole_units": 17,
+      "body_tokens": 2575,
+      "mean_body_tokens": 515,
+      "body_characters": 11080,
+      "serialized_evidence_tokens": 7812,
+      "required_paragraph_checks": 3,
+      "required_paragraphs_delivered": 1,
+      "rejections": [
+        {
+          "query": "exact-api-region-1",
+          "rank": 1,
+          "child_id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576:975:2044",
+          "unit_id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+          "status": "unit_budget_exceeded",
+          "reason": "complete body exceeds unit budget; no clipping",
+          "body_tokens": 444
+        },
+        {
+          "query": "recorded-solver-diagnostic-1",
+          "rank": 3,
+          "child_id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896:0:546",
+          "unit_id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+          "status": "unit_budget_exceeded",
+          "reason": "complete body exceeds unit budget; no clipping",
+          "body_tokens": 537
+        },
+        {
+          "query": "recorded-solver-diagnostic-2",
+          "rank": 4,
+          "child_id": "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503:0:459",
+          "unit_id": "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503",
+          "status": "unit_budget_exceeded",
+          "reason": "complete body exceeds unit budget; no clipping",
+          "body_tokens": 438
+        }
+      ]
+    }
+  },
+  "results": {
+    "passage": [
+      {
+        "id": "exact-api-region-1",
+        "mode": "passage",
+        "slots": [
+          {
+            "rank": 1,
+            "child_id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576:975:2044",
+            "unit_id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 229
+          },
+          {
+            "rank": 2,
+            "child_id": "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad:0:372",
+            "unit_id": "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 76
+          },
+          {
+            "rank": 3,
+            "child_id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736:0:590",
+            "unit_id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 126
+          },
+          {
+            "rank": 4,
+            "child_id": "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2:0:243",
+            "unit_id": "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 47
+          }
+        ],
+        "duplicates_skipped": 0,
+        "delivered_units": 4,
+        "whole_source_units": 3,
+        "body_tokens": 478,
+        "body_characters": 2274,
+        "budget_charged_body_characters": 2274,
+        "serialized_evidence_tokens": 1742,
+        "requirements": []
+      },
+      {
+        "id": "domain-procedure-applicability-1",
+        "mode": "passage",
+        "slots": [
+          {
+            "rank": 1,
+            "child_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e:0:144",
+            "unit_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 30
+          },
+          {
+            "rank": 2,
+            "child_id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060:1178:1767",
+            "unit_id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 111
+          },
+          {
+            "rank": 3,
+            "child_id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3:0:806",
+            "unit_id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 161
+          },
+          {
+            "rank": 4,
+            "child_id": "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b:0:809",
+            "unit_id": "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 156
+          }
+        ],
+        "duplicates_skipped": 0,
+        "delivered_units": 4,
+        "whole_source_units": 2,
+        "body_tokens": 458,
+        "body_characters": 2360,
+        "budget_charged_body_characters": 2360,
+        "serialized_evidence_tokens": 1607,
+        "requirements": []
+      },
+      {
+        "id": "domain-procedure-applicability-2",
+        "mode": "passage",
+        "slots": [
+          {
+            "rank": 1,
+            "child_id": "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826:0:373",
+            "unit_id": "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 80
+          },
+          {
+            "rank": 2,
+            "child_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e:0:144",
+            "unit_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 30
+          },
+          {
+            "rank": 3,
+            "child_id": "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1:0:370",
+            "unit_id": "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 68
+          },
+          {
+            "rank": 4,
+            "child_id": "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0:0:406",
+            "unit_id": "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 80
+          }
+        ],
+        "duplicates_skipped": 0,
+        "delivered_units": 4,
+        "whole_source_units": 2,
+        "body_tokens": 258,
+        "body_characters": 1305,
+        "budget_charged_body_characters": 1305,
+        "serialized_evidence_tokens": 1389,
+        "requirements": [
+          {
+            "need": "boundary_condition_magnitude",
+            "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+            "in_pool": false,
+            "selected_slot": false,
+            "whole_unit_delivered": false,
+            "required_source_paragraph_delivered": false
+          }
+        ]
+      },
+      {
+        "id": "recorded-solver-diagnostic-1",
+        "mode": "passage",
+        "slots": [
+          {
+            "rank": 1,
+            "child_id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce:0:344",
+            "unit_id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 71
+          },
+          {
+            "rank": 2,
+            "child_id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2:0:198",
+            "unit_id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 39
+          },
+          {
+            "rank": 3,
+            "child_id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896:0:546",
+            "unit_id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 102
+          },
+          {
+            "rank": 4,
+            "child_id": "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370:0:902",
+            "unit_id": "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 183
+          }
+        ],
+        "duplicates_skipped": 0,
+        "delivered_units": 4,
+        "whole_source_units": 1,
+        "body_tokens": 395,
+        "body_characters": 2027,
+        "budget_charged_body_characters": 2027,
+        "serialized_evidence_tokens": 1655,
+        "requirements": [
+          {
+            "need": "complete_time_adjustment",
+            "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+            "in_pool": true,
+            "selected_slot": false,
+            "whole_unit_delivered": false,
+            "required_source_paragraph_delivered": false
+          }
+        ]
+      },
+      {
+        "id": "recorded-solver-diagnostic-2",
+        "mode": "passage",
+        "slots": [
+          {
+            "rank": 1,
+            "child_id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2:0:198",
+            "unit_id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 39
+          },
+          {
+            "rank": 2,
+            "child_id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500:0:202",
+            "unit_id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 41
+          },
+          {
+            "rank": 3,
+            "child_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+            "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 187
+          },
+          {
+            "rank": 4,
+            "child_id": "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503:0:459",
+            "unit_id": "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 90
+          }
+        ],
+        "duplicates_skipped": 0,
+        "delivered_units": 4,
+        "whole_source_units": 2,
+        "body_tokens": 357,
+        "body_characters": 1782,
+        "budget_charged_body_characters": 1784,
+        "serialized_evidence_tokens": 1734,
+        "requirements": [
+          {
+            "need": "complete_time_adjustment",
+            "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+            "in_pool": true,
+            "selected_slot": true,
+            "whole_unit_delivered": false,
+            "required_source_paragraph_delivered": true
+          }
+        ]
+      }
+    ],
+    "evidence_unit": [
+      {
+        "id": "exact-api-region-1",
+        "mode": "evidence_unit",
+        "slots": [
+          {
+            "rank": 1,
+            "child_id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576:975:2044",
+            "unit_id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+            "status": "unit_budget_exceeded",
+            "reason": "complete body exceeds unit budget; no clipping",
+            "body_tokens": 444
+          },
+          {
+            "rank": 2,
+            "child_id": "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad:0:372",
+            "unit_id": "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 76
+          },
+          {
+            "rank": 3,
+            "child_id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736:0:590",
+            "unit_id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 126
+          },
+          {
+            "rank": 4,
+            "child_id": "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2:0:243",
+            "unit_id": "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 47
+          }
+        ],
+        "duplicates_skipped": 0,
+        "delivered_units": 3,
+        "whole_source_units": 3,
+        "body_tokens": 249,
+        "body_characters": 1205,
+        "budget_charged_body_characters": 1205,
+        "serialized_evidence_tokens": 1225,
+        "requirements": []
+      },
+      {
+        "id": "domain-procedure-applicability-1",
+        "mode": "evidence_unit",
+        "slots": [
+          {
+            "rank": 1,
+            "child_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e:0:144",
+            "unit_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 132
+          },
+          {
+            "rank": 2,
+            "child_id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060:1178:1767",
+            "unit_id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 317
+          },
+          {
+            "rank": 3,
+            "child_id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3:0:806",
+            "unit_id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 161
+          },
+          {
+            "rank": 4,
+            "child_id": "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b:0:809",
+            "unit_id": "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 156
+          }
+        ],
+        "duplicates_skipped": 0,
+        "delivered_units": 4,
+        "whole_source_units": 4,
+        "body_tokens": 766,
+        "body_characters": 3728,
+        "budget_charged_body_characters": 3728,
+        "serialized_evidence_tokens": 1927,
+        "requirements": []
+      },
+      {
+        "id": "domain-procedure-applicability-2",
+        "mode": "evidence_unit",
+        "slots": [
+          {
+            "rank": 1,
+            "child_id": "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826:0:373",
+            "unit_id": "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 80
+          },
+          {
+            "rank": 2,
+            "child_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e:0:144",
+            "unit_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 132
+          },
+          {
+            "rank": 3,
+            "child_id": "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1:0:370",
+            "unit_id": "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 370
+          },
+          {
+            "rank": 4,
+            "child_id": "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0:0:406",
+            "unit_id": "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 80
+          }
+        ],
+        "duplicates_skipped": 0,
+        "delivered_units": 4,
+        "whole_source_units": 4,
+        "body_tokens": 662,
+        "body_characters": 2295,
+        "budget_charged_body_characters": 2295,
+        "serialized_evidence_tokens": 1863,
+        "requirements": [
+          {
+            "need": "boundary_condition_magnitude",
+            "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+            "in_pool": false,
+            "selected_slot": false,
+            "whole_unit_delivered": false,
+            "required_source_paragraph_delivered": false
+          }
+        ]
+      },
+      {
+        "id": "recorded-solver-diagnostic-1",
+        "mode": "evidence_unit",
+        "slots": [
+          {
+            "rank": 1,
+            "child_id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce:0:344",
+            "unit_id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 309
+          },
+          {
+            "rank": 2,
+            "child_id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2:0:198",
+            "unit_id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 39
+          },
+          {
+            "rank": 3,
+            "child_id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896:0:546",
+            "unit_id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+            "status": "unit_budget_exceeded",
+            "reason": "complete body exceeds unit budget; no clipping",
+            "body_tokens": 537
+          },
+          {
+            "rank": 4,
+            "child_id": "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370:0:902",
+            "unit_id": "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 234
+          }
+        ],
+        "duplicates_skipped": 0,
+        "delivered_units": 3,
+        "whole_source_units": 3,
+        "body_tokens": 582,
+        "body_characters": 2287,
+        "budget_charged_body_characters": 2287,
+        "serialized_evidence_tokens": 1516,
+        "requirements": [
+          {
+            "need": "complete_time_adjustment",
+            "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+            "in_pool": true,
+            "selected_slot": false,
+            "whole_unit_delivered": false,
+            "required_source_paragraph_delivered": false
+          }
+        ]
+      },
+      {
+        "id": "recorded-solver-diagnostic-2",
+        "mode": "evidence_unit",
+        "slots": [
+          {
+            "rank": 1,
+            "child_id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2:0:198",
+            "unit_id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 39
+          },
+          {
+            "rank": 2,
+            "child_id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500:0:202",
+            "unit_id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 41
+          },
+          {
+            "rank": 3,
+            "child_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+            "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+            "status": "delivered",
+            "reason": "",
+            "body_tokens": 236
+          },
+          {
+            "rank": 4,
+            "child_id": "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503:0:459",
+            "unit_id": "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503",
+            "status": "unit_budget_exceeded",
+            "reason": "complete body exceeds unit budget; no clipping",
+            "body_tokens": 438
+          }
+        ],
+        "duplicates_skipped": 0,
+        "delivered_units": 3,
+        "whole_source_units": 3,
+        "body_tokens": 316,
+        "body_characters": 1565,
+        "budget_charged_body_characters": 1565,
+        "serialized_evidence_tokens": 1281,
+        "requirements": [
+          {
+            "need": "complete_time_adjustment",
+            "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+            "in_pool": true,
+            "selected_slot": true,
+            "whole_unit_delivered": true,
+            "required_source_paragraph_delivered": true
+          }
+        ]
+      }
+    ]
+  },
+  "raw_directory": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\evidence-delivery-modes-v1-verified",
+  "raw_sha256": {
+    "evidence_unit\\domain-procedure-applicability-1.json": "595bd8a67915ea7413540edbcb8fd2e8c7374069d1d6c9dab223526f8a343b2f",
+    "evidence_unit\\domain-procedure-applicability-2.json": "5d8e25f2d3f88a0256738219830777ff1aaf711677832fb4563ca7293fa019e0",
+    "evidence_unit\\exact-api-region-1.json": "c7b9c51c77156cac6bdbe7e6f25267644de020f88aed7f770fc1685d880282e6",
+    "evidence_unit\\manifest.json": "0ca2681d56bc54f39c54059c3d8d8ef1139c0772712d76183fa466ccdd45ef98",
+    "evidence_unit\\recorded-solver-diagnostic-1.json": "baf39c26db58d0bfbfcf3f843e3c6ed1b12ee85da3d52a5e8a159e1780e4ba56",
+    "evidence_unit\\recorded-solver-diagnostic-2.json": "20ad35a64b8c1841d2d1c825d4c090ad92ba0761656014c14bbf9dfcfc72180c",
+    "evidence_unit\\summary.json": "c37e6a85e85bbed94d60cb25408b1fc5a4a711a568a0a40a4cb9d6a1010d64cc",
+    "passage\\domain-procedure-applicability-1.json": "83dd4f559ed12e431b0303c1a194a042be06c3fb15b6ce2bb30dce0c0997cd1e",
+    "passage\\domain-procedure-applicability-2.json": "cfba47ea5cd7cb9a1221fd26ecff1085873ace0e74f3a3c3c9fff551c2fd6f48",
+    "passage\\exact-api-region-1.json": "bf6694bd40928e9fa0966c4bbbd8da40aa745b0c103ea101e0fefef6c60fdd3b",
+    "passage\\manifest.json": "d3da2e43c3d034e72a5bc4fb24a7f7e1cedad4a06da4858d3066f8f129e29dcf",
+    "passage\\recorded-solver-diagnostic-1.json": "af00450677f53498f1d6503da43b09608f2bc134a49e1b4d23ecf006ac01cda6",
+    "passage\\recorded-solver-diagnostic-2.json": "3f2b9fc9e7d038bcf6d259c13483adfc0551cf7160152c4e3801bd8cce39afa0",
+    "passage\\summary.json": "5157046b15fdc3dffaf8fc789789be927a4536fb099b6e4d4353fcbda0ab0ad7"
+  },
+  "tests": {
+    "related_passed": 63,
+    "basedpyright_errors": 0,
+    "ruff": "passed"
+  },
+  "limits": [
+    "Only three previously declared required-paragraph checks are annotated; no five-query success rate is claimed.",
+    "Unit restoration cannot recover an unselected parent. Larger original units can introduce irrelevant context or be rejected.",
+    "Default product/index unchanged; no model calls, embedding, reranking, or Abaqus runs.",
+    "Preparatory assertion rejected expected outer-CRLF normalization; fixed with end-to-end regression test and fresh output directory. Prior partial and intermediate outputs preserved."
+  ]
+}

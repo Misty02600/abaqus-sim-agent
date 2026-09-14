@@ -1,0 +1,81 @@
+{
+  "schema_version": "1",
+  "experiment_id": "beam-tension-b31-aci-enforced-v1-20260829",
+  "frozen_task": {
+    "request": "beam-tension-b31-v1",
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "api_catalog_mode": "automatic_verified_only",
+    "api_catalog_cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+    "concept_retrieval_mode": "off",
+    "runtime_script_policy_mode": "production_allowlist",
+    "budget": {
+      "model_requests": 40,
+      "api_lookups": 4,
+      "static_preflights": 12,
+      "abaqus_calls": 12,
+      "solver_calls": 3,
+      "wall_time_seconds": 2700
+    }
+  },
+  "aci_profile": {
+    "mode": "enforced_verified",
+    "syntax_gate_version": "python-3.10-production-syntax-v1",
+    "api_policy_version": "abqpy-enforced-verified-v1",
+    "engine": "basedpyright",
+    "engine_version": "1.39.10",
+    "api_source": "abqpy",
+    "api_source_version": "2024.10",
+    "api_source_sha256": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504"
+  },
+  "accepted_reference": {
+    "profile": "B31 v7 automatic final15 plus production allowlist, ACI off",
+    "attempts": 3,
+    "passes": 2,
+    "passed_gate": true,
+    "evidence": "beam_tension_b31_runtime_allowlist_evaluation_20260829.json",
+    "evidence_sha256": "aaa3359fc1ae321a75c3eaa8e2b0258fd0b9940f16642bb339fdfbbbe7f25ed5"
+  },
+  "offline_enforcement_evidence": {
+    "positive_scripts": 21,
+    "positive_blocked": 0,
+    "positive_warnings": 16,
+    "negative_scripts": 5,
+    "negative_blocked": 5,
+    "real_b31_failure_families_blocked": 4,
+    "evidence": "abaqus_aci_enforced_policy_v1_20260829.json"
+  },
+  "formal_product_batch": {
+    "attempts": 3,
+    "passes": 0,
+    "passed_gate": false,
+    "infrastructure_failures": 3,
+    "task_started_attempts": 0,
+    "syntax_edit_checks": 0,
+    "syntax_runtime_checks": 0,
+    "syntax_denials": 0,
+    "static_preflight_calls": 0,
+    "abaqus_calls": 0,
+    "failure": "ModelAPIError: Request timed out before any production file",
+    "summary_sha256": "358ad34447bf694fc1c8566f7b8ddf5dbb3b97d16fc2fbdc9931f70f9a694e15",
+    "gate_sha256": "8fc4410a4ab8c700147fa2dbc52d435885a50c4487f64246a5c7d4b0b8872164"
+  },
+  "attempts": [
+    {
+      "run_id": "beam-72e5dd488d5f",
+      "history_sha256": "90a4532a92b22601eb94acb533760516d3026a8cea474b35bc76c7d56731e31b",
+      "workspace_files": 0
+    },
+    {
+      "run_id": "beam-df772d9feee6",
+      "history_sha256": "9d13b2a7531b69fab07c1a4a62918cf82ae59ec76f20af361afa7b0c531575e3",
+      "workspace_files": 0
+    },
+    {
+      "run_id": "beam-1b9687cdc38c",
+      "history_sha256": "5a2488bcb7c46f1191468afa9f48c3fa7e0177c0fe2ea4a65c4383ca4015ecb5",
+      "workspace_files": 0
+    }
+  ],
+  "conclusion": "The hard ACI implementation and offline precision gates are validated, but this one formal Product batch is infrastructure-invalid for adoption because no attempt reached a file action. The accepted B31 v7 profile remains unchanged and no fourth attempt was added."
+}

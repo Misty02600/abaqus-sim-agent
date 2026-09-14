@@ -1,0 +1,112 @@
+{
+  "schema_version": "semantic-parent-partition-review-v1",
+  "date": "2026-09-07",
+  "status": "Structure and block-embedding parent comparison completed; full four-document LLM comparison NOT completed under the declared output budget.",
+  "scope": "Four exposed development documents,239 common protected atoms,237 fixed retrieval children,one common ranking per query. Only parent grouping differs; not an end-to-end comparison of sentence-semantic/LLM retrieval pipelines.",
+  "summary": {
+    "structural": {
+      "delivered_requirements": 6,
+      "total_requirements": 8,
+      "queries": 6,
+      "mean_delivered_body_characters": 3121.5,
+      "truncated_parent_excerpts": 0,
+      "boundaries": {
+        "groups": 175,
+        "body_characters": {
+          "median": 354.0,
+          "max": 11633
+        },
+        "multi_heading_groups": 0
+      }
+    },
+    "semantic": {
+      "delivered_requirements": 8,
+      "total_requirements": 8,
+      "queries": 6,
+      "mean_delivered_body_characters": 12000.0,
+      "truncated_parent_excerpts": 13,
+      "boundaries": {
+        "groups": 35,
+        "body_characters": {
+          "median": 2079.0,
+          "max": 11633
+        },
+        "multi_heading_groups": 20
+      }
+    },
+    "llm": {
+      "batch_complete": false,
+      "accepted_documents": 1,
+      "total_documents": 4,
+      "model_requests_with_response": 4,
+      "input_tokens_reported": 47629,
+      "output_tokens_reported": 26290,
+      "reasoning_tokens_reported": 25852,
+      "elapsed_seconds": 189.83492029993795,
+      "failures": [
+        {
+          "document": "simaout-c-dboutput-frequency",
+          "failure": {
+            "type": "UsageLimitExceeded",
+            "message": "Exceeded the output_tokens_limit of 5000 (output_tokens=6171). Consider raising the limit, or see the docs on usage limits for budget-aware patterns: https://ai.pydantic.dev/agent/#usage-limits"
+          }
+        },
+        {
+          "document": "simacst-c-coupling",
+          "failure": {
+            "type": "UsageLimitExceeded",
+            "message": "Exceeded the output_tokens_limit of 5000 (output_tokens=9223). Consider raising the limit, or see the docs on usage limits for budget-aware patterns: https://ai.pydantic.dev/agent/#usage-limits"
+          }
+        },
+        {
+          "document": "simaelm-c-dimension",
+          "failure": {
+            "type": "UsageLimitExceeded",
+            "message": "Exceeded the output_tokens_limit of 5000 (output_tokens=5927). Consider raising the limit, or see the docs on usage limits for budget-aware patterns: https://ai.pydantic.dev/agent/#usage-limits"
+          }
+        }
+      ],
+      "recording_gap": "For three output-budget failures, the SDK raised before appending ModelResponse to capture_run_messages. Only request and usage/error records remain. Their boundary outputs cannot be reconstructed; none were invented or recovered by an extra model call."
+    }
+  },
+  "source_report": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\benchmarks\\rag\\abaqus_2026_semantic_parent_partition_session_v3_20260907.json",
+  "source_report_sha256": "4271673589697fcc212c11088b0c5d87a13c6f289e0892514360a234dc7a49dc",
+  "preceding_routing_failure_report_sha256": "3ea4d0bb168035ee59484ea82907407869160d59e986a8570d0b5bb4405c8853",
+  "transport_accounting": {
+    "initial_http400_missing_session_attempts": 8,
+    "initial_inference_tokens_reported": 0,
+    "corrected_header_model_requests": 4,
+    "no_further_model_calls_after_corrected_batch": true,
+    "routing_reference": "https://opencode.ai/docs/go/#where-can-i-use-it"
+  },
+  "interpretation": [
+    "The block-embedding arm delivered8/8 source requirements versus6/8 for structural grouping, but used12000 characters on every query versus3121.5 on average. This does not isolate a semantic-quality benefit from broader context.",
+    "Semantic groups were much coarser:35 versus175. It crossed heading boundaries20times and produced13 truncated parent excerpts across6queries. Heading changes/truncation counts are diagnostics, not automatic semantic-error labels.",
+    "The LLM produced one contract-valid Riks partition. Three other requests exceeded the5000output-token SDK limit, dominated by reasoning tokens. These are budget failures, not evidence that LLM boundaries are worse.",
+    "No subset-only LLM retrieval score, no structural fallback for missing LLM pages, no post-hoc increase of this batch budget, and no claim of a complete three-arm result."
+  ],
+  "post_trial_recording_fix": {
+    "implementation_sha256": {
+      "src/abaqus_sim_agent/evaluation/llm_response_recording.py": "dd419ba71e209de732d8f0a803d02fb9c7f1f2742419f310312cd2ffd73397af",
+      "tests/test_llm_response_recording.py": "3a920ac75e4aebfa31ff6446a40190c767eef9561f9a02801f334f45cefc38bd",
+      "var/audits/run_semantic_partition_pilot.py": "15823191c017bb252ca68ad3fe47d75a4d51fc167824ef355fdf1f8b351ec773"
+    },
+    "behavior": "Persist parsed ModelResponse before Agent budget/output checks. Budget failures remain failures. Tested deterministically; no new provider run and no retroactive recovery of lost outputs."
+  },
+  "raw": {
+    "directory": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\semantic-partition-review-v1",
+    "sha256": {
+      "simaanl-c-postbuckling-accepted-groups.json": "d7fb64de58e5b4901a37e1e4e84138e60fd46181c647e3645f6676917334e189",
+      "post-trial-fix\\tests\\test_llm_response_recording.py": "3a920ac75e4aebfa31ff6446a40190c767eef9561f9a02801f334f45cefc38bd",
+      "post-trial-fix\\src\\abaqus_sim_agent\\evaluation\\llm_response_recording.py": "dd419ba71e209de732d8f0a803d02fb9c7f1f2742419f310312cd2ffd73397af",
+      "post-trial-fix\\var\\audits\\run_semantic_partition_pilot.py": "15823191c017bb252ca68ad3fe47d75a4d51fc167824ef355fdf1f8b351ec773"
+    }
+  },
+  "next_step_requires_new_batch": "Use a deliberate reasoning/output-budget configuration and the pre-budget recorder, then complete the four-page LLM arm. Preserve this incomplete trial. Do not tune source boundaries or queries to obtain passing scores.",
+  "limits": [
+    "No default index or Abaqus coding Agent integration; no Abaqus runtime calls.",
+    "Source2026FD02 is not2024 API compatibility evidence.",
+    "Current atoms preserve preexisting non-prose structures; this trial does not evaluate an LLM splitting inside tables, formulas or code.",
+    "Original source occurrence spans are the evaluation target; no old chunk ID is treated as a gold answer."
+  ]
+}

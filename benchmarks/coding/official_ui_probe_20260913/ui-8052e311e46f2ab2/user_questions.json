@@ -1,0 +1,24 @@
+{
+  "schema_version": "user-questions-v1",
+  "run_id": "ui-8052e311e46f2ab2",
+  "questions": [
+    {
+      "question_id": "q-thickness",
+      "question": "Plate thickness? Please include units.",
+      "task_revision": 0,
+      "turn": 1,
+      "abaqus_calls_before": 0,
+      "revision_had_runtime": false,
+      "goal_at_question": "BRIDGE: write an output file after asking for thickness",
+      "execution_count": 0,
+      "history_sha256": "380f963d65148c52b78354d7d5f6aa11e288208651c014b596309bc8931be784",
+      "workspace_sha256": "602e35a92eec4bc0a2ec6ae113f07bfc6933322fb69fe8dee416e5a67217e2a2",
+      "asked_at": "2026-09-13T13:24:52.058918Z",
+      "answer": "1 mm",
+      "source": "file",
+      "resolved_at": "2026-09-13T13:25:57.150273Z",
+      "cancelled": false,
+      "answer_revision": 0
+    }
+  ]
+}

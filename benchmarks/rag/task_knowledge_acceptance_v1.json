@@ -1,0 +1,482 @@
+{
+  "version": "task-knowledge-acceptance-v1",
+  "status": "specified_not_scored",
+  "created": "2026-09-09",
+  "scope": "Three original offline Agent development tasks, five observed retrieval queries. Not a new held-out set or an automatic grader.",
+  "policy": {
+    "old_results": "Do not modify old requests, target IDs, rankings, scores or outcomes. Previous 1/3 remains a designated-unit diagnostic, not an answer-level score.",
+    "task_grouping": "Evaluate each original user task once using evidence actually available before its final answer; do not count follow-up queries as independent tasks.",
+    "evidence_equivalence": "Accept any verified source or combination that supports the required fact with matching scope and disclosed version. Seed unit IDs below locate examples only; identical ID/text is neither necessary nor sufficient.",
+    "three_axes": [
+      "task answer correctness and completeness",
+      "support for required and voluntarily asserted claims",
+      "user action/scope constraints"
+    ],
+    "support_statuses": [
+      "supported",
+      "partial",
+      "missing",
+      "contradicted",
+      "scope_or_version_mismatch",
+      "not_triggered"
+    ],
+    "answer_statuses": [
+      "correct",
+      "partial",
+      "incorrect",
+      "appropriately_conditional",
+      "not_scored"
+    ],
+    "source_gap": "Record source unavailable/in corpus but unretrieved/selected but undelivered/delivered but misused separately. Missing evidence does not automatically make a true answer false.",
+    "outcome": "No new numeric score in this version. A future review must report mandatory facts, triggered claims and constraint violations separately; do not average away an unsupported critical claim.",
+    "version": "2026 FD02 manual evidence may support explicitly version-qualified conceptual advice. It does not establish2024 API/runtime identity. The2024.10 stub supports static API reasoning, not a claim of executed Abaqus.",
+    "historical_exposure": "Queries and some historical answers were inspected before this contract. This is a development acceptance redesign, not a retrospective independent audit.",
+    "evidence_delivery": "Grade only evidence delivered before the answer, not full text known only to the evaluator. Several excerpts may jointly support one fact.",
+    "intervention": "No retriever change, scoring implementation, model continuation, Abaqus execution, index rebuild or plan creation."
+  },
+  "sources": {
+    "direct_cyclic": {
+      "kind": "local_vendor_manual",
+      "release": "2026 FD02",
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEANLRefMap\\simaanl-c-directcyclic.htm",
+      "sha256": "be050bf4d0fe1cfa2d67ef5330105c63c0c5fc815810fb5dbeeb20d0a1c59051",
+      "anchor": "simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+      "heading": [
+        "Direct Cyclic Analysis",
+        "Output",
+        "Specifying Output at Exact Times"
+      ],
+      "seed_unit_id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2"
+    },
+    "fatigue": {
+      "kind": "local_vendor_manual",
+      "release": "2026 FD02",
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEANLRefMap\\simaanl-c-directcyclicfatigue.htm",
+      "sha256": "606cf62babb8c00d5496a1c126a285acf1e3f23ee27dbafc15012905db50b1a6",
+      "anchor": "simaanl-c-directcyclicfatigue-t-SpecifyingOutputAtExactTimes-sma-topic19",
+      "heading": [
+        "Low-Cycle Fatigue Analysis Using the Direct Cyclic Approach",
+        "Output",
+        "Specifying Output at Exact Times"
+      ],
+      "seed_unit_id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500"
+    },
+    "riks_method": {
+      "kind": "local_vendor_manual",
+      "release": "2026 FD02",
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEANLRefMap\\simaanl-c-postbuckling.htm",
+      "sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+      "anchor": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+      "heading": [
+        "Unstable Collapse and Postbuckling Analysis",
+        "The Riks Method"
+      ],
+      "seed_unit_id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3"
+    },
+    "riks_proportional": {
+      "kind": "local_vendor_manual",
+      "release": "2026 FD02",
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEANLRefMap\\simaanl-c-postbuckling.htm",
+      "sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+      "anchor": "simaanl-c-postbuckling-proportional",
+      "heading": [
+        "Unstable Collapse and Postbuckling Analysis",
+        "The Riks Method",
+        "Proportional Loading"
+      ],
+      "seed_unit_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84"
+    },
+    "riks_bifurcation": {
+      "kind": "local_vendor_manual",
+      "release": "2026 FD02",
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEANLRefMap\\simaanl-c-postbuckling.htm",
+      "sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+      "anchor": "simaanl-c-postbuckling-t-Bifurcation-sma-topic6",
+      "heading": [
+        "Unstable Collapse and Postbuckling Analysis",
+        "Bifurcation"
+      ],
+      "seed_unit_id": "079386314a1f00700e0a54fc28d45811902c522d2991798bc1c1cd58caf7d9c6"
+    },
+    "riks_bc": {
+      "kind": "local_vendor_manual",
+      "release": "2026 FD02",
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEANLRefMap\\simaanl-c-postbuckling.htm",
+      "sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+      "anchor": "simaanl-c-postbuckling-t-bcsect1",
+      "heading": [
+        "Unstable Collapse and Postbuckling Analysis",
+        "Boundary Conditions"
+      ],
+      "seed_unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d"
+    },
+    "riks_thermal": {
+      "kind": "local_vendor_manual",
+      "release": "2026 FD02",
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEANLRefMap\\simaanl-c-postbuckling.htm",
+      "sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+      "anchor": "simaanl-c-postbuckling-t-fieldsect1",
+      "heading": [
+        "Unstable Collapse and Postbuckling Analysis",
+        "Predefined Fields"
+      ],
+      "seed_unit_id": "9e31f4fe6f31c8b7935f0547a971d60d09b36eefbabd5630c7b6445f19ce2ceb"
+    },
+    "riks_materials": {
+      "kind": "local_vendor_manual",
+      "release": "2026 FD02",
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEANLRefMap\\simaanl-c-postbuckling.htm",
+      "sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+      "anchor": "simaanl-c-postbuckling-t-matsect1",
+      "heading": [
+        "Unstable Collapse and Postbuckling Analysis",
+        "Material Options"
+      ],
+      "seed_unit_id": "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b"
+    },
+    "riks_ending": {
+      "kind": "local_vendor_manual",
+      "release": "2026 FD02",
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEANLRefMap\\simaanl-c-postbuckling.htm",
+      "sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+      "anchor": "simaanl-c-postbuckling-t-EndingARiksAnalysisStep-sma-topic5",
+      "heading": ["Unstable Collapse and Postbuckling Analysis","Ending a Riks Analysis Step"],
+      "seed_unit_id": "989236baa5e1a0781e1f5716e226fee5ad0063d7471615e63031712bdbb195fa"
+    },
+    "riks_output": {
+      "kind": "local_vendor_manual",
+      "release": "2026 FD02",
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEANLRefMap\\simaanl-c-postbuckling.htm",
+      "sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+      "anchor": "simaanl-c-postbuckling-t-outputsect1",
+      "heading": [
+        "Unstable Collapse and Postbuckling Analysis",
+        "Output"
+      ],
+      "seed_unit_id": "5f038d86dc9ab2f3229bcfe4f2c2e666c0c501e82773270c0fcfc9634c5654c3"
+    },
+    "time_adjustment": {
+      "kind": "local_vendor_manual",
+      "release": "2026 FD02",
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEOUTRefMap\\simaout-c-dboutput-frequency.htm",
+      "sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+      "anchor": "simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+      "heading": [
+        "Controlling the Frequency of Output to the Output Database",
+        "Controlling the Output Frequency in Abaqus/Standard",
+        "Time Domain Analysis: Time Incrementation"
+      ],
+      "seed_unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc"
+    },
+    "message_file": {
+      "kind": "local_vendor_manual",
+      "release": "2026 FD02",
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEOUTRefMap\\simaout-c-output.htm",
+      "sha256": "adbaee3be790ea653824ec34b747b32a19b88a11b0e2f10ad620985c1cfb8aee",
+      "anchor": "simaout-c-output-message-std",
+      "heading": [
+        "About Output",
+        "The Message File in Abaqus/Standard and Abaqus/Explicit",
+        "The Abaqus/Standard Message File"
+      ],
+      "seed_unit_id": "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370"
+    },
+    "api_subset": {
+      "kind": "third_party_api_stub",
+      "version": "abqpy-2024.10",
+      "path": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\api-catalog\\sources\\abqpy-2024.10-py3-none-any.whl",
+      "sha256": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504",
+      "member": "abaqus/Odb/FieldOutput.py",
+      "member_sha256": "f501ac4c9c1fe0544a82d250308f7e548d60742d94a104605b5b65c691a64f5e",
+      "qualification": "versioned type/documentation evidence, not vendor runtime or licensed execution"
+    },
+    "api_assembly": {
+      "kind": "third_party_api_stub",
+      "version": "abqpy-2024.10",
+      "path": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\api-catalog\\sources\\abqpy-2024.10-py3-none-any.whl",
+      "sha256": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504",
+      "member": "abaqus/Odb/OdbAssemblyBase.py",
+      "member_sha256": "c5d6bed42cccd8a148c1e5ae98af4472aa272fcc13501cddf63be535ef285501",
+      "qualification": "versioned type/documentation evidence, not vendor runtime or licensed execution"
+    },
+    "api_odb": {
+      "kind": "third_party_api_stub",
+      "version": "abqpy-2024.10",
+      "path": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\api-catalog\\sources\\abqpy-2024.10-py3-none-any.whl",
+      "sha256": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504",
+      "member": "abaqus/Odb/OdbBase.py",
+      "member_sha256": "4b2930028b400668d24e8572f8d8b25c778c10ef95a776fe22ddc18561468aae",
+      "qualification": "versioned type/documentation evidence, not vendor runtime or licensed execution"
+    }
+  },
+  "tasks": [
+    {
+      "id": "api_region",
+      "goal": "离线检查 extract_results.py 中 FieldOutput.getSubset 的 region 用法。说明它需要什么 Abaqus 对象、能否直接传集合名称字符串，并给出从装配层节点集合 LEFT 获取区域的修正代码。只修改该入参表达式，写 analysis.json 说明依据，不运行 Abaqus，也不需要本地ODB。",
+      "request_file": "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\exact-api-region\\state\\request.json",
+      "request_sha256": "d6feabf06712576939e619c8d39e4e34063d57a41c8cf5ed67883a465ddd3faf",
+      "query_trace_file": "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\exact-api-region\\state\\concept_lookups.jsonl",
+      "query_trace_sha256": "0a0293854adb5f4792e8cc01bedb4800bbd974f5c4b32cd8088ebbaa76106201",
+      "query_ids": [
+        "exact-api-region-1"
+      ],
+      "known_inputs": [
+        "Named set LEFT is stated to be assembly-level in the ODB object model.",
+        "The task is offline and explicitly requires no local ODB or Abaqus execution."
+      ],
+      "required_facts": [
+        {
+          "id": "API-F1",
+          "requirement": "在按节点集合选择区域的这次调用中，应传入对应OdbSet对象，而不是集合名称字符串；不要把这一上下文扩大为getSubset所有重载都只接受OdbSet。",
+          "source_options": [
+            [
+              "api_subset"
+            ]
+          ]
+        },
+        {
+          "id": "API-F2",
+          "requirement": "给出与装配层集合位置匹配的表达式：field.getSubset(region=odb.rootAssembly.nodeSets['LEFT'])；解释rootAssembly、nodeSets和取得的对象之间的关系。",
+          "source_options": [
+            [
+              "api_odb",
+              "api_assembly",
+              "api_subset"
+            ]
+          ]
+        }
+      ],
+      "constraints": [
+        "只修改region入参表达式，不改变ODB路径、step/frame/field选择或文件关闭逻辑。",
+        "写analysis.json说明依据；不运行Abaqus，不要求用户先提供本地ODB。",
+        "不声称已验证本地ODB存在LEFT或代码已在Abaqus运行。"
+      ],
+      "conditional_claims": [
+        {
+          "id": "API-C1",
+          "trigger": "答案声称有2024 runtime验证",
+          "requirement": "引用必须是实际覆盖本次OdbSet重载和访问路径的运行证据；其他对象重载、类型注解或模型自述不能替代。",
+          "source_options": [],
+          "status": "requires_separate_runtime_evidence_if_asserted"
+        },
+        {
+          "id": "API-C2",
+          "trigger": "讨论缺失集合或实例层集合",
+          "requirement": "区分题目已给出的装配层LEFT前提与将来执行时的存在性检查，不擅自改成任意实例层路径。",
+          "source_options": [
+            [
+              "api_assembly",
+              "api_odb"
+            ]
+          ]
+        }
+      ],
+      "permitted_uncertainty": "可明确说明这是基于版本化API资料的静态修正，尚未运行；这不构成违反原任务。",
+      "false_shortcuts": [
+        "查到节点集创建或参数研究结果文档，就当作OdbAssembly访问链证据。",
+        "拿getSubset(region=OdbMeshNode)的运行结果证明OdbSet路径已经执行通过。"
+      ]
+    },
+    {
+      "id": "riks_advice",
+      "goal": "为一个已有的 Abaqus/Standard 非线性静力项目写一份简短的 analysis.json 技术检查意见。项目要追踪越过极限点后的平衡路径，载荷空间分布固定且由同一个比例系数控制；普通载荷控制在极限点附近遇到困难。说明 modified Riks 方法为何可能适合、比例载荷有什么要求，以及不能把它当成任意不收敛的通用修复的原因。本任务仅要求技术解释，不修改物理模型，也不运行 Abaqus。",
+      "request_file": "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\domain-procedure-applicability\\state\\request.json",
+      "request_sha256": "4e6056dcd4eceb09423286b5d95f98e056ed0343c516b52aeec4cd5b3fd54cf7",
+      "query_trace_file": "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\domain-procedure-applicability\\state\\concept_lookups.jsonl",
+      "query_trace_sha256": "07690cd0157294aed755766bac27f0e705320037edeb133d4ac96999e39834e3",
+      "query_ids": [
+        "domain-procedure-applicability-1",
+        "domain-procedure-applicability-2"
+      ],
+      "known_inputs": [
+        "Abaqus/Standard非线性静力、越过极限点、载荷空间分布固定、由同一个比例系数控制。",
+        "用户要技术检查意见，不要求修改或运行模型。"
+      ],
+      "required_facts": [
+        {
+          "id": "RIKS-F1",
+          "requirement": "解释载荷大小也作为未知量、用弧长推进静力平衡路径的基本机制，并将它与给定极限点/固定空间分布情形联系起来；表述为可能适合，不保证该项目必然收敛。",
+          "source_options": [
+            [
+              "riks_method"
+            ]
+          ]
+        },
+        {
+          "id": "RIKS-F2",
+          "requirement": "解释可变载荷模式的比例关系及比例因子由解确定；若提及已有dead load，不能误述它也必然随同一因子缩放。公式可以等价文字解释，不要求固定chunk或逐字公式。",
+          "source_options": [
+            [
+              "riks_proportional"
+            ]
+          ]
+        },
+        {
+          "id": "RIKS-F3",
+          "requirement": "明确这不是任意不收敛的通用修复，并至少说明一个有依据的适用边界及其原因；不能把更换步类型当成修复未知建模错误的保证。",
+          "source_options": [
+            [
+              "riks_materials"
+            ],
+            [
+              "riks_bifurcation"
+            ]
+          ]
+        }
+      ],
+      "constraints": [
+        "写简短analysis.json技术意见，不修改物理模型、不运行Abaqus。",
+        "不补造项目未给出的具体载荷、材料、几何缺陷或求解控制参数。",
+        "只用2026资料时公开版本边界，不无依据宣称已经验证2024完全相同。"
+      ],
+      "conditional_claims": [
+        {
+          "id": "RIKS-C1",
+          "trigger": "主动讨论只能用力型载荷、禁止所有非零位移驱动，或规定所有驱动都必须属于某类载荷",
+          "requirement": "必须另有直接、范围匹配的依据支持该排他性主张。Loads列表和BC段落不能单独推出全部排他规则；未知时不作该断言。",
+          "source_options": [
+            [
+              "riks_bc",
+              "riks_proportional",
+              "riks_thermal"
+            ]
+          ],
+          "status": "these_are_review_starting_points_not_sufficient_proof_of_exclusive_claim"
+        },
+        {
+          "id": "RIKS-C2",
+          "trigger": "主动说明LPF输出或结束条件",
+          "requirement": "核对输出含义及适用方式；不把弧长当物理时间。此项不是原用户目标的独立必过检索项。",
+          "source_options": [
+            [
+              "riks_output",
+              "riks_ending",
+              "riks_method"
+            ]
+          ]
+        },
+        {
+          "id": "RIKS-C3",
+          "trigger": "主动讨论非零位移边界的具体缩放行为",
+          "requirement": "需要覆盖具体施加方式、已有边界条件和幅值规则的直接证据；不能把Agent自己提出的二选一当作事实。",
+          "source_options": [
+            [
+              "riks_bc",
+              "riks_proportional"
+            ]
+          ],
+          "status": "current_seed_sources_do_not_complete_every_variant"
+        }
+      ],
+      "permitted_uncertainty": "可以给出带前提的适用性意见，并要求实施前核对真实模型；无须为原任务没有要求的载荷种类穷举作出无依据结论。",
+      "false_shortcuts": [
+        "把没命中BC单元直接等价为原Riks任务失败。",
+        "为了满足自行引入的force-only分支而扩大原任务的必答范围。",
+        "用单条引用笼统支撑不同作用范围的全部限制。"
+      ]
+    },
+    {
+      "id": "warning_advice",
+      "goal": "检查 recorded_diagnostic.txt 中一条已有 Abaqus/Standard 日志摘录。项目使用自动时间增量，并要求在精确的预定时间点输出场结果。解释这条警告是否足以说明求解不收敛、它与时间增量控制可能有什么关系，以及下一步应检查什么。写 analysis.json；不要自动改变物理参数或删掉用户的精确输出时间要求。本次只做记录分析，不重新运行 Abaqus。",
+      "request_file": "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\recorded-solver-diagnostic\\state\\request.json",
+      "request_sha256": "58f6b20932815181703959fd6927046ac702d973d9e547791f62d0795888d44a",
+      "query_trace_file": "D:\\abaqus-runs\\docs-tool-behavior-20260905-v1\\recorded-solver-diagnostic\\state\\concept_lookups.jsonl",
+      "query_trace_sha256": "8526c72c06fc25deef44123aee4cce1e231c2118fe77b786973a251882d97f1b",
+      "query_ids": [
+        "recorded-solver-diagnostic-1",
+        "recorded-solver-diagnostic-2"
+      ],
+      "known_inputs": [
+        "只有一段关于精确预设时间点输出的warning摘录。",
+        "已知使用自动时间增量和精确输出要求，但没有完整日志和确切procedure。"
+      ],
+      "required_facts": [
+        {
+          "id": "WARN-F1",
+          "requirement": "说明该摘录不足以判定求解失败，也不足以证明成功或无害；区分warning消息与完整作业状态。",
+          "source_options": [
+            [
+              "message_file"
+            ]
+          ],
+          "also_supported_by": "original task evidence boundary: excerpt only"
+        },
+        {
+          "id": "WARN-F2",
+          "requirement": "说明在适用的Standard时间域过程中，精确输出时刻可能影响自动增量安排；准确限定程序/最小增量例外，不能承诺所有过程都必定在精确时刻结束增量。",
+          "source_options": [
+            [
+              "time_adjustment"
+            ]
+          ]
+        },
+        {
+          "id": "WARN-F3",
+          "requirement": "说明可能增加增量数及计算成本，不把这种可能性直接当作已发生的收敛失败。",
+          "source_options": [
+            [
+              "time_adjustment"
+            ]
+          ]
+        },
+        {
+          "id": "WARN-F4",
+          "requirement": "提出具体后续检查：作业完成/终止与增量记录、收敛和错误消息、step类型及精确输出设置；与尚未提供的信息相对应。",
+          "source_options": [
+            [
+              "message_file",
+              "time_adjustment"
+            ]
+          ]
+        }
+      ],
+      "constraints": [
+        "写analysis.json；不删除精确输出要求，不改物理参数，不运行Abaqus。",
+        "不补造procedure，不将Direct Cyclic或低周疲劳的规则直接泛化到所有Standard分析。",
+        "不将读取摘录说成已经检查过完整sta/msg/dat。"
+      ],
+      "conditional_claims": [
+        {
+          "id": "WARN-C1",
+          "trigger": "使用Direct Cyclic或低周疲劳限制解释当前案例",
+          "requirement": "只有procedure已确认匹配时才能直接应用；否则须明确它只是特定过程的可能分支。",
+          "source_options": [
+            [
+              "direct_cyclic"
+            ],
+            [
+              "fatigue"
+            ]
+          ]
+        },
+        {
+          "id": "WARN-C2",
+          "trigger": "声称应关闭精确输出或放宽求解参数",
+          "requirement": "原任务不授权执行这些变化；建议也应说明证据、影响和需要用户确认的前提，不能当作当前结论的默认处理。",
+          "source_options": []
+        }
+      ],
+      "permitted_uncertainty": "在procedure和完整日志未知时，给条件性机制解释和明确检查项就是符合任务的回答，无需先运行求解。",
+      "false_shortcuts": [
+        "把两次追问当成两个独立任务重复计权。",
+        "返回TIME POINTS参数定义或消息文件概述就算覆盖全部机制。",
+        "把“不是仅凭这一行判定不收敛”扩张为“肯定无害，可以忽略”。"
+      ]
+    }
+  ],
+  "review_record": {
+    "task_id": "one of the three task IDs",
+    "scoring_state": "not_scored",
+    "facts": "For each mandatory fact: answer verdict, delivered source excerpts, scope/version qualification, support status, rationale.",
+    "triggered_claims": "List only conditional claims actually made; mark absent optional claims not_triggered rather than failed.",
+    "constraints": "Evaluate task action limits independently of retrieval metrics.",
+    "alternatives": "Record any equivalent source with exact locator and why it supports the same fact; never require the seed ID.",
+    "summary": "Report task answer, grounding and action compliance separately; no aggregate success percentage on three exposed tasks."
+  },
+  "unavailable_sources": [
+    {
+      "role": "Abaqus2024 vendor reference pages mirrored at docs.software.vt.edu",
+      "status": "HTTP403 for FieldOutput/OdbAssembly/ReadingModelData during this review; contents not treated as verified2024 web evidence"
+    }
+  ]
+}

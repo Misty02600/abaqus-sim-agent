@@ -1,0 +1,14 @@
+{
+  "schema_version": "1",
+  "dataset_id": "abaqus-2026-bm25-dense-rrf-heldout-v3",
+  "purpose": "identical_reproduction_comparison",
+  "reference_report_sha256": "9bb5d7a6e688e0d5a3ecd598c1a252ca3234fb509514886228be9444623fd0a8",
+  "reproduction_report_sha256": "b06cd0b2478ffa8b9ead954c907e9e3b1ef83547501e2901a2329c36ac3065d4",
+  "rankings_compared": 90,
+  "ranking_mismatches": [],
+  "effect_mismatches": [],
+  "reference_effect_sha256": "5a3a955c8df07a8a795e9f9e589703b1a0e849178a07c5b1f154533946f957b5",
+  "reproduction_effect_sha256": "5a3a955c8df07a8a795e9f9e589703b1a0e849178a07c5b1f154533946f957b5",
+  "identical": true,
+  "latency_is_identity_gated": false
+}

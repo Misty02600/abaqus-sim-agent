@@ -1,0 +1,36 @@
+{
+  "run_id": "ui-80b9f1e22b270d95",
+  "task_revision": 0,
+  "amendment_sequence": 0,
+  "status": "failed",
+  "summary": "Declared deliverable verification failed: missing: missing.txt",
+  "usage": {
+    "model_requests": 3,
+    "input_tokens": 188,
+    "output_tokens": 63,
+    "tool_calls": 1,
+    "api_lookup_calls": 0,
+    "concept_lookup_calls": 0,
+    "diagnostic_retrieval_calls": 0,
+    "syntax_edit_checks": 0,
+    "syntax_runtime_checks": 0,
+    "syntax_denials": 0,
+    "static_preflight_calls": 0,
+    "abaqus_calls": 0,
+    "solver_calls": 0,
+    "wall_time_seconds": 0.18316300000878982,
+    "estimated_cost_usd": null
+  },
+  "artifacts": [
+    {
+      "relative_path": "out.txt",
+      "size_bytes": 25,
+      "sha256": "885eb5bdf432b0af811d8b5a1b76ed5183284c8609ade04ff7f71913797a4563",
+      "kind": "other",
+      "fresh": true
+    }
+  ],
+  "clarifications": [],
+  "verification_scope": "execution_evidence",
+  "failure_stage": "deliverables"
+}

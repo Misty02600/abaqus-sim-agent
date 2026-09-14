@@ -1,0 +1,176 @@
+{
+  "schema_version": "document-delivery-validation-v1",
+  "delivery_version": "indexed-passage-body-budget-v1",
+  "body_budget_characters": 12000,
+  "budget_scope": "Shared across all returned bodies in rank order; metadata excluded; not a token count.",
+  "script_sha256": "90a2c42083260e477d9e197368c7e8b044854a783a40b24bee8973e3f883aa26",
+  "implementation_sha256": {
+    "src/abaqus_sim_agent/coding/document_evidence.py": "412f29d877c575e9ac153adaf99268c31ee93b958ac3148b4e3568ccb2584ed9",
+    "src/abaqus_sim_agent/coding/concept_lookup.py": "7215a6556c87b3515bb19da031367f86a78e45ec5cdb713119f8ec6e81ba15f9",
+    "src/abaqus_sim_agent/coding/diagnostic_retrieval.py": "67408d35ea5900fa77a6d111ca3f89085004512d2184c51134f98a03f087122b",
+    "src/abaqus_sim_agent/coding/contracts.py": "8b00d6688dabf07c179d7ed48fe440fb1de878dc2890ad3d7d61056e02226437"
+  },
+  "indices": {
+    "old": {
+      "index_binding_sha256": "aa38ae6aedf46084f72d8266658a4d1d96928a60889842b86bf6aa7e509ae068",
+      "unchanged_after": true,
+      "corpus_body_lengths": {
+        "records": 38913,
+        "body_over_600": 12305,
+        "body_over_bundle_budget": 0,
+        "median": 249,
+        "p99": 998,
+        "max": 1223
+      },
+      "previous_top4_delivery_checks": [
+        {
+          "query": "exact-api-region-1",
+          "records": [
+            "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-U:output_variable-001",
+            "simakey-r-nodeoutput#simakey-r-nodeoutput:chunk-008",
+            "simaout-c-output#simaout-c-output-t-TheResultsFile-sma-topic10:chunk-038",
+            "simaout-c-printfile#simaout-c-printfile-nodaloutput:chunk-068"
+          ],
+          "body_characters": 2538,
+          "truncated_records": 0
+        },
+        {
+          "query": "domain-procedure-applicability-1",
+          "records": [
+            "simakey-r-static#keyword",
+            "simaout-c-std-solutiondependentamplitudevariables#simaout-c-std-solutiondependentamplitudevariables__simaout-c-genxsl-LPF:output_variable-001",
+            "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "simaanl-c-postbuckling#simaanl-c-postbuckling-t-matsect1:chunk-033"
+          ],
+          "body_characters": 2113,
+          "truncated_records": 0
+        },
+        {
+          "query": "domain-procedure-applicability-2",
+          "records": [
+            "simakey-r-static#keyword",
+            "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+            "simaanl-c-visco#simaanl-c-visco-t-loadsect1:chunk-017"
+          ],
+          "body_characters": 2240,
+          "truncated_records": 0
+        },
+        {
+          "query": "recorded-solver-diagnostic-1",
+          "records": [
+            "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+            "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83:chunk-005",
+            "simaout-c-output#simaout-c-output-message:chunk-054",
+            "simaout-c-ov#simaout-c-ov:chunk-002"
+          ],
+          "body_characters": 1378,
+          "truncated_records": 0
+        },
+        {
+          "query": "recorded-solver-diagnostic-2",
+          "records": [
+            "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+            "simakey-r-static#simakey-r-static:chunk-013",
+            "simakey-r-geostatic#simakey-r-geostatic:chunk-007",
+            "simaout-c-errorindicatoroutput#simaout-c-errorindicatoroutput-t-ErrorIndicatorAndBaseSolutionVariablesAvailableInAS-sma-topic3:chunk-010"
+          ],
+          "body_characters": 2040,
+          "truncated_records": 0
+        }
+      ],
+      "explicit_warning_target": {
+        "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+        "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std",
+        "body_characters": 993,
+        "body_sha256": "252467d4620b722df874def1c939bddb693368a8beff1c5262b61d793ea6ce25",
+        "truncated": false,
+        "full_exception_list_and_after_timepoint_fallback_retained": true,
+        "scope": "Directly selected delivery fixture; no claim that retrieval newly finds it."
+      }
+    },
+    "new": {
+      "index_binding_sha256": "c714525661a67e552ce59d982198ac843405eaf97aaec9649b6dc7635c7e5cf1",
+      "unchanged_after": true,
+      "corpus_body_lengths": {
+        "records": 39019,
+        "body_over_600": 12240,
+        "body_over_bundle_budget": 0,
+        "median": 246,
+        "p99": 998,
+        "max": 1223
+      },
+      "previous_top4_delivery_checks": [
+        {
+          "query": "exact-api-region-1",
+          "records": [
+            "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-U:output_variable-001",
+            "simakey-r-nodeoutput#simakey-r-nodeoutput:chunk-008",
+            "simaout-c-output#simaout-c-output-t-TheResultsFile-sma-topic10:chunk-038",
+            "simaout-c-printfile#simaout-c-printfile-nodaloutput:chunk-068"
+          ],
+          "body_characters": 2505,
+          "truncated_records": 0
+        },
+        {
+          "query": "domain-procedure-applicability-1",
+          "records": [
+            "simakey-r-static#keyword",
+            "simaout-c-std-solutiondependentamplitudevariables#simaout-c-std-solutiondependentamplitudevariables__simaout-c-genxsl-LPF:output_variable-001",
+            "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-009",
+            "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008"
+          ],
+          "body_characters": 2276,
+          "truncated_records": 0
+        },
+        {
+          "query": "domain-procedure-applicability-2",
+          "records": [
+            "simakey-r-static#keyword",
+            "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+            "simaanl-c-static#simaanl-c-static-t-NonlinearStaticAnalysis-sma-topic3:chunk-008",
+            "simaanl-c-visco#simaanl-c-visco-t-loadsect1:chunk-017"
+          ],
+          "body_characters": 2240,
+          "truncated_records": 0
+        },
+        {
+          "query": "recorded-solver-diagnostic-1",
+          "records": [
+            "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+            "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-023",
+            "simaout-c-dboutput-incrementation#simaout-c-dboutput-t-RequestingPreselectedOutput-sma-topic83:chunk-005",
+            "simaout-c-ov#simaout-c-ov:chunk-002"
+          ],
+          "body_characters": 1032,
+          "truncated_records": 0
+        },
+        {
+          "query": "recorded-solver-diagnostic-2",
+          "records": [
+            "simaout-c-std-nodalvariables#simaout-c-std-nodalvariables__simaout-c-genxsl-AT:output_variable-016",
+            "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2:chunk-023",
+            "simakey-r-static#simakey-r-static:chunk-013",
+            "simaanl-c-convergencechecktype#summary"
+          ],
+          "body_characters": 1872,
+          "truncated_records": 0
+        }
+      ],
+      "explicit_warning_target": {
+        "record_id": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+        "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std",
+        "body_characters": 993,
+        "body_sha256": "252467d4620b722df874def1c939bddb693368a8beff1c5262b61d793ea6ce25",
+        "truncated": false,
+        "full_exception_list_and_after_timepoint_fallback_retained": true,
+        "scope": "Directly selected delivery fixture; no claim that retrieval newly finds it."
+      }
+    }
+  },
+  "limits": [
+    "Full indexed passage is not a full original section; ingestion/chunk-boundary omissions remain possible.",
+    "No ranking, query, index, reranker, generative model or Abaqus execution changed in this validation.",
+    "Historical traces/reports remain unchanged; current implementations do not match their earlier bound source hashes."
+  ]
+}

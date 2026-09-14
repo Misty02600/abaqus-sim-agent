@@ -1,0 +1,73 @@
+{
+  "schema_version": "1",
+  "case_id": "api_container_repair_seed_edges",
+  "fixture": "tests/fixtures/api_container_repair",
+  "derivation": {
+    "kind": "minimal_synthetic_bad_case",
+    "description": "A self-contained geometry-only Abaqus 2024 repair case derived from the user's observed practice of passing Abaqus-native geometry selections directly to consuming APIs. The fixture deliberately introduces one extra container layer before edge seeding; no source code was copied from either project.",
+    "agent_visible_repaired_answer_included": false
+  },
+  "fixture_digests": {
+    "tests/fixtures/api_container_repair/build_model.py": "f7e3fc1afd9e429bb507ef8b6dda5af57470e7dc9295bc0c71dddeadfcbdbaa0",
+    "tests/fixtures/api_container_repair/task.json": "28e8383d2c75de545990adf5f66b1a165a23a0988a68b1f15cf9c4b961e1057d"
+  },
+  "sources": [
+    {
+      "ownership": "user_owned",
+      "path": "G:/zyt/serp-sub-inface/3circle/20260515.jnl",
+      "snapshot_sha256": "e839c73e2a013b38c58a6f6d7abbd634491ad2c505e1b750757e4fa5843ca9c3",
+      "reported_lines": "around 75",
+      "observed_pattern": "The native result of getSequenceFromMask is passed directly to seedEdgeByBias.",
+      "verification_during_fixture_creation": "Read-only SSH to the user-owned MENG-GROUP host confirmed the path, full file digest, line location, and direct native-sequence pattern."
+    },
+    {
+      "ownership": "user_owned",
+      "path": "D:/Projects/ABAQUS/abq-substrate-serpentine/src/abq_serp_sub/processes/parts/substrate.py",
+      "snapshot_sha256": "5fde392719316b5fcc6a223d83171821aa9132bd112e38483eff3d7c18c5e097",
+      "snapshot_git_commit": "d8c984653cc697ba309e39c808967c5ec9c69be7",
+      "snapshot_worktree": "dirty (31 status entries)",
+      "reported_lines": "274-280",
+      "observed_pattern": "A nested multi-point findAt result is passed directly to Part.Set.",
+      "verification_during_fixture_creation": "Read-only SSH to the user-owned MENG-GROUP host confirmed the exact dirty checkout revision, full file digest, and direct findAt-to-Set pattern."
+    }
+  ],
+  "runtime_validation": {
+    "observed_at": "2026-08-23",
+    "release": "2024",
+    "launcher": "D:/SIMULIA/Commands/abq2024.bat",
+    "mode": "cae noGUI",
+    "solver_invoked": false,
+    "status": "expected_failure_observed",
+    "process_exit_code": 0,
+    "cae_reported_error": true,
+    "failure_api": "Part.seedEdgeByNumber",
+    "failure_type": "TypeError",
+    "failure_fingerprint_terms": [
+      "edges[0]",
+      "GeomSequence",
+      "Vertex"
+    ],
+    "result_file_present": false,
+    "raw_run_directory": "D:/abaqus-runs/api-container-repair-fixture-20260823-v1",
+    "raw_evidence_digests": {
+      "abaqus.rpy": "3fa8a5b5cda14cfb24ceedf702c1ec87f20672db0a2f47664e335575b33c74f5",
+      "abaqus1.rec": "be7da226a525a4f29f604afc8fd34afe07cd6e717d6718183a987af670f8502a"
+    },
+    "note": "Abaqus/CAE printed an error while the Windows batch launcher still returned exit code 0, so the absent machine-readable result is part of the failure evidence.",
+    "repair_check": {
+      "performed_outside_agent_visible_fixture": true,
+      "repaired_source_persisted_in_repository": false,
+      "status": "success_marker_observed",
+      "process_exit_code": 0,
+      "result_file": "api_container_repair_result.json",
+      "result_sha256": "4b2e3e97099e87b08e889fff081fc08e72c13666fc55c0c4bd30e711640dccd5",
+      "observed_values": {
+        "case_id": "api_container_repair_seed_edges",
+        "status": "passed",
+        "selected_edge_count": 2,
+        "bottom_seed_number": 7,
+        "top_seed_number": 7
+      }
+    }
+  }
+}

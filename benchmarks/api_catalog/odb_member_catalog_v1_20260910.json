@@ -1,0 +1,135 @@
+{
+  "profile": "odb-member-catalog-v1",
+  "owners": [
+    "Odb",
+    "OdbAssembly",
+    "OdbInstance",
+    "OdbSet",
+    "FieldOutput",
+    "FieldValue"
+  ],
+  "catalog": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\api-catalog\\abaqus-2024-odb-members-v1",
+  "manifest": {
+    "schema_version": "2",
+    "built_at": "2026-09-10T06:23:25.954588Z",
+    "runtime_release": "2024",
+    "official_release": "2026 FD02",
+    "abqpy_version": "2024.10",
+    "cards_file": "methods.jsonl",
+    "card_count": 5480,
+    "conflict_count": 48,
+    "cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+    "member_count": 85,
+    "members_sha256": "1ef3516e715c547198a7ffbea842161f7026e27e5b025f76cee38ef9d77c96f2",
+    "source_digests": {
+      "official_scripting_reference": "12f12f146b7d6241085fa981358a9b8b0e64f8e4d852a4a5ac4fa205dacbb313",
+      "abqpy_source": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504",
+      "runtime_notes": "d0afabd8d54f322a12dcecf3d160c5cddee4f56dbef525b27361cb29b96f621a",
+      "base_final15_manifest": "ad5ddd379c112c80c70c4430ed5e59e7c39139d9b18148ec741bbdb24ab3dc4c"
+    },
+    "sources": [
+      {
+        "kind": "abqpy",
+        "release": "2024",
+        "version": "2024.10",
+        "source_path": "abqpy-2024.10",
+        "source_url": null,
+        "document_id": null,
+        "section_id": null
+      },
+      {
+        "kind": "official",
+        "release": "2026 FD02",
+        "version": null,
+        "source_path": "SIMACAEKERRefMap",
+        "source_url": null,
+        "document_id": null,
+        "section_id": null
+      },
+      {
+        "kind": "runtime",
+        "release": "2024",
+        "version": null,
+        "source_path": "runtime-notes",
+        "source_url": null,
+        "document_id": null,
+        "section_id": null
+      }
+    ]
+  },
+  "source_wheel_sha256": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504",
+  "base_methods_unchanged": true,
+  "base_manifest_unchanged": true,
+  "member_and_neighbor_queries": 14,
+  "lookup_pass_count": 14,
+  "tool_delivery_pass_count": 14,
+  "old_and_new_method_benchmark": [
+    27,
+    27,
+    27
+  ],
+  "function_model_requests": null,
+  "expected_function_model_requests_from_script": 15,
+  "real_provider_requests": 0,
+  "api_lookup_calls": 11,
+  "abaqus_calls": 0,
+  "solver_calls": 0,
+  "new_runtime_notes": 0,
+  "default_catalog_changed": false,
+  "evidence_scope": "development deterministic API/tool delivery, not Agent adoption or physics benefit",
+  "finalization": {
+    "initial_error": "TypeError: RunUsage object is not callable at result.usage().requests",
+    "recovery": "Read-only validation of persisted lookup results, tool returns and traces; no model/tool rerun",
+    "usage_request_count": "Not persisted before finalizer error; reported as unavailable, script expectation separate"
+  },
+  "files": {
+    "var\\audits\\odb-member-catalog-v1\\lookups.json": "1706839ce9c87581c18baba6939a0ef20b00ace4962929aa7df1ca9b35e11699",
+    "var\\audits\\odb-member-catalog-v1\\tool_returns.json": "435197e9357ab6043a8f99bff71ab9396d22c193dea58fed2a351285ca8abd2a",
+    "var\\audits\\odb-member-catalog-v1\\method_regression.json": "eb967f7ef25c5be1e889c5c07e6fd84dd2a68b842cd2a6afbb7ff2313502a8bb",
+    "var\\audits\\odb-member-catalog-v1\\state\\api_lookups.jsonl": "ee39b5f6145102097804cc6ca31a7056a19775e613f33f1fd14e43bc0b632fef",
+    "var\\audits\\validate_odb_member_catalog_v1.py": "1d5c555f1b4db238ba11f81cd325bae1d6474b46242d41386f69b1e2889b1b5a",
+    "var\\audits\\finalize_odb_member_catalog_v1.py": "ba3127b7cc94addccbafba7b496108a738bac39bf4dff32cef77217a962e1a1b"
+  },
+  "implementation": {
+    "src\\abaqus_sim_agent\\api_catalog\\__init__.py": "788e7668d488dfda4c24b2c1a58fc96f115cdb77fec20d8ca6be09a1fef193c8",
+    "src\\abaqus_sim_agent\\api_catalog\\__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+    "src\\abaqus_sim_agent\\api_catalog\\abqpy.py": "f2517159f1efe8bc14fe96491be6781fbe007f86608a6541d636b94e460ef2e4",
+    "src\\abaqus_sim_agent\\api_catalog\\catalog.py": "00af558ce46a0ce0d48005f4b65f5edaac170a2c0c11df282dfd0feb0c2d13f4",
+    "src\\abaqus_sim_agent\\api_catalog\\cli.py": "02ffe05eeea1057413e43f8dab3bc6a5c06a08f1e82d81faa1318b2fab1168e7",
+    "src\\abaqus_sim_agent\\api_catalog\\evaluation.py": "8ed75fca724d49464e5c2b1c8c586e9471b0c9205d6e2214ea2a95c1d175bfb7",
+    "src\\abaqus_sim_agent\\api_catalog\\members.py": "f0512f1e5808d6ef9321e73aa70c68daa444fb88126b39b4799356149c78903d",
+    "src\\abaqus_sim_agent\\api_catalog\\models.py": "af84d7fe80fcf1bd190c855af682e22aea5ed7dc3d58a671cd9f0c04c7ac63b3",
+    "src\\abaqus_sim_agent\\api_catalog\\official.py": "158179e6e900df3458f7bbd9974aa61b45614285c39136bebc78bc2062fc8877",
+    "src\\abaqus_sim_agent\\coding\\api_lookup.py": "0f65529eea9cf7d1f97e23ffd3b3090b74ad2a4fe36b66c37980637ac2e89147",
+    "src\\abaqus_sim_agent\\coding\\contracts.py": "a92ae9d6fffb37ac4fcea6e77583f7618d0c4a9c43cc590e8413c18676a29d7b",
+    "src\\abaqus_sim_agent\\coding\\cli.py": "7c7ca66b20d189cd03b97a7a64ab938af1dd7acbc95593edcbd342018be3df22",
+    "tests\\test_api_catalog_members.py": "257c4a1384765581e20aa7ab1dd865941fb862967d4487d3894d446f3f57311a"
+  },
+  "final_validation": {
+    "pytest": {
+      "passed": 836,
+      "skipped": 27
+    },
+    "member_tests_after_strengthening": {
+      "passed": 12
+    },
+    "basedpyright": "0 errors, 0 warnings, 0 notes",
+    "ruff": "All checks passed",
+    "diff_check": "clean",
+    "post_summary_changes": "Formatting only in cli.py/members.py; tests strengthened for strict manifest, dependency snapshot restoration and automatic member exclusion. Original evidence/finalization hashes retained.",
+    "post_change_sha256": [
+      {
+        "path": "src/abaqus_sim_agent/api_catalog/cli.py",
+        "sha256": "a713ad9b8785d46f9ab2e7faabbf73207e887d6c097545464cc6c80d8f42555c"
+      },
+      {
+        "path": "src/abaqus_sim_agent/api_catalog/members.py",
+        "sha256": "49a7144f2330b65c38c2f26f580f4b04bd1402c01efd1cd87b15f6c1dd4368bc"
+      },
+      {
+        "path": "tests/test_api_catalog_members.py",
+        "sha256": "2824a36bcfd26c74d97fa033502c445f4d2f314f3a340340c0285806f3fa8a77"
+      }
+    ]
+  }
+}

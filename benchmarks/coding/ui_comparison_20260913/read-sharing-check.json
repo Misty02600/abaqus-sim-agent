@@ -1,0 +1,12 @@
+{
+  "ordinary_open": {
+    "replace_failed": true,
+    "winerror": 5
+  },
+  "share_delete": {
+    "replace_failed": true,
+    "winerror": 5
+  },
+  "active_snapshot_uses_no_file_reads": true,
+  "interpretation": "ordinary read blocks replacement on this host; delete-sharing alone also insufficient in this check; final probe avoids product file reads during active execution"
+}

@@ -1,0 +1,111 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-from-scratch-plate-catalog-corrected-v4",
+  "date": "2026-08-23",
+  "model": "opencode-go/deepseek-v4-flash",
+  "runtime": "Abaqus 2024",
+  "prompt_version": "plate-tension-v4",
+  "shared_configuration": {
+    "http_retries": 2,
+    "planning_enabled": false,
+    "model_request_budget": 30,
+    "abaqus_call_budget": 9,
+    "solver_call_budget": 3,
+    "catalog_cards_sha256": "3e92f4d67e342bed9dd7d04be371f65ab76a31652fde15fb7cc55241970ce430"
+  },
+  "arms": {
+    "skill_only": {
+      "passes": 2,
+      "attempts": 3,
+      "model_requests": 71,
+      "input_tokens": 920604,
+      "output_tokens": 82833,
+      "tool_calls": 76,
+      "api_lookup_calls": 0,
+      "delivered_runtime_notes": 0,
+      "abaqus_calls": 21,
+      "solver_calls": 2,
+      "task_duration_seconds": 917.5943313000025,
+      "attempt_profiles": [
+        {"passed": true, "model_requests": 30, "abaqus_calls": 9},
+        {"passed": true, "model_requests": 11, "abaqus_calls": 3},
+        {"passed": false, "model_requests": 30, "abaqus_calls": 9, "failure_stage": "model_budget"}
+      ]
+    },
+    "catalog_full": {
+      "passes": 2,
+      "attempts": 3,
+      "model_requests": 65,
+      "input_tokens": 883854,
+      "output_tokens": 72275,
+      "tool_calls": 69,
+      "api_lookup_calls": 5,
+      "delivered_runtime_notes": 4,
+      "abaqus_calls": 20,
+      "solver_calls": 5,
+      "task_duration_seconds": 658.6351630000281,
+      "attempt_profiles": [
+        {"passed": true, "model_requests": 17, "abaqus_calls": 7, "lookup_queries": ["Part.setMeshControls"]},
+        {"passed": true, "model_requests": 18, "abaqus_calls": 6, "lookup_queries": ["Part.seedEdgeByNumber", "Part.setMeshControls"]},
+        {"passed": false, "model_requests": 30, "abaqus_calls": 7, "solver_calls": 3, "failure_stage": "model_budget", "lookup_queries": ["Part.seedEdgeByNumber", "Model.HomogeneousSolidSection"]}
+      ]
+    },
+    "automatic_verified_only": {
+      "passes": 3,
+      "attempts": 3,
+      "model_requests": 54,
+      "input_tokens": 597995,
+      "output_tokens": 71283,
+      "tool_calls": 57,
+      "api_lookup_calls": 3,
+      "delivered_runtime_notes": 3,
+      "abaqus_calls": 18,
+      "solver_calls": 3,
+      "task_duration_seconds": 637.8692107999814,
+      "attempt_profiles": [
+        {"passed": true, "model_requests": 25, "abaqus_calls": 7, "note_queries": ["Part.seedEdgeByNumber", "EdgeArray.findAt"]},
+        {"passed": true, "model_requests": 11, "abaqus_calls": 4, "note_queries": []},
+        {"passed": true, "model_requests": 18, "abaqus_calls": 7, "note_queries": ["Part.seedEdgeByNumber"]}
+      ]
+    }
+  },
+  "automatic_minus_skill": {
+    "passes": 1,
+    "pass_rate_percentage_points": 33.333333333333336,
+    "model_requests": -17,
+    "model_requests_percent": -23.943661971830984,
+    "input_tokens": -322609,
+    "input_tokens_percent": -35.04319339194529,
+    "output_tokens": -11550,
+    "output_tokens_percent": -13.94372318763898,
+    "tool_calls": -19,
+    "tool_calls_percent": -25.0,
+    "abaqus_calls": -3,
+    "abaqus_calls_percent": -14.285714285714286,
+    "task_duration_seconds": -279.7251205000211,
+    "task_duration_percent": -30.484617243636506
+  },
+  "interpretation": {
+    "from_scratch_does_not_make_catalog_unnecessary": true,
+    "observed_result": "The corrected automatic verified-note mode passed 3/3, while Skill-only and full Catalog each passed 2/3.",
+    "why_old_b1_was_not_conclusive": [
+      "All six old exact lookups found cards, but no verified runtime note was actually delivered.",
+      "An English error fingerprint was used as a hard filter against localized CP936 stderr.",
+      "The old full treatment simultaneously changed prompt, active tools, and automatic feedback.",
+      "One old B1 attempt produced correct artifacts but spent its final request updating the plan instead of returning ready_for_verification."
+    ],
+    "remaining_failure_boundary": "Full Catalog still had one run that reached and failed three Solver invocations. Exact API cards and runtime notes reduce binding errors but do not solve modeling semantics, solver diagnosis, or loop termination by themselves.",
+    "product_decision": "Do not say that from-scratch modeling needs no Catalog. Keep full Catalog available for unfamiliar API/debug work; prefer automatic_verified_only as the current low-interference default candidate for from-scratch tasks, pending more varied from-scratch Gold cases.",
+    "limits": [
+      "Only one from-scratch plate task and three stochastic attempts per arm were used.",
+      "The provider exposes no deterministic seed and one Skill attempt included a multi-minute gateway delay.",
+      "A 3/3 versus 2/3 smoke difference is observed evidence, not a stable success-rate estimate.",
+      "The next useful evidence is a small set of different from-scratch tasks with independent verifiers, not repeated tuning on this plate alone."
+    ]
+  },
+  "source_summaries": [
+    {"path": "D:/abaqus-runs/plate-catalog-corrected-20260823-v4/skill-only/evaluation_summary.json", "sha256": "5e5e3d7be900eb263b2d14b49cfa75d8dc17c9666c87f3131ee0aa557bdc9c58"},
+    {"path": "D:/abaqus-runs/plate-catalog-corrected-20260823-v4/catalog-full/evaluation_summary.json", "sha256": "eb845d6c7b170e5a9a54042457c949e9dafb757e3431262126a48ac5f7eaef0d"},
+    {"path": "D:/abaqus-runs/plate-catalog-corrected-20260823-v4/automatic-verified/evaluation_summary.json", "sha256": "3b4aff67a510139ec314e2ad882127ed67a3c831a1ce4ac371aea1e4cffeb158"}
+  ]
+}

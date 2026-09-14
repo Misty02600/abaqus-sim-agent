@@ -1,0 +1,1615 @@
+{
+  "schema_version": "structured-projection-review-v1",
+  "date": "2026-09-07",
+  "scope": "Explicit repository-owned candidate: bounded table/MathML retrieval projections, full source preservation, independent Dense/BM25 index and exposed development replays. No default or Agent integration.",
+  "source_release": "Abaqus 2026 FD02; not Abaqus 2024 API-compatibility evidence",
+  "contract": {
+    "tables": "Rectangular single-level headers only; named cells retain units, caption and attached notes. Pack complete rows under the encoder budget; repeat context. Small tables fit one child. Whole original XML parent remains the delivered evidence; no generic merged-header or unknown-footnote inference.",
+    "formulas": "Conservative Presentation MathML subset: tokens, groups, subscripts, superscripts, fractions and roots. Keep source MathML and accompanying unit context. The search notation is not LaTeX, an executable expression, mathematical equivalence or formula-solving support.",
+    "unsupported": "Keep full original units and explicit reasons; no child for unsupported structures or atomic-row/context token overflow.",
+    "lineage": "Bound source file hashes, original member IDs/XPaths/anchors, projection-dependent parent IDs, complete child spans and <=256 real tokens including context.",
+    "index": "Separate candidate directory; HNSW immediate persistence, all stored embedding digest, HNSW segment bytes, BM25 DB and semantic-corpus hashes bound before evaluation. Original/default indexes untouched."
+  },
+  "arms": {
+    "pilot": {
+      "directory": "var/rag-structured-pilot-v4",
+      "derived_from": {
+        "directory": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\rag-structured-pilot-v3",
+        "manifest_sha256": "556a55081812163a4bf872ee3cd7f763c6365c1d53e0ddcee81917d6ce4ae576",
+        "prepared_sha256": "c5d4748237e7c46ce9efa667dd844a7fed818a0f301e36b83e23ba718d921855",
+        "copied_file_sha256": {
+          "units.jsonl": "eae76ce820958de23db094789d1773402d34b9db69b002f1ad9560882fdbc773",
+          "children.jsonl": "0ec1dc9bf26c1a297fa529308588b6a15a22151cf02a821c3c1b936d04e159b5",
+          "coverage.json": "875992bdce5764f63fae4e8a91df4014a023a6fee47e239cb8a6df07006a6608",
+          "index\\chroma.sqlite3": "a7d079d93454deebf97f2092dd541196569ca9dec6a1a2f295b7ec5fa879f4c2",
+          "index\\manifest.json": "d73b231ddcc1b59a647e5e468b155d9c37efe4c4c243f5606c6155eb0d2c75c6",
+          "index\\55ace2cd-e46d-454b-8f97-4b74a0822fb3\\data_level0.bin": "fc44c0b9557d35c89dd5c27c00e9fdba557aad6d7045790d1e838b4ca170f71c",
+          "index\\55ace2cd-e46d-454b-8f97-4b74a0822fb3\\header.bin": "d9e67f05d5fbe64fb33a67df88e52da56fde7ac8391dd238f29ea8234c9680aa",
+          "index\\55ace2cd-e46d-454b-8f97-4b74a0822fb3\\index_metadata.pickle": "544ef8dd903935f9992f7a60d3bcb2032b39375dbd538a5e2ea995f6a02f3848",
+          "index\\55ace2cd-e46d-454b-8f97-4b74a0822fb3\\length.bin": "9f965dc51ae657a8e95e4c681116d097b4289c3cc6f492d56c2facdf900eac42",
+          "index\\55ace2cd-e46d-454b-8f97-4b74a0822fb3\\link_lists.bin": "f5d58a80483584a12e45ae109359b8445f8a4c1f2f3d5723f49946ccb7596636",
+          "index\\lexical\\bm25-5c9d1dc5296a9d3180033687383a0dda68a65c536116062164d1ef215e55b712.sqlite3": "5c9d1dc5296a9d3180033687383a0dda68a65c536116062164d1ef215e55b712",
+          "index\\lexical\\manifest.json": "81c8c56c9ff19b3110b28b32a37fcb74f88708ef71d197a1bcf38e8f974b51f1"
+        },
+        "reason": "Paginated read/finalization fix for too many SQL variables. Projection, documents, vectors and BM25 bytes copied unchanged. No embedding or query rerun during derivation.",
+        "script_sha256": "3311eb6f2264875b56c1a2042c52b4e933230d76d9c45677eae2ae8184a2dbae"
+      },
+      "bindings": {
+        "coverage.json": "875992bdce5764f63fae4e8a91df4014a023a6fee47e239cb8a6df07006a6608",
+        "index-binding.json": "7318c29f27dd49f3f804f061b18c16e9c9ad42e173c0abdc507164e9d86c83e6",
+        "manifest.json": "fd34ef3be805c3d2e89c789cb837c518ef857e38345289aed043bfbc3d773f85",
+        "prepared.json": "34166cd130ccb078c2cf0cf080286d68062dd8f4aace91a4b019c36da010ee7d",
+        "replay\\coupling-deformation.json": "2fcc0c8389e992d44911d0de41dffab5b2350872aa5dc03f25afcf9d7543c4a2",
+        "replay\\domain-procedure-applicability-1.json": "c71dbcffa0a4ab25f6fab7db86634450baa6399bb0d11814bc1d7020236e1ed2",
+        "replay\\domain-procedure-applicability-2.json": "360ae82638a2aa474e1ec63bea7a43861142e0d60cdbd718a33cd8f483919f28",
+        "replay\\exact-api-region-1.json": "eff3cd74770b12e70f3ffe5853f7defad5711cb4b6089d5da69fb0dc3e9ffdb6",
+        "replay\\explicit-stable-increment.json": "0bffc4316dc500d4c53cbcbe2274712b90c27666fe3e4ec280e55c8300b08c17",
+        "replay\\hybrid-pressure.json": "dbbc7c30226938edc1856e143326eddb40849aab1803536acb3f12bbb9d38d42",
+        "replay\\manifest.json": "6834a75c99a6a03da2bb3c15b66af1b1bcad016ca47a4fdcd0ec7f1f55bee96a",
+        "replay\\mass-scaling-inertia.json": "b675b424da850a9c0ff9e72929b1ce6cf5d8c880b303b0354716bb33e605a3ae",
+        "replay\\meshing-predictor-tail.json": "e58fdf3c5990e4f804609798e1d6326179bd191ef1098f7d7a5a0da5dd941114",
+        "replay\\nodal-stress-extrapolation.json": "531217ffa44e101f0bd4523c3ca7786554b6a099e922a793086741d064c70df6",
+        "replay\\plane-strain-meaning.json": "17a351dfa7cb52cb0bd1f697b33bb7c0ae3545882c815f3cc15f9e3d6d98c88b",
+        "replay\\recorded-solver-diagnostic-1.json": "ffb67d43ed1b359f2177c30a8a451cf31c9240d8a18fb9b5e80eb951868fe85d",
+        "replay\\recorded-solver-diagnostic-2.json": "2b7a8d8fab4389348a1552a054db13205ff046c86016af7b41e79d8ed35c57f7",
+        "replay\\reduced-integration-hourglass.json": "d3d16b932a163597c019a660c9b51db60ce2dcc82f260802a783aad75c5be8d2",
+        "replay\\summary.json": "a24eeb6f390b4cf63d12b83616270e5bd14ccfe85a507b18f867661849c24795",
+        "replay\\tie-separation.json": "5b45b264ecc64f2095629bbd069a84179c1df482bd83ec57bbf77f938c40a11a",
+        "structured-probes\\fourier-nodal-planes-table.json": "4ce0f71b9cc302baf9ce666c7a19fa1c69b07757baf046c3c127e3d56fefaaf7",
+        "structured-probes\\manifest.json": "6584b416b630d092717156e0a3ced0c1c7d531680689167c750e8354e525779c",
+        "structured-probes\\riks-initial-increment-formula.json": "58299da6e46b727f9e6f7eba0286c0efd97939c26f2d2cad7052d6bb786e4b2b",
+        "structured-probes\\riks-total-load-formula.json": "beca58846eefc78111eb18fee20dee07096a8d763254d7d74959c2e5db560de3",
+        "structured-probes\\summary.json": "adc842ced75eb23c257fe97ffa8722280b2c96260c7a353cfc4eb808deffe1f1",
+        "structured-probes\\tie-formulation-table.json": "e9f7651679139f84ef49ba8bf2b4e43d1349328b6e7ddaa2c8e3e0ad389e305e"
+      },
+      "prepared": {
+        "units_sha256": "eae76ce820958de23db094789d1773402d34b9db69b002f1ad9560882fdbc773",
+        "children_sha256": "0ec1dc9bf26c1a297fa529308588b6a15a22151cf02a821c3c1b936d04e159b5",
+        "coverage_sha256": "875992bdce5764f63fae4e8a91df4014a023a6fee47e239cb8a6df07006a6608",
+        "manifest_sha256": "fd34ef3be805c3d2e89c789cb837c518ef857e38345289aed043bfbc3d773f85"
+      },
+      "index_binding": {
+        "prepared_sha256": "34166cd130ccb078c2cf0cf080286d68062dd8f4aace91a4b019c36da010ee7d",
+        "semantic_corpus_sha256": "4dfb3515d1a82fa0b63f3ad4f76aff26d80272757086f1f3dbc41c7ecfe2f678",
+        "embeddings_sha256": "8c4df1f0cc7cf4d1e376a018ccd004d8b2efb00cd8d22a674d638afae729d867",
+        "index_manifest_sha256": "d73b231ddcc1b59a647e5e468b155d9c37efe4c4c243f5606c6155eb0d2c75c6",
+        "bm25_manifest_sha256": "81c8c56c9ff19b3110b28b32a37fcb74f88708ef71d197a1bcf38e8f974b51f1",
+        "bm25_database_sha256": "5c9d1dc5296a9d3180033687383a0dda68a65c536116062164d1ef215e55b712",
+        "vector": {
+          "algorithm": "chroma-target-hnsw-segment-bytes-v1",
+          "collection_name": "abaqus_evidence_candidate_v1",
+          "collection_id": "14d96954-5e6f-4a18-8774-41708881fe89",
+          "dimension": 384,
+          "collection_config_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "collection_schema_sha256": "8526ff5cf2ab9eec0fa12cb6ee2e9fdeafebb51a2bbd3f9a770219ad95503c8f",
+          "segment_ids": [
+            "55ace2cd-e46d-454b-8f97-4b74a0822fb3"
+          ],
+          "sha256": "a8206cc2be8398af65310c6d1be3902d19e74a54ae66da7df52b7a86194658de",
+          "files": [
+            {
+              "path": "55ace2cd-e46d-454b-8f97-4b74a0822fb3/data_level0.bin",
+              "size_bytes": 1241916,
+              "sha256": "fc44c0b9557d35c89dd5c27c00e9fdba557aad6d7045790d1e838b4ca170f71c"
+            },
+            {
+              "path": "55ace2cd-e46d-454b-8f97-4b74a0822fb3/header.bin",
+              "size_bytes": 100,
+              "sha256": "d9e67f05d5fbe64fb33a67df88e52da56fde7ac8391dd238f29ea8234c9680aa"
+            },
+            {
+              "path": "55ace2cd-e46d-454b-8f97-4b74a0822fb3/index_metadata.pickle",
+              "size_bytes": 119022,
+              "sha256": "544ef8dd903935f9992f7a60d3bcb2032b39375dbd538a5e2ea995f6a02f3848"
+            },
+            {
+              "path": "55ace2cd-e46d-454b-8f97-4b74a0822fb3/length.bin",
+              "size_bytes": 2964,
+              "sha256": "9f965dc51ae657a8e95e4c681116d097b4289c3cc6f492d56c2facdf900eac42"
+            },
+            {
+              "path": "55ace2cd-e46d-454b-8f97-4b74a0822fb3/link_lists.bin",
+              "size_bytes": 6432,
+              "sha256": "f5d58a80483584a12e45ae109359b8445f8a4c1f2f3d5723f49946ccb7596636"
+            }
+          ]
+        },
+        "documents": 741,
+        "build_seconds": null,
+        "finalization_seconds": 0.7016012000385672,
+        "finalization": "Existing vector and BM25 records revalidated with bounded reads after reproducing too many SQL variables in the original unbounded get. No re-embedding, index-data repair or query ranking. Original build duration unavailable.",
+        "finalizer_script_sha256": "92d01d996d65dbdddbf59311c52be9ff8224898cb2ea1848d39f4d158979940d"
+      },
+      "coverage": {
+        "source_pages": 12,
+        "source_blocks": 1332,
+        "units": 743,
+        "children": 741,
+        "new_searchable_units": 29,
+        "unit_types": {
+          "prose": 317,
+          "code": 168,
+          "list": 42,
+          "excluded": 13,
+          "formula": 70,
+          "definition": 129,
+          "table": 4
+        },
+        "projection_status": {
+          "text": 696,
+          "deferred_math": 44,
+          "deferred_list": 1,
+          "deferred_table": 2
+        },
+        "new_supported_types": {
+          "formula": 27,
+          "table": 2
+        },
+        "unsupported_reasons": {
+          "math_outside_supported_wrapper": 33,
+          "structure_not_in_profile": 1,
+          "table_merged_cells": 1,
+          "table_nonrectangular": 1,
+          "math_element:mover": 8,
+          "math_attribute:movablelimits": 2,
+          "math_element:mpadded": 1
+        },
+        "max_child_tokens": 256,
+        "prepare_seconds": 2.20825549995061
+      },
+      "fixed_development_replay": [
+        {
+          "id": "exact-api-region-1",
+          "query": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?\nextract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT.",
+          "selected_units": [
+            "c2516ab000d97eae74da1279e604f8126d644bc7201716fa520846131a063843",
+            "b22fb8bb5a037a4bec1ead339ea04f6c4ac72837b4b26c26ea96636e31f84a8a",
+            "13e7ad647b509fdde66a758866ac8d6e1da4071626a14b375fa4fd7bdd7d0eca",
+            "c5d292549aee6b2bc5a0f399a999d4c53122573fd4f8acb918d88965fa4ae915"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "code"
+          ],
+          "probes": [],
+          "rerank_seconds": 1.5880742000881582,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "domain-procedure-applicability-1",
+          "query": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?\nAbaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation.",
+          "selected_units": [
+            "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+            "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+            "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b",
+            "9304e3884f2dc97f5cc593fb08daeb2f79bbdd18db94e8411e6981f391534279"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [],
+          "rerank_seconds": 1.030195300001651,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "domain-procedure-applicability-2",
+          "query": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?\nAbaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step.",
+          "selected_units": [
+            "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+            "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+            "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0",
+            "dcf402900fd5d8fba053d23e98c492635658efa943b178365137f4b502fe59c2"
+          ],
+          "unit_types": [
+            "prose",
+            "list",
+            "prose",
+            "list"
+          ],
+          "probes": [
+            {
+              "need": "boundary_condition_magnitude",
+              "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+              "in_pool": false,
+              "selected": false,
+              "delivered_complete_unit": false
+            }
+          ],
+          "rerank_seconds": 0.9163654999574646,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "recorded-solver-diagnostic-1",
+          "query": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?\nrecorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+          "selected_units": [
+            "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+            "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+            "f277b3516da47ec6947e76efdeade6a9e3bd15b9a9e51e7b28ffae6b568f77b7",
+            "c38c08ae60544cdeb1f78bf8f93ff9c53359ce420cec5ed0798e4230ab7803c3"
+          ],
+          "unit_types": [
+            "definition",
+            "definition",
+            "definition",
+            "definition"
+          ],
+          "probes": [
+            {
+              "need": "complete_time_adjustment",
+              "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "in_pool": true,
+              "selected": false,
+              "delivered_complete_unit": false
+            }
+          ],
+          "rerank_seconds": 1.2184811999322847,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "recorded-solver-diagnostic-2",
+          "query": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?\nAbaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt.",
+          "selected_units": [
+            "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+            "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+            "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503",
+            "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896"
+          ],
+          "unit_types": [
+            "prose",
+            "definition",
+            "definition",
+            "definition"
+          ],
+          "probes": [
+            {
+              "need": "complete_time_adjustment",
+              "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "in_pool": true,
+              "selected": true,
+              "delivered_complete_unit": true
+            }
+          ],
+          "rerank_seconds": 1.4522212999872863,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "tie-separation",
+          "query": "If I tie two surfaces in Abaqus, can they subsequently separate or slide relative to each other, or is a contact interaction needed for that behavior?",
+          "selected_units": [
+            "c971095a6d75c6a2c463068ab355638747ca2f4a7895abef7ee1d0137717b210",
+            "1ee2e6c5a58df23b990ba2955a937eef2cf3256fe90c6c3342c79af3fb17762b",
+            "079541f154059323381d0ebb5c22a08909fc47b72a50fe7505e35c4b8ff8cc21",
+            "2fc1fd6d91428e52b4d9e8cefe9a54d4ee44948b9bd67fc24172bea56a27b49e"
+          ],
+          "unit_types": [
+            "list",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [
+            {
+              "need": "permanent_bond",
+              "unit_id": "3bd557190909143e7b9a6975e61593f4591e50ffda8366a760d6a54d4ae4cab1",
+              "in_pool": false,
+              "selected": false,
+              "delivered_complete_unit": false
+            }
+          ],
+          "rerank_seconds": 0.9471999999368563,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "coupling-deformation",
+          "query": "What is the difference between kinematic and distributing coupling when a load must be transferred from a reference point while allowing the coupled surface to deform?",
+          "selected_units": [
+            "0eddea6b0c101fbf022456953218b80eb9fa1b8df8b7fe2509de885c6a2c928b",
+            "b22fb8bb5a037a4bec1ead339ea04f6c4ac72837b4b26c26ea96636e31f84a8a",
+            "6b8494c36d24ff3dab03566d18007fddcac412df7dade69039033ddd3b00fe99",
+            "d8197c7e4427e6fa40980c6a1d9a06e6ce9c0d0ca6322a70045e1e0aa9cf0b3b"
+          ],
+          "unit_types": [
+            "list",
+            "prose",
+            "list",
+            "list"
+          ],
+          "probes": [
+            {
+              "need": "rigidity_contrast",
+              "unit_id": "0eddea6b0c101fbf022456953218b80eb9fa1b8df8b7fe2509de885c6a2c928b",
+              "in_pool": true,
+              "selected": true,
+              "delivered_complete_unit": true
+            }
+          ],
+          "rerank_seconds": 0.8551209000870585,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "mass-scaling-inertia",
+          "query": "In an Abaqus/Explicit quasi-static analysis, why can excessive mass scaling change the physical response even when it reduces the number of stable time increments?",
+          "selected_units": [
+            "03fbc8eb38afa13d3ce594810e6faaac80c15bd3dca51abdab6298205ed8b2a3",
+            "102c0bd2e21e57b33a54d17ea54f9ea88374d443072e0d354f5e41dd6d3af027",
+            "7eaeef51074eb87bfef3c1ce82d4d1069309459df9ea7060814252f0f74e2b9f",
+            "93be2263217b076d1978490ce18cb39f262a4044c4d02fcd0e797054a12f5c5a"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [],
+          "rerank_seconds": 0.8875751999439672,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "hybrid-pressure",
+          "query": "Why do nearly incompressible materials often need hybrid solid elements in Abaqus/Standard, and what additional variable does the hybrid formulation introduce?",
+          "selected_units": [
+            "34a3fc7e87d585a588ed83cc471a4f95df2bf90d0b13a093bfcbcde98a22dd33",
+            "9e053fb288ad1628cacee3ba9ddb17db1963979c4a9de53bbb7725c60b52c6c3",
+            "9e20195e69637a4396c5f18c1784c70fb7dd590f10914c6e3a6625abecb4a783",
+            "499efbb417e077f3b15126e0c7d53595bae05f7a7773ea978f8856974da17c7d"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [
+            {
+              "need": "independent_pressure",
+              "unit_id": "499efbb417e077f3b15126e0c7d53595bae05f7a7773ea978f8856974da17c7d",
+              "in_pool": true,
+              "selected": true,
+              "delivered_complete_unit": true
+            }
+          ],
+          "rerank_seconds": 0.8991186000639573,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "plane-strain-meaning",
+          "query": "For a two-dimensional plane strain model, which out-of-plane strain components are constrained, and can the out-of-plane normal stress still be nonzero?",
+          "selected_units": [
+            "36478d39f5a87a59b87404a64089a8f40e4de6523ad3a1b5f1e938e405d13cd3",
+            "e53f8bc20fe26a0a98f7a63e7124b83f0713be945da330fa46e7ebf4a4851d3d",
+            "746c2a6fd52ac20dd5ec0c1e4408618b70adbc8485f6618a06d0069601c2c789",
+            "1dfbfe3ec14bf6530e5214122f93d6939474324f58639e68c806762b10681422"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [
+            {
+              "need": "zero_out_of_plane_strain",
+              "unit_id": "36478d39f5a87a59b87404a64089a8f40e4de6523ad3a1b5f1e938e405d13cd3",
+              "in_pool": true,
+              "selected": true,
+              "delivered_complete_unit": true
+            },
+            {
+              "need": "nonzero_thickness_stress",
+              "unit_id": "36478d39f5a87a59b87404a64089a8f40e4de6523ad3a1b5f1e938e405d13cd3",
+              "in_pool": true,
+              "selected": true,
+              "delivered_complete_unit": true
+            }
+          ],
+          "rerank_seconds": 0.9197685000253841,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "reduced-integration-hourglass",
+          "query": "Why can first-order reduced-integration elements exhibit hourglass modes, and what does hourglass control attempt to prevent?",
+          "selected_units": [
+            "29be22b2f9b95045d83207641a373e8467117b68979c28d782eae0f3e2734bfa",
+            "d6e1e619ccee9931e526265766fd79bd9a72adbbb0b4f84bc3c463fa956a72f3",
+            "f04a22265bf93f470dff31fe773970e935d14ffe984fe771e2098413ea33dd14",
+            "44343791f3ab879fd920abb69f6f9a4ff7ddac4a641d8ffb187107745447d3a7"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [],
+          "rerank_seconds": 0.7895788999740034,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "nodal-stress-extrapolation",
+          "query": "Why can nodal extrapolated stress values differ from stresses at integration points, especially in a region with a steep stress gradient?",
+          "selected_units": [
+            "033f498c6c1f2daa0deceb1fd558344ebe2c37a117dae015aff2319ff0ce2041",
+            "8f9944247e5e58644388fb3c912a73e2c041c24c5b653ab11b694ef4980eb708",
+            "d8390da423fec48c21cfb39a24d81853f6f2af25102040115e925085af9596ce",
+            "de0348ce4023718265996c31618e3bc5ed9310f8449de906a27ca67dce7f6f66"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [],
+          "rerank_seconds": 0.9386737999739125,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "explicit-stable-increment",
+          "query": "Why can a few very small elements control the stable time increment and increase the runtime of an Abaqus/Explicit analysis?",
+          "selected_units": [
+            "bcb063a08edc448829bdf5cdea56ddd481ad363e35b8b29185adc3835bca4b55",
+            "03fbc8eb38afa13d3ce594810e6faaac80c15bd3dca51abdab6298205ed8b2a3",
+            "c50a707c863b068149a680fd4f395639755ec837d9c4c4a13cb163140e7d5cca",
+            "c03a0f31c92744ccb1afc49c1f8909453f1f685d72b99a0fe8955c4509f419b6"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "list"
+          ],
+          "probes": [],
+          "rerank_seconds": 0.8966498000081629,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "meshing-predictor-tail",
+          "query": "For adaptive meshing, what does MESHING PREDICTOR=PREVIOUS use to predict node positions, compared with CURRENT?",
+          "selected_units": [
+            "87739b856f2c639f7e91efab028fff9ec4da03fcf8864e8c78276eeb65005acd",
+            "802bf245e7afa297126169a2d0beb1bff9e052ad17594b0b1b5e965a56be5b89",
+            "b537b34f2026e5aaf2086300dd84a4847cad86d3f2f142d0f38bc09a093956ed",
+            "575dfa6ff5c990fb0c613ac24c9ddc36ce612a311620587134f007092dd82cd9"
+          ],
+          "unit_types": [
+            "definition",
+            "definition",
+            "definition",
+            "definition"
+          ],
+          "probes": [],
+          "rerank_seconds": 0.8978969000745565,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        }
+      ],
+      "new_structure_development_probes": [
+        {
+          "id": "tie-formulation-table",
+          "query": "Which tie formulation in Abaqus/Explicit allows a mixture of rigid and deformable subregions?",
+          "target_unit_id": "c9c1f44e6db2188691f3fe1cee2da266111ed862416f64fdfcb7449e7bc926ac",
+          "target_type": "table",
+          "in_pool": true,
+          "selected": true,
+          "delivered_complete_unit": true,
+          "selected_units": [
+            "c9c1f44e6db2188691f3fe1cee2da266111ed862416f64fdfcb7449e7bc926ac",
+            "f1ae1c56f2d2a6bb7e6dc77d180a9b666f6e60df5b1406d01a1930d701835962",
+            "80417038b55239864c042208b35b7d9701ecb4f0e3472d610660bcf03b73bffe",
+            "5a3374a294c71c62f8926238cbfa30e6d08288c404137fe7755c2af53ef4ef3b"
+          ],
+          "seconds": 0.7465626000193879
+        },
+        {
+          "id": "riks-total-load-formula",
+          "query": "How is total load formed from dead load, reference load and the load proportionality factor in a Riks step?",
+          "target_unit_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+          "target_type": "formula",
+          "in_pool": true,
+          "selected": true,
+          "delivered_complete_unit": true,
+          "selected_units": [
+            "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+            "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+            "989236baa5e1a0781e1f5716e226fee5ad0063d7471615e63031712bdbb195fa",
+            "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b"
+          ],
+          "seconds": 0.6752897000405937
+        },
+        {
+          "id": "riks-initial-increment-formula",
+          "query": "How is the initial load proportionality factor computed from the initial arc length increment and the total arc length scale factor?",
+          "target_unit_id": "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b",
+          "target_type": "formula",
+          "in_pool": true,
+          "selected": true,
+          "delivered_complete_unit": true,
+          "selected_units": [
+            "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b",
+            "9e31f4fe6f31c8b7935f0547a971d60d09b36eefbabd5630c7b6445f19ce2ceb",
+            "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+            "989236baa5e1a0781e1f5716e226fee5ad0063d7471615e63031712bdbb195fa"
+          ],
+          "seconds": 0.7409372000256553
+        },
+        {
+          "id": "fourier-nodal-planes-table",
+          "query": "For two Fourier modes in asymmetric-axisymmetric solid elements, how many nodal planes are used and at which angular locations?",
+          "target_unit_id": "0209f77654c456c750957bb4094f25a1e59290d6f3c532d40feae02a5dc5f660",
+          "target_type": "table",
+          "in_pool": true,
+          "selected": true,
+          "delivered_complete_unit": true,
+          "selected_units": [
+            "0209f77654c456c750957bb4094f25a1e59290d6f3c532d40feae02a5dc5f660",
+            "d1d3c32033dfa24b6cecb22bf6e23897d86fbe8ee67a5a048a597625bc1ea226",
+            "351bd69979f6ef466f0813155ac48c3d08d53aa59c11130b5591b619a6ed509d",
+            "1c28c43bb72010bfe88a48e36981cc4fd4d82fb5dd428eb26f43784d18fc7872"
+          ],
+          "seconds": 0.8545829999493435
+        }
+      ],
+      "fixed_delivered_requirements": 5,
+      "fixed_requirement_count": 8,
+      "structure_probes_delivered": 4,
+      "searchable_units": 683,
+      "new_formula_units_without_source_mathml": 0
+    },
+    "full": {
+      "directory": "var/rag-structured-full-v4",
+      "derived_from": {
+        "directory": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\rag-structured-full-v3",
+        "manifest_sha256": "d620206ac23d602811543c1b69b86004468bd6831d5af1b6f429ab1a46882b61",
+        "prepared_sha256": "ca47777dee345ad42b5e193d7b8abaa3dc3c911078965f76a4de200eb4f3e372",
+        "copied_file_sha256": {
+          "units.jsonl": "56f3b14940a0dd9f1cb98b8ff01174dcc550e7f3b08c28c74d3640ff8a95caa1",
+          "children.jsonl": "bf0532fd931189fdab7d62bd5a6589e7ec62296d10d8ddd3a4a7633e82ae02bc",
+          "coverage.json": "fd103f9166e8219f15f645cfcc4d2f8d4e8c541aa2b5ed6933a7bb69a8dc506e",
+          "index\\chroma.sqlite3": "10b904d6bee05ae623583968659c823e2286c117504dd6bcc68948cfdaa694eb",
+          "index\\manifest.json": "a2a3bae6a457578bcfa92540c4866dfdfe7e2b905e4ef5bb1b825890cff0f2a4",
+          "index\\bd05ef19-cdd9-4161-8e43-47a36538ba9d\\data_level0.bin": "3217e78651830cf1f44469b3cd1594f3cfd9921d9d056c6acd4750c107443b66",
+          "index\\bd05ef19-cdd9-4161-8e43-47a36538ba9d\\header.bin": "2173119a1eec87379cecc603da52fbeb679f1611bc211b9f08b96924a5bf59f8",
+          "index\\bd05ef19-cdd9-4161-8e43-47a36538ba9d\\index_metadata.pickle": "31a88a0b1221ba5325e25e27b1b0aa0a0bce70e0d6d80a420cdd762eaea1c3ee",
+          "index\\bd05ef19-cdd9-4161-8e43-47a36538ba9d\\length.bin": "a77b2988c64869b4901b3e5cf16b50318eba11fb67f2e0aeb6128a7860c7520a",
+          "index\\bd05ef19-cdd9-4161-8e43-47a36538ba9d\\link_lists.bin": "3a2b6513ee4c24b2360af652e9850fee0a9dc74e1f91c98180bd4a956d6e9fe3",
+          "index\\lexical\\bm25-afa0fbf73c711a884d8c42971cae946cb934d6e91e8ad344793d39d1d64fe9cf.sqlite3": "afa0fbf73c711a884d8c42971cae946cb934d6e91e8ad344793d39d1d64fe9cf",
+          "index\\lexical\\manifest.json": "0f591b97f8929d93f81a9c9ba5ce04b03704a2aa24fb6dc004798bbff0e0c1a0"
+        },
+        "reason": "Paginated read/finalization fix for too many SQL variables. Projection, documents, vectors and BM25 bytes copied unchanged. No embedding or query rerun during derivation.",
+        "script_sha256": "3311eb6f2264875b56c1a2042c52b4e933230d76d9c45677eae2ae8184a2dbae"
+      },
+      "bindings": {
+        "coverage.json": "fd103f9166e8219f15f645cfcc4d2f8d4e8c541aa2b5ed6933a7bb69a8dc506e",
+        "index-binding.json": "65649f91bd6a0a8dbf5b200059589eefbe0e2a6f3d2bc8e96af40e75bf300d32",
+        "manifest.json": "81b53610937e7cd2c70122c92f2e114f0b1909c8330d66874aed80d644b5790b",
+        "prepared.json": "8c8873c642ab22c40740cfd1beee6545e7810b5e9ae00b2b32f8d8b5e0dfab5e",
+        "replay\\coupling-deformation.json": "d877fbaafa1cd52769ff0ea3ede0b9ace692ee4a4713187a1d91875bdaa5d88d",
+        "replay\\domain-procedure-applicability-1.json": "9cf281e98f5e3683d95222e7554ba11be7dc828a5b97752c23e3e629a851090f",
+        "replay\\domain-procedure-applicability-2.json": "b80acfe5ca10a5dfa98182b6bf99d82881baec95ac5c8e8c701409574ce72406",
+        "replay\\exact-api-region-1.json": "a9802819b3c3e0a4714bf2bbd3b729fe5738e95f674701a0cde886ba334c4f5b",
+        "replay\\explicit-stable-increment.json": "e266b2840480f6f30ff31a811eb79ff9baefd0dddaf26be1e33860918742e763",
+        "replay\\hybrid-pressure.json": "bb80db7124d3635bf874848b07e8b6a43e0a66a56212760ab02a2c0ed1de35df",
+        "replay\\manifest.json": "b929f97e3157f57321129968b3b3024d7ee2eada0e033b573285d9c540376491",
+        "replay\\mass-scaling-inertia.json": "a12a6c0b1fb56aef0e9ab142a2810798eb5971d2e5de199fe50c7f3dce24e833",
+        "replay\\meshing-predictor-tail.json": "3c6718258a8b0374e92fc34b2406b3ec52b24fd3d648de5b2afa193ffe26f557",
+        "replay\\nodal-stress-extrapolation.json": "9e201e4ff33dfbe34c192edf44c7b35b9d8066b7d24b039153cfc5dc9108a337",
+        "replay\\plane-strain-meaning.json": "c25b2d10227785c4b660e29d8991d59cf41f8b73e39147ef5f91c079e9e23fd6",
+        "replay\\recorded-solver-diagnostic-1.json": "bcacbb6c1aa4811bd0fa9b0bb4c9b542ac149061cd85c42ca3a556db5070e022",
+        "replay\\recorded-solver-diagnostic-2.json": "f32e89601bc8c2de70f69c43f8b08c7b4addf30a4589a45a7b06cf18a6726d39",
+        "replay\\reduced-integration-hourglass.json": "62f10e6da80f177fd55aadbc46f466bce8945bedbb45b2afab00f816efbff1fe",
+        "replay\\summary.json": "6749bde024e7e937d450a27f981d19484dbcb38e2f7bb406bf0d14855a8b1892",
+        "replay\\tie-separation.json": "9e4f10eb7476c6b9c02a75f45aa92ec5aa12796956ab39ec50af65ec90fc733f",
+        "structured-probes\\fourier-nodal-planes-table.json": "0a6220930ee4c8b2ac7c65ce2141e1b4f0131e03c0e47a10541b7e7e96a03ee8",
+        "structured-probes\\manifest.json": "35b42b71aeb272bfdd36b9ff76e4b4a10a7dc707ffbfb231c87839afdfbd0510",
+        "structured-probes\\riks-initial-increment-formula.json": "05cf7960bab9ef4e62cd8367738a0ab1449c3bc7d88e48f8cf5235b56ac67ead",
+        "structured-probes\\riks-total-load-formula.json": "d609cb23fb865b5a91c11957cbff19dc8f237faced4590b1fd6484f29484e3f4",
+        "structured-probes\\summary.json": "3dad31ea935676f0b0eeebc8ad8b9be40200802f9ef245ce9e20c176a525846b",
+        "structured-probes\\tie-formulation-table.json": "6a7da4cb908dd5ce2f5a1f5b3218336f9d1ffe4e349115735b55a43e1492d7dc"
+      },
+      "prepared": {
+        "units_sha256": "56f3b14940a0dd9f1cb98b8ff01174dcc550e7f3b08c28c74d3640ff8a95caa1",
+        "children_sha256": "bf0532fd931189fdab7d62bd5a6589e7ec62296d10d8ddd3a4a7633e82ae02bc",
+        "coverage_sha256": "fd103f9166e8219f15f645cfcc4d2f8d4e8c541aa2b5ed6933a7bb69a8dc506e",
+        "manifest_sha256": "81b53610937e7cd2c70122c92f2e114f0b1909c8330d66874aed80d644b5790b"
+      },
+      "index_binding": {
+        "prepared_sha256": "8c8873c642ab22c40740cfd1beee6545e7810b5e9ae00b2b32f8d8b5e0dfab5e",
+        "semantic_corpus_sha256": "e6f05a13eb49477c16f219e94d25df36b0199393670cb9e811e8ccdaf2e02913",
+        "embeddings_sha256": "329ffa39bab0e1fff7dfbbec1b5ed692aa816b2d8cd813ee552f84c879ea3a83",
+        "index_manifest_sha256": "a2a3bae6a457578bcfa92540c4866dfdfe7e2b905e4ef5bb1b825890cff0f2a4",
+        "bm25_manifest_sha256": "0f591b97f8929d93f81a9c9ba5ce04b03704a2aa24fb6dc004798bbff0e0c1a0",
+        "bm25_database_sha256": "afa0fbf73c711a884d8c42971cae946cb934d6e91e8ad344793d39d1d64fe9cf",
+        "vector": {
+          "algorithm": "chroma-target-hnsw-segment-bytes-v1",
+          "collection_name": "abaqus_evidence_candidate_v1",
+          "collection_id": "778bff87-e8be-4eb8-af0a-e09a06bda182",
+          "dimension": 384,
+          "collection_config_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "collection_schema_sha256": "a1aa7a381ae11fcb19b20bb4434bef249179eaeee2a2af538a2569bb44483497",
+          "segment_ids": [
+            "bd05ef19-cdd9-4161-8e43-47a36538ba9d"
+          ],
+          "sha256": "3e9091b3bf97649622d1d951ca7e82fd0de2165ee436539a1e639ded0c65bbf1",
+          "files": [
+            {
+              "path": "bd05ef19-cdd9-4161-8e43-47a36538ba9d/data_level0.bin",
+              "size_bytes": 55889572,
+              "sha256": "3217e78651830cf1f44469b3cd1594f3cfd9921d9d056c6acd4750c107443b66"
+            },
+            {
+              "path": "bd05ef19-cdd9-4161-8e43-47a36538ba9d/header.bin",
+              "size_bytes": 100,
+              "sha256": "2173119a1eec87379cecc603da52fbeb679f1611bc211b9f08b96924a5bf59f8"
+            },
+            {
+              "path": "bd05ef19-cdd9-4161-8e43-47a36538ba9d/index_metadata.pickle",
+              "size_bytes": 5337084,
+              "sha256": "31a88a0b1221ba5325e25e27b1b0aa0a0bce70e0d6d80a420cdd762eaea1c3ee"
+            },
+            {
+              "path": "bd05ef19-cdd9-4161-8e43-47a36538ba9d/length.bin",
+              "size_bytes": 133388,
+              "sha256": "a77b2988c64869b4901b3e5cf16b50318eba11fb67f2e0aeb6128a7860c7520a"
+            },
+            {
+              "path": "bd05ef19-cdd9-4161-8e43-47a36538ba9d/link_lists.bin",
+              "size_bytes": 286932,
+              "sha256": "3a2b6513ee4c24b2360af652e9850fee0a9dc74e1f91c98180bd4a956d6e9fe3"
+            }
+          ]
+        },
+        "documents": 33347,
+        "build_seconds": null,
+        "finalization_seconds": 25.759011000045575,
+        "finalization": "Existing vector and BM25 records revalidated with bounded reads after reproducing too many SQL variables in the original unbounded get. No re-embedding, index-data repair or query ranking. Original build duration unavailable.",
+        "finalizer_script_sha256": "92d01d996d65dbdddbf59311c52be9ff8224898cb2ea1848d39f4d158979940d"
+      },
+      "coverage": {
+        "source_pages": 1480,
+        "source_blocks": 63074,
+        "units": 36897,
+        "children": 33347,
+        "new_searchable_units": 1706,
+        "unit_types": {
+          "list": 2668,
+          "prose": 13428,
+          "code": 5602,
+          "excluded": 3031,
+          "formula": 3852,
+          "table": 316,
+          "definition": 8000
+        },
+        "projection_status": {
+          "text": 34274,
+          "deferred_table": 182,
+          "deferred_math": 2410,
+          "deferred_list": 31
+        },
+        "new_supported_types": {
+          "formula": 1513,
+          "table": 134,
+          "code": 59
+        },
+        "unsupported_reasons": {
+          "table_missing_single_header": 80,
+          "math_token_content": 101,
+          "math_element:mtable": 144,
+          "math_element:mpadded": 94,
+          "math_element:munderover": 13,
+          "structure_not_in_profile": 31,
+          "table_merged_cells": 80,
+          "math_element:mover": 538,
+          "math_outside_supported_wrapper": 1289,
+          "math_attribute:accent": 20,
+          "table_ambiguous_header": 11,
+          "math_attribute:mathsize": 4,
+          "math_attribute:other": 49,
+          "math_element:mstyle": 59,
+          "math_nested_structure": 25,
+          "math_attribute:movablelimits": 13,
+          "math_element:mmultiscripts": 25,
+          "math_element:mspace": 13,
+          "table_nonrectangular": 3,
+          "math_element:munder": 23,
+          "math_arity:mrow": 5,
+          "math_attribute:minsize": 1,
+          "table_inline_element:div": 1,
+          "table_inline_element:cite": 1
+        },
+        "max_child_tokens": 256,
+        "prepare_seconds": 110.28131789993495
+      },
+      "fixed_development_replay": [
+        {
+          "id": "exact-api-region-1",
+          "query": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?\nextract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT.",
+          "selected_units": [
+            "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+            "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad",
+            "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+            "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [],
+          "rerank_seconds": 1.6923678999301046,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "domain-procedure-applicability-1",
+          "query": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?\nAbaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation.",
+          "selected_units": [
+            "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+            "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+            "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+            "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b"
+          ],
+          "unit_types": [
+            "definition",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [],
+          "rerank_seconds": 1.080722099984996,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "domain-procedure-applicability-2",
+          "query": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?\nAbaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step.",
+          "selected_units": [
+            "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+            "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+            "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+            "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0"
+          ],
+          "unit_types": [
+            "prose",
+            "definition",
+            "list",
+            "prose"
+          ],
+          "probes": [
+            {
+              "need": "boundary_condition_magnitude",
+              "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+              "in_pool": false,
+              "selected": false,
+              "delivered_complete_unit": false
+            }
+          ],
+          "rerank_seconds": 1.1965647999895737,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "recorded-solver-diagnostic-1",
+          "query": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?\nrecorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+          "selected_units": [
+            "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+            "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+            "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+            "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370"
+          ],
+          "unit_types": [
+            "definition",
+            "prose",
+            "definition",
+            "prose"
+          ],
+          "probes": [
+            {
+              "need": "complete_time_adjustment",
+              "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "in_pool": true,
+              "selected": false,
+              "delivered_complete_unit": false
+            }
+          ],
+          "rerank_seconds": 1.4332802999997512,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "recorded-solver-diagnostic-2",
+          "query": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?\nAbaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt.",
+          "selected_units": [
+            "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+            "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+            "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+            "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "definition"
+          ],
+          "probes": [
+            {
+              "need": "complete_time_adjustment",
+              "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "in_pool": true,
+              "selected": true,
+              "delivered_complete_unit": true
+            }
+          ],
+          "rerank_seconds": 1.6394285999704152,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "tie-separation",
+          "query": "If I tie two surfaces in Abaqus, can they subsequently separate or slide relative to each other, or is a contact interaction needed for that behavior?",
+          "selected_units": [
+            "7d6b7d15157839d3c8179560b80c9b314746ec42e0c98260d51c5b0128aa7f81",
+            "2be2a4bb3f48eefa502ac42995077bb073e77297bf2dbe61948541e1a8c2483b",
+            "0e398cb1bb049a41e8087e8cdabbe58a2d483028939198b71a3f58301fc7a074",
+            "89e88217e505c560134bac78b539201ba664970a632edc25b65d2d91c114cd31"
+          ],
+          "unit_types": [
+            "prose",
+            "list",
+            "list",
+            "list"
+          ],
+          "probes": [
+            {
+              "need": "permanent_bond",
+              "unit_id": "3bd557190909143e7b9a6975e61593f4591e50ffda8366a760d6a54d4ae4cab1",
+              "in_pool": false,
+              "selected": false,
+              "delivered_complete_unit": false
+            }
+          ],
+          "rerank_seconds": 1.0478338999673724,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "coupling-deformation",
+          "query": "What is the difference between kinematic and distributing coupling when a load must be transferred from a reference point while allowing the coupled surface to deform?",
+          "selected_units": [
+            "0eddea6b0c101fbf022456953218b80eb9fa1b8df8b7fe2509de885c6a2c928b",
+            "50c30d6c9945bc901192a4b77237cc5387974fd89bbbc9080edb5896f922d57c",
+            "b22fb8bb5a037a4bec1ead339ea04f6c4ac72837b4b26c26ea96636e31f84a8a",
+            "6b8494c36d24ff3dab03566d18007fddcac412df7dade69039033ddd3b00fe99"
+          ],
+          "unit_types": [
+            "list",
+            "prose",
+            "prose",
+            "list"
+          ],
+          "probes": [
+            {
+              "need": "rigidity_contrast",
+              "unit_id": "0eddea6b0c101fbf022456953218b80eb9fa1b8df8b7fe2509de885c6a2c928b",
+              "in_pool": true,
+              "selected": true,
+              "delivered_complete_unit": true
+            }
+          ],
+          "rerank_seconds": 0.8200112000340596,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "mass-scaling-inertia",
+          "query": "In an Abaqus/Explicit quasi-static analysis, why can excessive mass scaling change the physical response even when it reduces the number of stable time increments?",
+          "selected_units": [
+            "03fbc8eb38afa13d3ce594810e6faaac80c15bd3dca51abdab6298205ed8b2a3",
+            "102c0bd2e21e57b33a54d17ea54f9ea88374d443072e0d354f5e41dd6d3af027",
+            "7eaeef51074eb87bfef3c1ce82d4d1069309459df9ea7060814252f0f74e2b9f",
+            "93be2263217b076d1978490ce18cb39f262a4044c4d02fcd0e797054a12f5c5a"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [],
+          "rerank_seconds": 0.7850950999418274,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "hybrid-pressure",
+          "query": "Why do nearly incompressible materials often need hybrid solid elements in Abaqus/Standard, and what additional variable does the hybrid formulation introduce?",
+          "selected_units": [
+            "9960bd72a0766a518ce51654ae3165f7bfdec48fe7fc334841fb05e1186f07db",
+            "34a3fc7e87d585a588ed83cc471a4f95df2bf90d0b13a093bfcbcde98a22dd33",
+            "9e053fb288ad1628cacee3ba9ddb17db1963979c4a9de53bbb7725c60b52c6c3",
+            "b3dcc054b54a1ff5f817c579fff575d940c44ec0cc9b553ee3a66ca442d0523b"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [
+            {
+              "need": "independent_pressure",
+              "unit_id": "499efbb417e077f3b15126e0c7d53595bae05f7a7773ea978f8856974da17c7d",
+              "in_pool": true,
+              "selected": false,
+              "delivered_complete_unit": false
+            }
+          ],
+          "rerank_seconds": 0.8489525000331923,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "plane-strain-meaning",
+          "query": "For a two-dimensional plane strain model, which out-of-plane strain components are constrained, and can the out-of-plane normal stress still be nonzero?",
+          "selected_units": [
+            "36478d39f5a87a59b87404a64089a8f40e4de6523ad3a1b5f1e938e405d13cd3",
+            "e53f8bc20fe26a0a98f7a63e7124b83f0713be945da330fa46e7ebf4a4851d3d",
+            "f5da4d72a124fb21590f5b265b923b7d8df2449aee7fd16c25e77304b998ca2f",
+            "746c2a6fd52ac20dd5ec0c1e4408618b70adbc8485f6618a06d0069601c2c789"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [
+            {
+              "need": "zero_out_of_plane_strain",
+              "unit_id": "36478d39f5a87a59b87404a64089a8f40e4de6523ad3a1b5f1e938e405d13cd3",
+              "in_pool": true,
+              "selected": true,
+              "delivered_complete_unit": true
+            },
+            {
+              "need": "nonzero_thickness_stress",
+              "unit_id": "36478d39f5a87a59b87404a64089a8f40e4de6523ad3a1b5f1e938e405d13cd3",
+              "in_pool": true,
+              "selected": true,
+              "delivered_complete_unit": true
+            }
+          ],
+          "rerank_seconds": 0.9231167000252753,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "reduced-integration-hourglass",
+          "query": "Why can first-order reduced-integration elements exhibit hourglass modes, and what does hourglass control attempt to prevent?",
+          "selected_units": [
+            "29be22b2f9b95045d83207641a373e8467117b68979c28d782eae0f3e2734bfa",
+            "7ff4d439c410138ef26cf910f6101ab1f927e7e77ad8a84f0dbcb6cf77a4861c",
+            "1a3aa5fccae8b4604d2ea3694add995cd65c7df4c75356f05432339bc2ad88d4",
+            "c0ec4e19cd9dcf5c98983eb0832eb28d3a39b94601e1f2089d0fb171fda5f723"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [],
+          "rerank_seconds": 0.7359541000332683,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "nodal-stress-extrapolation",
+          "query": "Why can nodal extrapolated stress values differ from stresses at integration points, especially in a region with a steep stress gradient?",
+          "selected_units": [
+            "03577d7d3143384b628e4f16c6222f62f5baceab24ff912b5cec146c71ecbc0c",
+            "033f498c6c1f2daa0deceb1fd558344ebe2c37a117dae015aff2319ff0ce2041",
+            "514179ed47485a480b3ef9512b19fa3db2d1b01c0aca74eb4e65d3ab00659cbf",
+            "8f9944247e5e58644388fb3c912a73e2c041c24c5b653ab11b694ef4980eb708"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [],
+          "rerank_seconds": 0.9711769999703392,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "explicit-stable-increment",
+          "query": "Why can a few very small elements control the stable time increment and increase the runtime of an Abaqus/Explicit analysis?",
+          "selected_units": [
+            "bcb063a08edc448829bdf5cdea56ddd481ad363e35b8b29185adc3835bca4b55",
+            "03fbc8eb38afa13d3ce594810e6faaac80c15bd3dca51abdab6298205ed8b2a3",
+            "f0dcbc76e62544da27c3dbed048f278a25ee7c068ae1778b2ed75b623c12bef8",
+            "c50a707c863b068149a680fd4f395639755ec837d9c4c4a13cb163140e7d5cca"
+          ],
+          "unit_types": [
+            "prose",
+            "prose",
+            "prose",
+            "prose"
+          ],
+          "probes": [],
+          "rerank_seconds": 0.8794796000001952,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        },
+        {
+          "id": "meshing-predictor-tail",
+          "query": "For adaptive meshing, what does MESHING PREDICTOR=PREVIOUS use to predict node positions, compared with CURRENT?",
+          "selected_units": [
+            "87739b856f2c639f7e91efab028fff9ec4da03fcf8864e8c78276eeb65005acd",
+            "c2465f74f5b52494c1ea0c75450f32432a761f274f2d12a4e51a48612028f5b8",
+            "859dc8162c7f0b3362de1494e93c0156918b479f45bc1bff73c86da75228c2f2",
+            "02c285869828d2baed86ce1ce02fc6b6e6cdb947a4a3340fa9ada6b45f89a761"
+          ],
+          "unit_types": [
+            "definition",
+            "code",
+            "code",
+            "code"
+          ],
+          "probes": [],
+          "rerank_seconds": 1.0514382000546902,
+          "truncated_bodies": 0,
+          "truncated_pairs": 0
+        }
+      ],
+      "new_structure_development_probes": [
+        {
+          "id": "tie-formulation-table",
+          "query": "Which tie formulation in Abaqus/Explicit allows a mixture of rigid and deformable subregions?",
+          "target_unit_id": "c9c1f44e6db2188691f3fe1cee2da266111ed862416f64fdfcb7449e7bc926ac",
+          "target_type": "table",
+          "in_pool": true,
+          "selected": true,
+          "delivered_complete_unit": true,
+          "selected_units": [
+            "c9c1f44e6db2188691f3fe1cee2da266111ed862416f64fdfcb7449e7bc926ac",
+            "f1ae1c56f2d2a6bb7e6dc77d180a9b666f6e60df5b1406d01a1930d701835962",
+            "e25d58c68bf6c2bafabab8d8d8e7ab39c68b6f9b02a91536dc8b375eacb619ec",
+            "5a3374a294c71c62f8926238cbfa30e6d08288c404137fe7755c2af53ef4ef3b"
+          ],
+          "seconds": 0.920820500003174
+        },
+        {
+          "id": "riks-total-load-formula",
+          "query": "How is total load formed from dead load, reference load and the load proportionality factor in a Riks step?",
+          "target_unit_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+          "target_type": "formula",
+          "in_pool": true,
+          "selected": true,
+          "delivered_complete_unit": true,
+          "selected_units": [
+            "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+            "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+            "989236baa5e1a0781e1f5716e226fee5ad0063d7471615e63031712bdbb195fa",
+            "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b"
+          ],
+          "seconds": 0.8632310000248253
+        },
+        {
+          "id": "riks-initial-increment-formula",
+          "query": "How is the initial load proportionality factor computed from the initial arc length increment and the total arc length scale factor?",
+          "target_unit_id": "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b",
+          "target_type": "formula",
+          "in_pool": true,
+          "selected": true,
+          "delivered_complete_unit": true,
+          "selected_units": [
+            "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b",
+            "9e31f4fe6f31c8b7935f0547a971d60d09b36eefbabd5630c7b6445f19ce2ceb",
+            "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+            "4d352a916ac8df7d23ac2e21d7794fe1ddd6092205c53163485e71cf89778821"
+          ],
+          "seconds": 0.8359462000662461
+        },
+        {
+          "id": "fourier-nodal-planes-table",
+          "query": "For two Fourier modes in asymmetric-axisymmetric solid elements, how many nodal planes are used and at which angular locations?",
+          "target_unit_id": "0209f77654c456c750957bb4094f25a1e59290d6f3c532d40feae02a5dc5f660",
+          "target_type": "table",
+          "in_pool": true,
+          "selected": true,
+          "delivered_complete_unit": true,
+          "selected_units": [
+            "0209f77654c456c750957bb4094f25a1e59290d6f3c532d40feae02a5dc5f660",
+            "d1d3c32033dfa24b6cecb22bf6e23897d86fbe8ee67a5a048a597625bc1ea226",
+            "ef6310f9e197e4507815dad157c0ad7553682a1439a9049fb95a92b49e962ca6",
+            "322ddc096f2139d04ec68168241050e8d2c5411448922b2c737500aeccd89d79"
+          ],
+          "seconds": 0.6821393000427634
+        }
+      ],
+      "fixed_delivered_requirements": 4,
+      "fixed_requirement_count": 8,
+      "structure_probes_delivered": 4,
+      "searchable_units": 31243,
+      "new_formula_units_without_source_mathml": 0
+    }
+  },
+  "small_corpus_before_after": [
+    {
+      "id": "exact-api-region-1",
+      "before_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "code"
+      ],
+      "after_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "code"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": []
+    },
+    {
+      "id": "domain-procedure-applicability-1",
+      "before_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "after_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": []
+    },
+    {
+      "id": "domain-procedure-applicability-2",
+      "before_unit_types": [
+        "prose",
+        "list",
+        "prose",
+        "list"
+      ],
+      "after_unit_types": [
+        "prose",
+        "list",
+        "prose",
+        "list"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": [
+        {
+          "need": "boundary_condition_magnitude",
+          "before": false,
+          "after": false
+        }
+      ]
+    },
+    {
+      "id": "recorded-solver-diagnostic-1",
+      "before_unit_types": [
+        "definition",
+        "definition",
+        "definition",
+        "definition"
+      ],
+      "after_unit_types": [
+        "definition",
+        "definition",
+        "definition",
+        "definition"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "before": false,
+          "after": false
+        }
+      ]
+    },
+    {
+      "id": "recorded-solver-diagnostic-2",
+      "before_unit_types": [
+        "prose",
+        "definition",
+        "definition",
+        "definition"
+      ],
+      "after_unit_types": [
+        "prose",
+        "definition",
+        "definition",
+        "definition"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": [
+        {
+          "need": "complete_time_adjustment",
+          "before": true,
+          "after": true
+        }
+      ]
+    },
+    {
+      "id": "tie-separation",
+      "before_unit_types": [
+        "list",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "after_unit_types": [
+        "list",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": [
+        {
+          "need": "permanent_bond",
+          "before": false,
+          "after": false
+        }
+      ]
+    },
+    {
+      "id": "coupling-deformation",
+      "before_unit_types": [
+        "list",
+        "prose",
+        "list",
+        "list"
+      ],
+      "after_unit_types": [
+        "list",
+        "prose",
+        "list",
+        "list"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": [
+        {
+          "need": "rigidity_contrast",
+          "before": true,
+          "after": true
+        }
+      ]
+    },
+    {
+      "id": "mass-scaling-inertia",
+      "before_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "after_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": []
+    },
+    {
+      "id": "hybrid-pressure",
+      "before_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "after_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": [
+        {
+          "need": "independent_pressure",
+          "before": true,
+          "after": true
+        }
+      ]
+    },
+    {
+      "id": "plane-strain-meaning",
+      "before_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "after_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": [
+        {
+          "need": "zero_out_of_plane_strain",
+          "before": true,
+          "after": true
+        },
+        {
+          "need": "nonzero_thickness_stress",
+          "before": true,
+          "after": true
+        }
+      ]
+    },
+    {
+      "id": "reduced-integration-hourglass",
+      "before_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "after_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": []
+    },
+    {
+      "id": "nodal-stress-extrapolation",
+      "before_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "after_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "prose"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": []
+    },
+    {
+      "id": "explicit-stable-increment",
+      "before_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "list"
+      ],
+      "after_unit_types": [
+        "prose",
+        "prose",
+        "prose",
+        "list"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": []
+    },
+    {
+      "id": "meshing-predictor-tail",
+      "before_unit_types": [
+        "definition",
+        "definition",
+        "definition",
+        "definition"
+      ],
+      "after_unit_types": [
+        "definition",
+        "definition",
+        "definition",
+        "definition"
+      ],
+      "before_body_truncations": 0,
+      "after_body_truncations": 0,
+      "requirements": []
+    }
+  ],
+  "baseline_sha256": "fc3c3f551ec07261f7390907af7f11b832ed965edc1e58058f838f2119b2fdf8",
+  "observed_full_corpus_gap": {
+    "query": "hybrid-pressure",
+    "need": "independent_pressure",
+    "target_in_pool": true,
+    "target_selected": false,
+    "target_best_child_rank": 11,
+    "failure_stage": "reranking/Top4 parent selection, not projection absence or body truncation",
+    "selected_sections": [
+      "Hybrid Formulation in Abaqus/Standard",
+      "Choosing between Regular and Hybrid Elements",
+      "Fully Incompressible Material Behavior",
+      "Pure Displacement Formulation Versus Hybrid Formulation in Abaqus/Standard"
+    ],
+    "interpretation": "Exact predeclared evidence-unit delivery check, not an evaluation of a generated answer. No query/ranking tuning was performed after this observation."
+  },
+  "retained_attempts": [
+    {
+      "directory": "var/rag-structured-pilot-v1",
+      "status": "Queries completed, but post-query HNSW snapshot differed after reopening a below-sync-threshold index; no successful replay summary. Retained, not counted as a validated replay.",
+      "manifest_sha256": "28f37d8df4ddf6bf4f4e6cbcabf825b467283d6ac93fc5344657860b6d7a8a9f",
+      "before_query_vector_snapshot": {
+        "algorithm": "chroma-target-hnsw-segment-bytes-v1",
+        "collection_name": "abaqus_evidence_candidate_v1",
+        "collection_id": "466c932d-20f1-43cf-b349-011ba609d845",
+        "dimension": 384,
+        "collection_config_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "collection_schema_sha256": "81385d5e414543419c7b033a061bb308f54fee80a48ebcb7350009558c6c2e3e",
+        "segment_ids": [
+          "40915da6-a763-458c-aa1a-f3931058103c"
+        ],
+        "sha256": "1932fc37d869db5ff37dd096d4991655d390b7842789c0092bffc7405ef0696a",
+        "files": [
+          {
+            "path": "40915da6-a763-458c-aa1a-f3931058103c/data_level0.bin",
+            "size_bytes": 167600,
+            "sha256": "eda7e0ec74694f750fc2d06b17dab7126269f0edfb29a4e46443ac8ee3e10cdb"
+          },
+          {
+            "path": "40915da6-a763-458c-aa1a-f3931058103c/header.bin",
+            "size_bytes": 100,
+            "sha256": "a0e81c3b22454233bc12d0762f06dcca48261a75231cf87c79b75e69a6c00150"
+          },
+          {
+            "path": "40915da6-a763-458c-aa1a-f3931058103c/length.bin",
+            "size_bytes": 400,
+            "sha256": "3f39a5d503e6008424f6bfb220d5760a81fb6c00e0a8a4cbd582adde3b6c1923"
+          },
+          {
+            "path": "40915da6-a763-458c-aa1a-f3931058103c/link_lists.bin",
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ]
+      },
+      "retained_post_query_vector_snapshot": {
+        "algorithm": "chroma-target-hnsw-segment-bytes-v1",
+        "collection_name": "abaqus_evidence_candidate_v1",
+        "collection_id": "466c932d-20f1-43cf-b349-011ba609d845",
+        "dimension": 384,
+        "collection_config_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "collection_schema_sha256": "81385d5e414543419c7b033a061bb308f54fee80a48ebcb7350009558c6c2e3e",
+        "segment_ids": [
+          "40915da6-a763-458c-aa1a-f3931058103c"
+        ],
+        "sha256": "ff9f2713877f90ef76b092325df29027b31bcacfee8d7787c0551bf9e9a25132",
+        "files": [
+          {
+            "path": "40915da6-a763-458c-aa1a-f3931058103c/data_level0.bin",
+            "size_bytes": 167600,
+            "sha256": "ee2f5845c7c7727da99ef157db63d2a6ffa70ed542f61062d17b3f44a416d37f"
+          },
+          {
+            "path": "40915da6-a763-458c-aa1a-f3931058103c/header.bin",
+            "size_bytes": 100,
+            "sha256": "a0e81c3b22454233bc12d0762f06dcca48261a75231cf87c79b75e69a6c00150"
+          },
+          {
+            "path": "40915da6-a763-458c-aa1a-f3931058103c/length.bin",
+            "size_bytes": 400,
+            "sha256": "e66afce0de2ff9df037b5b9ef47a1602e8f4e791574f422e38c2e0bcd28b554e"
+          },
+          {
+            "path": "40915da6-a763-458c-aa1a-f3931058103c/link_lists.bin",
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ]
+      }
+    },
+    {
+      "directory": "var/rag-structured-pilot-v2",
+      "status": "Explicit HNSW configuration disabled implicit embedding-function fallback; first upsert failed before embeddings. A subsequent replay attempt failed due absent index-binding. Retained, not counted.",
+      "manifest_sha256": "d07b634a6d723529aa9431958211e82be3ab5869faeacee47cfea4036ee35dc6"
+    },
+    {
+      "directory": "var/rag-structured-full-v1",
+      "status": "Valid 1480-page preparation with earlier driver; no full embedding index was built under this version.",
+      "manifest_sha256": "5bbe28604bb46d02ca4170ac6fb4eca81170c89acbc7a5757b7bb08ed508c0b2"
+    },
+    {
+      "directory": "var/rag-structured-full-v2",
+      "status": "Preparation reached all pages but implementation binding changed before finalization; no prepared marker, no index. Excluded.",
+      "manifest_sha256": "3bdde984def048c6d4e12a9bca8a99a5889d3cfb7dc57c6e5fdf0eb47231b6bd"
+    },
+    {
+      "directory": "var/rag-structured-pilot-v3",
+      "status": "Successfully sealed/replayed pre-pagination pilot; v4 is a byte-verified copy with paginated read driver, not an independent trial.",
+      "manifest_sha256": "556a55081812163a4bf872ee3cd7f763c6365c1d53e0ddcee81917d6ce4ae576"
+    },
+    {
+      "directory": "var/rag-structured-full-v3",
+      "status": "All33347 Dense and BM25 records built, but the unbounded finalization read hit too many SQL variables. Reproduced on continuation. v4 copies all prepared/index files byte-for-byte and seals only after paginated verification; no re-embedding.",
+      "manifest_sha256": "d620206ac23d602811543c1b69b86004468bd6831d5af1b6f429ab1a46882b61"
+    }
+  ],
+  "verification": {
+    "pytest_passed": 655,
+    "pytest_skipped": 27,
+    "ruff": "passed on changed source/tests",
+    "basedpyright": "0 errors on changed source/tests",
+    "agent_calls": 0,
+    "abaqus_calls": 0
+  },
+  "implementation_snapshot": {
+    "directory": "var\\audits\\structured-projection-v1-review",
+    "sha256": {
+      "implementation\\uv.lock": "6d8af39f4e6dfe7535f5610c0b85ed3ef023bc1ab2965ad320bc6ccc9713ca82",
+      "implementation\\src\\abaqus_sim_agent\\coding\\concept_lookup.py": "7215a6556c87b3515bb19da031367f86a78e45ec5cdb713119f8ec6e81ba15f9",
+      "implementation\\src\\abaqus_sim_agent\\coding\\document_evidence.py": "412f29d877c575e9ac153adaf99268c31ee93b958ac3148b4e3568ccb2584ed9",
+      "implementation\\src\\abaqus_sim_agent\\evaluation\\cross_encoder.py": "17e40fd5fda159e0131c039198a56582251aacb7a6fe6c7ae67f8fe0f8d2acfb",
+      "implementation\\src\\abaqus_sim_agent\\evaluation\\evidence_candidate.py": "38c4677054ad97318a548d8ad313aabae2b41b51f65f2af771a5181db9d64ec5",
+      "implementation\\src\\abaqus_sim_agent\\evaluation\\structural_chunking.py": "8abdd772221dc1b65f6c55dc82c02fed3f83ff46b288241b3ba7e87b6ff19b9d",
+      "implementation\\src\\abaqus_sim_agent\\retrieval\\bm25.py": "406d66bf84d096d4112757d34d762043f05c9e4823d3674ed3b9906baf5ec6e9",
+      "implementation\\src\\abaqus_sim_agent\\retrieval\\evidence_blocks.py": "e66997c9b8f6047be79131cbd22a4aa3a7df6eafeb72a10e7fc30b63c9317d2a",
+      "implementation\\src\\abaqus_sim_agent\\retrieval\\evidence_units.py": "5bccfdd67d0e88326ff133ab4df3f34972229b2f1f7d923652852ddee3f7a63e",
+      "implementation\\src\\abaqus_sim_agent\\retrieval\\evidence_windows.py": "046c355b47bcbf3cd4e904f5c25b8c2c8e32792fee7602c8260a9977b3eff3d9",
+      "implementation\\src\\abaqus_sim_agent\\retrieval\\structured_projection.py": "5c76acad7b67c9e6c5973f50f2e859ab6e0d26fdce23f479ae6b0b8c3eff46c2"
+    }
+  },
+  "research_basis": [
+    "https://reference.langchain.com/python/langchain-classic/retrievers/parent_document_retriever/ParentDocumentRetriever",
+    "https://docling-project.github.io/docling/concepts/chunking/",
+    "https://docs.unstructured.io/open-source/core-functionality/chunking",
+    "https://www.w3.org/TR/MathML3/chapter3.html",
+    "https://cookbook.chromadb.dev/core/collections/"
+  ],
+  "limits": [
+    "Coverage counts demonstrate representation availability, not relevance, complete semantic coverage or answer correctness.",
+    "The 14 historical queries and four source-informed structure probes are exposed development data. No sealed held-out or Agent task benefit is claimed.",
+    "The full corpus changes distractor scope; small/full differences cannot be attributed solely to the projection, tokenizer, HNSW persistence, or reranker.",
+    "Complex merged tables, matrices/accents and nested formula containers remain unsupported. Preserved vendor MathML may tokenize word-like subscripts as sequences of symbols; this profile does not reinterpret them.",
+    "The unchanged shared evidence-body budget can still truncate oversized XML parents; this is reported rather than called complete evidence delivery.",
+    "The candidate manifests are deliberately not product-tool compatible; release/product applicability metadata and final selection still require integration evaluation before switching defaults."
+  ]
+}

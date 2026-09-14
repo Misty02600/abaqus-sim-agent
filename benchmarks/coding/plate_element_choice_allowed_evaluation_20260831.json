@@ -1,0 +1,86 @@
+{
+  "schema_version": "1",
+  "experiment": "plate-element-choice-cps4-or-cps4r-v1",
+  "date": "2026-08-31",
+  "question": "Can the Coder choose CPS4 or CPS4R without asking the user and pass the existing plate result oracle when both element types are explicitly accepted?",
+  "configuration": {
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "http_retries": 10,
+    "http_timeout_seconds": 60.0,
+    "prompt_version": "plate-tension-v4",
+    "clarification_policy_version": "physics-materiality-clarification-v1",
+    "allowed_element_types": [
+      "CPS4",
+      "CPS4R"
+    ],
+    "user_goal_names_element_codes": false,
+    "capability_profile_supplies_allowed_types": true,
+    "element_count": 80,
+    "api_catalog_mode": "automatic_verified_only",
+    "api_catalog_cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+    "repeat": 3,
+    "required_passes": 2,
+    "eval_retry": false
+  },
+  "deterministic_verifier_behavior": {
+    "single_CPS4_80": "accepted when artifacts and U/S/RF pass",
+    "single_CPS4R_80": "accepted when artifacts and U/S/RF pass",
+    "mixed_CPS4_CPS4R": "rejected",
+    "other_element_type": "rejected"
+  },
+  "raw_evidence": {
+    "run_root": "D:/abaqus-runs/plate-element-choice-final-20260831-v4",
+    "evaluation_summary_sha256": "e503903b95559f7410e744a0392d0181b41626b424f9b09807ad0a011fc26134",
+    "gate_sha256": "8fc4410a4ab8c700147fa2dbc52d435885a50c4487f64246a5c7d4b0b8872164"
+  },
+  "result": {
+    "attempts": 3,
+    "passes": 0,
+    "required_passes": 2,
+    "gate_passed": false,
+    "attempts_detail": [
+      {
+        "ordinal": 1,
+        "run_id": "eval-97b740a76c64",
+        "status": "infrastructure_error",
+        "error": "ModelAPIError: Request timed out.",
+        "workspace_files": 0,
+        "history_sha256": "b9569c650fc4a702ac62b5f736031db70b2774f07eb4f159074b79981c481c94"
+      },
+      {
+        "ordinal": 2,
+        "run_id": "eval-10f88646307d",
+        "status": "infrastructure_error",
+        "error": "ModelAPIError: Request timed out.",
+        "workspace_files": 0,
+        "history_sha256": "dd14f439f1e017853bb8df649649f1b1964c5c7cbf13f46aacfb23a7c644e1a4"
+      },
+      {
+        "ordinal": 3,
+        "run_id": "eval-caadb3ee6993",
+        "status": "infrastructure_error",
+        "error": "ModelAPIError: Request timed out.",
+        "workspace_files": 0,
+        "history_sha256": "3bcb45f4dd4a8c791c3674288aa25379088501af472465ca91925568528c2f41"
+      }
+    ]
+  },
+  "decision": {
+    "status": "The formal Product-Agent batch was blocked by provider timeouts before coding and provides no model-choice observation.",
+    "claims_allowed": [
+      "The deterministic verifier no longer contains a hidden exact-CPS4R requirement for the autonomous-choice case.",
+      "All three formal failures occurred before workspace files or Abaqus execution."
+    ],
+    "claims_forbidden": [
+      "The Coder failed to choose a valid element type.",
+      "The allowed-element policy passed or failed a Product smoke gate on task behavior.",
+      "The 0/3 result is evidence against CPS4 or CPS4R."
+    ]
+  },
+  "limits": [
+    "The current plate oracle still checks element type/count and U/S/RF, not a complete 20 x 4 structured-connectivity proof.",
+    "No attempt reached the new typed deliverable manifest or verifier.",
+    "A healthy-provider repeat is still required before making a Product behavior claim."
+  ]
+}

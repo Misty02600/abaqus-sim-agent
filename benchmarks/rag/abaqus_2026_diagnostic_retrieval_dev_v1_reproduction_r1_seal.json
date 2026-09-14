@@ -1,0 +1,61 @@
+{
+  "schema_version": "1",
+  "protocol_version": "diagnostic-retrieval-reproduction-v1",
+  "status": "sealed",
+  "purpose": "identical_replay",
+  "dataset_id": "abaqus-2026-diagnostic-retrieval-dev-v1",
+  "dataset": {
+    "path": "abaqus_2026_diagnostic_retrieval_dev_v1.jsonl",
+    "sha256": "9f4b8f386e972049580ae9ae016ac09c59705dd3d86ec630f9147f92ec890e6a"
+  },
+  "review": {
+    "path": "abaqus_2026_diagnostic_retrieval_dev_v1_review.json",
+    "sha256": "4a0bfede2e65fca0bc5b52c96ee653b2a2cd7d0846631a0720ddee8e37c464a9"
+  },
+  "base_environment_seal": {
+    "path": "abaqus_2026_bm25_dense_rrf_heldout_v3_reproduction_r1_seal.json",
+    "sha256": "f2c3552fd4b569847f28c667e5bc4f5c8ff70a2403ba0c6ba0d0ba62310d8958"
+  },
+  "reference_report": {
+    "path": "abaqus_2026_diagnostic_retrieval_dev_v1_evaluation_20260904.json",
+    "sha256": "047ee9adf839d7aec55d95be190a3184a56166bcc843d00e4b0337048fd0a39a"
+  },
+  "reference_attempts": {
+    "path": "abaqus_2026_diagnostic_retrieval_dev_v1_attempts.jsonl",
+    "sha256": "f2af12b60a4a6e8f517555aca70da989e7196420b155b1597fc7bc94c4affd8b"
+  },
+  "reference_implementation": {
+    "diagnostic_py": "4fa7c60c7e770fa16693f1ec93b5b659e48f9d78c5b1b449f44abd3502ab1c53",
+    "comparison_py": "7c8899bc8ed56bfdb2c0a9a79ead00382d3a4925af71f86e3eeee59b7512c9a7",
+    "index_py": "64c70639b15b7199a431b7159bd41bc055915f9fb6a810b3c35bedf9ee046c05",
+    "bm25_py": "91696abe6d752ba46e0ecb499858091ee0f09205ef539ea988de99673db5d36d"
+  },
+  "implementation": {
+    "diagnostic_py": "718fd23e0d900883ab27eaa7f96595f95f0a51b412b624580f2b213c8fba97f0",
+    "comparison_py": "7c8899bc8ed56bfdb2c0a9a79ead00382d3a4925af71f86e3eeee59b7512c9a7",
+    "index_py": "64c70639b15b7199a431b7159bd41bc055915f9fb6a810b3c35bedf9ee046c05",
+    "bm25_py": "91696abe6d752ba46e0ecb499858091ee0f09205ef539ea988de99673db5d36d"
+  },
+  "dependencies": {
+    "lxml": "6.1.2",
+    "pydantic": "2.13.4"
+  },
+  "case_count": 86,
+  "need_group_count": 39,
+  "case_target_count": 127,
+  "case_targets_hash_algorithm": "ordered-canonical-json-sha256-v1",
+  "ordered_case_targets_sha256": "e7fdf700a0132d8a03f56971bc566e0f2637fac0762b3ec568499fdccb0da49e",
+  "evaluation_contract": {
+    "top_k": 5,
+    "product_context_depth": 4,
+    "fetch_k": 20,
+    "rrf_k": 60,
+    "bootstrap_method": "need_group_resampling_percentile",
+    "bootstrap_replicates": 20000,
+    "bootstrap_seed": 20260904,
+    "bootstrap_confidence_level_percent": 95,
+    "warmup_enabled": true,
+    "warmup_query": "Abaqus documentation retrieval warmup; no scored diagnostic case"
+  },
+  "sealed_at": "2026-09-04T08:44:57.281251Z"
+}

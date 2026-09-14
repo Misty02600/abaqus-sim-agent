@@ -1,0 +1,29 @@
+{
+  "schema_version": "1",
+  "case_id": "api_container_repair_seed_edges",
+  "title": "Repair an Abaqus native-container regression",
+  "goal": "修复 build_model.py 中导致 Abaqus/CAE 2024 执行失败的 API 容器兼容问题，保留同时给矩形板上下两条长边设置 7 个种子的建模意图。",
+  "starting_artifacts": [
+    "build_model.py"
+  ],
+  "runtime": {
+    "release": "2024",
+    "mode": "cae noGUI",
+    "solver_required": false
+  },
+  "constraints": [
+    "修改已有脚本，不重写成 INP 或自定义 API DSL。",
+    "不得提交求解作业。",
+    "结果文件必须由 Abaqus 脚本在检查真实边种子状态之后生成，不能手工伪造。"
+  ],
+  "completion": {
+    "result_file": "api_container_repair_result.json",
+    "required_values": {
+      "case_id": "api_container_repair_seed_edges",
+      "status": "passed",
+      "selected_edge_count": 2,
+      "bottom_seed_number": 7,
+      "top_seed_number": 7
+    }
+  }
+}

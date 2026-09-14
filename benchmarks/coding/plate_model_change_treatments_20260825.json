@@ -1,0 +1,740 @@
+{
+  "schema_version": "1",
+  "experiment": "verified-plate-model-change-bounded-treatments-v2",
+  "date": "2026-08-25",
+  "runtime": "Abaqus 2024",
+  "model": "opencode-go/deepseek-v4-flash",
+  "shared_contract": {
+    "source_run_id": "eval-2cf5159c427e",
+    "source_request_sha256": "29c928fdf7fddf1eddaf12eec016ee00644eda934b555dc7ec0b9676e0bc16d1",
+    "source_outcome_sha256": "0e7e33f5a6131bd7c5eda5503303bf9266560bc5db8cf8a9f37fec6d0ef01d60",
+    "source_verification_sha256": "8d88741cdbb69151578c742b9c94e2cc40424e94b3b2edc1041a7fff6b26f22a",
+    "skill_sha256": "5dffe84954008bec534179a85d97d448a1ad9647716cd3f8f33c5f02528bf374",
+    "common_task_instructions_sha256": "376bb2e067d3293b8b8e3785866bedab2a3dbe68a8b036e2e6ecd61f22e918d1",
+    "model_request_budget": 36,
+    "abaqus_call_budget": 12,
+    "solver_call_budget": 3,
+    "wall_time_seconds": 2700.0,
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "http_retries": 3,
+    "eval_task_retry": false,
+    "repeat_until_pass": false
+  },
+  "load_mode_full_catalog_treatment": {
+    "question": "Can an actively queried exact API Catalog reduce the repeated SurfaceTraction authoring failure while the load-change goal, source, Skill, runtime tools, model, and physical verifier stay fixed?",
+    "frozen_request_path": "benchmarks/coding/plate_load_mode_change_request.json",
+    "frozen_request_sha256": "5b25b70562f89c4fe16896bd6e79b6c80ee3fe00c7b14804d4c4b64550f0af76",
+    "goal_sha256": "85413b803ea3b00657a94112de7b3b3912d445de5672039f483e9d84c53d4ecc",
+    "control": {
+      "api_catalog_mode": "off",
+      "max_api_lookup_calls": 0,
+      "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260825-v2-load-corrected",
+      "result": "0/3",
+      "gate_passed": false,
+      "summary_sha256": "d3d33cd7807a3ed8b092c3297b55d68eadfe974e571838e7bc39f330832c5a05",
+      "gate_sha256": "526d7eeea223492e3641778937e06763d97830a59d41f45ee9b332bce6b760aa"
+    },
+    "treatment": {
+      "api_catalog_mode": "full",
+      "max_api_lookup_calls": 3,
+      "catalog_card_count": 5481,
+      "catalog_cards_sha256": "b557c9cb79c2a593afbb0c6ed332c664001f880cc5667d465729252e3635fd5e",
+      "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260825-v3-load-full-catalog",
+      "result": "2/3",
+      "gate_passed": true,
+      "summary_sha256": "c508f20c5c2209a845fa688b1a6dfe247641bba16e40de1d41fbca15a0969390",
+      "gate_sha256": "e5e5c365c18e178cc9e923a5f45697e17ae824b8dddbd9eab80456ff89a7d90a",
+      "attempts": [
+        {
+          "run_id": "plate-load-8b490901da",
+          "status": "passed",
+          "model_requests": 16,
+          "input_tokens": 200273,
+          "output_tokens": 12769,
+          "tool_calls": 16,
+          "api_lookup_calls": 2,
+          "abaqus_calls": 3,
+          "solver_calls": 1,
+          "wall_time_seconds": 206.03569509997033,
+          "queries": [
+            "Model.SurfaceTraction",
+            "Assembly.Surface"
+          ],
+          "outcome_sha256": "ab54d41f605e4a37de549fe2b338f8474c3384ec6082fac7fedd4bb824aca6d5"
+        },
+        {
+          "run_id": "plate-load-b071c7feea",
+          "status": "failed",
+          "failure_stage": "model_budget",
+          "model_requests": 36,
+          "input_tokens": 603235,
+          "output_tokens": 30017,
+          "tool_calls": 37,
+          "api_lookup_calls": 1,
+          "abaqus_calls": 10,
+          "solver_calls": 0,
+          "wall_time_seconds": 373.4002135999617,
+          "queries": [
+            "Model.SurfaceTraction"
+          ],
+          "outcome_sha256": "c9301843a9e2c738b3020a4f32181fb333db4587ed508bec31db3e2994aa6696"
+        },
+        {
+          "run_id": "plate-load-a90d495293",
+          "status": "passed",
+          "model_requests": 16,
+          "input_tokens": 204304,
+          "output_tokens": 10015,
+          "tool_calls": 18,
+          "api_lookup_calls": 2,
+          "abaqus_calls": 4,
+          "solver_calls": 1,
+          "wall_time_seconds": 231.05916589999152,
+          "queries": [
+            "Assembly.Surface",
+            "Model.SurfaceTraction"
+          ],
+          "uncounted_not_found_query": "model.SurfaceTraction",
+          "outcome_sha256": "8863094a041e2ea504f040ea70f9cb04b88b7bc462d733628c485f53ae0502b7"
+        }
+      ]
+    },
+    "interpretation": {
+      "observed_change": "The corrected off batch was 0/3; the full-Catalog batch passed its 2/3 smoke gate.",
+      "bounded_claim": "This is evidence that exact SurfaceTraction and Assembly.Surface cards can improve this frozen load-change task, not a stable universal Catalog success-rate claim.",
+      "remaining_failure": "One full-Catalog attempt still spent 36 model requests and 10 Abaqus probes without reaching Solver, so exact signatures do not solve object ownership and physical load-expression reasoning by themselves.",
+      "treatment_boundary": "Enabling the read-only lookup tool necessarily changes api_catalog_mode and its otherwise unreachable three-call lookup budget; all task, model, source, Skill, Abaqus/Solver, and verifier contracts remained fixed. The suite metadata version changed because center_hole moved to v2, but the load goal and common task instructions did not change."
+    }
+  },
+  "load_mode_expanded_budget_treatment": {
+    "question": "Does increasing only the full-Catalog load-mode execution budget allow long but valid probe trajectories to reach Solver and the host verifier?",
+    "frozen_request_path": "benchmarks/coding/plate_load_mode_change_request.json",
+    "frozen_request_sha256": "5b25b70562f89c4fe16896bd6e79b6c80ee3fe00c7b14804d4c4b64550f0af76",
+    "goal_sha256": "85413b803ea3b00657a94112de7b3b3912d445de5672039f483e9d84c53d4ecc",
+    "control": {
+      "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260825-v3-load-full-catalog",
+      "model_request_budget": 36,
+      "abaqus_call_budget": 12,
+      "solver_call_budget": 3,
+      "result": "2/3",
+      "gate_passed": true,
+      "aggregate": {
+        "model_requests": 68,
+        "input_tokens": 1007812,
+        "output_tokens": 52801,
+        "tool_calls": 71,
+        "abaqus_calls": 17
+      },
+      "summary_sha256": "c508f20c5c2209a845fa688b1a6dfe247641bba16e40de1d41fbca15a0969390",
+      "gate_sha256": "e5e5c365c18e178cc9e923a5f45697e17ae824b8dddbd9eab80456ff89a7d90a"
+    },
+    "treatment": {
+      "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260825-v4-load-full-catalog-expanded-budget",
+      "model_request_budget": 48,
+      "abaqus_call_budget": 18,
+      "solver_call_budget": 3,
+      "result": "2/3",
+      "gate_passed": true,
+      "summary_sha256": "e5e1e682084638aca6f35445ca15b45260169e90d48023a09ab17a9d67d11f37",
+      "gate_sha256": "e5e5c365c18e178cc9e923a5f45697e17ae824b8dddbd9eab80456ff89a7d90a",
+      "aggregate": {
+        "model_requests": 122,
+        "input_tokens": 2545023,
+        "output_tokens": 46769,
+        "tool_calls": 125,
+        "abaqus_calls": 36
+      },
+      "attempts": [
+        {
+          "run_id": "plate-load-92dc44d9d9",
+          "status": "passed",
+          "model_requests": 44,
+          "input_tokens": 941241,
+          "output_tokens": 14109,
+          "tool_calls": 44,
+          "api_lookup_calls": 1,
+          "abaqus_calls": 12,
+          "solver_calls": 1,
+          "wall_time_seconds": 142.65575109998463,
+          "outcome_sha256": "ce616a2b6c6ff638c27993aa5064775972c8a7d93a552775b4a683b18d3bc7d4"
+        },
+        {
+          "run_id": "plate-load-84bdd851f8",
+          "status": "failed",
+          "failure_stage": "model_budget",
+          "model_requests": 48,
+          "input_tokens": 1130651,
+          "output_tokens": 23718,
+          "tool_calls": 51,
+          "api_lookup_calls": 2,
+          "abaqus_calls": 16,
+          "solver_calls": 0,
+          "wall_time_seconds": 189.74060499999905,
+          "outcome_sha256": "49484de0340ed2ec2f2586ac7f811b8bcfcf93dcdc18fc98d63dac3910dc5991"
+        },
+        {
+          "run_id": "plate-load-e4623ba5c0",
+          "status": "passed",
+          "model_requests": 30,
+          "input_tokens": 473131,
+          "output_tokens": 8942,
+          "tool_calls": 30,
+          "api_lookup_calls": 1,
+          "abaqus_calls": 8,
+          "solver_calls": 1,
+          "wall_time_seconds": 102.06718050001655,
+          "outcome_sha256": "1aca99fd53ad304150a6d0a77a18d83c55e43ef6e8bdf17f619b604be4f95bb1"
+        }
+      ]
+    },
+    "interpretation": {
+      "observed_change": "The expanded arm remained 2/3. One passing trajectory required 44 model requests and therefore could not have completed under the 36-request control limit; another trajectory consumed 48 model requests and 16 Abaqus calls without reaching Solver.",
+      "cost_change": "Relative to the separate unseeded 36/12 batch, aggregate model requests increased from 68 to 122, input tokens from 1,007,812 to 2,545,023, tool calls from 71 to 125, and Abaqus calls from 17 to 36, with no observed gate improvement.",
+      "bounded_claim": "Additional budget can admit legitimate long-tail exploration, but budget expansion alone does not provide a convergence policy and can extend an unproductive probe loop.",
+      "adoption": "The evaluator now exposes explicit budget CLI parameters. Defaults remain 36/12/3; 48/18/3 is retained as an opt-in high-budget profile rather than silently replacing the default."
+    }
+  },
+  "load_mode_typed_probe_protocol_treatment": {
+    "question": "Can the host persist typed diagnostic conclusions and force a validated candidate back into an allowed production script before further diagnostics, Solver, or verification?",
+    "frozen_request_path": "benchmarks/coding/plate_load_mode_change_request.json",
+    "frozen_request_sha256": "5b25b70562f89c4fe16896bd6e79b6c80ee3fe00c7b14804d4c4b64550f0af76",
+    "control": {
+      "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260825-v4-load-full-catalog-expanded-budget",
+      "probe_protocol_mode": "off",
+      "model_request_budget": 48,
+      "abaqus_call_budget": 18,
+      "solver_call_budget": 3,
+      "result": "2/3",
+      "gate_passed": true,
+      "summary_sha256": "e5e1e682084638aca6f35445ca15b45260169e90d48023a09ab17a9d67d11f37",
+      "gate_sha256": "e5e5c365c18e178cc9e923a5f45697e17ae824b8dddbd9eab80456ff89a7d90a"
+    },
+    "v1_diagnostic": {
+      "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260826-v1-load-full-catalog-typed-probe",
+      "probe_protocol_mode": "typed",
+      "result": "0/3",
+      "gate_passed": false,
+      "summary_sha256": "3bb8204acc6271bb3e44342291e14d2d4353a29ccbe8e3c0c46daae52edfcf08",
+      "gate_sha256": "526d7eeea223492e3641778937e06763d97830a59d41f45ee9b332bce6b760aa",
+      "attempts": [
+        {
+          "run_id": "plate-load-67bd06bf77",
+          "stage": "model_budget",
+          "model_requests": 48,
+          "abaqus_calls": 5,
+          "solver_calls": 0,
+          "conclusions": 4,
+          "validated": 1,
+          "adoptions": 1,
+          "defect": "The Agent was allowed to declare probe_surface.py as the production target; the adoption ran and failed without modifying build_model.py."
+        },
+        {
+          "run_id": "plate-load-c6ccecd1f5",
+          "stage": "infrastructure",
+          "error": "UnexpectedModelBehavior: run_command exceeded max retries",
+          "conclusions": 5,
+          "validated": 0,
+          "adoptions": 0
+        },
+        {
+          "run_id": "plate-load-5615661105",
+          "stage": "model_budget",
+          "model_requests": 48,
+          "abaqus_calls": 9,
+          "solver_calls": 0,
+          "conclusions": 8,
+          "validated": 0,
+          "adoptions": 0
+        }
+      ],
+      "interpretation": "The first protocol version proved JSONL persistence and runtime gating, but an unconstrained target and one extra model round-trip per standalone conclusion caused unacceptable overhead and invalid ownership. It is retained as rejected implementation evidence, not a capability result."
+    },
+    "v2_treatment": {
+      "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260826-v2-load-full-catalog-typed-probe",
+      "probe_protocol_mode": "typed",
+      "probe_protocol_version": "typed-probe-convergence-v2",
+      "allowed_production_targets": [
+        "build_model.py"
+      ],
+      "atomic_conclusion_on_next_runtime": true,
+      "model_request_budget": 48,
+      "abaqus_call_budget": 18,
+      "solver_call_budget": 3,
+      "result": "2/3",
+      "gate_passed": true,
+      "summary_sha256": "ce568becbbbada18918bf527d29b473e521eada9ca16dcce971b6ffd6d2c2b82",
+      "gate_sha256": "e5e5c365c18e178cc9e923a5f45697e17ae824b8dddbd9eab80456ff89a7d90a",
+      "attempts": [
+        {
+          "run_id": "plate-load-7342eca0c4",
+          "stage": "model_budget",
+          "model_requests": 48,
+          "input_tokens": 1038536,
+          "output_tokens": 39402,
+          "tool_calls": 46,
+          "abaqus_calls": 9,
+          "solver_calls": 0,
+          "probe_conclusions": 7,
+          "probe_statuses": {
+            "validated": 0,
+            "rejected": 0,
+            "inconclusive": 7
+          },
+          "probe_results_sha256": "f28a6ded3b5cf726842f3daf5bfbeb16351cd371ea32de76e75b7e839a235e72",
+          "outcome_sha256": "894388a018e784403d069f299a7f3966e35cb06e0df27b6fecce09df13bf98a9"
+        },
+        {
+          "run_id": "plate-load-e264be9d2b",
+          "status": "passed",
+          "model_requests": 16,
+          "input_tokens": 232550,
+          "output_tokens": 10688,
+          "tool_calls": 16,
+          "abaqus_calls": 3,
+          "solver_calls": 1,
+          "probe_conclusions": 0,
+          "outcome_sha256": "763af197b295166139c59d3824f37786a685ec851a7d3ec9b2683a1e84ff991d"
+        },
+        {
+          "run_id": "plate-load-6be28a343a",
+          "status": "passed",
+          "model_requests": 11,
+          "input_tokens": 149349,
+          "output_tokens": 11322,
+          "tool_calls": 15,
+          "abaqus_calls": 3,
+          "solver_calls": 1,
+          "probe_conclusions": 0,
+          "outcome_sha256": "568f7f691de08d04b0f93373be7c57de25c39d919bef7e8522ed08077b46ae93"
+        }
+      ]
+    },
+    "final9_verified_note_treatment": {
+      "question": "Does one licensed, region-scoped runtime note close the repeated Set-versus-Surface candidate-generation gap without adding a task recipe?",
+      "runtime_observation": {
+        "path": "benchmarks/api_catalog/abaqus_surface_traction_region_runtime_observation.json",
+        "sha256": "c8e9fd17055974e1f9838a062d6a21510527b2637e9a5c88e8d0c3deef7dbe15",
+        "licensed_result": "1/1",
+        "set_region": "rejected",
+        "side_aware_surface_region": "accepted"
+      },
+      "runtime_note": {
+        "note_id": "runtime:2024:Model.SurfaceTraction:side-aware-region",
+        "qualified_name": "Model.SurfaceTraction",
+        "applies_to_parameters": [
+          "region"
+        ],
+        "verified": true,
+        "runtime_notes_sha256": "935a92973203fb1cfee4f828727b1d75126ebee3237cd8030d6a9f57487ac881"
+      },
+      "catalog": {
+        "path": "var/api-catalog/abaqus-2024-final9",
+        "card_count": 5481,
+        "conflict_count": 48,
+        "cards_sha256": "3e3294808dc180df2d13ce5183095ebb6ecc47998f6313c96398af25c564255b",
+        "deterministic_benchmark": "13/13"
+      },
+      "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260826-v3-load-full-catalog-final9-note",
+      "probe_protocol_version": "typed-probe-convergence-v2",
+      "model_request_budget": 48,
+      "abaqus_call_budget": 18,
+      "solver_call_budget": 3,
+      "result": "2/3",
+      "gate_passed": true,
+      "summary_sha256": "2237b5e3f80bf5353048a00e06b16ee28f8025495d2e3c44d424cc23b82ba122",
+      "gate_sha256": "e5e5c365c18e178cc9e923a5f45697e17ae824b8dddbd9eab80456ff89a7d90a",
+      "behavioral_adoption": {
+        "note_delivered": "3/3",
+        "production_scripts_using_assembly_surface": "3/3",
+        "production_scripts_using_plain_set_region": "0/3"
+      },
+      "attempts": [
+        {
+          "run_id": "plate-load-38d980f05d",
+          "stage": "infrastructure",
+          "error": "UnexpectedModelBehavior: run_command exceeded max retries",
+          "task_started": true,
+          "note_delivered": true,
+          "assembly_surface_adopted": true,
+          "next_independent_failure": "directionVector was initially supplied as three floats instead of two points",
+          "history_sha256": "9b8d87aa63824775405c3ecf941f54df026d6544d0f0f8725419b72af11cc9ea"
+        },
+        {
+          "run_id": "plate-load-297ea632c9",
+          "status": "passed",
+          "model_requests": 17,
+          "input_tokens": 252557,
+          "output_tokens": 14207,
+          "tool_calls": 18,
+          "abaqus_calls": 3,
+          "solver_calls": 1,
+          "note_delivered": true,
+          "assembly_surface_adopted": true,
+          "outcome_sha256": "4c28a727f49b79860b1d071a1bc774d4adda7a5082df313c14f7db47b1da212f"
+        },
+        {
+          "run_id": "plate-load-551f82bed5",
+          "status": "passed",
+          "model_requests": 22,
+          "input_tokens": 301917,
+          "output_tokens": 17740,
+          "tool_calls": 21,
+          "abaqus_calls": 4,
+          "solver_calls": 1,
+          "note_delivered": true,
+          "assembly_surface_adopted": true,
+          "outcome_sha256": "e2ee53d613dff90c73358e1d2e28f295a966e4fdc951c816faa8b6ebf1f314b7"
+        }
+      ],
+      "interpretation": {
+        "observed_change": "The scoped note was delivered and adopted in all three attempts. The final8 typed-probe failure kept region=Assembly.Set, whereas every final9 script created an Assembly.Surface before SurfaceTraction.",
+        "bounded_claim": "The note closes the observed region candidate-generation gap, but the end-to-end gate remained 2/3. The remaining failed attempt reached a separate directionVector error and then ended on tool infrastructure, so no stable success-rate improvement is claimed.",
+        "knowledge_boundary": "The note contains only a consumer-specific Region binding and side-selection caveat. It does not provide magnitude, direction, physical side, a complete model, or automatic cross-run learning."
+      }
+    },
+    "final9_parameter_lookup_treatment": {
+      "question": "Can the immutable method cards expose a compact Method.parameter contract so the Agent can resolve one argument without receiving unrelated runtime notes or being blocked by prior method-card deduplication?",
+      "implementation_boundary": {
+        "catalog_artifact_changed": false,
+        "resolver_change": "Exact full or short method prefixes may be followed by one case-sensitive parameter name. A found parameter returns only its signature variants, official descriptions, imports, release alignment, and runtime notes whose scope is empty or matches that parameter.",
+        "deduplication_change": "Full method cards and (card_id, parameter_name) contracts have independent returned sets; aliases for the same parameter remain duplicate.",
+        "surface_traction_specific_content_added": false
+      },
+      "catalog": {
+        "path": "var/api-catalog/abaqus-2024-final9",
+        "card_count": 5481,
+        "conflict_count": 48,
+        "cards_sha256": "3e3294808dc180df2d13ce5183095ebb6ecc47998f6313c96398af25c564255b",
+        "deterministic_benchmark": "16/16"
+      },
+      "frozen_runtime": {
+        "source_run_id": "eval-2cf5159c427e",
+        "source_request_sha256": "29c928fdf7fddf1eddaf12eec016ee00644eda934b555dc7ec0b9676e0bc16d1",
+        "source_outcome_sha256": "0e7e33f5a6131bd7c5eda5503303bf9266560bc5db8cf8a9f37fec6d0ef01d60",
+        "source_verification_sha256": "8d88741cdbb69151578c742b9c94e2cc40424e94b3b2edc1041a7fff6b26f22a",
+        "skill_sha256": "5dffe84954008bec534179a85d97d448a1ad9647716cd3f8f33c5f02528bf374",
+        "model_gateway": "opencode-go",
+        "model": "deepseek-v4-flash",
+        "prompt_version": "plate-model-change-suite-v2",
+        "probe_protocol_version": "typed-probe-convergence-v2"
+      },
+      "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260827-v1-load-final9-parameter-lookup",
+      "model_request_budget": 48,
+      "api_lookup_call_budget": 3,
+      "abaqus_call_budget": 18,
+      "solver_call_budget": 3,
+      "result": "2/3",
+      "gate_passed": true,
+      "summary_sha256": "137425d141eeb32bf07e59d0dc4be9e4ef261f0edc884e1d2af5aba08492534e",
+      "gate_sha256": "e5e5c365c18e178cc9e923a5f45697e17ae824b8dddbd9eab80456ff89a7d90a",
+      "behavioral_adoption": {
+        "direction_vector_parameter_found": "3/3",
+        "direction_vector_payload_excluded_region_note": "3/3",
+        "region_parameter_found": "1/3",
+        "region_parameter_delivered_scoped_note": "1/1",
+        "production_scripts_using_two_point_direction_vector": "3/3",
+        "production_scripts_using_assembly_surface": "3/3",
+        "direction_vector_runtime_binding_errors": "0/3"
+      },
+      "attempts": [
+        {
+          "run_id": "plate-load-b52aced094",
+          "status": "passed",
+          "model_requests": 15,
+          "input_tokens": 232745,
+          "output_tokens": 5801,
+          "tool_calls": 19,
+          "abaqus_calls": 4,
+          "solver_calls": 1,
+          "api_queries": [
+            "Model.SurfaceTraction",
+            "Assembly.Surface",
+            "Model.SurfaceTraction.directionVector"
+          ],
+          "outcome_sha256": "7d6b939c3b00250ef5e40a1230767a2e692a6a7b7c47517b8895a13ea89a9fe8",
+          "history_sha256": "ef4c23eedaf9d69edc4c865d5c28e4bcb8119578d42c8c6b16878714fc5901c2",
+          "api_lookups_sha256": "3756a7785642685b2c982fd9eb720ab165e8ede85189fd72d35bed1096b9cbfa"
+        },
+        {
+          "run_id": "plate-load-4404c69f49",
+          "status": "passed",
+          "model_requests": 14,
+          "input_tokens": 194075,
+          "output_tokens": 13699,
+          "tool_calls": 15,
+          "abaqus_calls": 3,
+          "solver_calls": 1,
+          "api_queries": [
+            "Model.SurfaceTraction",
+            "Model.SurfaceTraction.directionVector"
+          ],
+          "outcome_sha256": "71c13415ec481dd12e5c1a436e23834a3104c817f410e54e3275d19e2aa89cd9",
+          "history_sha256": "c811eeb1b03fffa5add3d5ebf2a506d26c7e3610fe21a92333d18dc62a39a0d7",
+          "api_lookups_sha256": "c34640e58b72730a2104811aceec0bd808e56e3f918d3202a4ba5dc77cde5481"
+        },
+        {
+          "run_id": "plate-load-af312a70e6",
+          "status": "failed",
+          "failure_stage": "model_budget",
+          "model_requests": 48,
+          "input_tokens": 1178448,
+          "output_tokens": 30534,
+          "tool_calls": 57,
+          "abaqus_calls": 7,
+          "solver_calls": 1,
+          "api_queries": [
+            "Model.SurfaceTraction.directionVector",
+            "Model.SurfaceTraction.region",
+            "Model.Surface",
+            "Assembly.Surface",
+            "Model.SurfaceTraction"
+          ],
+          "first_verifier_failure": "The generated TRVEC had the correct magnitude and +X direction but follower=true because follower=OFF was omitted.",
+          "convergence_failure": "The verifier returned one aggregate traction-contract message. The Agent misattributed it to localized INP encoding, attempted to launch Abaqus through generic run_command via Python subprocess, added an unrelated deck sanitizer, and exhausted the model budget.",
+          "outcome_sha256": "3a4fe4b60e245e5106cd19f76bed05937acd3b8072be28c6c43ac049cd7ef07c",
+          "history_sha256": "bcf34f8fd5fcf97ca8658efa64f68a56bf5ecf980ec5c3093ddbdb07be8cfabb",
+          "api_lookups_sha256": "f3d54f8d1620380ea93ff90fb5aa0fa8a77ae75740c58306bb57d3c917597d68"
+        }
+      ],
+      "interpretation": {
+        "observed_change": "All three attempts used the new directionVector parameter contract and produced the documented two-point form. The separate directionVector runtime failure from the preceding final9 batch did not recur.",
+        "bounded_claim": "The resolver and scoped delivery behavior are exercised in Product-Agent traces, but the end-to-end gate remained 2/3. This small batch does not establish a stable success-rate improvement.",
+        "next_reproduced_engineering_gaps": "The remaining failure is now convergence and permission engineering: verifier feedback hid follower=true inside an aggregate traction failure, and generic run_command could invoke the Abaqus launcher indirectly through Python subprocess.",
+        "semantic_stop_rule": "Do not add another SurfaceTraction-specific Skill rule or runtime note from this batch. The official parameter descriptions were already present; subsequent work should improve feedback precision and execution-boundary enforcement."
+      }
+    },
+    "precise_feedback_no_shell_treatment": {
+      "question": "Can the host remove the reproduced run_command-to-Python-subprocess launcher path and return field-level traction differences without disrupting the valid load-mode path?",
+      "implementation": {
+        "coder_general_shell_policy": "coder-general-shell-disabled-v1",
+        "shell_enforcement": "The Harness Coder must contain exactly one Shell capability at composition time; the host removes it before Agent registration and fails closed if that dependency shape changes. No run_command or host-Python execution tool is exposed.",
+        "verifier_contract": "LoadModeVerification now carries a strict traction_contract object with record count, type, magnitude, raw/normalized direction, follower, surface declaration, per-field pass flags, and actionable findings.",
+        "scope_boundary": "This closes the reproduced general-shell tool path. Agent-authored Abaqus Python remains ordinary code in a trusted local workflow, so this is not an OS sandbox or hostile-code isolation claim."
+      },
+      "control": {
+        "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260827-v1-load-final9-parameter-lookup",
+        "result": "2/3",
+        "summary_sha256": "137425d141eeb32bf07e59d0dc4be9e4ef261f0edc884e1d2af5aba08492534e",
+        "failed_run_id": "plate-load-af312a70e6",
+        "failure_stage": "model_budget",
+        "reproduced_gaps": [
+          "The aggregate verifier message hid that every traction field except follower was correct.",
+          "The registered run_command tool allowed Python subprocess to invoke the Abaqus launcher outside the typed runtime budget and evidence path."
+        ]
+      },
+      "actual_failure_artifact_replay": {
+        "source_run_id": "plate-load-af312a70e6",
+        "inp_sha256": "89c884746dfcb9da717ad03dd6bad419d904b19e1ff5848e43e822daa1b2fff7",
+        "oracle_results_sha256": "f6207539ffe917dac2cf0784476d2a289bdbdbe97e6958a77192441c0d084cf5",
+        "agent_results_sha256": "fa6ec1b4c48bb5c229b1ca82f3f0d3fc14270c3f07235d371ee32bd667c84075",
+        "structured_result": {
+          "record_count": 1,
+          "load_type_actual": "TRVEC",
+          "load_type_passed": true,
+          "magnitude_actual": 210.0,
+          "magnitude_passed": true,
+          "direction_actual": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "direction_passed": true,
+          "follower_actual": true,
+          "follower_passed": false,
+          "surface_name_actual": "LoadRight",
+          "surface_declared": true
+        },
+        "finding": "traction follower mismatch: expected false (non-follower), got true; set follower=OFF so the INP emits *DSLOAD, follower=NO",
+        "boundary": "This is an offline replay of the prior licensed INP and oracle output through the new deterministic verifier; it did not rerun the old Agent trajectory."
+      },
+      "run_root": "D:/abaqus-runs/plate-model-change-suite-go-flash-20260827-v2-load-final9-precise-feedback-no-shell",
+      "frozen_runtime": {
+        "source_run_id": "eval-2cf5159c427e",
+        "source_request_sha256": "29c928fdf7fddf1eddaf12eec016ee00644eda934b555dc7ec0b9676e0bc16d1",
+        "source_outcome_sha256": "0e7e33f5a6131bd7c5eda5503303bf9266560bc5db8cf8a9f37fec6d0ef01d60",
+        "source_verification_sha256": "8d88741cdbb69151578c742b9c94e2cc40424e94b3b2edc1041a7fff6b26f22a",
+        "skill_sha256": "5dffe84954008bec534179a85d97d448a1ad9647716cd3f8f33c5f02528bf374",
+        "catalog_cards_sha256": "3e3294808dc180df2d13ce5183095ebb6ecc47998f6313c96398af25c564255b",
+        "model_gateway": "opencode-go",
+        "model": "deepseek-v4-flash",
+        "prompt_version": "plate-model-change-suite-v2",
+        "probe_protocol_version": "typed-probe-convergence-v2"
+      },
+      "model_request_budget": 48,
+      "api_lookup_call_budget": 3,
+      "abaqus_call_budget": 18,
+      "solver_call_budget": 3,
+      "result": "3/3",
+      "gate_passed": true,
+      "summary_sha256": "d8630635d568b478b9c6f32923f20091dc8f693ea79db3010ae74a0deb3f52a9",
+      "gate_sha256": "2dfd5d7f4cf465894f22eedf5369661de151dd9d1a45140833b4ef3239aa52a5",
+      "execution_boundary_observation": {
+        "run_command_registered": false,
+        "run_command_tool_calls": "0/3",
+        "subprocess_mentions_in_history": "0/3",
+        "all_attempts_used_only_typed_abaqus_runtime_tools": true
+      },
+      "attempts": [
+        {
+          "run_id": "plate-load-4f24b8f19d",
+          "status": "passed",
+          "model_requests": 16,
+          "input_tokens": 225850,
+          "output_tokens": 9935,
+          "tool_calls": 19,
+          "abaqus_calls": 3,
+          "solver_calls": 1,
+          "outcome_sha256": "c5271b8d9ce1d55156de110156981166594ce626d0f9139ba7b8138d15ca061e",
+          "history_sha256": "74f79d0387c1086c9883155d6457e12f2a501d4d1e24f3a09d1de7cb7202368a",
+          "api_lookups_sha256": "3756a7785642685b2c982fd9eb720ab165e8ede85189fd72d35bed1096b9cbfa"
+        },
+        {
+          "run_id": "plate-load-4edddfc940",
+          "status": "passed",
+          "model_requests": 10,
+          "input_tokens": 132371,
+          "output_tokens": 11804,
+          "tool_calls": 13,
+          "abaqus_calls": 3,
+          "solver_calls": 1,
+          "outcome_sha256": "1d6b0e824adc2e85a9a7132f7484d48b814d732c54efeb2b165366f0d57b6f6a",
+          "history_sha256": "2f83945f1cedd51a774a733a2c6b0edc453a7604b91dc9b8cd1ec5782685862b",
+          "api_lookups_sha256": "2e224fa6832a1d03904d3001ece988385c28455e7201f00f0f2007604c1e32d6"
+        },
+        {
+          "run_id": "plate-load-016049f817",
+          "status": "passed",
+          "model_requests": 11,
+          "input_tokens": 141406,
+          "output_tokens": 15097,
+          "tool_calls": 13,
+          "abaqus_calls": 3,
+          "solver_calls": 1,
+          "outcome_sha256": "e4d66e298a33d226e1c80115a6e64d66fc7b9666079359dbfa4584ea5d5f828e",
+          "history_sha256": "10b891d1d4656a8e79c6df647184daa78839034f72e1a697755ad6f5e4d3cbe8",
+          "api_lookups_sha256": "3756a7785642685b2c982fd9eb720ab165e8ede85189fd72d35bed1096b9cbfa"
+        }
+      ],
+      "interpretation": {
+        "normal_path_result": "All three Product-Agent attempts passed with exactly three Abaqus calls and one Solver call, so removing the general Shell did not block this valid workflow.",
+        "feedback_result": "The new batch did not produce a verifier failure, so it does not demonstrate Product-Agent adoption of field-level feedback. The prior actual failure artifact replay and deterministic tests prove the new follower-specific diagnosis.",
+        "causal_limit": "The observed gate changed from 2/3 to 3/3, but each arm has only three stochastic attempts and the treatment changes both feedback and tool exposure. No stable success-rate or causal uplift is claimed.",
+        "permission_claim": "The reproduced run_command-to-subprocess path is absent from the Agent tool schema. This is an application tool-boundary claim, not an OS sandbox claim."
+      }
+    },
+    "deterministic_contract_evidence": {
+      "test": "tests/test_coding_agent.py::test_typed_probe_result_can_be_adopted_atomically_on_production_run",
+      "result": "passed",
+      "verified_behavior": "A diagnostic freezes the allowed target hash; an attached validated conclusion is persisted, the changed build_model.py production run is accepted, an adoption trace is appended, and the unresolved gate clears."
+    },
+    "interpretation": {
+      "observed_change": "v2 restored the same 2/3 gate as the no-protocol high-budget control and did not interfere with two direct production successes. The failing attempt produced seven typed inconclusive conclusions but never supplied a validated candidate.",
+      "bounded_claim": "The protocol's strict state, persistence, target ownership, atomic adoption path, and normal-path non-interference are verified. This Product-Agent batch does not demonstrate a task-success or convergence benefit because no v2 attempt exercised validated adoption.",
+      "default": "The protocol remains explicit and off by default. Probe traces are run evidence only and are not automatically promoted into Skill, Catalog, or cross-run Memory."
+    }
+  },
+  "center_hole_host_metric_treatment": {
+    "question": "Can the Agent change only the model while the host independently owns hole topology and stress-concentration acceptance?",
+    "frozen_request_path": "benchmarks/coding/plate_hole_change_request_v2.json",
+    "frozen_request_sha256": "fe95466b6e57ee2f2ec13ee6a61628a4488903a852bd81304bfc89c10b47c85e",
+    "goal_sha256": "1c07a1ec04dce0a87faabf5d3e621dfe9b76c02f74842ccf51e6e3f56f1b022a",
+    "responsibility_contract": {
+      "agent_may_change": [
+        "build_model.py"
+      ],
+      "agent_must_preserve": [
+        "extract_results.py"
+      ],
+      "agent_results_fields": [
+        "right_mean_u1",
+        "mean_s11",
+        "left_sum_rf1"
+      ],
+      "host_only_checks": [
+        "centered radius-3 hole topology",
+        "hole boundary discretization",
+        "mesh area and CPS4R envelope",
+        "far-field and hole-boundary S11 stress concentration",
+        "original material, step, boundary, output, equilibrium, and result contracts"
+      ]
+    },
+    "deterministic_reference": {
+      "result": "1/1",
+      "licensed_test": "tests/test_abaqus2024_plate_change_integration.py",
+      "extractor_preserved": true
+    },
+    "formal_result": {
+      "api_catalog_mode": "off",
+      "run_root": "D:/abaqus-runs/plate-hole-change-go-flash-20260825-v6-host-metrics",
+      "result": "1/3",
+      "gate_passed": false,
+      "summary_sha256": "4c8382e12b79968ff8c659d18a2e407d3021bda0549c5af12581665ea8d2c8c8",
+      "gate_sha256": "b6eb15e58f0b9e1ceac5af1beea76104786161677dbbda47f03d69f83ddf3a5a",
+      "attempts": [
+        {
+          "run_id": "plate-hole-fc539ae483",
+          "stage": "infrastructure",
+          "error": "CodingRunInfrastructureError: ModelAPIError: Request timed out",
+          "history_items": 9,
+          "abaqus_calls": 0,
+          "history_sha256": "756975b8e86f5de6dfbb1f761ffa931203cf508f788312ea7c5a12da3941b55d"
+        },
+        {
+          "run_id": "plate-hole-83997d6fb9",
+          "stage": "infrastructure",
+          "error": "CodingRunInfrastructureError: ModelAPIError: Request timed out",
+          "history_items": 5,
+          "abaqus_calls": 0,
+          "history_sha256": "97b0b714b006bf1f34f7bde75c1b6d7c7556b5b8b44f0f5a1de0472ce3baa850"
+        },
+        {
+          "run_id": "plate-hole-5bb0e3a1ac",
+          "status": "passed",
+          "model_requests": 26,
+          "input_tokens": 554757,
+          "output_tokens": 12830,
+          "tool_calls": 26,
+          "abaqus_calls": 9,
+          "solver_calls": 2,
+          "wall_time_seconds": 439.66815769998357,
+          "extractor_preserved": true,
+          "build_model_patch_sha256": "5afdf603e49be45ddffe0beb6819e3ca5418bef743f377e74797180088fa3929",
+          "extract_results_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "outcome_sha256": "33140ada1975466b3bf1004cb064639dda21adad92a0e4ee4656a3661444e532",
+          "verification_sha256": "f407535823b96841666a64e900dc36c4907043746437e60366b953bb34fa95b5",
+          "measurements": {
+            "element_type_counts": {
+              "CPS4R": 145
+            },
+            "hole_boundary_edge_count": 28,
+            "mesh_area": 1971.9623602966021,
+            "hole_min_node_radius": 2.999998921254355,
+            "far_field_mean_s11": 199.77156591415405,
+            "hole_boundary_max_s11": 375.93609619140625,
+            "right_mean_u1": 0.10000000149011612,
+            "left_sum_rf1": -3995.308807373047,
+            "right_sum_rf1": 3995.3087768554688
+          },
+          "verifier_feedback_repair": "The first complete model split the left and right boundaries at y=10 but constrained only one segment. The hidden verifier rejected the boundary regression; the Agent then selected both segments, reran CAE, Solver, and the unchanged extractor, and passed."
+        }
+      ]
+    },
+    "interpretation": {
+      "observed_change": "The only task-complete attempt passed every new and regression check without changing the extractor; the hidden oracle detected a real partition-induced boundary regression and drove one minimal repair.",
+      "bounded_claim": "The responsibility split is validated, but the end-to-end Product-Agent gate remains failed at 1/3 because two Go requests timed out before any Abaqus call.",
+      "no_skill_recipe": "No hole model, meshing template, ODB container recipe, or case-specific answer was added to the Skill or Catalog."
+    }
+  },
+  "overall_result": {
+    "load_mode_full_catalog_gate": "passed 2/3",
+    "load_mode_expanded_budget_gate": "passed 2/3; no gate improvement over the 36/12 control",
+    "load_mode_typed_probe_protocol_gate": "v1 failed 0/3; corrected v2 passed 2/3 with no Product-Agent validated adoption",
+    "load_mode_final9_verified_note_gate": "passed 2/3; region note delivered and adopted 3/3, no gate improvement",
+    "load_mode_final9_parameter_lookup_gate": "passed 2/3; directionVector parameter lookup and valid two-point adoption 3/3, no gate improvement",
+    "load_mode_precise_feedback_no_shell_gate": "passed 3/3; no general Shell exposed or attempted, field-level feedback verified by prior-artifact replay but not exercised in the new Product batch",
+    "center_hole_v2_gate": "failed 1/3",
+    "suite_status": "not rerun as a combined three-case batch; existing dual_material 2/3 remains valid, while center_hole v2 still fails its own repeated gate",
+    "engineering_conclusion": "Use exact method or parameter evidence only when the frozen task demonstrates an API-binding gap, keep product acceptance metrics outside Agent-editable artifacts, and expose larger budgets explicitly rather than treating them as a convergence mechanism. The parameter treatment moved the remaining load failure away from directionVector binding and exposed verifier-feedback and generic-command enforcement gaps. The follow-up removed general Shell registration, replayed the actual failed artifact into a follower-specific finding, and passed 3/3 without exercising feedback repair; it does not justify more SurfaceTraction-specific knowledge, a causal success uplift, an OS-sandbox claim, or any broad CAE/stable-rate claim."
+  }
+}

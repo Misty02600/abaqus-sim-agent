@@ -1,0 +1,167 @@
+{
+  "schema_version": "1",
+  "experiment": "plate-clarification-proceed-retry10-timeout60-followup",
+  "date": "2026-08-30",
+  "question": "Does replacing the prior three 120-second HTTP retries with ten 60-second retries let the two clarification-policy proceed cases pass their licensed 2/3 plate-oracle gates?",
+  "frozen_configuration": {
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "http_retries": 10,
+    "http_timeout_seconds": 60.0,
+    "prompt_version": "plate-tension-v4",
+    "clarification_policy_version": "physics-materiality-clarification-v1",
+    "api_catalog_mode": "automatic_verified_only",
+    "api_catalog": "var/api-catalog/abaqus-2024-final15",
+    "api_catalog_cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "runtime": "Abaqus 2024",
+    "repeat_per_case": 3,
+    "required_passes_per_case": 2,
+    "eval_retry": false
+  },
+  "raw_evidence": [
+    {
+      "case_id": "plate-element-derived",
+      "run_root": "D:/abaqus-runs/plate-element-derived-20260830-retry10-v2",
+      "evaluation_summary_sha256": "f0d57ad38ff19c0c329358a23368bb0ddaef904bce03ae5ca09f58e4584c62d5",
+      "gate_sha256": "fa19c670a4aea48b6ae56de52abbe1e9f10f04967b77194d7157a83452c534e2"
+    },
+    {
+      "case_id": "plate-explicit-compatible-element",
+      "run_root": "D:/abaqus-runs/plate-explicit-compatible-element-20260830-retry10-v2",
+      "evaluation_summary_sha256": "d4605706ecf7d95d37e6438b62116415f1d1f59f569b4560af67615821bd9dd7",
+      "gate_sha256": "fa19c670a4aea48b6ae56de52abbe1e9f10f04967b77194d7157a83452c534e2"
+    }
+  ],
+  "results": [
+    {
+      "case_id": "plate-element-derived",
+      "attempts": 3,
+      "passes": 1,
+      "required_passes": 2,
+      "gate_passed": false,
+      "attempts_detail": [
+        {
+          "ordinal": 1,
+          "run_id": "eval-0f6ab36cfd1d",
+          "status": "infrastructure_error",
+          "error": "ModelAPIError: Request timed out.",
+          "workspace_files": 0,
+          "history_sha256": "7ff5aa22a8f2f756aa47d040faa1a3da4bec0f8082c32e03a0955a7fef97a8bb"
+        },
+        {
+          "ordinal": 2,
+          "run_id": "eval-61a574f081a9",
+          "status": "completed",
+          "oracle_passed": true,
+          "model_requests": 24,
+          "tool_calls": 26,
+          "api_lookup_calls": 0,
+          "abaqus_calls": 7,
+          "solver_calls": 2,
+          "wall_time_seconds": 198.9458966000093,
+          "history_sha256": "3b87d7a1e547346d6a996915738b097afaf14f4e6c086ded926d16d47c164add"
+        },
+        {
+          "ordinal": 3,
+          "run_id": "eval-ece15873c59d",
+          "status": "infrastructure_error",
+          "error": "ModelAPIError: Request timed out.",
+          "workspace_files": 0,
+          "history_sha256": "7d2c2aeb34f806ff8e293a1daa9eeec2bc6841ba499e82f123ccc6401643c7ca"
+        }
+      ],
+      "observed_behavior": "The passing attempt proceeded without asking the user for an element code, but initially selected CPS4 rather than the only element in the currently verified plate profile. Its first ODB contained 80 CPS4 elements and all U/S/RF checks passed. Host verification rejected the unsupported element choice; the Coder changed the ElemType to CPS4R, and the final ODB contained 80 CPS4R elements with all checks passing."
+    },
+    {
+      "case_id": "plate-explicit-compatible-element",
+      "attempts": 3,
+      "passes": 1,
+      "required_passes": 2,
+      "gate_passed": false,
+      "attempts_detail": [
+        {
+          "ordinal": 1,
+          "run_id": "eval-c8cd0aab64aa",
+          "status": "failed",
+          "failure_stage": "runtime_budget",
+          "model_requests": 30,
+          "tool_calls": 29,
+          "api_lookup_calls": 2,
+          "abaqus_calls": 9,
+          "solver_calls": 2,
+          "wall_time_seconds": 394.0053484000091,
+          "history_sha256": "5efbdc1c021d9e7cc5de72a61d4c9e83a3099f0bcc4e967f3aa3e8c46d990c31"
+        },
+        {
+          "ordinal": 2,
+          "run_id": "eval-a060497a5830",
+          "status": "completed",
+          "oracle_passed": true,
+          "model_requests": 24,
+          "tool_calls": 28,
+          "api_lookup_calls": 0,
+          "abaqus_calls": 9,
+          "solver_calls": 1,
+          "wall_time_seconds": 682.3508810000203,
+          "history_sha256": "dc175f3cbb0b62ef58303cf0b6098d2d5b5dcbbfef5b34deccc1c50ffa7a2b68"
+        },
+        {
+          "ordinal": 3,
+          "run_id": "eval-12b4a1e93d52",
+          "status": "infrastructure_error",
+          "error": "ModelAPIError: Request timed out.",
+          "workspace_files": 0,
+          "history_sha256": "d9a134454412823aca321146799da1994bf4b067dd854ee2d3cd37b4d1de71a8"
+        }
+      ],
+      "observed_behavior": "The passing attempt preserved CPS4R and passed the complete plate oracle, but used all 9 allowed Abaqus calls after multiple diagnostic scripts. Another attempt reached two Solver calls but exhausted the Abaqus budget with an incomplete results.json."
+    }
+  ],
+  "physics_result": {
+    "passing_closed_loop_attempts": 2,
+    "element_type_counts": {
+      "CPS4R": 80
+    },
+    "right_mean_u1": 0.10000000149011612,
+    "mean_s11": 210.0,
+    "left_sum_rf1": -4200.0,
+    "oracle_findings": []
+  },
+  "comparison_with_retry3_timeout120": {
+    "previous_evidence": "plate_clarification_policy_evaluation_20260830.json",
+    "plate_element_derived": {
+      "previous": "0/3, three infrastructure timeouts",
+      "followup": "1/3, one complete oracle pass and two infrastructure timeouts"
+    },
+    "plate_explicit_compatible_element": {
+      "previous": "1/3, one complete oracle pass and two infrastructure timeouts",
+      "followup": "1/3, one complete oracle pass, one runtime-budget failure, and one infrastructure timeout"
+    },
+    "descriptive_shift": "Across the two batches, observed complete passes increased from one to two, while infrastructure timeouts decreased from five to three and one failure moved into a runtime-budget probe/repair loop.",
+    "causal_boundary": "The batches are separate stochastic samples and change both timeout length and retry count. They do not isolate retry count as the cause of the additional element-derived pass or the failure-mode shift."
+  },
+  "decision": {
+    "status": "Neither retry10/timeout60 proceed case passed its formal 2/3 gate.",
+    "claims_allowed": [
+      "One observed licensed run proceeded without asking the user for an element code and ultimately converged to the support-profile CPS4R requirement after host feedback.",
+      "Long request waits sometimes recovered within the larger retry window, but recovered requests did not always converge to a valid terminal artifact.",
+      "The explicit-compatible batch retained its prior 1/3 gate result and exposed a new runtime-budget failure mode.",
+      "Transport failure, runtime-budget failure, and host-oracle success remained separately observable."
+    ],
+    "claims_forbidden": [
+      "Retry10 makes either proceed case stable.",
+      "The additional retries caused the element-derived pass.",
+      "The passing run selected CPS4R correctly on its first attempt, or autonomous element selection has passed the formal Product smoke gate.",
+      "A recovered model request implies an efficient or successful CodingRun."
+    ]
+  },
+  "limits": [
+    "Each case has only three stochastic attempts.",
+    "The OpenAI SDK does not emit a checked-in per-network-attempt trace here, so late response recovery is inferred from elapsed state timestamps rather than counted retry events.",
+    "The retry10 profile can spend roughly eleven minutes plus backoff on one logical request and remains bounded only by the existing CodingRun wall budget.",
+    "The passing explicit-element run used the full 9-call Abaqus budget, so it is correctness evidence rather than convergence-efficiency evidence.",
+    "No eval-level task retry, model fallback, manual code edit, or repeat-until-pass was used."
+  ]
+}

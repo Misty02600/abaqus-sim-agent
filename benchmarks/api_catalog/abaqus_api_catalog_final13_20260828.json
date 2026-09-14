@@ -1,0 +1,141 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-exact-api-catalog-final13",
+  "date": "2026-08-28",
+  "supersedes_for_new_experiments": "var/api-catalog/abaqus-2024-final12",
+  "question": "Can high-cost Abaqus 2024 API boundaries be converted into narrow licensed runtime notes while pruning notes that add context without Product benefit?",
+  "trace_basis": {
+    "history_files_scanned": 162,
+    "typed_runtime_calls_scanned": 745,
+    "typed_call_breakdown": {
+      "run_cae_script": 501,
+      "run_solver_job": 83,
+      "run_abaqus_python": 161
+    },
+    "selected_families": [
+      "Region/Set/GeomSequence wrapper dispatch",
+      "Assembly.Surface side-aware native geometry containers",
+      "BeamSection construction versus beam-orientation assignment",
+      "B31 output-variable companion fields",
+      "ODB FieldOutput/FieldValue and node-array ownership"
+    ]
+  },
+  "licensed_evidence": {
+    "api_consumer": {
+      "path": "benchmarks/api_catalog/abaqus_2024_api_consumer_observations.json",
+      "sha256": "a96b7017b154e80006922dec7f9f4d42ff0241d0765bcc48353d6835344c83a5",
+      "fixture": "tests/fixtures/abaqus2024/api_consumer_probe.py",
+      "fixture_sha256": "0cf8decfd95c7f8aa40f49ba0a92faee5ee41e48c22a8a28a58cd31bf2dc8a43",
+      "licensed_result": "1/1"
+    },
+    "odb_behavior": {
+      "path": "benchmarks/api_catalog/abaqus_2024_odb_behavior_observations.json",
+      "sha256": "cd8a265b5b10f0acc398ed0045bb6a4abd3fa20f34c6047a9c04ddec9e72b933",
+      "fixture": "tests/fixtures/abaqus2024/odb_behavior_probe.py",
+      "fixture_sha256": "817f0b306e578611dd406dd6b4063de1d670a2dcb9bf4a8390c2fb7d9647ae3d",
+      "licensed_result": "1/1"
+    },
+    "region_consumer": {
+      "path": "benchmarks/api_catalog/abaqus_2024_region_consumer_observations.json",
+      "sha256": "e5acb10e645d0f5116ade1e313be27062896b115cd746f85834a8c3a2890a79b",
+      "fixture": "tests/fixtures/abaqus2024/api_region_consumer_probe.py",
+      "fixture_sha256": "c8f0df23f87964377eafe5ce544e31dfd942275152a4ea612daf17114d72724c",
+      "licensed_result": "1/1"
+    },
+    "combined_latest_run": {
+      "root": "D:/abaqus-runs/api-cards-final13-licensed-combined-20260828-v1",
+      "result": "3/3"
+    }
+  },
+  "verified_notes_added_since_final9": [
+    "runtime:2024:Part.setElementType:region-dispatch",
+    "runtime:2024:Part.assignBeamSectionOrientation:region-binding",
+    "runtime:2024:Assembly.Surface:side1-edge-container",
+    "runtime:2024:Model.FieldOutputRequest:b31-companion-fields",
+    "runtime:2024:FieldOutput.getSubset:field-value-boundaries",
+    "runtime:2024:openOdb:node-array-nesting",
+    "runtime:2024:Assembly.Surface:side1-face-container",
+    "runtime:2024:Assembly.Surface:side2-edge-container",
+    "runtime:2024:Assembly.Surface:side2-face-container",
+    "runtime:2024:Model.BeamSection:orientation-boundary"
+  ],
+  "note_policy": {
+    "runtime_notes_total": 16,
+    "new_notes_since_final9": 10,
+    "new_notes_since_final12": 3,
+    "new_final13_parameters": {
+      "Assembly.Surface edge note": ["side2Edges"],
+      "Assembly.Surface face note": ["side2Faces"],
+      "Model.BeamSection boundary note": ["orientation", "geometricType"]
+    },
+    "pruned_after_product_evaluation": [
+      {
+        "note_id": "runtime:2024:Part.SectionAssignment:direct-region",
+        "reason": "Duplicated normal Skill/official guidance and used 6 rather than 4 CAE calls in the 3-attempt automatic/off comparison."
+      },
+      {
+        "note_id": "runtime:2024:Model.DisplacementBC:region-object",
+        "reason": "No Product treatment evidence and the assembly-owned normal path was already stated in Skill."
+      },
+      {
+        "note_id": "runtime:2024:Model.ConcentratedForce:region-object",
+        "reason": "No Product treatment evidence and the assembly-owned normal path was already stated in Skill."
+      }
+    ],
+    "physical_non_goals": "No note chooses surface side, beam n1 direction, profile dimensions, material region, load magnitude, output acceptance value, or model topology."
+  },
+  "automatic_routing": {
+    "implementation": "src/abaqus_sim_agent/coding/api_traceback.py",
+    "exact_odb_routes": {
+      "FieldOutput.position missing": "FieldOutput.getSubset",
+      "FieldValue.componentLabels missing": "FieldOutput.getSubset",
+      "FieldValue Sequence slicing OdbError": "FieldOutput.getSubset",
+      "OdbMeshNodeArray label/findAt missing": "openOdb"
+    },
+    "ast_routes": [
+      "localized or English feature-creation failure with one unambiguous Assembly.Surface call",
+      "localized TypeError keyword error on Model.BeamSection.orientation or geometricType",
+      "invalid FieldOutputRequest variables with one unambiguous call"
+    ],
+    "boundary": "AbaqusException/TypeError routing requires a workspace traceback frame and a single AST-resolved call. Parameter-scoped notes must intersect the explicit failing parameter or call keywords. Generic solver errors and ambiguous frames remain unrouted."
+  },
+  "catalog_merge_correction": {
+    "public_query": "Part.generateMesh",
+    "before": "ambiguous sibling-mixin cards",
+    "after": "one public-overload card preserving MeshEditPart and MeshPart signatures",
+    "constructor_control": "Spot.__init__ remains ambiguous"
+  },
+  "immutable_catalog": {
+    "path": "var/api-catalog/abaqus-2024-final13",
+    "manifest_sha256": "21696fe8368d9c53bee554f969bb2c628d9f28bb495682efe53d8a2e5b44a506",
+    "cards_sha256": "f01e90a53107691c1e5abf82f219b1607a5294fb07e1ff069302a8ff284a2d87",
+    "card_count": 5480,
+    "conflict_count": 48,
+    "source_digests": {
+      "official_scripting_reference": "12f12f146b7d6241085fa981358a9b8b0e64f8e4d852a4a5ac4fa205dacbb313",
+      "abqpy_source": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504",
+      "runtime_notes": "2805dfaa0970e50d4312be1a78346995ad4c08e7315a64561d0d37b03b76b2c7"
+    }
+  },
+  "deterministic_evaluation": {
+    "benchmark": "benchmarks/api_catalog/abaqus_api_queries.jsonl",
+    "benchmark_sha256": "17f485a14d71850b994021d21e75dbd10ff0d1247e2c6351572bcc455ddca3d8",
+    "result": "benchmarks/api_catalog/abaqus_api_evaluation_final13.json",
+    "result_sha256": "62b392dbae0aa6f423a2077ba6ce21b3d69b7808f1ca25effaa03511983412c7",
+    "pass_count": 27,
+    "total": 27
+  },
+  "product_evidence": {
+    "path": "benchmarks/coding/api_repair_final13_evaluation_20260828.json",
+    "headline": "Assembly.Set showed strong small-sample long-tail reduction; Assembly.Surface showed mixed positive evidence; setElementType and BeamSection were correct fallbacks without demonstrated call savings; redundant SectionAssignment/BC/load notes were pruned."
+  },
+  "interpretation": {
+    "capability": "final13 retains ten new licensed behavior notes over final9, including both SIDE1/SIDE2 Surface containers, BeamSection/orientation separation, B31 output semantics, ODB ownership, and cross-dimensional setElementType dispatch.",
+    "limits": [
+      "The official semantic source is 2026 FD02 while runtime observations are explicitly bounded to licensed Abaqus 2024.",
+      "Product treatment batches are small and use one model/gateway; they do not establish a universal success rate.",
+      "Automatic notes are reactive and do not prevent proactive probes or source-level repairs before a runtime error.",
+      "A verified API note does not replace host verification, physics intent, or convergence control."
+    ]
+  }
+}

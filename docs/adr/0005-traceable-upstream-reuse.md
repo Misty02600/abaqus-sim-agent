@@ -78,7 +78,6 @@ MIT License；仓库中的案例语料还可能包含第三方 Abaqus benchmark 
 
 ## 相关文档
 
-- [AbaqusAgent 源码设计分析](../scratch/abaqusagent-source-design-analysis.md)
 - [Agent 与首个完整实现范围](../architecture/agent-implementation-scope.md)
 - [项目架构](../architecture/overview.md)
 - [上游 AbaqusAgent](https://github.com/LIRAM-LIN/AbaqusAgent)

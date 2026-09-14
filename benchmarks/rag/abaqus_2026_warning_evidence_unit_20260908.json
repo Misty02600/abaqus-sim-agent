@@ -1,0 +1,38 @@
+{
+  "manifest": {
+    "version": "warning-evidence-unit-v1",
+    "stage": "posthoc bounded delivery simulation, not retrieval or Agent acceptance",
+    "seed_rank": 3,
+    "seed_record": "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-027",
+    "source_unit": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+    "source_sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+    "unit_store_sha256": "c1461853693238ff0a113bb87e02e2cb1d5a10984686c728599ca35957657a75",
+    "prior_result_sha256": "53bd3353c21a4f70eef134baf016b49875fc2f1eb67254ecc1bb098f548d20ab",
+    "script_sha256": "e6f5bc3a4795d841826dbd483ddc88b95cdad46abcae14092ed24d79a50e214e",
+    "tokenizer_sha256": "da0e79933b9ed51798a3ae27893d3c5fa4a201126cef75586296df9b4d2c62a0",
+    "body_token_limit": 384,
+    "total_body_character_limit": 12000,
+    "required_evidence": [
+      "paragraph1: adjustment mechanism, conditional minimum-increment exceptions and post-timepoint behavior",
+      "paragraph2: extra increments and possible performance consequence"
+    ],
+    "selection": "Keep the prior four slots/ranking/query; replace only the one known section seed by the already-existing, unique, source-verified contiguous same-scope prose unit. No automatic mapper or global expansion policy implemented."
+  },
+  "body_tokens": 236,
+  "body_characters": 1165,
+  "before_total_body_characters": 1839,
+  "after_total_body_characters": 2627,
+  "complete_paragraphs_before": 1,
+  "complete_paragraphs_after": 2,
+  "paragraphs_verified_against_original_dom": 2,
+  "source_scope": "same exact h3 section, direct adjacent p siblings; no crossing to Explicit section",
+  "other_three_slots_unchanged": true,
+  "ranking_recomputed": false,
+  "index_changed": false,
+  "limits": [
+    "This establishes complete delivery of the two source paragraphs, not automatic section matching or retrieval success.",
+    "The source section explains output timing and exceptions; it does not prove that the user's job converged or that the warning is harmless.",
+    "One exposed query, no LLM/Abaqus calls and no product rollout."
+  ],
+  "evidence_sha256": "a5493b4aedd467b4bdfc78468053f74c606d08c11b80bbe50f2dc11458bf8703"
+}

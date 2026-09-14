@@ -1,0 +1,96 @@
+{
+  "profile": "doc-evidence-result-v1",
+  "backend_profile": "rag-evidence-baseline-v1",
+  "date": "2026-09-12",
+  "scope": "Runtime evidence engineering equivalence; not retrieval quality improvement or Agent benefit",
+  "engineering_replay": {
+    "directory": "var/audits/runtime-evidence-v1/replay-2",
+    "summary_sha256": "5e2b10d01e155e9d0aadb8b572cd53b6be06a0374f5828a0f64d2574c47f0f61",
+    "requests_sha256": "272d794a33cf3238f3554ce9318693ab68d3262cc4abd95b60973a231204c594",
+    "common_dependency_snapshot_sha256": "02bc96091aa72130c03fc7295e65127030f750d2f6243a05c87fe664d6a8e56e",
+    "cases": 16,
+    "passed": 16,
+    "body_source_order_relations_equal": 16,
+    "raw_ranking_and_scores_equal": 16,
+    "legacy_budget_equal": 16,
+    "status_mapping_equal": 16,
+    "found": 12,
+    "not_found": 3,
+    "rejected": 1,
+    "unavailable": 0,
+    "worker_timeouts": 0,
+    "hard_query_seconds": 60,
+    "elapsed_seconds": 653.984000000171,
+    "per_query_seconds_min": 35.5629999998491,
+    "per_query_seconds_max": 45.6090000001714,
+    "per_query_seconds_mean": 40.8651250000257,
+    "worker_load_seconds_mean": 23.8035000000673,
+    "search_seconds_mean": 3.7793749999546,
+    "worker_validation_seconds_mean": 8.28712500000256,
+    "max_serialized_evidence_proxy_tokens": 2846,
+    "serialized_evidence_proxy_token_limit": 4000,
+    "remaining_private_index_copy_directories": 0,
+    "retained_receipt_and_log_bytes": 4734449
+  },
+  "deterministic_tests": {
+    "test_file": "tests/test_runtime_evidence_service.py",
+    "passed": 43,
+    "covers": [
+      "strict discriminated result and no partial evidence on failure",
+      "no-candidate, missing-release, scope-filtered and budget-rejected reasons",
+      "source, index, model and relation dependency drift",
+      "parent source, body, XPath, applicability, release and relation revalidation",
+      "malformed or mismatched receipt, model load failures and no retry",
+      "exact worker tree cleanup on timeout, caller cancellation and hard parent death",
+      "unrelated control process survives and CodingRun lock is not inherited",
+      "query remains data, provider environment credentials not inherited",
+      "private copies are not hardlinks and source bytes remain bound",
+      "legacy symbol anchors resolve to actual source XPath"
+    ]
+  },
+  "regression": {
+    "pytest_passed": 1024,
+    "licensed_tests_skipped": 27,
+    "pytest_seconds": 79.63,
+    "basedpyright_errors": 0,
+    "ruff_rule_check": "passed",
+    "changed_python_format_files_passed": 9,
+    "unrelated_existing_format_failures": 4
+  },
+  "previous_attempts": [
+    {
+      "directory": "var/audits/runtime-evidence-v1/prototype-1",
+      "status": "rejected_integrity",
+      "observation": "Opening original Chroma storage changed candidate chroma.sqlite3 bytes; no evidence delivered. Subsequent implementation opens independent private copies."
+    },
+    {
+      "directory": "var/audits/runtime-evidence-v1/prototype-2",
+      "status": "one_case_passed",
+      "elapsed_seconds": 41.29700000002049
+    },
+    {
+      "directory": "var/audits/runtime-evidence-v1/replay-1",
+      "status": "incomplete_host_stopped",
+      "observation": "Stopped after inspecting legacy symbol metadata; resolve the real source anchor instead of assuming source_xpath exists. Not counted as a complete replay."
+    }
+  ],
+  "preservation": {
+    "prior_baseline_and_bge_sealed_files_checked": 28,
+    "prior_baseline_and_bge_sealed_files_unchanged": 28,
+    "default_coder_path_changed": false,
+    "plan_0003_implemented": false,
+    "generative_model_calls": 0,
+    "abaqus_calls": 0,
+    "algorithms_or_fixed_content_bindings_changed": false
+  },
+  "limitations": [
+    "found is not relevance, sufficiency, semantic support or physical acceptance",
+    "Abaqus 2026 FD02 documentation is not Abaqus 2024 compatibility evidence",
+    "Windows lifecycle isolation, not an OS sandbox or hostile-tenant boundary",
+    "Per-query cold start and approximately 0.84 GB private copying are expensive; no persistent worker pool",
+    "Allowed source URLs narrow the existing Top4 delivery; no new recall or replacement from lower candidates",
+    "Source indexes must be quiescent; a nonempty SQLite WAL is rejected",
+    "Old prototype private copies remain retained after cleanup was blocked; accepted replay copies were cleaned normally",
+    "Four unrelated pre-existing whole-repository format-check failures remain unchanged"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "query": {
+    "kind": "question",
+    "question": "Does Abaqus/Standard impose a built-in system of physical units, or must model inputs use a consistent unit system chosen by the analyst?",
+    "observed_context": "Documentation question only. Do not choose numerical model parameters.",
+    "product": "Abaqus/Standard",
+    "source_release": null
+  },
+  "constraints_origin": "user_confirmed",
+  "allowed_sources": [],
+  "observed_context_origin": "agent_provided_unverified"
+}

@@ -1,0 +1,208 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-verified-b31-bending-change-v1",
+  "date": "2026-08-27",
+  "question": "Can the Agent change an independently verified axial B31 project into a cantilever bending case, update both the model and ODB result contract, and pass host-owned new-requirement and regression checks?",
+  "frozen_request": {
+    "path": "benchmarks/coding/beam_bending_change_request.json",
+    "sha256": "9913cdca4ac88ad41d756379829f9cdc33a74be358f92892d815a2d96585f99d",
+    "prompt_version": "beam-bending-change-v1",
+    "requested_change": "Remove right-end U1=0.1 mm and apply one 1000 N concentrated load in global +Y while preserving the left Encastre and the verified 100 mm, 10x10, 20-element B31 model.",
+    "result_contract": [
+      "right_mean_u2",
+      "left_sum_rf2",
+      "left_sum_rm3",
+      "max_section_moment"
+    ],
+    "expected_physics_not_in_prompt": "right U2=1.9190475940704346 mm, left RF2=-1000 N, left RM3=-100000 N*mm, maximum integration-point section moment magnitude=97500 N*mm"
+  },
+  "verified_source": {
+    "run_root": "D:/abaqus-runs/beam-b31-go-flash-final9-no-shell-parameter-20260827-v1/beam-1f4ef88fd5dc",
+    "run_id": "beam-1f4ef88fd5dc",
+    "request_sha256": "c1b7fd12dae6217de36a8f3f0a79c21c203412c7cdb5dc6687ac676cc4cddf60",
+    "outcome_sha256": "f94930d74427f43a7dc359dd34f5a854b88ad6f31d12ea31d4ff4bad3234107c",
+    "verification_sha256": "fdb373435de7f9b315a26a812fc1ea1ead4b0bad408ca2510886145dca156321",
+    "artifact_sha256": {
+      "build_model.py": "7bb1d4a5f62954958de72b756950bf6b16fcb3bfe37a101a03bc1d80d363616a",
+      "extract_results.py": "6c805c07ca3b75a442cd6d232d37416564fa2afea08f9dbaba932dcc8a7aa120",
+      "beam_tension.cae": "d3791034064142490db00c9c2f95017c8154fe359b7e18536c2c0d8d4f50c8f8",
+      "beam_tension.inp": "abaf86cc5ce40af3dbc5b2eea6f0b928bec6b6f15d12968571260a0d833a7837",
+      "beam_tension.odb": "5412f463149dfc46925438669762689b8a58184e12ec25c45199dc7e07ee3e95",
+      "results.json": "827c35e4b22cd62bff042bc3b7e4ff7505ef34e4fda8c2ad8576bde90f1c2022"
+    },
+    "seeded_files": [
+      "build_model.py",
+      "extract_results.py"
+    ],
+    "loader_result": "request, completed outcome, passing verification, no clarifications, and all six fresh artifact hashes revalidated before copying"
+  },
+  "responsibility_contract": {
+    "agent_must_change": [
+      "build_model.py",
+      "extract_results.py"
+    ],
+    "host_owns": [
+      "verified source acceptance",
+      "initial/final snapshots and both source patches",
+      "CAE/Solver/extraction provenance",
+      "one left Encastre plus one right-end DOF2 CLOAD and no other load contract",
+      "wire geometry, 10x10 section, material, mesh chain, orientation, step and output regression",
+      "U2, RF2, RM3, SF/SM coverage, zero axial response, and results.json-to-ODB agreement"
+    ]
+  },
+  "deterministic_reference": {
+    "result": "1/1",
+    "run_root": "D:/abaqus-runs/beam-bending-change-reference-20260827-v2/test_abaqus2024_beam_bending_c0",
+    "tip_load_y": 1000.0,
+    "right_mean_u2": 1.9190475940704346,
+    "left_sum_rf2": -1000.0,
+    "left_sum_rm3": -100000.0,
+    "max_section_shear": 1000.0,
+    "max_section_moment": 97500.0,
+    "max_abs_axial_u1": 3.961425442569022e-18,
+    "left_sum_rf1": 1.1368683772161603e-12,
+    "mean_sf1": -2.148503597254603e-13,
+    "build_script_changed": true,
+    "extractor_changed": true,
+    "execution_provenance_passed": true,
+    "fixture_build_sha256": "0f12b093f5fdf389ea213aee865613974bb33dc9f54b141a77b4e2ec4ad97cb3",
+    "fixture_extractor_sha256": "4c160466680a5ede4508532d2195e40047c68ebb4f1f3482b473633f9777b3dc",
+    "verification_sha256": "35aa709a056e649958ed1beeaab11a1706fdf12ad9efe24f8d96d57a8e85851f",
+    "oracle_request_sha256": "8fff1ee554cacf0049e30908abac919bf9cd9f80b7ffb313d64212259ba30206",
+    "oracle_results_sha256": "7bf3f8476a5191602ddfa51930fd9216b87f9f8a6ea89923d103c2b36d8a2e73",
+    "inp_sha256": "52c3aca6deb92752ee81d284936306f03685e8bfa26b0694655a0f65ab31435f",
+    "odb_sha256": "94fdaf59375bc2274a0891eeae67dae06ecc50dbcfef3466deb2862fddf1a884",
+    "results_sha256": "c5f81b1cd1442bdf1b813b914400cceff402d645120141ab2484c441e89ba9d6"
+  },
+  "product_agent_batch": {
+    "run_root": "D:/abaqus-runs/beam-bending-change-go-flash-off-20260827-v1",
+    "model": "opencode-go/deepseek-v4-flash",
+    "http_retries": 3,
+    "skill_sha256": "5dffe84954008bec534179a85d97d448a1ad9647716cd3f8f33c5f02528bf374",
+    "api_catalog_mode": "off",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "coder_general_shell_policy": "coder-general-shell-disabled-v1",
+    "model_request_budget": 36,
+    "abaqus_call_budget": 12,
+    "solver_call_budget": 3,
+    "repeat": 3,
+    "required_passes": 2,
+    "result": "3/3",
+    "gate_passed": true,
+    "summary_sha256": "2ea05860530bbd81da545a4cc06d955473f58f9334dc0efdfdd1d5bc4f4031b3",
+    "gate_sha256": "b8a11330829855c2646f8fc98a64b2103f811ac26fe4aca4cecf4e6a395235bd",
+    "aggregate": {
+      "model_requests": 74,
+      "input_tokens": 1272232,
+      "output_tokens": 52271,
+      "tool_calls": 92,
+      "api_lookup_calls": 0,
+      "concept_lookup_calls": 0,
+      "abaqus_calls": 23,
+      "solver_calls": 3
+    },
+    "behavioral_adoption": {
+      "build_model_changed": "3/3",
+      "extract_results_changed": "3/3",
+      "three_stage_provenance_passed": "3/3",
+      "tip_load_and_input_contract_passed": "3/3",
+      "bending_response_and_regressions_passed": "3/3",
+      "results_json_matches_host_odb_oracle": "3/3",
+      "run_command_tool_calls": "0/3",
+      "budget_exhaustion_finalizations": "0/3",
+      "verifier_feedback_repairs": "0/3"
+    },
+    "execution_cost_observation": {
+      "minimum_required_typed_stages_per_attempt": 3,
+      "observed_abaqus_calls": [
+        8,
+        9,
+        6
+      ],
+      "calls_above_minimum": [
+        5,
+        6,
+        3
+      ],
+      "interpretation": "All attempts converged, but each used extra ODB diagnostics or reruns before requesting verification; the batch proves completion, not low-cost convergence."
+    },
+    "attempts": [
+      {
+        "attempt": 1,
+        "run_id": "beam-bending-e831aa5568",
+        "status": "passed",
+        "model_requests": 26,
+        "input_tokens": 452746,
+        "output_tokens": 13528,
+        "tool_calls": 32,
+        "abaqus_calls": 8,
+        "solver_calls": 1,
+        "build_patch_bytes": 1445,
+        "extract_patch_bytes": 5403,
+        "right_mean_u2": 1.9190475940704346,
+        "left_sum_rf2": -1000.0,
+        "left_sum_rm3": -100000.0,
+        "max_section_moment": 97500.0,
+        "outcome_sha256": "c1e632183e1b33ee81ff60eab09e1ada97955cc3d76b2590035e4a1b591b5d3c",
+        "history_sha256": "dde3c46a4692971fb7975d82152ea891fc7bfefafaa0b35f21ebd28749ad9260",
+        "verification_sha256": "ccc947f685cda9d9837898b5f856c58c0e7af8355f519b800c873ac3ecf11769",
+        "workspace_diff_sha256": "de793a98050842bc9d039c28618e550331b1ef3d6d79df68b1c6b9ac393789fb"
+      },
+      {
+        "attempt": 2,
+        "run_id": "beam-bending-9ec3d478fe",
+        "status": "passed",
+        "model_requests": 30,
+        "input_tokens": 561722,
+        "output_tokens": 24533,
+        "tool_calls": 36,
+        "abaqus_calls": 9,
+        "solver_calls": 1,
+        "build_patch_bytes": 1557,
+        "extract_patch_bytes": 4997,
+        "right_mean_u2": 1.9190475940704346,
+        "left_sum_rf2": -1000.0,
+        "left_sum_rm3": -100000.0,
+        "max_section_moment": 97500.0,
+        "outcome_sha256": "c05c81ea3e6de916f79350fdb44feffe5358d591caac0dfa8d96c70a6443b969",
+        "history_sha256": "a8d3c768252374349f67c7a1f9b3bfcdf765aa20e1fe4bb073870e731e43f117",
+        "verification_sha256": "ccc947f685cda9d9837898b5f856c58c0e7af8355f519b800c873ac3ecf11769",
+        "workspace_diff_sha256": "27fbc9d31ba46a544b7447b16cc6759be4a9ed5a3b1a497e0a5382973e558810"
+      },
+      {
+        "attempt": 3,
+        "run_id": "beam-bending-959b639f68",
+        "status": "passed",
+        "model_requests": 18,
+        "input_tokens": 257764,
+        "output_tokens": 14210,
+        "tool_calls": 24,
+        "abaqus_calls": 6,
+        "solver_calls": 1,
+        "build_patch_bytes": 1440,
+        "extract_patch_bytes": 4497,
+        "right_mean_u2": 1.9190475940704346,
+        "left_sum_rf2": -1000.0,
+        "left_sum_rm3": -100000.0,
+        "max_section_moment": 97500.0,
+        "outcome_sha256": "d7ae08a80634c838b447302130a3f7a2160d98d9af91bdd5b5cc3536c6f83186",
+        "history_sha256": "0b53b007bafae630d1b2bf07bfae72e0d15cbdc27504799ca80335ec9cf2c7ec",
+        "verification_sha256": "ccc947f685cda9d9837898b5f856c58c0e7af8355f519b800c873ac3ecf11769",
+        "workspace_diff_sha256": "76e663e5fe36f077d829b51cd0c364364c413ef1e1d5538bf23c771539767420"
+      }
+    ]
+  },
+  "interpretation": {
+    "capability_result": "The Agent repeatedly changed an existing verified B31 project from axial displacement control to transverse tip loading, updated the consumer-facing ODB result contract, regenerated all three-stage artifacts, and passed both new bending requirements and source regressions.",
+    "engineering_value": "This exercises impact analysis across model authoring and result extraction, verified-seed loading, explicit source responsibility, side-effect provenance, strict INP load/BC acceptance, hidden ODB physics checks, and repeated evaluation without retrieval assistance.",
+    "retrieval_result": "Catalog and Concept retrieval were off with zero lookup budget. No retrieval benefit or requirement is claimed for this case.",
+    "limits": [
+      "The task is one linear cantilever B31 load-mode change from one verified source; it does not establish arbitrary beam editing, distributed loading, geometric or material nonlinearity, contact, or generic CAE modification.",
+      "Three attempts are a smoke gate, not a stable success-rate estimate.",
+      "The three successes required 8, 9, and 6 Abaqus calls rather than the three-stage minimum, so diagnostic convergence remains a measurable cost problem.",
+      "All attempts passed on their first host verification request, so this batch does not exercise verifier-feedback repair or budget-exhaustion finalization.",
+      "The deterministic reference and Product attempts share the same host acceptance contract, but the deterministic fixture is not evidence that the source loader itself ran in that integration test."
+    ]
+  }
+}

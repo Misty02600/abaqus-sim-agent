@@ -1,132 +1,85 @@
-# Abaqus Job 生命周期
+# 当前 Abaqus Solver 生命周期
 
-## 为什么单独建模
+## 当前实现是什么
 
-LangGraph checkpoint 可以恢复业务控制流，但无法与 Abaqus 进程组成 exactly-once 事务。Job Service 因此
-拥有独立、持久的 ledger，并独占 submit、poll、cancel、timeout 和 reconcile；`SimulationExecutor`
-只负责把确定性命令映射到 Mock 或真实 Abaqus。
-
-当前 `JobPhase` 和 Mock 只覆盖基础状态；下面是目标 FSM。
-
-## 状态机
+首轮没有持久 Job Service 或 Job ledger。`run_solver_job` 是一次有界、同步的本机工具调用：校验工作区内
+INP 和 ASCII Job 名，先写 Harness started tool effect 与输入 hash/Job 标识，启动 Abaqus/Standard，等待
+进程结束或 timeout，保存日志、完整 execution journal 和 artifact delta，再把证据交给 Coder 与宿主
+verifier。
 
 ```mermaid
 stateDiagram-v2
-    [*] --> RESERVED: unique idempotency key
-    RESERVED --> SUBMITTING
-    RESERVED --> CANCELLED: cancelled before external submit
-    SUBMITTING --> QUEUED: external handle attached
-    SUBMITTING --> RUNNING: fast start observed
-    SUBMITTING --> SUCCEEDED: fast completion observed
-    SUBMITTING --> FAILED: failure observed
-    SUBMITTING --> UNKNOWN: external truth cannot be proven
-
-    QUEUED --> RUNNING
-    QUEUED --> SUCCEEDED
-    QUEUED --> FAILED
-    RUNNING --> SUCCEEDED
-    RUNNING --> FAILED
-
-    QUEUED --> CANCEL_REQUESTED
-    RUNNING --> CANCEL_REQUESTED
-    SUBMITTING --> CANCEL_REQUESTED
-    CANCEL_REQUESTED --> CANCELLED: stop confirmed
-    CANCEL_REQUESTED --> TIMED_OUT: deadline cancellation and stop confirmed
-    CANCEL_REQUESTED --> SUCCEEDED: completion won the race
-    CANCEL_REQUESTED --> FAILED: solver failure won the race
-    CANCEL_REQUESTED --> UNKNOWN: stop cannot be confirmed
-
-    UNKNOWN --> QUEUED: reconcile evidence
-    UNKNOWN --> RUNNING: reconcile evidence
-    UNKNOWN --> SUCCEEDED: reconcile evidence
-    UNKNOWN --> FAILED: reconcile evidence
-    UNKNOWN --> CANCELLED: reconcile evidence
-    UNKNOWN --> TIMED_OUT: reconcile evidence
-
-    SUCCEEDED --> [*]
-    FAILED --> [*]
-    CANCELLED --> [*]
-    TIMED_OUT --> [*]
+    [*] --> VALIDATING
+    VALIDATING --> SPAWNING: INP 与 Job name 合法
+    VALIDATING --> REJECTED: 路径/文件/名称错误
+    SPAWNING --> WAITING: child PID 已创建
+    WAITING --> PROCESS_EXITED: 子进程结束
+    WAITING --> TERMINATING: timeout 或宿主 task cancellation
+    TERMINATING --> PROCESS_EXITED: 准确 PID 的进程树已终止
+    PROCESS_EXITED --> EVIDENCE_RECORDED: raw logs + artifact delta
+    EVIDENCE_RECORDED --> [*]
+    REJECTED --> [*]
 ```
 
-状态语义：
-
-- `RESERVED`：ledger 已用唯一幂等键占位，尚未开始跨越外部边界。
-- `SUBMITTING`：处于“数据库已知意图、Abaqus 是否已启动尚可能不确定”的非原子窗口。
-- `QUEUED`：已确认 Abaqus 接受 Job，但尚未观察为运行中。
-- `CANCEL_REQUESTED`：取消意图已记录；不能提前谎称进程已经停止。
-- `TIMED_OUT`：deadline 触发了取消，并且已经确认外部进程停止。
-- `UNKNOWN`：是否启动、是否停止或外部状态无法确认；它不是失败终态，禁止自动重提。
-- `SUCCEEDED`、`FAILED`、`CANCELLED`、`TIMED_OUT` 是不可回退终态。取消与完成竞争时，以真实观察到的
-  solver 终态为准，同时保留取消请求事件。
-
-## 幂等键与提交协议
-
-对以下稳定字段做 canonical JSON 后计算 SHA-256：
+命令形状为：
 
 ```text
-run_id
-spec_revision
-artifact_sha256
-executor_profile
-solver_configuration_digest
+D:\SIMULIA\Commands\abq2024.bat
+job=<ascii-name>
+input=<workspace-relative.inp>
+interactive
 ```
 
-键中不包含时间戳、随机数、数据库自增 ID 或外部 job name。数据库对 `jobs.idempotency_key` 建唯一约束；
-由该键派生的确定性 Abaqus job name 只用于外部查找与 attach，不代替唯一约束。
+runner 使用参数序列而不是拼接用户 shell 字符串；`cwd` 固定为 canonical workspace。
 
-`JobService.ensure_submitted()` 固定执行：
+## 分层成功语义
 
-1. 验证 approval 仍绑定当前 spec/plan revision、artifact digest、executor profile 和 solver config。
-2. 按幂等键 upsert/reserve Job ledger；唯一约束处理并发或节点重放。
-3. 已有可信 external handle 时直接返回同一个逻辑 Job。
-4. handle 缺失时，先按确定性 job name、隔离 workspace、PID/外部 ID 和状态文件查找已有 Job。
-5. 找到则 attach 并补写 handle；只有证据明确表明不存在时才提交。
-6. 持久化 handle、attempt 和观察状态，再让父图推进。
+`AbaqusExecutionResult.succeeded` 只表示没有 timeout 且进程 exit code 为 0。它不等于分析成功。真实本机
+集成中已观察到 CAE noGUI 脚本报错但进程仍返回 0。普通 CLI 还要求该 invocation 的最后一次 stage check
+没有 `Abaqus Error:`、Python traceback 或 Solver error diagnostic；固定 solver/physics eval 才继续检查：
 
-这提供的是“图重放不会主动制造重复 Job”，不是理论上的 exactly-once。
+- 本次 execution 确实是 solver invocation；
+- 目标 `.odb` 和 native 状态文件是本次生成或修改；
+- `.sta` 包含 Abaqus 成功完成标记；
+- ODB 能由独立 oracle 打开并包含预期 step、mesh 和结果。
 
-## 崩溃窗口
+这也是 `CodingRunOutcome` 只能由宿主 verifier 形成的原因。普通 CLI 记录
+`verification_scope=execution_evidence`；只有固定 eval 记录 `task_oracle`，两者不能互换。
 
-| 崩溃位置 | 恢复行为 |
-|---|---|
-| reserve 前 | 同一输入正常重做 reserve |
-| reserve 后、submit 前 | reconcile 后确认不存在，再以同一 key 提交 |
-| Abaqus 已启动、handle 未写回 | 按确定性 job name、workspace、PID 和 `.lck/.sta/.msg/.dat` attach；无法证明则 `UNKNOWN` |
-| handle 已写回、graph checkpoint 未完成 | 图节点重放从 ledger 返回同一 Job |
-| poll 中 | 恢复后重新读取 ledger 与外部状态，不依赖旧内存值 |
-| ODB 已提取、manifest 未写回 | 以稳定提取键和内容寻址写入，重复提取不覆盖已有 generation |
+## Timeout 与 task cancellation
 
-`reconcile` 的证据至少包括 ledger、external job ID/PID、确定性 job name、workspace 和 Abaqus 状态文件。
-矛盾或不足时进入 `UNKNOWN` 和人工接管，不能用“可能没启动”作为自动重提依据。
+Windows runner 为每次调用创建新的 process group。timeout 或宿主 async task 取消时，对准确的 spawned PID
+执行 `taskkill /PID <pid> /T /F`，随后收集能取得的 stdout/stderr。原始 bytes 写入 workspace 外 state；
+解码文本仅供诊断，UTF-8 失败时回退 CP936。
 
-## 取消与超时
+这能处理宿主仍存活时的有界调用，但没有以下保证：
 
-API 的取消操作只写持久 `cancel_requested` 命令并唤醒 run。父图读取命令后让 Job Service 按已登记的
-external ID/job name 定向取消，再进入 machine interrupt 等待实际停止。不得按模糊进程名批量 kill。
+- 宿主进程或机器崩溃后重新附着 solver；
+- 请求发出和外部进程启动之间的 exactly-once；
+- 持久 cancel intent、异步 poll、deadline reconcile；
+- `UNKNOWN` 状态和人工接管；
+- 多个 licensed worker 的队列、限流或调度。
 
-deadline 到达只触发取消请求；只有外部状态证明确认停止后，才根据原因写 `TIMED_OUT` 或 `CANCELLED`。
-若 solver 在取消过程中先完成，则写真实 `SUCCEEDED` 或 `FAILED`，并保留“曾请求取消”的事件。
+新进程可以恢复 CodingRun conversation 和已完成 execution evidence；若 Solver tool effect 只有 started 而
+没有 completed/failed，`--resume` 在任何模型请求前把 run 标为 `needs_reconcile`。这避免盲目重复提交，
+但不会判断外部 Job 实际是否启动或完成。因此当前仍不能把文件 evidence 或 Pydantic history 描述成
+durable Job 状态机。
 
-## Workspace 与 Artifact
+## 何时重新引入 Job Service
 
-```text
-var/
-├── workspaces/<run_id>/<revision>/<job_id>/   # 可变执行目录
-└── artifacts/sha256/<prefix>/<full_digest>    # 不可变 CAS
-```
+只有固定评测复现下列问题时，才为持久 Job Service、SQL ledger 或 DBOS/Temporal/LangGraph 提出新 ADR：
 
-workspace 由 Job Service/runner 拥有。完整 `.inp`、`.log`、`.msg`、`.sta`、`.dat`、`.odb`、提取结果和
-截图在稳定后通过“临时文件 → 流式 SHA-256 → 原子 rename”进入 CAS；正在追加的日志或未完成 ODB 不能
-直接登记成最终不可变 artifact。manifest 和 ledger 都持久化后才能清理 workspace；首版可以不自动清理，
-但必须支持显式 retention。
+- 求解时长要求 CLI 退出后继续运行；
+- 宿主崩溃导致重复提交或无法确认 Job 真相；
+- 真实消费者需要查询、取消、恢复或并发队列；
+- 多台 solver host 需要外部 handle、幂等键和 reconcile。
 
-主 Python 3.12 服务与 Abaqus 自带 Python 不共享包运行时。两边通过版本化 JSON command/spec、`.inp`、
-JSON/CSV 提取结果和 manifest 交换数据。用户文本不能拼接进 shell 字符串；正常情况使用 argv，Windows
-必须调用 `.bat` 时使用固定 wrapper 和 allowlist 参数。
+届时必须让外部 Abaqus Job 成为独立状态真相；workflow checkpoint 不能替代外部进程对账。ADR-0003 保留
+了此前方案的分析，但已由 ADR-0008 替代，不能作为当前已实现能力。
 
 ## 相关文档
 
-- [一次仿真 Run 的工作流](simulation-run.md)
-- [完整系统框架](../system-framework.md)
-- [ADR-0003：分离可恢复控制平面与 Abaqus 执行边界](../../adr/0003-durable-control-plane-and-execution-boundary.md)
+- [一次 CodingRun](simulation-run.md)
+- [当前系统框架](../system-framework.md)
+- [ADR-0008：首轮采用 Pydantic AI Harness 单 Coder](../../adr/0008-pydantic-ai-harness-abaqus-coding-run.md)
+- [ADR-0020：使用 Harness StepPersistence 续跑中断的 CodingRun](../../adr/0020-resume-coding-runs-with-harness-step-persistence.md)

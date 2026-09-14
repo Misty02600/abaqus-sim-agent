@@ -1,0 +1,122 @@
+{
+  "schema_version": "document-behavior-v2-preflight-v1",
+  "date": "2026-09-12",
+  "status": "passed_zero_external_calls",
+  "phase_b_executed": false,
+  "scope": "Post-cleanup reseal and calibrated-runner/grading wiring validation. No live model/provider connectivity check.",
+  "seal": {
+    "path": "var/audits/document-behavior-v2-preflight/phase-b-spec.json",
+    "sha256": "1a91e87852414ed54b699cf9b9bb53020643fa9336cff24eb828f937956bf322",
+    "bound_files": 138,
+    "execution_authorized": false
+  },
+  "budget": {
+    "trials": 24,
+    "max_model_requests": 288,
+    "http_retries": 0,
+    "http_timeout_seconds": 60,
+    "wall_seconds_per_trial": 360,
+    "total_trial_wall_seconds": 8640,
+    "abaqus_calls": 0,
+    "extra_response_token_limit": null
+  },
+  "source_binding_check": {
+    "binding": {
+      "mode": "bounded_v1",
+      "spec": {
+        "schema_version": "document-policy-spec-v1",
+        "candidate": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\rag-ingestion-fixes-v2",
+        "symbol_index": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\rag",
+        "scope_rules": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\benchmarks\\rag\\unified_candidate_scope_rules_v1.json",
+        "ranker_directory": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\models\\ms-marco-MiniLM-L6-v2\\233902d25c440f23af6f7d6e94d2946bac0bee0a",
+        "scope": {
+          "product": "Abaqus/Standard",
+          "source_release": null,
+          "allowed_sources": [],
+          "constraints_origin": "user_confirmed"
+        },
+        "host_needs": [],
+        "independent_operations": []
+      },
+      "evidence_binding": {
+        "profile": "rag-evidence-baseline-v1",
+        "snapshot_sha256": "02bc96091aa72130c03fc7295e65127030f750d2f6243a05c87fe664d6a8e56e",
+        "prepared_sha256": "fed06ace27237275abec5b1c29e973761093af0650fa21b0070da49dc3c28a0b",
+        "candidate_index_sha256": "a266e22ca3805f8fea7efbb3f25d87163b679d6006260102ce82c2c8ae7811eb",
+        "symbol_vector_sha256": "6a4d1d016d4371ddf0016ef6812853369a0225c3ce656fd8ab6c9c2af8c42896",
+        "ranker_acquisition_sha256": "b4787f727622d776e65cccc1ddf58b1753748dc662328104131874d7f64dbc17"
+      }
+    },
+    "active_bound_implementation_files": 14,
+    "evidence_ids": [
+      "c0cee566bb76c7f17644a9005c2715226ec5132f70b666bd040a43ab71ae6b50",
+      "6a6cc351556956924797ecf266f4812c9963d96a137b7806a45ca6ea5f8a17f9"
+    ],
+    "body_sha256": [
+      "438ba9e3b9b957a83e85a5507020f1514b63ed5c1597db693abf4394a925ac22",
+      "da5bfb798e844659260f19104b33c316e576f83a0e79392ecf4e887d525701ce"
+    ],
+    "source_integrity_verified": true,
+    "real_model_requests": 0,
+    "live_ranking_queries": 0,
+    "abaqus_calls": 0
+  },
+  "changes": [
+    "Calibrated runner requires a matching experiment seal and repetition 1..3 before credentials; compares actual model, budget, instructions, source and backend binding before first provider request.",
+    "Seal is revalidated before every case and after the batch; seal hash is also frozen against replacement.",
+    "Each trial records its repetition-scoped identity; HTTP attempt and response journals remain distinct.",
+    "Predeclared calibrated rubrics can be reviewed with strict host annotations and aggregated; no inference of semantic pass from host status.",
+    "Legacy post-hoc review remains supported; host timeout maps to wall budget; calibrated native output exhaustion remains a resource-limited trial, not an artificial evaluator-cap exclusion."
+  ],
+  "implementation": [
+    {
+      "path": "src/abaqus_sim_agent/evaluation/document_behavior_spec.py",
+      "sha256": "35392d7de93dbe504a4f6f1776cec2c1f845ed2b4b07a5b14c9b0cda90a3b271"
+    },
+    {
+      "path": "src/abaqus_sim_agent/evaluation/document_behavior_audit.py",
+      "sha256": "27a8468614a8373f12d2f40e082a0d680ab6147010df018627684d671c7e2f2f"
+    },
+    {
+      "path": "src/abaqus_sim_agent/evaluation/document_policy_behavior.py",
+      "sha256": "21761fba66e37e7adc16b465c40455022dc892e722416f21e628c4fc0d86acdb"
+    },
+    {
+      "path": "tests/test_document_behavior_profile.py",
+      "sha256": "cf536266eb61f3348387c04b81f39460597af1850fa568a562a8d5bb011021ce"
+    },
+    {
+      "path": "tests/test_behavior_measurement.py",
+      "sha256": "9376be0748545129d4983505ddbe78cfb1b3120774c6ddd72a12d06021a0b09b"
+    }
+  ],
+  "validation": {
+    "offline_pytest": {
+      "passed": 937,
+      "deselected_licensed": 27,
+      "seconds": 105.43
+    },
+    "mock_http_harness_cases": 8,
+    "mock_test_interpretation": "Real Coder/Harness and Go serialization with mocked HTTP and fixture document sources; intentionally failing decisions all remain non-passing, no semantic capability claim.",
+    "checks": [
+      "Missing or stale seal rejected before credential access.",
+      "Added/deleted implementation files invalidate seal.",
+      "Actual wire request has no evaluator-added max_tokens/max_completion_tokens; document tools present and run_command absent.",
+      "Calibrated batch outputs flow through predeclared host review with all HTTP counts and trial identities retained.",
+      "Real local RAG binding and both full official source paragraphs verified without ranking.",
+      "Existing legacy report raw SHA-256 unchanged and reconstructed JSON identical.",
+      "Ruff check/format and offline uv lock check passed."
+    ],
+    "legacy_report_sha256": "fbf818dba9829eb90e4e2e92c50191cbefe2d9e4f7fb0902e93a5571346768be"
+  },
+  "external_calls": {
+    "model": 0,
+    "ranking": 0,
+    "licensed_abaqus": 0
+  },
+  "remaining": [
+    "Obtain explicit approval before executing the 24-trial batch; preflight/seal does not grant execution authority.",
+    "Provider credentials/connectivity and model behavior are not validated by this zero-call preflight.",
+    "After actual trials, supply host semantic annotations using review_kind=predeclared_rubric_host_review; do not auto-grade language claims or replace failed trials."
+  ]
+}

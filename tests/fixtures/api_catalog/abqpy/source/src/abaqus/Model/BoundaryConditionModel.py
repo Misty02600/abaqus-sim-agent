@@ -1,0 +1,3 @@
+class BoundaryConditionModel:
+    def DisplacementBC(self, name: str, createStepName: str, region: Region):
+        ...

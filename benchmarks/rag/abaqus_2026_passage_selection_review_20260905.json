@@ -1,0 +1,58 @@
+{
+  "schema_version": "passage-selection-development-review-v1",
+  "review_status": "completed",
+  "review_method": "Primary assistant inspection of selected passage content and controlled ranking differences. Target-record probes are not exhaustive answer labels; this is not an independent human or model judge.",
+  "experiment_report": "benchmarks/rag/abaqus_2026_passage_selection_experiment_20260905.json",
+  "experiment_report_sha256": "d9b19f02ba8ce925f1b754f5f49406c6be570e96314088d50e5383f698d72a58",
+  "implementation_scope": "Two pure helpers in evaluation/passage_selection.py plus deterministic tests. No product tool, default ranking, source corpus, query formulation or index changed.",
+  "sample_scope": "Five previously observed development queries, replayed on both saved index versions; six fixed ranking profiles and an independent same-budget formatter comparison. No parameter search or Agent calls.",
+  "findings": [
+    {
+      "comparison": "A augmented versus B plain Dense with page diversity retained",
+      "result": "mixed",
+      "details": "Removing the exact prefix removes AT noise and restores the concrete STATIC Riks data-line passage formerly replaced by a keyword overview. It does not retrieve the missing warning explanation or Boundary Conditions passage. For the Riks main query it also drops the dedicated LPF output-variable card, so removal is not a pure evidence improvement."
+    },
+    {
+      "comparison": "B page-diverse Dense versus C raw passage Dense",
+      "result": "not_sufficient",
+      "details": "Simply allowing same-page passages and retaining raw Top-4 still cannot include relevant candidates at ranks 6 and 12. On the new Riks main query, two chunks of the same STATIC data-line section occupy two output slots. Removing early page collapse preserves candidates conceptually, but no adequate final passage selector has been established."
+    },
+    {
+      "comparison": "D raw BM25 passages",
+      "result": "observed_complement_with_remaining_limits",
+      "details": "The second warning query returns the main exact-time increment-adjustment body at rank 1 on both index versions. No other inspected missing-target record enters Top-4. This does not make the other returns useless: the new BC follow-up receives Proportional Loading context, and the first warning receives partial exact-time information from CONTROLS. Neither substitutes for the missing BC restriction or the complete qualified warning explanation."
+    },
+    {
+      "comparison": "E fixed passage RRF versus D BM25",
+      "result": "loses_the_single_source_answer",
+      "details": "For the new second warning query, the correct BM25 rank-1 record is absent from Dense Top-20. Its fusion score is 1/61 = 0.01639344262295082 and it ranks 7. Four generic increment-control passages jointly retrieved by both sources score approximately 0.03002, 0.02821, 0.02798 and 0.02765 and take Top-4. With k=60 and both source depths 20, even a record at rank 20 in both lists scores 2/80 = 0.025, above a record ranked first in only one list. This explains the observed loss without assuming a fusion-code bug.",
+      "limits": "This mechanism is specific to the fixed candidate depth and smoothing constant used here. It is not a general rejection of hybrid retrieval, and constants were not tuned on these five queries."
+    },
+    {
+      "comparison": "E passage RRF versus F page RRF on the same raw Top-20 pools",
+      "result": "neither_recovers_the_inspected_missing_targets",
+      "details": "Both fail to return the inspected missing-target records in Top-4 on this matrix. F is deliberately restricted to the same passage pools; it is not a replay of the legacy fetch-20-unique-pages RRF profile. Neither profile's zero target-probe count means it supplied no useful contextual information."
+    },
+    {
+      "comparison": "Current excerpt versus body-first excerpt at the same 600-character limit",
+      "result": "more_body_visible_but_not_complete_conditions",
+      "details": "The new exact-time target previously truncates before its However minimum-increment exception clause. Removing only the verified generated Document/Section prefix exposes the clause and more of its procedure list. The whole list and fallback behavior still do not fit. Riks Unstable Problems and Loads snippets also retain more explanatory body. Title, section path and source remain separate fields; no authoritative text or stored document is rewritten. This is an offline formatting result, not observed Agent adoption."
+    }
+  ],
+  "decisions": [
+    "Do not switch the default index or ranking policy based on this matrix.",
+    "Retain the tested passage-fusion and body-first helpers as evaluation-only code; they are not imported by the product tool path.",
+    "Body-first delivery is a supported local direction, but a fixed 600-character fragment is not a completeness guarantee.",
+    "Before product adoption, passage selection must preserve genuinely useful single-source evidence without allowing near-duplicate chunks to consume the response budget. This experiment did not implement or validate a content-aware reranker.",
+    "API member coverage and the BC query's upstream retrieval failure remain separate unresolved work; no source ingestion or query rewrite was performed."
+  ],
+  "verification": {
+    "new_helper_tests_passed": 14,
+    "targeted_tests_passed_including_helpers": 58,
+    "ruff": "passed for new helper and tests",
+    "basedpyright": "0 errors, 0 warnings for new helper and tests",
+    "original_index_and_product_implementation_hashes_unchanged": true,
+    "model_calls": 0,
+    "abaqus_calls": 0
+  }
+}

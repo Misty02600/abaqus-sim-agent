@@ -1,0 +1,14 @@
+{
+  "schema_version": "document-policy-spec-v1",
+  "candidate": "../../var/rag-ingestion-fixes-v2",
+  "symbol_index": "../../var/rag",
+  "scope_rules": "unified_candidate_scope_rules_v1.json",
+  "ranker_directory": "../../var/models/ms-marco-MiniLM-L6-v2/233902d25c440f23af6f7d6e94d2946bac0bee0a",
+  "scope": {
+    "product": "Abaqus/Standard",
+    "source_release": null,
+    "allowed_sources": [],
+    "constraints_origin": "user_confirmed"
+  },
+  "host_needs": []
+}

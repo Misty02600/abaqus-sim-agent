@@ -1,0 +1,53 @@
+{
+  "schema_version": "1",
+  "date": "2026-08-26",
+  "runtime": {
+    "product": "Abaqus/CAE",
+    "release": "2024",
+    "launcher": "D:/SIMULIA/Commands/abq2024.bat"
+  },
+  "reproduction": {
+    "fixture": "tests/fixtures/abaqus2024/surface_traction_region_probe.py",
+    "fixture_sha256": "c21c745f7aaf2d0924e62946e85414a9a6ad338f0bf48910c516bcca7bf1dcad",
+    "run_root": "D:/abaqus-runs/surface-traction-region-probe-reference-20260826-v2",
+    "licensed_test": "tests/test_abaqus2024_surface_traction_probe.py::test_abaqus2024_surface_traction_region_probe",
+    "result": "1/1",
+    "result_sha256": "93a4637c3662d21a53d9d6fc70f2523dc8331bcb3368f9bbccde7260cc359922"
+  },
+  "controlled_input": {
+    "model_type": "2D planar deformable shell",
+    "edge": "instance edge at x=100 mm",
+    "load_api": "Model.SurfaceTraction",
+    "common_arguments": {
+      "magnitude": 210.0,
+      "directionVector": [
+        [0.0, 0.0, 0.0],
+        [1.0, 0.0, 0.0]
+      ],
+      "traction": "GENERAL",
+      "follower": "OFF",
+      "resultant": "OFF"
+    },
+    "only_changed_input": "region object: Assembly.Set(edges=...) versus Assembly.Surface(side1Edges=...)"
+  },
+  "observations": {
+    "assembly_set_region": {
+      "status": "error",
+      "error_type": "TypeError",
+      "error": "必需的参数未全部指定; 应当提供 10, 已获得 0",
+      "load_created": false
+    },
+    "assembly_surface_region": {
+      "status": "ok",
+      "load_created": true,
+      "surface_created": true,
+      "surface_side": "SIDE1"
+    }
+  },
+  "accepted_claim": "For this Abaqus 2024 edge-based surface-load consumer, a plain Assembly.Set is not a compatible region. A side-aware Assembly.Surface/Region is accepted; side1Edges or side2Edges must be chosen according to the intended physical side.",
+  "non_claims": [
+    "This observation does not select a physical side for an arbitrary model.",
+    "This observation does not provide load magnitude, direction, or other user physics.",
+    "This observation is not a general replacement rule for every API parameter annotated as Region."
+  ]
+}

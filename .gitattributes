@@ -1,1 +1,6 @@
 * text=auto eol=lf
+
+# Frozen fixtures and evaluation evidence are bound to byte-level hashes.
+benchmarks/** -text
+tests/fixtures/** -text
+docs/research/evidence/** -text

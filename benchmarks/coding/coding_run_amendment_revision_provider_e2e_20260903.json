@@ -1,0 +1,182 @@
+{
+  "schema_version": "1",
+  "experiment": "coding-run-amendment-revision-provider-e2e-v1",
+  "date": "2026-09-03",
+  "question": "Can a real Provider continue one v3 CodingRun through an operational amendment and then a task revision while preserving immutable base files, cumulative usage, revision-scoped freshness and historical outcomes?",
+  "configuration": {
+    "run_id": "coding-amendment-real-e2e-v1",
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "http_retries": 10,
+    "http_timeout_seconds": 60.0,
+    "api_catalog_mode": "off",
+    "concept_retrieval_mode": "off",
+    "abaqus_runtime_used": false,
+    "verification_scope": "execution_evidence",
+    "resume_schema": "coding-run-resume-v3",
+    "amendment_schema": "coding-run-amendments-v1"
+  },
+  "flow": [
+    {
+      "stage": "deterministic_interruption",
+      "turn": 1,
+      "task_revision": 0,
+      "amendment_sequence": 0,
+      "result": "interrupted",
+      "detail": "FunctionModel completed write_file(seed.py), then raised an injected ConnectionError.",
+      "persisted_model_requests": 1,
+      "persisted_tool_calls": 1,
+      "workspace_files": [
+        "seed.py"
+      ]
+    },
+    {
+      "stage": "operational_amendment",
+      "turn": 2,
+      "task_revision": 0,
+      "amendment_sequence": 1,
+      "patch": {
+        "max_model_requests": 50,
+        "wall_time_seconds": 5400.0,
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 10
+      },
+      "result": "interrupted",
+      "detail": "The real model created result.py, but parallel Harness FileStepStore appends corrupted tool_effects.jsonl and Pydantic AI exhausted write_file retries."
+    },
+    {
+      "stage": "operational_resume",
+      "turn": 3,
+      "task_revision": 0,
+      "amendment_sequence": 1,
+      "history_source": "step_complete",
+      "tool_effect_source": "event_log",
+      "result": "completed",
+      "product_verification_passed": true,
+      "cumulative_model_requests": 8,
+      "cumulative_tool_calls": 9,
+      "abaqus_calls": 0,
+      "declared_deliverables": [
+        "result.py"
+      ]
+    },
+    {
+      "stage": "task_revision",
+      "turn": 4,
+      "task_revision": 1,
+      "amendment_sequence": 2,
+      "revision_baseline_files": [
+        "result.py",
+        "seed.py"
+      ],
+      "revision_execution_start_index": 0,
+      "result": "interrupted",
+      "detail": "A second real parallel file-tool response reproduced the Harness JSONL append race before workspace edits."
+    },
+    {
+      "stage": "task_revision_resume_after_jsonl_patch",
+      "turn": 5,
+      "task_revision": 1,
+      "amendment_sequence": 2,
+      "history_source": "step_complete",
+      "tool_effect_source": "event_log",
+      "result": "completed",
+      "product_verification_passed": true,
+      "cumulative_model_requests": 16,
+      "cumulative_tool_calls": 22,
+      "abaqus_calls": 0,
+      "artifact_freshness": {
+        "result.py": true,
+        "revised.py": true,
+        "seed.py": false
+      },
+      "declared_deliverables": [
+        "result.py",
+        "revised.py"
+      ]
+    }
+  ],
+  "gates": {
+    "same_run_continuity": true,
+    "operational_amendment_applied": true,
+    "cumulative_usage_preserved": true,
+    "base_request_bytes_unchanged": true,
+    "base_launch_bytes_unchanged": true,
+    "old_outcome_archived": true,
+    "task_revision_recorded": true,
+    "revision_freshness_boundary": true,
+    "revision_execution_offset_recorded": true,
+    "current_outcome_bound_to_revision": true,
+    "post_patch_tool_effect_jsonl_valid": true,
+    "product_execution_evidence_passed": true,
+    "exact_user_text_contract_passed": false,
+    "state_and_revision_e2e_passed": true
+  },
+  "exact_text_check": {
+    "requested": "Both revised Python files end with a newline.",
+    "result.py": {
+      "hex": "616e73776572203d203433",
+      "value": "answer = 43",
+      "ends_with_lf": false
+    },
+    "revised.py": {
+      "hex": "7265766973696f6e203d2031",
+      "value": "revision = 1",
+      "ends_with_lf": false
+    },
+    "interpretation": "The product verifier correctly passed its documented fresh-artifact and Python-syntax scope, but it does not prove every natural-language content constraint. The model summary overstated the trailing-newline detail."
+  },
+  "defects_discovered_and_fixed": [
+    {
+      "defect": "Harness 0.24.0 FileStepStore opened tool_effects.jsonl from concurrent worker threads; Windows append handles overwrote complete records with fragments such as ll}.",
+      "fix": "harness-0.24.0-windows-jsonl-append-v1 serializes event and tool-effect JSONL append methods before Agent construction.",
+      "verification": "A Windows stress test writes 40 parallel ToolEffectRecord entries and then parses all unresolved effects; another test serializes 20 concurrent first-install calls. Turn 5 produced 16 valid JSONL records."
+    },
+    {
+      "defect": "A malformed Harness tool-effect ledger blocked resume before the valid host history fallback could be selected.",
+      "historical_fix": "The exercised run recovered tool lifecycle identities from the separate Harness event log and removed a dangling non-runtime response from fallback history.",
+      "verification_at_the_time": "Turns 3 and 5 resumed with tool_effect_source=event_log and no observed Abaqus runtime call.",
+      "current_resolution": "A later safety review found that a started effect can be written before its start event. The compatibility fallback was removed; current code fails closed on every corrupt tool-effect ledger."
+    }
+  ],
+  "raw_evidence": {
+    "run_root": "D:/abaqus-runs/coding-amendment-real-e2e-20260903-v1",
+    "request_sha256_before_and_after": "d85a43c4157f6aba54f2cace3ee595c955c36d58341f99c4c187a920771571fe",
+    "launch_sha256_before_and_after": "2912f9288485d403e46e3dbfaa4e68c99dd29357252d09e038423fc3b238927a",
+    "amendments_sha256": "b2fee14f9a49da5445c6c01f60cb7b789948e32c05174828ebf9578c309355e1",
+    "resume_state_sha256": "68470cf833127cf948b0b91b5e4016c1f17aa096e8f5906e036613431cd08b54",
+    "history_sha256": "7ecf5cd06b46ed0632dec4750d4d6459f34c9742b4da3d45e2ea16449f868734",
+    "events_sha256": "048568387ef56181e4d6cfa1c7612ccbdbae0399fa61855c84725f7333456da6",
+    "operational_outcome_archive_sha256": "8ca6456e9f1719d7ee881ba31512ed95ebcf2fc2958a06562cdcf423d8c3acbb",
+    "current_outcome_sha256": "6747192ec0ecb51b287b1556a0412158f786e3614270065f67c94e01b07bb41b",
+    "corrupt_turn_2_tool_effects_sha256": "a1a3b25bfa308597dd1a33b04a95498849c877da5b8647f6d0139cc3a054476f",
+    "corrupt_turn_4_tool_effects_sha256": "6ad2d2528b2e4769ff8f926703f77fb5c4e3f05be15cafba856f0ac8d7955adc",
+    "valid_turn_5_tool_effects_sha256": "36ee24fc9146b603e3a06d53309e17be0d97728b4d1d78784a838376f38b05a6"
+  },
+  "quality_gate": {
+    "ruff": "passed",
+    "basedpyright": "0 errors, 0 warnings",
+    "pytest": "452 passed, 26 skipped"
+  },
+  "post_e2e_safety_review": {
+    "event_log_compatibility_fallback_retained": false,
+    "reason": "The event log cannot prove absence of a runtime effect written immediately before an event-log interruption.",
+    "current_behavior": "Corrupt tool-effect ledgers raise CodingRunResumeError before any model or runtime call."
+  },
+  "decision": {
+    "status": "The real-Provider state/amendment/revision E2E passed and exposed two recoverability defects that were fixed in the exercised path. The exact trailing-newline content requirement did not pass and remains outside the product verifier's stated scope.",
+    "claims_allowed": [
+      "A real OpenCode Go model continued the same v3 run after an operational amendment and later completed task revision 1.",
+      "The immutable request and launch hashes stayed unchanged while effective budget/model configuration came from the typed ledger.",
+      "The old outcome remained archived and revision 1 used a new artifact freshness boundary.",
+      "The version-scoped JSONL patch prevented the previously reproduced parallel append corruption on the final turn."
+    ],
+    "claims_forbidden": [
+      "The product verifier proved the full natural-language task semantics.",
+      "The Agent satisfied the requested trailing-newline constraint.",
+      "This no-Abaqus smoke proves external Job reconciliation or physics correctness.",
+      "Harness 0.24.0 is generally thread-safe outside the two patched JSONL methods."
+    ]
+  }
+}

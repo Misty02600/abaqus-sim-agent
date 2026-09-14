@@ -1,0 +1,21 @@
+{
+  "schema_version": "1",
+  "dataset_id": "abaqus-2026-bm25-dense-rrf-heldout-v2",
+  "status": "withdrawn_before_label_seal_and_retrieval",
+  "queries_file": "abaqus_2026_bm25_dense_rrf_heldout_queries_v2.jsonl",
+  "queries_sha256": "ae100f44ebe68cb8f20734b11e6ddb3b1702884ecf9235ec75c86afda781ca36",
+  "partial_labels_file": "abaqus_2026_bm25_dense_rrf_heldout_labels_v2.jsonl",
+  "partial_labels_sha256": "880dc725b474d2821c83c02b75e3d1e4c5ee13170f70d0e278e6092925db85ff",
+  "partial_label_count": 24,
+  "withdrawn_at": "2026-09-03T17:37:18.9239093+08:00",
+  "blocked_cases": [
+    {
+      "case_id": "heldout-multidoc-c3d8p-soils",
+      "reason": "The non-identical fallback gold simaelm-c-stdelementindex is an overview member of the same continuum-element reference family as the development gold pages simaelm-r-2delem and simaelm-r-3delem."
+    }
+  ],
+  "retrieval_rankings_observed": false,
+  "replacement_dataset_id": "abaqus-2026-bm25-dense-rrf-heldout-v3",
+  "replacement_queries_file": "abaqus_2026_bm25_dense_rrf_heldout_queries_v3.jsonl",
+  "replacement_queries_sha256": "42e11d2e01e66b9325c5ab85d5625716d6ade31fbade69e9f5d2da07775c46eb"
+}

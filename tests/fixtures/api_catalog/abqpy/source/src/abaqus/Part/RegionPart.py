@@ -1,0 +1,3 @@
+class RegionPart:
+    def Set(self, name: str, edges: EdgeArray = ()):
+        ...

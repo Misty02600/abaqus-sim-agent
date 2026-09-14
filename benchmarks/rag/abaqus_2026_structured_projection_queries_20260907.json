@@ -1,0 +1,34 @@
+{
+  "schema_version": "structured-projection-development-probes-v1",
+  "scope": "Source-informed development checks of newly searchable structures, authored before these four queries were ranked. Not held-out, not an answer-quality benchmark.",
+  "queries": [
+    {
+      "id": "tie-formulation-table",
+      "query": "Which tie formulation in Abaqus/Explicit allows a mixture of rigid and deformable subregions?",
+      "target_unit_id": "c9c1f44e6db2188691f3fe1cee2da266111ed862416f64fdfcb7449e7bc926ac",
+      "target_type": "table",
+      "required_projection_fragments": ["Node-to-surface in Abaqus/Explicit", "Mixture of rigid and deformable subregions allowed: \"Yes\""]
+    },
+    {
+      "id": "riks-total-load-formula",
+      "query": "How is total load formed from dead load, reference load and the load proportionality factor in a Riks step?",
+      "target_unit_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+      "target_type": "formula",
+      "required_projection_fragments": ["(P)_(total)", "dead load", "reference load vector", "load proportionality factor"]
+    },
+    {
+      "id": "riks-initial-increment-formula",
+      "query": "How is the initial load proportionality factor computed from the initial arc length increment and the total arc length scale factor?",
+      "target_unit_id": "ed2d8cba470c5b668ae712a194e23e9852b798b49eb42f3c986688de6b5c187b",
+      "target_type": "formula",
+      "required_projection_fragments": ["initial increment in arc length", "total arc length scale factor", ")/("]
+    },
+    {
+      "id": "fourier-nodal-planes-table",
+      "query": "For two Fourier modes in asymmetric-axisymmetric solid elements, how many nodal planes are used and at which angular locations?",
+      "target_unit_id": "0209f77654c456c750957bb4094f25a1e59290d6f3c532d40feae02a5dc5f660",
+      "target_type": "table",
+      "required_projection_fragments": ["Number of Fourier modes N: \"2\"", "Number of nodal planes: \"3\"", "π / 2"]
+    }
+  ]
+}

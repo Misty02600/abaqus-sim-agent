@@ -1,0 +1,1168 @@
+{
+  "schema_version": "parent-child-pilot-v1",
+  "manifest": {
+    "started_at": "2026-09-05T13:01:13.614967+00:00",
+    "scope": "Same twelve source pages, small persisted Dense/BM25 indexes; structural preservation and searchable coverage differ, so not a single-factor chunk-size A/B",
+    "audit_sha256": "ef46ede5e484ce8400a7c955ec49214bacb72b09c4281645d484116cd7614459",
+    "sources": {
+      "SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+      "SIMACAEANLRefMap/simaanl-c-postbuckling.htm": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+      "SIMACAEKEYRefMap/simakey-r-adaptivemeshcontrols.htm": "2a3b1f4034410d092e7a6a030787b7adab47ad30b542bc65a63c136e5b2cbd91",
+      "SIMACAECSTRefMap/simacst-c-coupling.htm": "830635d69b98ae2c64c7795b5eb776bd095bcc990589fcf7d8a300d6b738fad6",
+      "SIMACAECSTRefMap/simacst-c-tiedconstraint.htm": "85e6046ec7c3bd584084253d4ff570907339ea6bfaf579de9d3ae9a9415be0be",
+      "SIMACAEELMRefMap/simaelm-c-solidcont.htm": "ab0bd6dfa74caf514157828931afb9358fbed398bfc4b214302de1da139db021",
+      "SIMACAEELMRefMap/simaelm-c-dimension.htm": "abba0873c5b6b7fddc9421e8a30275b8522e058d8d96bb096b64c28765987838",
+      "SIMACAEANLRefMap/simaanl-c-massscaling.htm": "1bc423ce9eaf7fccf3371c7b25a27964ffcab6d1a6423236e512b2d8ff8ddac8",
+      "SIMACAEOUTRefMap/simaout-c-dboutput-elementoutput.htm": "5e5c57f5255ab5662a9c8c0e0b402cee181db4ff0fc332900ec77336b22e69ab",
+      "SIMACAEKEYRefMap/simakey-r-output.htm": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+      "SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm": "e515d2a9cfbdf08108f5aac0407b4a46c8ef7f93d36fddb9c662947f4db130a5",
+      "SIMACAEANLRefMap/simaanl-c-expdynamic.htm": "40068c894cbeba621be753802074f3c390a59660ac50bc83eb09b0f77d03d2bf"
+    },
+    "script_sha256": "9e7ba0ce34890479af3d280488e63c2af7acbf5c09afc2c1b316e42a4f5d02c0",
+    "implementation": {
+      "src/abaqus_sim_agent/retrieval/evidence_blocks.py": "d427aa3b721fdcde8b6b466f480a9ed7d2a4fe8bf32d1187782f6c31a8354fa9",
+      "src/abaqus_sim_agent/retrieval/bm25.py": "406d66bf84d096d4112757d34d762043f05c9e4823d3674ed3b9906baf5ec6e9",
+      "src/abaqus_sim_agent/evaluation/cross_encoder.py": "17e40fd5fda159e0131c039198a56582251aacb7a6fe6c7ae67f8fe0f8d2acfb",
+      "src/abaqus_sim_agent/coding/document_evidence.py": "412f29d877c575e9ac153adaf99268c31ee93b958ac3148b4e3568ccb2584ed9",
+      "src/abaqus_sim_agent/coding/concept_lookup.py": "7215a6556c87b3515bb19da031367f86a78e45ec5cdb713119f8ec6e81ba15f9",
+      "src/abaqus_sim_agent/retrieval/documents.py": "4ee1defc70673d29bbdbf772389ec91dbb9b0ea6f4a762beab838118ff2fb366",
+      "uv.lock": "6d8af39f4e6dfe7535f5610c0b85ed3ef023bc1ab2965ad320bc6ccc9713ca82"
+    },
+    "parent_store_sha256": "78fd05b7c90eec8e93577d682313a8e34a57d909bfd00195f30356f7e3ca1446",
+    "parent_count": 941,
+    "projection_counts": {
+      "text": 762,
+      "deferred_list": 41,
+      "deferred_math": 134,
+      "deferred_table": 4
+    },
+    "child_count": 771,
+    "max_child_tokens": 255,
+    "tokenizer_sha256": "da0e79933b9ed51798a3ae27893d3c5fa4a201126cef75586296df9b4d2c62a0",
+    "model_binding": {
+      "repo": "cross-encoder/ms-marco-MiniLM-L6-v2",
+      "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+      "files": {
+        "config.json": {
+          "sha256": "380e02c93f431831be65d99a4e7e5f67c133985bf2e77d9d4eba46847190bacc",
+          "bytes": 794
+        },
+        "tokenizer.json": {
+          "sha256": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66",
+          "bytes": 711396
+        },
+        "tokenizer_config.json": {
+          "sha256": "a5c2e5a7b1a29a0702cd28c08a399b5ecc110c263009d17f7e3b415f25905fd8",
+          "bytes": 1330
+        },
+        "special_tokens_map.json": {
+          "sha256": "3c3507f36dff57bce437223db3b3081d1e2b52ec3e56ee55438193ecb2c94dd6",
+          "bytes": 132
+        },
+        "README.md": {
+          "sha256": "7c0ec39941d0d1d766ccde671f592971d82fe45b7eea550a80d1ea864ebc3baa",
+          "bytes": 3673
+        },
+        "onnx/model.onnx": {
+          "sha256": "5d3e70fd0c9ff14b9b5169a51e957b7a9c74897afd0a35ce4bd318150c1d4d4a",
+          "bytes": 91011230
+        }
+      },
+      "source_url": "https://huggingface.co/cross-encoder/ms-marco-MiniLM-L6-v2/tree/233902d25c440f23af6f7d6e94d2946bac0bee0a"
+    },
+    "queries": [
+      {
+        "id": "exact-api-region-1",
+        "query": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?\nextract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT.",
+        "role": "previously_observed"
+      },
+      {
+        "id": "domain-procedure-applicability-1",
+        "query": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?\nAbaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation.",
+        "role": "previously_observed"
+      },
+      {
+        "id": "domain-procedure-applicability-2",
+        "query": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?\nAbaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step.",
+        "role": "previously_observed"
+      },
+      {
+        "id": "recorded-solver-diagnostic-1",
+        "query": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?\nrecorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+        "role": "previously_observed"
+      },
+      {
+        "id": "recorded-solver-diagnostic-2",
+        "query": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?\nAbaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt.",
+        "role": "previously_observed"
+      },
+      {
+        "id": "tie-separation",
+        "query": "If I tie two surfaces in Abaqus, can they subsequently separate or slide relative to each other, or is a contact interaction needed for that behavior?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "coupling-deformation",
+        "query": "What is the difference between kinematic and distributing coupling when a load must be transferred from a reference point while allowing the coupled surface to deform?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "mass-scaling-inertia",
+        "query": "In an Abaqus/Explicit quasi-static analysis, why can excessive mass scaling change the physical response even when it reduces the number of stable time increments?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "hybrid-pressure",
+        "query": "Why do nearly incompressible materials often need hybrid solid elements in Abaqus/Standard, and what additional variable does the hybrid formulation introduce?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "plane-strain-meaning",
+        "query": "For a two-dimensional plane strain model, which out-of-plane strain components are constrained, and can the out-of-plane normal stress still be nonzero?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "reduced-integration-hourglass",
+        "query": "Why can first-order reduced-integration elements exhibit hourglass modes, and what does hourglass control attempt to prevent?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "nodal-stress-extrapolation",
+        "query": "Why can nodal extrapolated stress values differ from stresses at integration points, especially in a region with a steep stress gradient?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "explicit-stable-increment",
+        "query": "Why can a few very small elements control the stable time increment and increase the runtime of an Abaqus/Explicit analysis?",
+        "role": "previously_authored_transfer"
+      },
+      {
+        "id": "meshing-predictor-tail",
+        "query": "For adaptive meshing, what does MESHING PREDICTOR=PREVIOUS use to predict node positions, compared with CURRENT?",
+        "role": "known_ingestion_failure_development_probe"
+      }
+    ],
+    "retrieval": "Both arms: raw Dense Top20 + raw BM25 Top20, record-ID union, same fixed local cross-encoder; no automatic symbol override or new product filter. Candidate output dedupes by evidence-parent after ranking; control returns four chunks.",
+    "delivery": "Both arms use current 12000-character shared body budget; candidate resolves matching child back to stored complete block.",
+    "product_default_changed": false
+  },
+  "manifest_sha256": "0bc5a7711ae279013adebe6ec360bbf88647220420d59f71328166f501192525",
+  "raw_directory": "D:/Projects/abaqus-agent/abaqus-sim-agent/var/audits/parent-child-pilot-v1",
+  "raw_sha256": {
+    "candidate-coupling-deformation.json": "9d52bda0af07c1fe6b0b35348c8ee2de46156499fc132c47586adc5f484d5557",
+    "candidate-domain-procedure-applicability-1.json": "ea65d0e250ede50267877df79f14308d6ba507512b866b8f3790fb760262471e",
+    "candidate-domain-procedure-applicability-2.json": "d99c14bc8f12e3c8e459aa6d6359e1b25113e1dbefbc2a513d05e797bbfdbe7f",
+    "candidate-exact-api-region-1.json": "5c2d96eb28754a9a7db6f51b185a19ed4cc93a6dfa80cf96e899567743377840",
+    "candidate-explicit-stable-increment.json": "62e7a8950287bdf7d97bb470de68f622fe82f2615837f42dc002be8afff7c9d8",
+    "candidate-hybrid-pressure.json": "e3ba9fd658788e9ae0511bf8f3c82f09fc47062d58a214a1cbd2bdaee0ff1136",
+    "candidate-index-binding.json": "07fedc13234d34a85fff3d499ba6dd6e9505b83c91bd14568816fa62fdb02fc6",
+    "candidate-mass-scaling-inertia.json": "5fdfb6fd23e7fe73ad39c0aaaef243282c4c3ed123002dbafafdaccfe77c6a33",
+    "candidate-meshing-predictor-tail.json": "addfb4ffd77778cc966ff19769d2d9b4afe45d5499a807dd82e2df73a4892c3c",
+    "candidate-nodal-stress-extrapolation.json": "022b36a56867498becc6e250ca652a42535430e7d993985eb797c3d72775c83f",
+    "candidate-plane-strain-meaning.json": "890c9faa708db1749c64b6aa43127c693c4f0e9bdd6ee3c89323bf6e5f1f70ec",
+    "candidate-recorded-solver-diagnostic-1.json": "173b9c4e328efce2f212ecdd27aa74c2dff0268699b6999b71317ab1322abb54",
+    "candidate-recorded-solver-diagnostic-2.json": "45b793c7fd6f76dd7afdbf377dd26d54df819d38818620af455a8f2f5314765e",
+    "candidate-reduced-integration-hourglass.json": "aae05665aec1a26ca070071adb1d1cd88390bfd428e5818008c927499c98f5b2",
+    "candidate-tie-separation.json": "3e032281ada8497fc79eab3b15aafa8891e620ffce9b355f819465e47d651527",
+    "control-coupling-deformation.json": "70e01d48d99a91456d2f5f8a906ef08e4c5455655a9f44bd3456110aa740a77b",
+    "control-domain-procedure-applicability-1.json": "4d29c2f22f515930f727543e2dea6ead35f020d18f78e36b529c6f22a7351b3d",
+    "control-domain-procedure-applicability-2.json": "42fc934b4c308da810ed0f2d5cc62103d6773bd956e8a714f9ddfff5828aa4eb",
+    "control-exact-api-region-1.json": "77758d4b609558a8c538fa02682546bd8be6d0edaff19b70206c2eb1378e2e5e",
+    "control-explicit-stable-increment.json": "d61a60510c06bc9b5ae51124c85773b6a3df5a7b2af05975a2cf478ac8c57f82",
+    "control-hybrid-pressure.json": "c41ff0cfb84a95ab5075f6e30f20398cf858977cfd7f57429854570949e8b862",
+    "control-index-binding.json": "1c26177309e36df8e72ee5e24cbd9230a8265d7cd34b5c4ea555414cfd60b5a5",
+    "control-mass-scaling-inertia.json": "fc8db28b36d1614daa80a91a01e61599d70176e8a375360359f7e17c53d95304",
+    "control-meshing-predictor-tail.json": "120284a107dd2ec84e4d4c0d63fb06674facb8d50558e67df5c9314a3b58257f",
+    "control-nodal-stress-extrapolation.json": "322b48d1046a1eb73e77860ea199586719f8bf3b68723a944ca921c8d63b1cb6",
+    "control-plane-strain-meaning.json": "36d7749f7ab067e600dbf14a9845864ce1ce40e3771bec72a835ba5a7630a2fb",
+    "control-recorded-solver-diagnostic-1.json": "a2ef6a139febbb5593c7cb35ef610d8de3c62b5672af30e17a59fb246bbecf77",
+    "control-recorded-solver-diagnostic-2.json": "d7ee786f58080cafd16d3a456789124abb50d5041f8a3006d585898fd77eea6c",
+    "control-reduced-integration-hourglass.json": "666d0f5e52a0de0b667e262a913a6e5a4526c3fa651bdb1923df559cc6c93e24",
+    "control-tie-separation.json": "e34400683e5632c1cd9ed2f0d232cdbbc98a25ee12876874edae59282c7014e2",
+    "manifest.json": "0bc5a7711ae279013adebe6ec360bbf88647220420d59f71328166f501192525",
+    "parents.jsonl": "78fd05b7c90eec8e93577d682313a8e34a57d909bfd00195f30356f7e3ca1446"
+  },
+  "reconstruction_fixtures": [
+    {
+      "marker": "Abaqus/Standard adjusts the time increments",
+      "parent_id": "c152cd42eb2ebc32ca8c7d46813928f2a0ba81fc91034ef33a0d8cec1c2c974b",
+      "matched_child_id": "c152cd42eb2ebc32ca8c7d46813928f2a0ba81fc91034ef33a0d8cec1c2c974b:0:905",
+      "returned_characters": 905,
+      "full_original_block_retained": true
+    },
+    {
+      "marker": "MESHING PREDICTOR",
+      "parent_id": "16d2cc8020e293ed6cb62727377c01693826786b774235da12bd74cb33b1c1cf",
+      "matched_child_id": "16d2cc8020e293ed6cb62727377c01693826786b774235da12bd74cb33b1c1cf:0:1069",
+      "returned_characters": 1636,
+      "full_original_block_retained": true
+    }
+  ],
+  "results": [
+    {
+      "arm": "control",
+      "id": "exact-api-region-1",
+      "query": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?\nextract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT.",
+      "candidate_count": 40,
+      "rerank_seconds": 1.525530599988997,
+      "total_seconds": 1.735280800028704,
+      "selected_ids": [
+        "simaout-c-dboutput-elementoutput#simaout-c-dboutput-elem-position:chunk-026",
+        "simaout-c-dboutput-elementoutput#simaout-c-dboutput-elem-position:chunk-027",
+        "simaanl-c-expdynamic#simaanl-c-expdynamic-t-MonitoringOutputVariablesForExtremeValues-sma-topic30:chunk-091",
+        "simaout-c-dboutput-elementoutput#simaout-c-dboutput-elem-position:chunk-024"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "Obtaining Element Output Averaged at the Nodes in Abaqus/Standard",
+        "Obtaining Element Output Averaged at the Nodes in Abaqus/Standard",
+        "Obtaining Output When the Extreme Value Criterion Is Met",
+        "Obtaining Element Output Averaged at the Nodes in Abaqus/Standard"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "control",
+      "id": "domain-procedure-applicability-1",
+      "query": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?\nAbaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation.",
+      "candidate_count": 30,
+      "rerank_seconds": 0.9176848999923095,
+      "total_seconds": 1.1111583999590948,
+      "selected_ids": [
+        "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-005",
+        "simaanl-c-postbuckling#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1:chunk-003",
+        "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-009",
+        "simaanl-c-postbuckling#simaanl-c-postbuckling-t-matsect1:chunk-033"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "The Riks Method",
+        "Unstable Response",
+        "Incrementation",
+        "Material Options"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "control",
+      "id": "domain-procedure-applicability-2",
+      "query": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?\nAbaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step.",
+      "candidate_count": 28,
+      "rerank_seconds": 0.8649668999714777,
+      "total_seconds": 1.0553053999319673,
+      "selected_ids": [
+        "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-007",
+        "simaanl-c-postbuckling#simaanl-c-postbuckling-t-loadsect1:chunk-029",
+        "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-005",
+        "simaanl-c-postbuckling#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2:chunk-009"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "Proportional Loading",
+        "Loads",
+        "The Riks Method",
+        "Incrementation"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "control",
+      "id": "recorded-solver-diagnostic-1",
+      "query": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?\nrecorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+      "candidate_count": 29,
+      "rerank_seconds": 1.060757300001569,
+      "total_seconds": 1.247842499986291,
+      "selected_ids": [
+        "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-023",
+        "simakey-r-output#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1:chunk-006",
+        "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026",
+        "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-020"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "Time Domain Analysis: Specifying Output Frequency in Time Points",
+        "Optional parameters",
+        "Time Domain Analysis: Time Incrementation",
+        "Time Domain Analysis: Specifying Output Frequency in Regular Time Interval Size"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "control",
+      "id": "recorded-solver-diagnostic-2",
+      "query": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?\nAbaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt.",
+      "candidate_count": 33,
+      "rerank_seconds": 1.3727638000855222,
+      "total_seconds": 1.56093839998357,
+      "selected_ids": [
+        "simaout-c-dboutput-frequency#simaout-c-dboutput-t-ControllingTheOutputFrequencyForFieldOutputInAEXP-sma-topic6:chunk-036",
+        "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-023",
+        "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-020",
+        "simaout-c-dboutput-frequency#simaout-c-dboutput-freq-std:chunk-026"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "Specifying Field Output Frequency in Time Points",
+        "Time Domain Analysis: Specifying Output Frequency in Time Points",
+        "Time Domain Analysis: Specifying Output Frequency in Regular Time Interval Size",
+        "Time Domain Analysis: Time Incrementation"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "control",
+      "id": "tie-separation",
+      "query": "If I tie two surfaces in Abaqus, can they subsequently separate or slide relative to each other, or is a contact interaction needed for that behavior?",
+      "candidate_count": 34,
+      "rerank_seconds": 0.7962944000028074,
+      "total_seconds": 0.9841602999949828,
+      "selected_ids": [
+        "simacst-c-tiedconstraint#simacst-c-tiedconstraint-t-DefiningTheSurfacesToBeConstrained-sma-topic2:chunk-008",
+        "simacst-c-tiedconstraint#simacst-c-tiedconstraint-t-DefiningATieConstraintForAPairOfSurfaces-sma-topic1:chunk-002",
+        "simacst-c-tiedconstraint#simacst-c-tiedconstraint-t-TieConstraintsVersusTiedContactInAS-sma-topic19:chunk-078",
+        "simacst-c-tiedconstraint#simacst-c-tiedconstraint-t-AdjustingTheSurfacesAndConsideringOffsets-sma-topic13:chunk-052"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "Defining the Surfaces to Be Constrained",
+        "Defining a Tie Constraint for a Pair of Surfaces",
+        "Tie Constraints Versus Tied Contact in Abaqus/Standard",
+        "Adjusting the Surfaces and Considering Offsets"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "control",
+      "id": "coupling-deformation",
+      "query": "What is the difference between kinematic and distributing coupling when a load must be transferred from a reference point while allowing the coupled surface to deform?",
+      "candidate_count": 32,
+      "rerank_seconds": 0.7112774000270292,
+      "total_seconds": 0.8981581999687478,
+      "selected_ids": [
+        "simacst-c-coupling#simacst-c-coupling-t-SurfacebasedCouplingDefinitions-sma-topic1:chunk-003",
+        "simacst-c-coupling#simacst-c-coupling-t-limitations1:chunk-076",
+        "simacst-c-coupling#simacst-c-coupling-t-TypicalApplications-sma-topic2:chunk-008",
+        "simacst-c-coupling#simacst-c-coupling-t-TypicalApplications-sma-topic2:chunk-007"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "Surface-Based Coupling Definitions",
+        "Limitations",
+        "Typical Applications",
+        "Typical Applications"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "control",
+      "id": "mass-scaling-inertia",
+      "query": "In an Abaqus/Explicit quasi-static analysis, why can excessive mass scaling change the physical response even when it reduces the number of stable time increments?",
+      "candidate_count": 29,
+      "rerank_seconds": 0.7179390999954194,
+      "total_seconds": 0.9037577999988571,
+      "selected_ids": [
+        "simaanl-c-massscaling#simaanl-c-massscaling-t-Introduction-sma-topic1:chunk-005",
+        "simaanl-c-massscaling#simaanl-c-massscaling-automatic:chunk-083",
+        "simaanl-c-massscaling#simaanl-c-massscaling-t-Introduction-sma-topic1:chunk-007",
+        "simaanl-c-massscaling#simaanl-c-massscaling-t-Introduction-sma-topic1:chunk-002"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "Quasi-Static Analysis",
+        "Automatic Mass Scaling for Analysis of Bulk Metal Rolling",
+        "Dynamic Analysis",
+        "Introduction"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "control",
+      "id": "hybrid-pressure",
+      "query": "Why do nearly incompressible materials often need hybrid solid elements in Abaqus/Standard, and what additional variable does the hybrid formulation introduce?",
+      "candidate_count": 30,
+      "rerank_seconds": 0.6519471999490634,
+      "total_seconds": 0.8405099000083283,
+      "selected_ids": [
+        "simaelm-c-solidcont#simaelm-c-solidcont-t-elemchoice1:chunk-033",
+        "simaelm-c-solidcont#simaelm-c-solidcont-t-elemchoice1:chunk-035",
+        "simaelm-c-solidcont#simaelm-c-solidcont-t-elemchoice1:chunk-038",
+        "simaelm-c-solidcont#simaelm-c-solidcont-t-elemchoice1:chunk-034"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "Choosing between Regular and Hybrid Elements",
+        "Choosing between Regular and Hybrid Elements",
+        "Choosing between Regular and Hybrid Elements",
+        "Choosing between Regular and Hybrid Elements"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "control",
+      "id": "plane-strain-meaning",
+      "query": "For a two-dimensional plane strain model, which out-of-plane strain components are constrained, and can the out-of-plane normal stress still be nonzero?",
+      "candidate_count": 27,
+      "rerank_seconds": 0.6499248000327498,
+      "total_seconds": 0.8456021000165492,
+      "selected_ids": [
+        "simaelm-c-dimension#simaelm-c-dimension-t-TwodimensionalElements-sma-topic2:chunk-010",
+        "simaelm-c-dimension#simaelm-c-dimension-t-TwodimensionalElements-sma-topic2:chunk-013",
+        "simaelm-c-dimension#simaelm-c-dimension-t-TwodimensionalElements-sma-topic2:chunk-012",
+        "simaelm-c-dimension#simaelm-c-dimension-t-TwodimensionalElements-sma-topic2:chunk-014"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "Plane Strain Elements",
+        "Generalized Plane Strain Elements",
+        "Generalized Plane Strain Elements",
+        "Generalized Plane Strain Elements"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "control",
+      "id": "reduced-integration-hourglass",
+      "query": "Why can first-order reduced-integration elements exhibit hourglass modes, and what does hourglass control attempt to prevent?",
+      "candidate_count": 28,
+      "rerank_seconds": 0.6508310000644997,
+      "total_seconds": 0.8372072000056505,
+      "selected_ids": [
+        "simaelm-c-solidcont#simaelm-c-solidcont-t-elemchoice1:chunk-014",
+        "simaelm-c-solidcont#simaelm-c-solidcont-t-elemchoice1:chunk-013",
+        "simaelm-c-solidcont#simaelm-c-solidcont-t-elemchoice1:chunk-019",
+        "simaelm-c-solidcont#simaelm-c-solidcont-t-elemchoice1:chunk-016"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "Choosing between Full- and Reduced-Integration Elements",
+        "Choosing between Full- and Reduced-Integration Elements",
+        "Specifying Nondefault Section Controls",
+        "Choosing between Full- and Reduced-Integration Elements"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "control",
+      "id": "nodal-stress-extrapolation",
+      "query": "Why can nodal extrapolated stress values differ from stresses at integration points, especially in a region with a steep stress gradient?",
+      "candidate_count": 30,
+      "rerank_seconds": 0.7660943999653682,
+      "total_seconds": 0.9526805999921635,
+      "selected_ids": [
+        "simaout-c-dboutput-elementoutput#simaout-c-dboutput-elem-position:chunk-029",
+        "simaelm-c-solidcont#simaelm-c-solidcont-t-elemchoice1:chunk-045",
+        "simaelm-c-solidcont#simaelm-c-solidcont-t-SpecialConsiderationsForVariousElementTypesInAS-sma-topic22:chunk-102",
+        "simaout-c-dboutput-elementoutput#simaout-c-dboutput-elem-position:chunk-030"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "Extrapolation and Interpolation of Element Output Variables",
+        "Improved Surface Stress Visualization Bricks",
+        "Interpolation of Temperature and Field Variables in Stress/Displacement Elements",
+        "Extrapolation and Interpolation of Element Output Variables"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "control",
+      "id": "explicit-stable-increment",
+      "query": "Why can a few very small elements control the stable time increment and increase the runtime of an Abaqus/Explicit analysis?",
+      "candidate_count": 31,
+      "rerank_seconds": 0.7543698000954464,
+      "total_seconds": 0.940293199964799,
+      "selected_ids": [
+        "simaanl-c-expdynamic#simaanl-c-expdynamic-stability:chunk-019",
+        "simaanl-c-massscaling#simaanl-c-massscaling-t-DifferentMassScalingAtTheBeginningAndDuringTheStep-sma-topic18:chunk-058",
+        "simaanl-c-massscaling#simaanl-c-massscaling-t-Introduction-sma-topic1:chunk-007",
+        "simaanl-c-massscaling#simaanl-c-massscaling-t-IntroducingMassScalingIntoAModel-sma-topic5:chunk-030"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "Stable Time Increment Report",
+        "Example",
+        "Dynamic Analysis",
+        "Defining a Desired Element-by-Element Stable Time Increment"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "control",
+      "id": "meshing-predictor-tail",
+      "query": "For adaptive meshing, what does MESHING PREDICTOR=PREVIOUS use to predict node positions, compared with CURRENT?",
+      "candidate_count": 32,
+      "rerank_seconds": 0.7923049000091851,
+      "total_seconds": 0.9787280999589711,
+      "selected_ids": [
+        "simakey-r-adaptivemeshcontrols#simakey-r-adaptivemeshcontrols:chunk-009",
+        "simakey-r-adaptivemeshcontrols#simakey-r-adaptivemeshcontrols:chunk-008",
+        "simakey-r-adaptivemeshcontrols#simakey-r-adaptivemeshcontrols:chunk-007",
+        "simakey-r-adaptivemeshcontrols#simakey-r-adaptivemeshcontrols:chunk-005"
+      ],
+      "returned_parent_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "matched_child_ids": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "sections": [
+        "Optional parameters",
+        "Optional parameters",
+        "Optional parameters",
+        "Optional parameters"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "exact-api-region-1",
+      "query": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?\nextract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT.",
+      "candidate_count": 37,
+      "rerank_seconds": 1.4757067000027746,
+      "total_seconds": 1.6671911999583244,
+      "selected_ids": [
+        "f877345d7ee03099cf03715f0f68f14fbc2773fab750c54144e5a1fb4722830f",
+        "ddf497e6e8cf68ad8bdaf6375a737a5f88d10fc0c1af7bc21912ed2c6a190811",
+        "4776cd0a5308b16f181a2cf324578391317382cf70e91ca1804a3c72cd5a3e54",
+        "2a40639ee0db479e953612fa5744c2a9f0458e6a990d1d8ab2ea2825bd2bcef3"
+      ],
+      "returned_parent_ids": [
+        "f877345d7ee03099cf03715f0f68f14fbc2773fab750c54144e5a1fb4722830f",
+        "ddf497e6e8cf68ad8bdaf6375a737a5f88d10fc0c1af7bc21912ed2c6a190811",
+        "4776cd0a5308b16f181a2cf324578391317382cf70e91ca1804a3c72cd5a3e54",
+        "2a40639ee0db479e953612fa5744c2a9f0458e6a990d1d8ab2ea2825bd2bcef3"
+      ],
+      "matched_child_ids": [
+        "f877345d7ee03099cf03715f0f68f14fbc2773fab750c54144e5a1fb4722830f:0:150",
+        "ddf497e6e8cf68ad8bdaf6375a737a5f88d10fc0c1af7bc21912ed2c6a190811:0:474",
+        "4776cd0a5308b16f181a2cf324578391317382cf70e91ca1804a3c72cd5a3e54:0:1025",
+        "2a40639ee0db479e953612fa5744c2a9f0458e6a990d1d8ab2ea2825bd2bcef3:0:552"
+      ],
+      "sections": [
+        "Obtaining Element Output Averaged at the Nodes in Abaqus/Standard",
+        "Obtaining Element Output Averaged at the Nodes in Abaqus/Standard",
+        "Defining a Surface-Based Coupling Constraint",
+        "Surface-Based Coupling Definitions"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "domain-procedure-applicability-1",
+      "query": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?\nAbaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation.",
+      "candidate_count": 32,
+      "rerank_seconds": 1.1425639000954106,
+      "total_seconds": 1.3627288999268785,
+      "selected_ids": [
+        "7554cdab0b0e0c78c398907063f2716f538290c7563d8e057afc434f8cbb7001",
+        "726dcd2a75509ad1721c5cbb3cd7fbdad5be3e90239b26207053a02d39f87dcd",
+        "74befc886c016bb1d5f80fdfe731cedc985442e0dd7d6e86de90432634f6e8c6",
+        "5970e920383108c726fe8da209fe1c29aed7e1272d5183dae31d6e5c541f08e5"
+      ],
+      "returned_parent_ids": [
+        "7554cdab0b0e0c78c398907063f2716f538290c7563d8e057afc434f8cbb7001",
+        "726dcd2a75509ad1721c5cbb3cd7fbdad5be3e90239b26207053a02d39f87dcd",
+        "74befc886c016bb1d5f80fdfe731cedc985442e0dd7d6e86de90432634f6e8c6",
+        "5970e920383108c726fe8da209fe1c29aed7e1272d5183dae31d6e5c541f08e5"
+      ],
+      "matched_child_ids": [
+        "7554cdab0b0e0c78c398907063f2716f538290c7563d8e057afc434f8cbb7001:0:470",
+        "726dcd2a75509ad1721c5cbb3cd7fbdad5be3e90239b26207053a02d39f87dcd:0:384",
+        "74befc886c016bb1d5f80fdfe731cedc985442e0dd7d6e86de90432634f6e8c6:0:196",
+        "5970e920383108c726fe8da209fe1c29aed7e1272d5183dae31d6e5c541f08e5:0:485"
+      ],
+      "sections": [
+        "The Riks Method",
+        "Unstable Response",
+        "Incrementation",
+        "Material Options"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "domain-procedure-applicability-2",
+      "query": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?\nAbaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step.",
+      "candidate_count": 30,
+      "rerank_seconds": 1.065171099966392,
+      "total_seconds": 1.2906152000650764,
+      "selected_ids": [
+        "7554cdab0b0e0c78c398907063f2716f538290c7563d8e057afc434f8cbb7001",
+        "3a04137026c1de709862440b4e5045f5dea0bae76576baf154cb4d96e8923cb3",
+        "ed773b3beb8ab42933076d87073f3696431561185d586d7744d0728b01683d19",
+        "38e1f0669d9bcf45d04b2e68ee7c0c209ed2412c1c818e7c1da6a3dc04e6d90b"
+      ],
+      "returned_parent_ids": [
+        "7554cdab0b0e0c78c398907063f2716f538290c7563d8e057afc434f8cbb7001",
+        "3a04137026c1de709862440b4e5045f5dea0bae76576baf154cb4d96e8923cb3",
+        "ed773b3beb8ab42933076d87073f3696431561185d586d7744d0728b01683d19",
+        "38e1f0669d9bcf45d04b2e68ee7c0c209ed2412c1c818e7c1da6a3dc04e6d90b"
+      ],
+      "matched_child_ids": [
+        "7554cdab0b0e0c78c398907063f2716f538290c7563d8e057afc434f8cbb7001:0:470",
+        "3a04137026c1de709862440b4e5045f5dea0bae76576baf154cb4d96e8923cb3:0:373",
+        "ed773b3beb8ab42933076d87073f3696431561185d586d7744d0728b01683d19:0:352",
+        "38e1f0669d9bcf45d04b2e68ee7c0c209ed2412c1c818e7c1da6a3dc04e6d90b:0:952"
+      ],
+      "sections": [
+        "The Riks Method",
+        "Proportional Loading",
+        "Elements",
+        "Obtaining a Solution at a Particular Load or Displacement Value"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "recorded-solver-diagnostic-1",
+      "query": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?\nrecorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+      "candidate_count": 32,
+      "rerank_seconds": 1.1965884000528604,
+      "total_seconds": 1.3980240999953821,
+      "selected_ids": [
+        "692fbe5214ec47f72e76ef2fb4b5c0bb62fe5ab1ce0d95ed0d6a722e3f6337a1",
+        "0b0b3305fe7b13100b7828619ef7087a5b831008591074d2403a284d9f652dd2",
+        "d6864902c7552f856b9499ad49a0839c095222938cefa7267cef68479dbec3da",
+        "b5c0520a475e513dec3dfd6f28b271f87e5541e9d88e3118c8eebb14c5543ea8"
+      ],
+      "returned_parent_ids": [
+        "692fbe5214ec47f72e76ef2fb4b5c0bb62fe5ab1ce0d95ed0d6a722e3f6337a1",
+        "0b0b3305fe7b13100b7828619ef7087a5b831008591074d2403a284d9f652dd2",
+        "d6864902c7552f856b9499ad49a0839c095222938cefa7267cef68479dbec3da",
+        "b5c0520a475e513dec3dfd6f28b271f87e5541e9d88e3118c8eebb14c5543ea8"
+      ],
+      "matched_child_ids": [
+        "692fbe5214ec47f72e76ef2fb4b5c0bb62fe5ab1ce0d95ed0d6a722e3f6337a1:0:344",
+        "0b0b3305fe7b13100b7828619ef7087a5b831008591074d2403a284d9f652dd2:0:546",
+        "d6864902c7552f856b9499ad49a0839c095222938cefa7267cef68479dbec3da:0:617",
+        "b5c0520a475e513dec3dfd6f28b271f87e5541e9d88e3118c8eebb14c5543ea8:0:509"
+      ],
+      "sections": [
+        "Optional parameters",
+        "Optional parameters",
+        "Optional parameters",
+        "The following parameters are optional and valid only if the FIELD or HISTORY parameter is included"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "recorded-solver-diagnostic-2",
+      "query": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?\nAbaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt.",
+      "candidate_count": 34,
+      "rerank_seconds": 1.305363400024362,
+      "total_seconds": 1.5149840000085533,
+      "selected_ids": [
+        "5109ff70a1293a4724f41165fb97c565c46c0f22b687c1a3c1ec988df3375e93",
+        "37cd781297aa27d265ae929577a4abbe18278e4bbd9e4f257bc1a062caf3e15b",
+        "c152cd42eb2ebc32ca8c7d46813928f2a0ba81fc91034ef33a0d8cec1c2c974b",
+        "d2f7422fc89da0c2a52ca87b76957a2969a4fd5bfea53f503f89f4c7d35c0c7c"
+      ],
+      "returned_parent_ids": [
+        "5109ff70a1293a4724f41165fb97c565c46c0f22b687c1a3c1ec988df3375e93",
+        "37cd781297aa27d265ae929577a4abbe18278e4bbd9e4f257bc1a062caf3e15b",
+        "c152cd42eb2ebc32ca8c7d46813928f2a0ba81fc91034ef33a0d8cec1c2c974b",
+        "d2f7422fc89da0c2a52ca87b76957a2969a4fd5bfea53f503f89f4c7d35c0c7c"
+      ],
+      "matched_child_ids": [
+        "5109ff70a1293a4724f41165fb97c565c46c0f22b687c1a3c1ec988df3375e93:0:826",
+        "37cd781297aa27d265ae929577a4abbe18278e4bbd9e4f257bc1a062caf3e15b:0:814",
+        "c152cd42eb2ebc32ca8c7d46813928f2a0ba81fc91034ef33a0d8cec1c2c974b:0:905",
+        "d2f7422fc89da0c2a52ca87b76957a2969a4fd5bfea53f503f89f4c7d35c0c7c:0:720"
+      ],
+      "sections": [
+        "Specifying Field Output Frequency in Time Points",
+        "Time Domain Analysis: Specifying Output Frequency in Time Points",
+        "Time Domain Analysis: Time Incrementation",
+        "Time Domain Analysis: Specifying Output Frequency in Regular Time Interval Size"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "tie-separation",
+      "query": "If I tie two surfaces in Abaqus, can they subsequently separate or slide relative to each other, or is a contact interaction needed for that behavior?",
+      "candidate_count": 35,
+      "rerank_seconds": 0.8689818000420928,
+      "total_seconds": 1.0546203999547288,
+      "selected_ids": [
+        "ff10441907262e3d4fa9430f78e01bf3df4dc133763ce9336d57ec64276b8533",
+        "f9459abbb08fb8a5635cc6174dff216ddfc5350f2f84326920a810abad331873",
+        "127ac67d678560ba10d6f65332ee68f597b51b0de0cc9d6137ff20bca572d951",
+        "757919476e33998280deff03e0329727bf98e885db57705d191cd774b9337e9f"
+      ],
+      "returned_parent_ids": [
+        "ff10441907262e3d4fa9430f78e01bf3df4dc133763ce9336d57ec64276b8533",
+        "f9459abbb08fb8a5635cc6174dff216ddfc5350f2f84326920a810abad331873",
+        "127ac67d678560ba10d6f65332ee68f597b51b0de0cc9d6137ff20bca572d951",
+        "757919476e33998280deff03e0329727bf98e885db57705d191cd774b9337e9f"
+      ],
+      "matched_child_ids": [
+        "ff10441907262e3d4fa9430f78e01bf3df4dc133763ce9336d57ec64276b8533:0:706",
+        "f9459abbb08fb8a5635cc6174dff216ddfc5350f2f84326920a810abad331873:0:1099",
+        "127ac67d678560ba10d6f65332ee68f597b51b0de0cc9d6137ff20bca572d951:0:472",
+        "757919476e33998280deff03e0329727bf98e885db57705d191cd774b9337e9f:0:1169"
+      ],
+      "sections": [
+        "Both Surfaces Have Rotational Degrees of Freedom",
+        "Unconstrained Nodes in Tie Constraint Pairs",
+        "Defining a Tie Constraint for a Pair of Surfaces",
+        "Defining the Surfaces to Be Constrained"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "coupling-deformation",
+      "query": "What is the difference between kinematic and distributing coupling when a load must be transferred from a reference point while allowing the coupled surface to deform?",
+      "candidate_count": 30,
+      "rerank_seconds": 0.6387385999551043,
+      "total_seconds": 0.8285600000526756,
+      "selected_ids": [
+        "8c6bbc60049ee5f41f27a47a1ab7273eed9cb448d0d0d87abe25a0dea5cfeeca",
+        "4a38c73c276219e3d6a4c2fbb566c8a64eb898a2084ab6bc161d97ac758ea526",
+        "cab8d9d2039fa31884207b90f712b1c1be8fc28b351493f3723b9164d928aceb",
+        "42022944291d28cd88291e63f4d1a6116539eed5842857ce3589b064f4021e83"
+      ],
+      "returned_parent_ids": [
+        "8c6bbc60049ee5f41f27a47a1ab7273eed9cb448d0d0d87abe25a0dea5cfeeca",
+        "4a38c73c276219e3d6a4c2fbb566c8a64eb898a2084ab6bc161d97ac758ea526",
+        "cab8d9d2039fa31884207b90f712b1c1be8fc28b351493f3723b9164d928aceb",
+        "42022944291d28cd88291e63f4d1a6116539eed5842857ce3589b064f4021e83"
+      ],
+      "matched_child_ids": [
+        "8c6bbc60049ee5f41f27a47a1ab7273eed9cb448d0d0d87abe25a0dea5cfeeca:0:483",
+        "4a38c73c276219e3d6a4c2fbb566c8a64eb898a2084ab6bc161d97ac758ea526:0:333",
+        "cab8d9d2039fa31884207b90f712b1c1be8fc28b351493f3723b9164d928aceb:0:518",
+        "42022944291d28cd88291e63f4d1a6116539eed5842857ce3589b064f4021e83:0:80"
+      ],
+      "sections": [
+        "Surface-Based Coupling Definitions",
+        "Uniform Coupling Constraints",
+        "Distributing Coupling Constraints",
+        "Defining a Surface-Based Coupling Constraint"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "mass-scaling-inertia",
+      "query": "In an Abaqus/Explicit quasi-static analysis, why can excessive mass scaling change the physical response even when it reduces the number of stable time increments?",
+      "candidate_count": 29,
+      "rerank_seconds": 0.6887721999082714,
+      "total_seconds": 0.883730600005947,
+      "selected_ids": [
+        "6b28ff79b75ce56f7598486670d597f9606269f01e883ab8b71babe7581a2d47",
+        "68cd7cbde62dd8dcec572f07e36991c2369e57b162679682198dcaac098afa7d",
+        "c7f02e3c4ad2f5acb3efeb3d3b38f3cc6428ba3e503ac43ddf71a78e8e4d1685",
+        "7ba902251c6223cc5bc641798d34c5836161a0e8ffc3490dd2e88044232ad33c"
+      ],
+      "returned_parent_ids": [
+        "6b28ff79b75ce56f7598486670d597f9606269f01e883ab8b71babe7581a2d47",
+        "68cd7cbde62dd8dcec572f07e36991c2369e57b162679682198dcaac098afa7d",
+        "c7f02e3c4ad2f5acb3efeb3d3b38f3cc6428ba3e503ac43ddf71a78e8e4d1685",
+        "7ba902251c6223cc5bc641798d34c5836161a0e8ffc3490dd2e88044232ad33c"
+      ],
+      "matched_child_ids": [
+        "6b28ff79b75ce56f7598486670d597f9606269f01e883ab8b71babe7581a2d47:0:816",
+        "68cd7cbde62dd8dcec572f07e36991c2369e57b162679682198dcaac098afa7d:0:760",
+        "c7f02e3c4ad2f5acb3efeb3d3b38f3cc6428ba3e503ac43ddf71a78e8e4d1685:0:381",
+        "7ba902251c6223cc5bc641798d34c5836161a0e8ffc3490dd2e88044232ad33c:0:659"
+      ],
+      "sections": [
+        "Quasi-Static Analysis",
+        "Automatic Mass Scaling for Analysis of Bulk Metal Rolling",
+        "Example",
+        "Dynamic Analysis"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "hybrid-pressure",
+      "query": "Why do nearly incompressible materials often need hybrid solid elements in Abaqus/Standard, and what additional variable does the hybrid formulation introduce?",
+      "candidate_count": 32,
+      "rerank_seconds": 0.7065907000796869,
+      "total_seconds": 0.8928897000150755,
+      "selected_ids": [
+        "e9e2f8272e88242244a39aa8901a71aa498a870f01a5c99cb07005b009c614c1",
+        "c812508b6c039235383245dac46050516fefc3bd40700fa0087eae7fbec3477e",
+        "36bd0f950913f1871a280de97bf51a91226b7f46dbb08195f22ec76db2336c15",
+        "186f013550edde3a7aa3c592c801e4c0623cffba23bbf7adbb673ca8f626ff1e"
+      ],
+      "returned_parent_ids": [
+        "e9e2f8272e88242244a39aa8901a71aa498a870f01a5c99cb07005b009c614c1",
+        "c812508b6c039235383245dac46050516fefc3bd40700fa0087eae7fbec3477e",
+        "36bd0f950913f1871a280de97bf51a91226b7f46dbb08195f22ec76db2336c15",
+        "186f013550edde3a7aa3c592c801e4c0623cffba23bbf7adbb673ca8f626ff1e"
+      ],
+      "matched_child_ids": [
+        "e9e2f8272e88242244a39aa8901a71aa498a870f01a5c99cb07005b009c614c1:0:384",
+        "c812508b6c039235383245dac46050516fefc3bd40700fa0087eae7fbec3477e:0:449",
+        "36bd0f950913f1871a280de97bf51a91226b7f46dbb08195f22ec76db2336c15:0:513",
+        "186f013550edde3a7aa3c592c801e4c0623cffba23bbf7adbb673ca8f626ff1e:0:545"
+      ],
+      "sections": [
+        "Choosing between Regular and Hybrid Elements",
+        "Fully Incompressible Material Behavior",
+        "Almost Incompressible Material Behavior",
+        "Fully Incompressible Material Behavior"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "plane-strain-meaning",
+      "query": "For a two-dimensional plane strain model, which out-of-plane strain components are constrained, and can the out-of-plane normal stress still be nonzero?",
+      "candidate_count": 26,
+      "rerank_seconds": 0.6205688999034464,
+      "total_seconds": 0.8084938999963924,
+      "selected_ids": [
+        "e40c29da26e1864e2644abf8f4f9e5c10d9cb2ad198445a89bd6855a0a972656",
+        "7d99db122be2136c880fd98d67f3e48ec6299234fa29f4d3d95b896af1ff0290",
+        "8f0d929de9d55c71b6743f76e41c951f63e93e273b649b45e73f33555678af5c",
+        "ed05203423bd4dea5ed7e30164e06b93ad7e4d24533e2b459f258f19ad6f5c57"
+      ],
+      "returned_parent_ids": [
+        "e40c29da26e1864e2644abf8f4f9e5c10d9cb2ad198445a89bd6855a0a972656",
+        "7d99db122be2136c880fd98d67f3e48ec6299234fa29f4d3d95b896af1ff0290",
+        "8f0d929de9d55c71b6743f76e41c951f63e93e273b649b45e73f33555678af5c",
+        "ed05203423bd4dea5ed7e30164e06b93ad7e4d24533e2b459f258f19ad6f5c57"
+      ],
+      "matched_child_ids": [
+        "e40c29da26e1864e2644abf8f4f9e5c10d9cb2ad198445a89bd6855a0a972656:0:207",
+        "7d99db122be2136c880fd98d67f3e48ec6299234fa29f4d3d95b896af1ff0290:0:343",
+        "8f0d929de9d55c71b6743f76e41c951f63e93e273b649b45e73f33555678af5c:0:457",
+        "ed05203423bd4dea5ed7e30164e06b93ad7e4d24533e2b459f258f19ad6f5c57:0:925"
+      ],
+      "sections": [
+        "Plane Strain Elements",
+        "Generalized Plane Strain Elements",
+        "Plane Strain Elements",
+        "Generalized Plane Strain Elements"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "reduced-integration-hourglass",
+      "query": "Why can first-order reduced-integration elements exhibit hourglass modes, and what does hourglass control attempt to prevent?",
+      "candidate_count": 26,
+      "rerank_seconds": 0.6206258999882266,
+      "total_seconds": 0.8049297999823466,
+      "selected_ids": [
+        "30a4086b83945751afbed7a788293a452ecd334dc9bc1dcc057126d605c87668",
+        "78a6a883ce9b1945dd6db983953185661f7b2671deaf90e7c1a4365ce5b1bc4b",
+        "86636bb0b9e2fc4cd744254d592b3d3facf960601aeff822a1e4ff1d1e3c4d95",
+        "47bddc93ce71db06f90950949b95572dfce8995734f0afc8d3280fa2d13c0462"
+      ],
+      "returned_parent_ids": [
+        "30a4086b83945751afbed7a788293a452ecd334dc9bc1dcc057126d605c87668",
+        "78a6a883ce9b1945dd6db983953185661f7b2671deaf90e7c1a4365ce5b1bc4b",
+        "86636bb0b9e2fc4cd744254d592b3d3facf960601aeff822a1e4ff1d1e3c4d95",
+        "47bddc93ce71db06f90950949b95572dfce8995734f0afc8d3280fa2d13c0462"
+      ],
+      "matched_child_ids": [
+        "30a4086b83945751afbed7a788293a452ecd334dc9bc1dcc057126d605c87668:0:619",
+        "78a6a883ce9b1945dd6db983953185661f7b2671deaf90e7c1a4365ce5b1bc4b:0:577",
+        "86636bb0b9e2fc4cd744254d592b3d3facf960601aeff822a1e4ff1d1e3c4d95:0:412",
+        "47bddc93ce71db06f90950949b95572dfce8995734f0afc8d3280fa2d13c0462:0:255"
+      ],
+      "sections": [
+        "Hourglassing",
+        "Hourglassing",
+        "Cylindrical Elements",
+        "Specifying Nondefault Section Controls"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "nodal-stress-extrapolation",
+      "query": "Why can nodal extrapolated stress values differ from stresses at integration points, especially in a region with a steep stress gradient?",
+      "candidate_count": 34,
+      "rerank_seconds": 0.7503672000020742,
+      "total_seconds": 0.933995799976401,
+      "selected_ids": [
+        "86188305c69dd29be67f6e4cb6410e32956f9fe44520547f1389e15f55b1769a",
+        "228a180521aa8d633a64a761d30ab229d3fcbfb610262e8746b6690af0940d47",
+        "476869ec422815da16a6531ae124573dc1fe7f7d2947422e1c5ba5a2646cea58",
+        "9ec0989a3504fea189e0b1ddd61cd4e963695068e73149bc86ffca2a83c4225a"
+      ],
+      "returned_parent_ids": [
+        "86188305c69dd29be67f6e4cb6410e32956f9fe44520547f1389e15f55b1769a",
+        "228a180521aa8d633a64a761d30ab229d3fcbfb610262e8746b6690af0940d47",
+        "476869ec422815da16a6531ae124573dc1fe7f7d2947422e1c5ba5a2646cea58",
+        "9ec0989a3504fea189e0b1ddd61cd4e963695068e73149bc86ffca2a83c4225a"
+      ],
+      "matched_child_ids": [
+        "86188305c69dd29be67f6e4cb6410e32956f9fe44520547f1389e15f55b1769a:0:1098",
+        "228a180521aa8d633a64a761d30ab229d3fcbfb610262e8746b6690af0940d47:0:525",
+        "476869ec422815da16a6531ae124573dc1fe7f7d2947422e1c5ba5a2646cea58:0:756",
+        "9ec0989a3504fea189e0b1ddd61cd4e963695068e73149bc86ffca2a83c4225a:872:1111"
+      ],
+      "sections": [
+        "Extrapolation and Interpolation of Element Output Variables",
+        "Surface Stress Output",
+        "Interpolation of Temperature and Field Variables in Stress/Displacement Elements",
+        "Multi-Purpose, Improved Surface Stress Visualization Tetrahedra"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "explicit-stable-increment",
+      "query": "Why can a few very small elements control the stable time increment and increase the runtime of an Abaqus/Explicit analysis?",
+      "candidate_count": 31,
+      "rerank_seconds": 0.7629560999339446,
+      "total_seconds": 0.9558015000075102,
+      "selected_ids": [
+        "077f99604d362eeaf4c5eaf4599906787b4e298ba2540528f52aa6b859f6f3c8",
+        "7ba902251c6223cc5bc641798d34c5836161a0e8ffc3490dd2e88044232ad33c",
+        "815db0b58791582805734547745e769635a921e417eb79a5d0268d1d6c2b5a16",
+        "73722a09338ce11879d5b373f2cc5c9206d6bd2cb8004220ac7589a1eb3b2f44"
+      ],
+      "returned_parent_ids": [
+        "077f99604d362eeaf4c5eaf4599906787b4e298ba2540528f52aa6b859f6f3c8",
+        "7ba902251c6223cc5bc641798d34c5836161a0e8ffc3490dd2e88044232ad33c",
+        "815db0b58791582805734547745e769635a921e417eb79a5d0268d1d6c2b5a16",
+        "73722a09338ce11879d5b373f2cc5c9206d6bd2cb8004220ac7589a1eb3b2f44"
+      ],
+      "matched_child_ids": [
+        "077f99604d362eeaf4c5eaf4599906787b4e298ba2540528f52aa6b859f6f3c8:0:282",
+        "7ba902251c6223cc5bc641798d34c5836161a0e8ffc3490dd2e88044232ad33c:0:659",
+        "815db0b58791582805734547745e769635a921e417eb79a5d0268d1d6c2b5a16:0:517",
+        "73722a09338ce11879d5b373f2cc5c9206d6bd2cb8004220ac7589a1eb3b2f44:0:252"
+      ],
+      "sections": [
+        "Stable Time Increment Report",
+        "Dynamic Analysis",
+        "Example",
+        "Mass Scaling"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    },
+    {
+      "arm": "candidate",
+      "id": "meshing-predictor-tail",
+      "query": "For adaptive meshing, what does MESHING PREDICTOR=PREVIOUS use to predict node positions, compared with CURRENT?",
+      "candidate_count": 33,
+      "rerank_seconds": 0.8242593999020755,
+      "total_seconds": 1.0177829000167549,
+      "selected_ids": [
+        "16d2cc8020e293ed6cb62727377c01693826786b774235da12bd74cb33b1c1cf",
+        "053dd3b4a6abd355a004bf4c38466bb41d16a691cac9ae44996e708525ff8e7c",
+        "c297e7f96ac56844a2a6307376af8d49397ec6bd6894d275ad77e5ebf7a481e3",
+        "e4e9f0460a82b2a2a6508ded0ebfa4843dc0db607acdc7a0a6a732b4787d51b7"
+      ],
+      "returned_parent_ids": [
+        "16d2cc8020e293ed6cb62727377c01693826786b774235da12bd74cb33b1c1cf",
+        "053dd3b4a6abd355a004bf4c38466bb41d16a691cac9ae44996e708525ff8e7c",
+        "c297e7f96ac56844a2a6307376af8d49397ec6bd6894d275ad77e5ebf7a481e3",
+        "e4e9f0460a82b2a2a6508ded0ebfa4843dc0db607acdc7a0a6a732b4787d51b7"
+      ],
+      "matched_child_ids": [
+        "16d2cc8020e293ed6cb62727377c01693826786b774235da12bd74cb33b1c1cf:0:1069",
+        "053dd3b4a6abd355a004bf4c38466bb41d16a691cac9ae44996e708525ff8e7c:0:339",
+        "c297e7f96ac56844a2a6307376af8d49397ec6bd6894d275ad77e5ebf7a481e3:0:868",
+        "e4e9f0460a82b2a2a6508ded0ebfa4843dc0db607acdc7a0a6a732b4787d51b7:0:511"
+      ],
+      "sections": [
+        "Optional parameters",
+        "Optional parameters",
+        "Optional parameters",
+        "Optional parameters"
+      ],
+      "truncated_bodies": 0,
+      "truncated_rerank_pairs": 0
+    }
+  ],
+  "checks": {
+    "parents_and_span_coverage_preserved": true,
+    "persisted_children_within_actual_encoder_budget": true,
+    "parent_and_child_reopen_mapping_verified": true,
+    "sources_and_pilot_indexes_unchanged_after_queries": true
+  },
+  "limits": [
+    "No full-index rebuild or default Agent integration. Pilot manifests intentionally are not product-tool IndexManifest format.",
+    "Complex structures remain stored but explicitly unsearchable under this first text-only projection; compare coverage as well as ranking.",
+    "Whole-parent return may still omit related conditions in a different source block.",
+    "Selected corpus and queries are exposed development data, not held-out or production distribution.",
+    "This does not establish general table/math support or verified engineering answers."
+  ]
+}

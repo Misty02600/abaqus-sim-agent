@@ -1,0 +1,634 @@
+{
+  "schema_version": "1",
+  "experiment": "abaqus-2024-b31-beam-tension-gold-v1",
+  "date": "2026-08-24",
+  "last_updated": "2026-08-27",
+  "runtime": "Abaqus 2024",
+  "prompt_version": "beam-tension-b31-v1",
+  "deterministic_reference": {
+    "licensed_integration_passed": true,
+    "elapsed_seconds": 18.64,
+    "element_type_counts": {
+      "B31": 20
+    },
+    "node_count": 21,
+    "x_coordinates": [
+      0.0,
+      5.0,
+      10.0,
+      15.0,
+      20.0,
+      25.0,
+      30.0,
+      35.0,
+      40.0,
+      45.0,
+      50.0,
+      55.0,
+      60.0,
+      65.0,
+      70.0,
+      75.0,
+      80.0,
+      85.0,
+      90.0,
+      95.0,
+      100.0
+    ],
+    "right_mean_u1": 0.10000000149011612,
+    "left_sum_rf1": -21000.0,
+    "right_sum_rf1": 21000.0,
+    "sf1_value_count": 20,
+    "sf1_min": 21000.0,
+    "sf1_max": 21000.0,
+    "mean_sf1": 21000.0,
+    "max_abs_transverse_u": 8.32e-17,
+    "max_abs_transverse_sf": 2.30e-26,
+    "step_procedure": "*STATIC",
+    "step_nlgeom": false,
+    "elastic_e": 210000.0,
+    "elastic_nu": 0.3,
+    "profile_dimensions": [
+      10.0,
+      10.0
+    ],
+    "orientation_is_unit_and_transverse": true,
+    "connectivity_is_single_20_element_chain": true,
+    "inp_contract_passed": true,
+    "public_results_fields": [
+      "right_mean_u1",
+      "left_sum_rf1",
+      "mean_sf1"
+    ],
+    "fixture_sha256": {
+      "build_model.py": "b6b4a50eef70c23bbb291d95a5ddff62202617a27110a7fc7a411f7d1a515d73",
+      "extract_results.py": "1e083c5b3bece72cfb454c88d19c424774e42f2aee61968fff0e29ed7b162043"
+    }
+  },
+  "product_agent_smoke": {
+    "model": "opencode-go/deepseek-v4-flash",
+    "http_retries": 3,
+    "wall_time_seconds": 2700.0,
+    "api_catalog_mode": "automatic_verified_only",
+    "catalog_cards_sha256": "b557c9cb79c2a593afbb0c6ed332c664001f880cc5667d465729252e3635fd5e",
+    "concept_retrieval_mode": "off",
+    "attempts": 3,
+    "passes": 0,
+    "required_passes": 2,
+    "gate_passed": false,
+    "transport_successful_attempts": 0,
+    "task_attempts": 0,
+    "failures": [
+      {
+        "attempt": 1,
+        "run_id": "beam-b0d2ea0af8d9",
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out",
+        "completed_model_responses": 2,
+        "completed_input_tokens": 9707,
+        "completed_output_tokens": 945,
+        "completed_tool_calls": 3,
+        "files": 0,
+        "abaqus_calls": 0,
+        "terminal_request_wait_seconds": 483.964,
+        "run_elapsed_seconds": 535.261
+      },
+      {
+        "attempt": 2,
+        "run_id": "beam-241ad55b1a6d",
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out",
+        "completed_model_responses": 2,
+        "completed_input_tokens": 9705,
+        "completed_output_tokens": 422,
+        "completed_tool_calls": 2,
+        "files": 0,
+        "abaqus_calls": 0,
+        "terminal_request_wait_seconds": 484.286,
+        "run_elapsed_seconds": 523.328
+      },
+      {
+        "attempt": 3,
+        "run_id": "beam-a8d4ea0f32a0",
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out",
+        "completed_model_responses": 1,
+        "completed_input_tokens": 3935,
+        "completed_output_tokens": 344,
+        "completed_tool_calls": 2,
+        "files": 0,
+        "abaqus_calls": 0,
+        "terminal_request_wait_seconds": 484.352,
+        "run_elapsed_seconds": 487.660
+      }
+    ],
+    "eval_task_retry": false,
+    "repeat_until_pass": false,
+    "summary_sha256": "7618b77fa8694eb668a5e9e10be6cb75d4a213b970d09795f03c87cc1bbba967"
+  },
+  "product_agent_rerun_v2": {
+    "run_root": "D:/abaqus-runs/beam-b31-go-flash-l0-20260824-v2",
+    "model": "opencode-go/deepseek-v4-flash",
+    "http_retries": 3,
+    "wall_time_seconds": 2700.0,
+    "api_catalog_mode": "automatic_verified_only",
+    "concept_retrieval_mode": "off",
+    "attempts": 3,
+    "raw_passes": 0,
+    "required_passes": 2,
+    "raw_gate_passed": false,
+    "attempt_results": [
+      {
+        "attempt": 1,
+        "run_id": "beam-53d5e8b39aad",
+        "stage": "infrastructure",
+        "error": "UnexpectedModelBehavior: Tool 'run_command' exceeded max retries count of 2",
+        "workspace_files": 6,
+        "cae_calls": 2,
+        "solver_calls": 0
+      },
+      {
+        "attempt": 2,
+        "run_id": "beam-6854d954f87c",
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out",
+        "workspace_files": 0,
+        "abaqus_calls": 0
+      },
+      {
+        "attempt": 3,
+        "run_id": "beam-5bd1bbafa3c4",
+        "raw_stage": "verification",
+        "raw_result": "The solver, ODB extraction and every numeric/geometry/topology check passed, but the original verifier rejected the valid BEFORE_ANALYSIS section integration.",
+        "model_requests": 30,
+        "input_tokens": 377230,
+        "output_tokens": 19855,
+        "tool_calls": 32,
+        "abaqus_calls": 12,
+        "solver_calls": 1,
+        "task_duration_seconds": 629.342,
+        "measured_right_mean_u1": 0.10000000149011612,
+        "measured_left_sum_rf1": -21000.0,
+        "measured_right_sum_rf1": 21000.0,
+        "measured_mean_sf1": 21000.0
+      }
+    ],
+    "verifier_bug": {
+      "trigger": "The task required a valid rectangular material-backed beam section but did not prescribe its integration mode.",
+      "original_overconstraint": "Only DURING_ANALYSIS was accepted.",
+      "official_valid_values": [
+        "BEFORE_ANALYSIS",
+        "DURING_ANALYSIS"
+      ],
+      "fix": "Accept either official BeamSection integration value while retaining material/profile/assignment/coverage checks.",
+      "posthoc_attempt_3_replay_passed": true,
+      "posthoc_passes": 1,
+      "posthoc_gate_passed": false,
+      "verifier_sha256_after_fix": "ec2c91e8df32b90785da14c235a74ae07d0a10f30f116cfcf221030468ddfb74",
+      "verification_test_sha256_after_fix": "3a40a48d25d5613fa1e5ed91f4856b1034b7397609cdd7430ac0f26a3de778e2"
+    },
+    "eval_task_retry": false,
+    "repeat_until_pass": false,
+    "summary_sha256": "d5f1a1fa95dcc2b00c40bb77f8bee56dbb73138814c2b936781860a414d909b3",
+    "gate_sha256": "8fc4410a4ab8c700147fa2dbc52d435885a50c4487f64246a5c7d4b0b8872164"
+  },
+  "product_agent_verifier_fix_v3": {
+    "run_root": "D:/abaqus-runs/beam-b31-go-flash-l0-20260824-v3-verifierfix",
+    "model": "opencode-go/deepseek-v4-flash",
+    "http_retries": 3,
+    "wall_time_seconds": 2700.0,
+    "api_catalog_mode": "automatic_verified_only",
+    "concept_retrieval_mode": "off",
+    "attempts": 3,
+    "passes": 1,
+    "required_passes": 2,
+    "gate_passed": false,
+    "attempt_results": [
+      {
+        "attempt": 1,
+        "run_id": "beam-199b7c002c89",
+        "stage": "completed",
+        "oracle_passed": true,
+        "model_requests": 10,
+        "input_tokens": 88293,
+        "output_tokens": 12477,
+        "tool_calls": 13,
+        "abaqus_calls": 4,
+        "solver_calls": 1,
+        "abaqus_runtime_seconds": 21.424,
+        "task_duration_seconds": 172.123
+      },
+      {
+        "attempt": 2,
+        "run_id": "beam-616f66b10e9f",
+        "stage": "infrastructure",
+        "error": "ModelHTTPError: status_code 500, Internal server error",
+        "workspace_files": 0,
+        "abaqus_calls": 0
+      },
+      {
+        "attempt": 3,
+        "run_id": "beam-f6f2ca34bf68",
+        "stage": "runtime_budget",
+        "error": "Abaqus invocation budget is exhausted",
+        "model_requests": 32,
+        "input_tokens": 386082,
+        "output_tokens": 18395,
+        "tool_calls": 32,
+        "abaqus_calls": 12,
+        "solver_calls": 1,
+        "abaqus_runtime_seconds": 27.081,
+        "task_duration_seconds": 701.789,
+        "observed_result": "CAE and Solver completed, but repeated API and ODB probes plus extraction repair exhausted the Abaqus budget before results.json and verification."
+      }
+    ],
+    "eval_task_retry": false,
+    "repeat_until_pass": false,
+    "treatment_change_from_v2": "Verifier only: accept both official BeamSection integration values.",
+    "summary_sha256": "67ee272d78834143e2d97d69b1f446a249762e06ccf4ccc045133435a6da7c62",
+    "gate_sha256": "fa19c670a4aea48b6ae56de52abbe1e9f10f04967b77194d7157a83452c534e2"
+  },
+  "full_catalog_v4": {
+    "run_root": "D:/abaqus-runs/beam-b31-go-flash-full-catalog-20260825-v4",
+    "model": "opencode-go/deepseek-v4-flash",
+    "http_retries": 3,
+    "wall_time_seconds": 2700.0,
+    "api_catalog_mode": "full",
+    "concept_retrieval_mode": "off",
+    "attempts": 3,
+    "passes": 1,
+    "required_passes": 2,
+    "gate_passed": false,
+    "attempt_results": [
+      {
+        "attempt": 1,
+        "run_id": "beam-0bf5542f2b48",
+        "stage": "runtime_budget",
+        "error": "Abaqus invocation budget is exhausted",
+        "model_requests": 39,
+        "input_tokens": 699483,
+        "output_tokens": 34328,
+        "tool_calls": 44,
+        "api_lookup_calls": 4,
+        "abaqus_calls": 12,
+        "solver_calls": 1,
+        "abaqus_runtime_seconds": 55.904,
+        "task_duration_seconds": 540.028,
+        "observed_result": "CAE and Solver completed, but the run exhausted the Abaqus budget during orientation, Set and ODB extraction probes before results.json and verification."
+      },
+      {
+        "attempt": 2,
+        "run_id": "beam-b10fce20098c",
+        "stage": "completed",
+        "oracle_passed": true,
+        "model_requests": 22,
+        "input_tokens": 268226,
+        "output_tokens": 16641,
+        "tool_calls": 26,
+        "api_lookup_calls": 4,
+        "abaqus_calls": 8,
+        "solver_calls": 1,
+        "abaqus_runtime_seconds": 25.977,
+        "task_duration_seconds": 288.374
+      },
+      {
+        "attempt": 3,
+        "run_id": "beam-8a4211062d21",
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out",
+        "workspace_files": 0,
+        "api_lookup_calls": 0,
+        "abaqus_calls": 0
+      }
+    ],
+    "lookup_adoption": {
+      "task_started_attempts": 2,
+      "attempts_with_active_lookup": 2,
+      "counted_active_lookups": 8,
+      "observed_coverage": [
+        "Model.BeamSection or BeamSection constructor",
+        "Part.SectionAssignment",
+        "Part.assignBeamSectionOrientation",
+        "Part.seedEdgeByNumber",
+        "Part.setElementType",
+        "Part.WirePolyLine",
+        "Part.DatumCsysByThreePoints"
+      ],
+      "confirmed_catalog_misses": [
+        "MeshNodeArray.findAt",
+        "OdbMeshNodeArray.findAt",
+        "OdbInstance.nodeSets"
+      ],
+      "routing_observation": "Both task-started attempts spent all four lookup calls during authoring; later automatic hints were sometimes unavailable because the shared lookup budget was exhausted."
+    },
+    "comparison_with_automatic_v3_task_started_attempts": {
+      "scope": "Only the two attempts per arm that entered the Agent task; each arm also had one provider infrastructure failure before side effects.",
+      "automatic": {
+        "passes": 1,
+        "attempts": 2,
+        "model_requests": 42,
+        "input_tokens": 474375,
+        "output_tokens": 30872,
+        "tool_calls": 45,
+        "api_lookup_calls": 0,
+        "abaqus_calls": 16,
+        "solver_calls": 2,
+        "task_duration_seconds": 873.912
+      },
+      "full": {
+        "passes": 1,
+        "attempts": 2,
+        "model_requests": 61,
+        "input_tokens": 967709,
+        "output_tokens": 50969,
+        "tool_calls": 70,
+        "api_lookup_calls": 8,
+        "abaqus_calls": 20,
+        "solver_calls": 2,
+        "task_duration_seconds": 828.402
+      },
+      "full_minus_automatic": {
+        "passes": 0,
+        "model_requests": 19,
+        "model_requests_percent": 45.24,
+        "input_tokens": 493334,
+        "input_tokens_percent": 104.0,
+        "output_tokens": 20097,
+        "output_tokens_percent": 65.1,
+        "tool_calls": 25,
+        "tool_calls_percent": 55.56,
+        "abaqus_calls": 4,
+        "abaqus_calls_percent": 25.0,
+        "task_duration_seconds": -45.51,
+        "task_duration_percent": -5.21
+      }
+    },
+    "eval_task_retry": false,
+    "repeat_until_pass": false,
+    "treatment_change_from_v3": "Catalog mode only: automatic_verified_only to full.",
+    "summary_sha256": "a8a97f6f12266bca57b56c6db7dd3414f369857647c458e3c3042bd84dfb4a8c",
+    "gate_sha256": "fa19c670a4aea48b6ae56de52abbe1e9f10f04967b77194d7157a83452c534e2"
+  },
+  "automatic_exact_signature_v5": {
+    "run_root": "D:/abaqus-runs/beam-b31-go-flash-auto-signature-20260825-v5",
+    "model": "opencode-go/deepseek-v4-flash",
+    "http_retries": 3,
+    "wall_time_seconds": 2700.0,
+    "api_catalog_mode": "automatic_exact_signature",
+    "concept_retrieval_mode": "off",
+    "attempts": 3,
+    "passes": 1,
+    "required_passes": 2,
+    "gate_passed": false,
+    "attempt_results": [
+      {
+        "attempt": 1,
+        "run_id": "beam-c329d99d3640",
+        "stage": "completed",
+        "oracle_passed": true,
+        "model_requests": 34,
+        "input_tokens": 540309,
+        "output_tokens": 11239,
+        "tool_calls": 35,
+        "api_lookup_calls": 0,
+        "abaqus_calls": 12,
+        "solver_calls": 2,
+        "abaqus_runtime_seconds": 42.303,
+        "task_duration_seconds": 209.762
+      },
+      {
+        "attempt": 2,
+        "run_id": "beam-15032240ee8b",
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out",
+        "workspace_files": 0,
+        "api_lookup_calls": 0,
+        "abaqus_calls": 0
+      },
+      {
+        "attempt": 3,
+        "run_id": "beam-bd0208f5c500",
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out",
+        "workspace_files": 0,
+        "api_lookup_calls": 0,
+        "abaqus_calls": 0
+      }
+    ],
+    "lookup_adoption": {
+      "task_started_attempts": 1,
+      "attempts_with_signature_lookup": 0,
+      "counted_automatic_lookups": 0,
+      "interpretation": "The only task-started attempt completed without an API traceback; two attempts failed in transport before files. This batch verifies non-interference but cannot measure B31 signature-routing benefit."
+    },
+    "separate_mechanism_evidence": {
+      "case_id": "beam_section_invalid_orientation",
+      "result": "1/1",
+      "runtime_note_available": false,
+      "query": "Model.BeamSection",
+      "payload_bytes": 1299,
+      "delivered_note_ids": [],
+      "observed_repair": "The Agent removed only the unsupported orientation keyword and preserved material, profile, integration and poissonRatio.",
+      "source": "benchmarks/coding/api_repair_regression_evaluation_20260824.json"
+    },
+    "eval_task_retry": false,
+    "repeat_until_pass": false,
+    "treatment_change_from_v4": "Catalog routing only: full to automatic exact signature; Skill, task prompt, model, budgets and verifier unchanged.",
+    "summary_sha256": "da6697cbe0be206aef7d22c6eb09ab04c04ea06ff9261a729348ff1de94a38aa",
+    "gate_sha256": "fa19c670a4aea48b6ae56de52abbe1e9f10f04967b77194d7157a83452c534e2"
+  },
+  "final9_full_no_shell_v6": {
+    "run_root": "D:/abaqus-runs/beam-b31-go-flash-final9-no-shell-parameter-20260827-v1",
+    "model": "opencode-go/deepseek-v4-flash",
+    "http_retries": 3,
+    "prompt_version": "beam-tension-b31-v1",
+    "skill_sha256": "5dffe84954008bec534179a85d97d448a1ad9647716cd3f8f33c5f02528bf374",
+    "api_catalog_mode": "full",
+    "api_catalog_card_count": 5481,
+    "api_catalog_cards_sha256": "3e3294808dc180df2d13ce5183095ebb6ecc47998f6313c96398af25c564255b",
+    "concept_retrieval_mode": "off",
+    "planning_enabled": false,
+    "coder_general_shell_policy": "coder-general-shell-disabled-v1",
+    "coding_run_budget": {
+      "max_clarifications": 0,
+      "max_model_requests": 40,
+      "max_api_lookup_calls": 4,
+      "max_concept_lookup_calls": 2,
+      "max_abaqus_calls": 12,
+      "max_solver_calls": 3,
+      "wall_time_seconds": 2700.0
+    },
+    "attempts": 3,
+    "passes": 2,
+    "required_passes": 2,
+    "gate_passed": true,
+    "summary_sha256": "925be7fcc8c63b8a0260f1ecb21b827557c3970e64a6b595e2b9d5936ef30e84",
+    "gate_sha256": "ae8ff61d0716674028080f0375ad08a83fd1613edc365ec258edf6ed31110069",
+    "attempt_results": [
+      {
+        "attempt": 1,
+        "run_id": "beam-7c01a5e6798a",
+        "stage": "infrastructure",
+        "error": "ModelAPIError: Request timed out",
+        "completed_model_responses": 4,
+        "completed_input_tokens": 23888,
+        "completed_output_tokens": 10418,
+        "completed_tool_calls": 9,
+        "api_lookup_calls": 4,
+        "workspace_files": 0,
+        "abaqus_calls": 0,
+        "solver_calls": 0,
+        "terminal_request_wait_seconds": 484.355,
+        "history_sha256": "d31d21126935d16eba2a6d68a8c011cc95232fddc127d8c3d4e568d08c457d05",
+        "events_sha256": "9acf416848318cd0afe37f4e6a44deaa1e4e04023351081993eae85bfaa91da7",
+        "api_lookups_sha256": "f81e527f496fe6ab82f0008d021f2bf046979da742e24187ab39949dac1323c9"
+      },
+      {
+        "attempt": 2,
+        "run_id": "beam-800886c5168c",
+        "stage": "completed",
+        "oracle_passed": true,
+        "model_requests": 28,
+        "input_tokens": 390038,
+        "output_tokens": 28115,
+        "tool_calls": 35,
+        "api_lookup_calls": 4,
+        "abaqus_calls": 10,
+        "solver_calls": 1,
+        "abaqus_runtime_seconds": 29.211,
+        "task_duration_seconds": 525.321,
+        "outcome_sha256": "4e1ad1b62ea352e39ef2e06474c219f8f596a059776a2f90f501b13f1f970d10",
+        "history_sha256": "556da9f919c75906c710311556bd4ece6e73fe9f348129eb1e9c7e1a35a89608",
+        "events_sha256": "f8ec336416aef972ced08b4924b5c63d224f4f1c52f5f3bd798b3c6445dcbbca",
+        "api_lookups_sha256": "5057e0605c9bf29a18bda2fc8bb3cd7ec6c9db88b05886862b31a62b7c3fdb16"
+      },
+      {
+        "attempt": 3,
+        "run_id": "beam-1f4ef88fd5dc",
+        "stage": "completed",
+        "oracle_passed": true,
+        "model_requests": 12,
+        "input_tokens": 123816,
+        "output_tokens": 20522,
+        "tool_calls": 18,
+        "api_lookup_calls": 4,
+        "abaqus_calls": 3,
+        "solver_calls": 1,
+        "abaqus_runtime_seconds": 18.246,
+        "task_duration_seconds": 290.682,
+        "delivered_note_ids": [
+          "runtime:2024:Part.seedEdgeByNumber:edge-containers"
+        ],
+        "outcome_sha256": "f94930d74427f43a7dc359dd34f5a854b88ad6f31d12ea31d4ff4bad3234107c",
+        "history_sha256": "846ae85eb39d51894aea5c2f725835281476d9d35caf0dcbbf1be43f12f93a7d",
+        "events_sha256": "37e2a5f6412dd79f348d0019de36ddfc9d27987e69b7a52d362eb85c8094b449",
+        "api_lookups_sha256": "6d76461c926a842e1a293e111d39238e08da7dc2051b098f7e884d20667b4003"
+      }
+    ],
+    "lookup_adoption": {
+      "task_started_attempts": 2,
+      "task_started_passes": 2,
+      "counted_active_method_lookups": 8,
+      "method_parameter_queries": 0,
+      "attempts_with_verified_runtime_note": 1,
+      "bounded_interpretation": "Both task-started attempts used full method cards and passed. No attempt used Method.parameter, so this batch does not establish cross-family parameter-lookup adoption or benefit."
+    },
+    "execution_boundary_observation": {
+      "run_command_registered": false,
+      "run_command_tool_calls": "0/3",
+      "all_abaqus_side_effects_used_typed_tools": true
+    },
+    "task_started_aggregate": {
+      "passes": 2,
+      "attempts": 2,
+      "model_requests": 40,
+      "input_tokens": 513854,
+      "output_tokens": 48637,
+      "tool_calls": 53,
+      "api_lookup_calls": 8,
+      "abaqus_calls": 13,
+      "solver_calls": 2
+    },
+    "treatment_boundary": "Relative to v5 this uses the current accepted product composition and catalog: automatic_exact_signature to full final9 plus no-general-shell. Prompt, Skill, model, budgets, verifier, repeat and no-retry policy remain unchanged; the stochastic batches are descriptive, not a single-variable causal experiment.",
+    "eval_task_retry": false,
+    "repeat_until_pass": false
+  },
+  "harness_tool_retry_investigation": {
+    "source_run": "beam-53d5e8b39aad",
+    "configured_agent_retries": 2,
+    "allowed_generic_shell_commands": [
+      "python"
+    ],
+    "rejected_calls": [
+      {
+        "command": "cd /d <workspace> && dir",
+        "feedback": "Command 'cd' is not in the allowed list."
+      },
+      {
+        "command": "dir D:/SIMULIA",
+        "feedback": "Command 'dir' is not in the allowed list."
+      },
+      {
+        "command": "findstr ... D:/SIMULIA/.../abaqusConstants.py",
+        "feedback": "The third policy violation exceeded the run_command retry count."
+      }
+    ],
+    "finding": "The retry counter accumulated across distinct run_command policy violations during one Agent run; the failures were explicit allowlist rejections, not unchanged Abaqus runtime retries.",
+    "decision": "Keep the current fail-closed retry boundary. Do not raise retries before a separate treatment demonstrates that more retries improve legal tool selection rather than prolong forbidden host inspection."
+  },
+  "interpretation": {
+    "gold_implementation_result": "The deterministic B31 reference, solver, ODB extractor and strengthened hidden verifier pass on licensed Abaqus 2024.",
+    "initial_product_result": "The first Product-Agent smoke observed 0/3 because all three attempts failed in transport before any file or Abaqus side effect.",
+    "v2_result": "The time-separated v2 rerun had two infrastructure failures and one complete physical solution. The original verifier rejected that solution only because it silently required DURING_ANALYSIS, although the task did not prescribe integration mode and official BeamSection supports BEFORE_ANALYSIS. Replaying the stored oracle evidence after correcting that overconstraint passes every check, so the fair v2 interpretation is 1/3, still below gate.",
+    "current_product_result": "The corrected-verifier v3 treatment observed 1/3. One attempt completed end-to-end and passed every oracle check, one failed with a Go HTTP 500 before side effects, and one completed CAE and Solver but exhausted the Abaqus budget during API/ODB probing and extraction repair.",
+    "full_catalog_result": "The full-Catalog v4 treatment also observed 1/3. Both task-started attempts actively consumed all four lookup calls; one passed and one exhausted the runtime budget after CAE and Solver. The treatment did not improve the gate, and its task-started attempts used more model requests, context and Abaqus calls in aggregate than automatic v3.",
+    "automatic_exact_signature_result": "The automatic-exact-signature v5 treatment observed 1/3. Its only task-started attempt passed without triggering a lookup, while two attempts timed out before side effects. The batch shows no regression but is inconclusive for B31 routing benefit. A separate DEV regression directly exercised a no-note Model.BeamSection TypeError and passed after one compact signature injection.",
+    "final9_no_shell_full_result": "The current full-final9/no-Shell v6 batch is the first B31 Product-Agent configuration to pass the 2/3 gate. One attempt timed out before files; both task-started attempts passed the complete hidden oracle. The two passes used 28/10 and 12/3 model/Abaqus calls respectively, so the capability gate is met while the long-tail authoring cost remains visible.",
+    "catalog_routing_result": "The project had multiple API-support mechanisms, but they covered different knowledge classes. The compact Skill omitted B31 and ODB container details; automatic mode had no matching verified note; full Catalog covered key authoring methods but not MeshNodeArray/OdbMeshNodeArray/nodeSets behavior, and active authoring queries exhausted the shared lookup budget before later failures.",
+    "model_capability_result": "OpenCode Go DeepSeek V4 Flash has now demonstrated repeated B31 end-to-end task capability under the frozen v6 configuration: two independent task-started runs passed geometry, topology, section orientation, material, step, BC, U/RF/SF and artifact gates without manual code edits.",
+    "baseline_status": "B31 now passes its Product-Agent smoke gate at 2/3 for full final9 with the no-Shell composition. Earlier corrected automatic v3, full v4 and automatic-exact-signature v5 remain historical 1/3 results. This is one three-attempt smoke, not a stable-rate estimate or proof that full Catalog/no-Shell caused the improvement.",
+    "limits": [
+      "The verifier correction was based on the task text, official BeamSection API values and complete physical evidence; original v2 artifacts and 0/3 raw report remain unchanged.",
+      "The v3 sample is three unseeded attempts and includes one provider HTTP 500, so 1/3 is an observed smoke result rather than a stable success-rate estimate.",
+      "Neither v2, v3, v4 nor v5 used eval task retry or repeat-until-pass. V3 was run once because the evaluator contract changed after a confirmed false negative; v4 and v5 were the requested one-batch routing treatments.",
+      "Automatic v3 and full v4 ran sequentially without a deterministic model seed. Their task-started aggregate comparison is descriptive and cannot establish that full Catalog generally causes the additional calls or tokens.",
+      "V6 also has no deterministic model seed and changes both Catalog artifact/routing and the accepted no-Shell composition relative to v5. The 2/3 gate is valid for that frozen configuration but cannot be attributed to either change.",
+      "V6 made zero Method.parameter queries. It validates B31 full-card use and one seedEdgeByNumber runtime-note delivery, not generic parameter lookup outside SurfaceTraction.",
+      "The first v6 attempt spent four effective lookups and then timed out before files; the second passed only after ten Abaqus calls. The gate does not erase transport or high-cost convergence tails."
+    ]
+  },
+  "source_evidence": [
+    {
+      "path": "D:/abaqus-runs/beam-b31-baseline-final8-go-r3-45m-20260824-v1/evaluation_summary.json",
+      "sha256": "7618b77fa8694eb668a5e9e10be6cb75d4a213b970d09795f03c87cc1bbba967"
+    },
+    {
+      "path": "benchmarks/coding/beam_tension_request.json",
+      "sha256": "4ae0fa429ecaa18f469b9b7ae0073a6d2be77c1bf066bc55b28572d02cbba92a"
+    },
+    {
+      "path": "D:/abaqus-runs/beam-b31-go-flash-l0-20260824-v2/evaluation_summary.json",
+      "sha256": "d5f1a1fa95dcc2b00c40bb77f8bee56dbb73138814c2b936781860a414d909b3"
+    },
+    {
+      "path": "D:/abaqus-runs/beam-b31-go-flash-l0-20260824-v3-verifierfix/evaluation_summary.json",
+      "sha256": "67ee272d78834143e2d97d69b1f446a249762e06ccf4ccc045133435a6da7c62"
+    },
+    {
+      "path": "D:/abaqus-runs/beam-b31-go-flash-full-catalog-20260825-v4/evaluation_summary.json",
+      "sha256": "a8a97f6f12266bca57b56c6db7dd3414f369857647c458e3c3042bd84dfb4a8c"
+    },
+    {
+      "path": "D:/abaqus-runs/beam-b31-go-flash-auto-signature-20260825-v5/evaluation_summary.json",
+      "sha256": "da6697cbe0be206aef7d22c6eb09ab04c04ea06ff9261a729348ff1de94a38aa"
+    },
+    {
+      "path": "benchmarks/coding/api_repair_regression_evaluation_20260824.json",
+      "sha256": "686d742b3da956561f824d77249f090f46987aa4c3022dc369c8494a468c4780"
+    },
+    {
+      "path": "D:/abaqus-runs/beam-b31-go-flash-final9-no-shell-parameter-20260827-v1/evaluation_summary.json",
+      "sha256": "925be7fcc8c63b8a0260f1ecb21b827557c3970e64a6b595e2b9d5936ef30e84"
+    }
+  ]
+}

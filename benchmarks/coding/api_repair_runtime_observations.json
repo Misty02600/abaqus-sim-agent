@@ -1,0 +1,162 @@
+{
+  "schema_version": "1",
+  "observed_at": "2026-08-23",
+  "scope": "Six minimal Abaqus/CAE 2024 noGUI script-repair fixtures; no input write, job submission, or solve.",
+  "runtime": {
+    "release": "2024",
+    "launcher": "D:/SIMULIA/Commands/abq2024.bat",
+    "python": "3.10.5"
+  },
+  "manifest": {
+    "path": "benchmarks/coding/api_repair_cases.jsonl",
+    "sha256": "b33e17c3bf9311cea471c244bb6c06d8d33a40b807b70f13d25f7ae992727d6b"
+  },
+  "broken_fixture_validation": {
+    "command": "ABAQUS_LICENSED_TESTS=1 pytest tests/test_api_repair_fixtures.py -m abaqus --basetemp D:/abaqus-runs/api-repair-pytest-20260823-v2",
+    "passed": 6,
+    "failed": 0,
+    "raw_root": "D:/abaqus-runs/api-repair-pytest-20260823-v2",
+    "note": "All six CAE processes returned exit code 0 despite an unhandled script error; the expected result artifact was absent in every case."
+  },
+  "repaired_postcondition_validation": {
+    "passed": 6,
+    "failed": 0,
+    "raw_root": "D:/abaqus-runs/api-repair-repaired-20260823-v1",
+    "solution_location": "outside_repository",
+    "note": "Repaired scripts were used only for local oracle validation and are not stored in Agent-visible fixture directories."
+  },
+  "cases": [
+    {
+      "case_id": "seed_nested_sequence",
+      "fixture_sha256": "6a31da97537c9aaef83e44c57ebbea4ba1d1be4102cc5642a8c4554062e4f74a",
+      "baseline": {
+        "result_absent": true,
+        "exit_code": 0,
+        "normalized_error": "TypeError: edges[0] found GeomSequence, expected Vertex",
+        "stdout": {
+          "path": "D:/abaqus-runs/api-repair-pytest-20260823-v2/test_broken_api_repair_fixture0/state/executions/cae_nogui-2ca29942716b43e2a18ae6634e3f65da/stdout.bin",
+          "sha256": "3ebf42a2a9e1351faed499645c44d8f548fa5976a65ba2c45f48033d15959c1e"
+        },
+        "stderr": {
+          "path": "D:/abaqus-runs/api-repair-pytest-20260823-v2/test_broken_api_repair_fixture0/state/executions/cae_nogui-2ca29942716b43e2a18ae6634e3f65da/stderr.bin",
+          "sha256": "a30635e4748e3b051a993b1a279f9071317a408a8cb52ce32b048ae347e87481"
+        }
+      },
+      "repaired_result": {
+        "path": "D:/abaqus-runs/api-repair-repaired-20260823-v1/seed_nested_sequence/seed_nested_sequence_result.json",
+        "sha256": "9d50ef5b91629b60926b7e6fedb6d3a0566b4ae21d456c5f07a34bc05b286923",
+        "value": {"case_id": "seed_nested_sequence", "seed_numbers": [5, 5]}
+      }
+    },
+    {
+      "case_id": "assembly_set_scalar_edge",
+      "fixture_sha256": "a1c5a7cdb84cc7d12ec74bdffdcf8699b16601ab60ee8c067eb1f66350e938ff",
+      "baseline": {
+        "result_absent": true,
+        "exit_code": 0,
+        "normalized_error": "TypeError: keyword error: edges",
+        "stdout": {
+          "path": "D:/abaqus-runs/api-repair-pytest-20260823-v2/test_broken_api_repair_fixture1/state/executions/cae_nogui-67eb0e2ab7184ca5a44807de29b4454c/stdout.bin",
+          "sha256": "3ebf42a2a9e1351faed499645c44d8f548fa5976a65ba2c45f48033d15959c1e"
+        },
+        "stderr": {
+          "path": "D:/abaqus-runs/api-repair-pytest-20260823-v2/test_broken_api_repair_fixture1/state/executions/cae_nogui-67eb0e2ab7184ca5a44807de29b4454c/stderr.bin",
+          "sha256": "60df51e3c719a291c6c090f0445eb2c633999f25400e36fb7b8dad74cbbc2c03"
+        }
+      },
+      "repaired_result": {
+        "path": "D:/abaqus-runs/api-repair-repaired-20260823-v1/assembly_set_scalar_edge/assembly_set_scalar_edge_result.json",
+        "sha256": "80f02b4deaa4a0d6238c347573f1659f3d0097eb7ff2465ad971c56f6f742867",
+        "value": {"case_id": "assembly_set_scalar_edge", "edge_count": 1}
+      }
+    },
+    {
+      "case_id": "mesh_controls_nested_faces",
+      "fixture_sha256": "8db9ef30ead18045df1240fb6ebbf37eb06ee9266ad06571db62c82532c208c6",
+      "baseline": {
+        "result_absent": true,
+        "exit_code": 0,
+        "normalized_error": "TypeError: regions[0] found GeomSequence, expected Vertex",
+        "stdout": {
+          "path": "D:/abaqus-runs/api-repair-pytest-20260823-v2/test_broken_api_repair_fixture2/state/executions/cae_nogui-41ec44c7f9f74fb09e6a66d3c758ee04/stdout.bin",
+          "sha256": "3ebf42a2a9e1351faed499645c44d8f548fa5976a65ba2c45f48033d15959c1e"
+        },
+        "stderr": {
+          "path": "D:/abaqus-runs/api-repair-pytest-20260823-v2/test_broken_api_repair_fixture2/state/executions/cae_nogui-41ec44c7f9f74fb09e6a66d3c758ee04/stderr.bin",
+          "sha256": "a155d5891205d606b17b77b3afb26b199abd59e684e157af4ff5ae456d75b18f"
+        }
+      },
+      "repaired_result": {
+        "path": "D:/abaqus-runs/api-repair-repaired-20260823-v1/mesh_controls_nested_faces/mesh_controls_nested_faces_result.json",
+        "sha256": "5cb73447006d4a1c7cc46e71bed7752b1ff2c4848dbbd4f3ceb42b66cefe4b86",
+        "value": {"case_id": "mesh_controls_nested_faces", "elem_shape": "QUAD", "technique": "STRUCTURED"}
+      }
+    },
+    {
+      "case_id": "field_output_missing_step_import",
+      "fixture_sha256": "17c5dcf2dd1e99e6ccba806bd57cb538baecf4d24ee6605684630e8167e53da8",
+      "baseline": {
+        "result_absent": true,
+        "exit_code": 0,
+        "normalized_error": "AttributeError: Model has no attribute FieldOutputRequest",
+        "stdout": {
+          "path": "D:/abaqus-runs/api-repair-pytest-20260823-v2/test_broken_api_repair_fixture3/state/executions/cae_nogui-8a8f52e372d24810bcd57b4bdcadf8b1/stdout.bin",
+          "sha256": "3ebf42a2a9e1351faed499645c44d8f548fa5976a65ba2c45f48033d15959c1e"
+        },
+        "stderr": {
+          "path": "D:/abaqus-runs/api-repair-pytest-20260823-v2/test_broken_api_repair_fixture3/state/executions/cae_nogui-8a8f52e372d24810bcd57b4bdcadf8b1/stderr.bin",
+          "sha256": "58eae2683fd4b4cb446724e219af598faf13890707effbc98e02e630800be7df"
+        }
+      },
+      "repaired_result": {
+        "path": "D:/abaqus-runs/api-repair-repaired-20260823-v1/field_output_missing_step_import/field_output_missing_step_import_result.json",
+        "sha256": "0a19f6bc484fa4d61f5f9a5cf1a221c1e718e9826288b11e10ebe2d42f8a3506",
+        "value": {"case_id": "field_output_missing_step_import", "request": "ProbeOutput", "step": "Load", "variables_requested": ["U", "S"]}
+      }
+    },
+    {
+      "case_id": "section_assignment_raw_faces",
+      "fixture_sha256": "7c268abe9da041c8636ed0186726438b3ddffc9623f41887865f3149b4769e17",
+      "baseline": {
+        "result_absent": true,
+        "exit_code": 0,
+        "normalized_error": "TypeError: region found GeomSequence, expected Region",
+        "stdout": {
+          "path": "D:/abaqus-runs/api-repair-pytest-20260823-v2/test_broken_api_repair_fixture4/state/executions/cae_nogui-02ca03b14ce64bafbd77c4adeb6c84d9/stdout.bin",
+          "sha256": "3ebf42a2a9e1351faed499645c44d8f548fa5976a65ba2c45f48033d15959c1e"
+        },
+        "stderr": {
+          "path": "D:/abaqus-runs/api-repair-pytest-20260823-v2/test_broken_api_repair_fixture4/state/executions/cae_nogui-02ca03b14ce64bafbd77c4adeb6c84d9/stderr.bin",
+          "sha256": "59c54c85f535d206a038dbe3c69cfa0e3bdd750816f9c8e6f1c76a256408cabb"
+        }
+      },
+      "repaired_result": {
+        "path": "D:/abaqus-runs/api-repair-repaired-20260823-v1/section_assignment_raw_faces/section_assignment_raw_faces_result.json",
+        "sha256": "1cd3124a90dbaa600218dc42799f02ec74da6ce2adc3076a3935d90c89c2f929",
+        "value": {"assignment_count": 1, "case_id": "section_assignment_raw_faces", "section_name": "ProbeSection"}
+      }
+    },
+    {
+      "case_id": "face_findat_keyword_multi",
+      "fixture_sha256": "940d346a8627f8da5ec636a07db188fc5e232fe47493b2fc7babbbe082442031",
+      "baseline": {
+        "result_absent": true,
+        "exit_code": 0,
+        "normalized_error": "TypeError: coordinates[0][0] found tuple, expected float",
+        "stdout": {
+          "path": "D:/abaqus-runs/api-repair-pytest-20260823-v2/test_broken_api_repair_fixture5/state/executions/cae_nogui-83802b597b5749dea6ddffcc8c89106e/stdout.bin",
+          "sha256": "3ebf42a2a9e1351faed499645c44d8f548fa5976a65ba2c45f48033d15959c1e"
+        },
+        "stderr": {
+          "path": "D:/abaqus-runs/api-repair-pytest-20260823-v2/test_broken_api_repair_fixture5/state/executions/cae_nogui-83802b597b5749dea6ddffcc8c89106e/stderr.bin",
+          "sha256": "5f94927a04d89fec84d089c38e001f8a16708ddac26eabaec269ed19bb876ca3"
+        }
+      },
+      "repaired_result": {
+        "path": "D:/abaqus-runs/api-repair-repaired-20260823-v1/face_findat_keyword_multi/face_findat_keyword_multi_result.json",
+        "sha256": "c80e57158281f6097791a063f32dc43054955d61010a4d9001aa9e5f7053cbcf",
+        "value": {"case_id": "face_findat_keyword_multi", "face_count": 2}
+      }
+    }
+  ]
+}

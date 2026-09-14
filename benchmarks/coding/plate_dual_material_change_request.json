@@ -1,0 +1,10 @@
+{
+  "schema_version": "1",
+  "prompt_version": "plate-dual-material-change-v1",
+  "source_contract": "A completed and independently verified plate-tension-v4 CodingRun",
+  "agent_visible_seed_files": [
+    "build_model.py",
+    "extract_results.py"
+  ],
+  "goal": "当前工作区提供了一份已经在 Abaqus 2024 中完成物理验收的 100 mm × 20 mm、厚度 1 mm\n二维平面应力板脚本。请理解并修改已有 build_model.py 与 extract_results.py，不要另写无关模型。\n\n沿 x=50 mm 的整高竖直界面把同一个完整板分成两个完全粘结、网格共节点的材料区域：\n- 左区 0 <= x <= 50 mm：E=210000 MPa，泊松比 0.3；\n- 右区 50 <= x <= 100 mm：E=70000 MPa，泊松比 0.3。\n\n必须使用同一个 part instance 的 conforming mesh；不允许用两个重叠实例、Tie、Equation、Contact 或重复\n节点模拟界面。保留 mm-N-MPa、二维平面应力、两区厚度均为 1 mm、Abaqus/Standard、唯一\nStatic, General、NLGEOM=OFF、CPS4R 20×4 结构化网格、左边界 U1=0、左下角 U2=0、右边界\nU1=0.1 mm，以及 U、S、RF 输出。不得增加机械载荷。\n\n保持阶段合同：build_model.py 只能经 CAE noGUI 生成 plate_tension.cae 与 plate_tension.inp，不提交\nJob；Solver 从 plate_tension.inp 启动 plate_tension；extract_results.py 经独立 abaqus python/odbAccess\n读取 plate_tension.odb 并生成 results.json。\n\nresults.json 必须包含 right_mean_u1、interface_mean_u1、mean_s11、left_mean_s11、\nright_mean_s11、left_sum_rf1；界面位移取 x=50 全部共享节点的 U1 平均，左右应力按元素质心所在区域的\n积分点 S11 平均。所有物理输入已经给全，不要请求澄清。只有新材料分区、原合同、运行产物和结果提取\n都完成后才请求验证。"
+}

@@ -1,0 +1,83 @@
+{
+  "schema_version": "1",
+  "benchmark_id": "abaqus-aci-enforced-policy-v1-20260829",
+  "profile": {
+    "mode": "enforced_verified",
+    "syntax_gate_version": "python-3.10-production-syntax-v1",
+    "api_policy_version": "abqpy-enforced-verified-v1",
+    "unchanged_model_override": false,
+    "checker_unavailable_behavior": "fail_closed"
+  },
+  "engine": {
+    "name": "basedpyright",
+    "version": "1.39.10"
+  },
+  "api_source": {
+    "name": "abqpy",
+    "version": "2024.10",
+    "wheel_sha256": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504"
+  },
+  "fixture_hash_algorithm": "SHA-256 over sorted POSIX relative path, NUL, file bytes, NUL",
+  "positive_set": {
+    "selection": "tests/fixtures/abaqus2024/**/*.py",
+    "script_count": 21,
+    "fixture_set_sha256": "9e1485be853aa86308c479919dbbc2d4086efca5e9cf42017c779c763361eddc",
+    "blocked_scripts": 0,
+    "reported_warnings": 16,
+    "filtered_raw_diagnostics": 118,
+    "duration_seconds": {
+      "total": 25.8548689000309,
+      "mean": 1.2311842333348,
+      "min": 0.947021999993012,
+      "max": 1.54704650001077
+    }
+  },
+  "negative_set": {
+    "description": "Five fixed API-binding scripts already reproduced as failures in licensed Abaqus 2024.",
+    "script_count": 5,
+    "fixture_set_sha256": "1242f66eaee1543faea217e2edad507868e66fe6e0aa596526a9a3d7f4fd6ef4",
+    "blocked_scripts": 5,
+    "reported_warnings": 0,
+    "filtered_raw_diagnostics": 1,
+    "duration_seconds": {
+      "total": 6.11314639999182,
+      "mean": 1.22262927999836
+    },
+    "cases": [
+      "tests/fixtures/api_repair_regressions/base_solid_box/repair_case.py",
+      "tests/fixtures/api_repair_regressions/part_instance_set/repair_case.py",
+      "tests/fixtures/api_repair_final13/beam_section_orientation_keyword/repair_case.py",
+      "tests/fixtures/api_repair_final11/set_element_type_direct_faces/repair_case.py",
+      "tests/fixtures/api_repair_final11/assembly_surface_flat_edges/repair_case.py"
+    ]
+  },
+  "real_basedpyright_b31_regressions": {
+    "cases": 4,
+    "blocked": 4,
+    "families": [
+      "Model.BeamSection(createStepName=...)",
+      "Part.seedPartByNumber(...) missing attribute",
+      "Model.writeInput(...) missing attribute",
+      "Part.assignBeamSectionOrientation() missing method and n1"
+    ],
+    "source_evidence": "beam_tension_b31_abqpy_preflight_evaluation_20260829.json"
+  },
+  "warning_control": {
+    "case": "Model.HomogeneousBeamSection(...) missing attribute",
+    "result": "warn",
+    "reason": "abqpy reports the attribute missing, but the current exact Catalog has no repair candidate and no licensed negative fixture is frozen"
+  },
+  "syntax_gate_contract": [
+    "Invalid Python 3.10 write_file and edit_file candidates are rejected before the workspace changes.",
+    "A Python 3.12-only type statement is rejected for the Abaqus 2024 Python 3.10 target.",
+    "The current production file hash is rechecked before vendor runtime.",
+    "Out-of-band invalid changes are blocked before Abaqus budget reservation.",
+    "Non-production files are not claimed by this gate and remain subject to the runtime allowlist."
+  ],
+  "reproduction_tests": [
+    "tests/test_aci.py",
+    "tests/test_static_preflight.py",
+    "tests/test_coding_agent.py"
+  ],
+  "current_status": "Deterministic and offline precision gates passed. Product B31 treatment remains required before this profile can replace the accepted v7 profile."
+}

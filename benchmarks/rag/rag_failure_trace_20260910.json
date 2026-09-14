@@ -1,0 +1,2139 @@
+{
+  "scope": "Frozen candidate Dense20+BM2520 + cross-encoder development profile, NOT default var/rag. No new Dense/reranker/LLM/Abaqus inference or index writes.",
+  "candidate": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\rag-headerless-pairs-v1",
+  "source_map_counts": {
+    "SIMACAEMODRefMap": 32,
+    "SIMACAEANLRefMap": 304,
+    "SIMACAECSTRefMap": 18,
+    "SIMACAEELMRefMap": 175,
+    "SIMACAEITNRefMap": 64,
+    "SIMACAEKEYRefMap": 650,
+    "SIMACAEMATRefMap": 143,
+    "SIMACAEOUTRefMap": 75,
+    "SIMACAEPRCRefMap": 19
+  },
+  "units_count": 36897,
+  "children_count": 33383,
+  "queries": [
+    {
+      "id": "exact-api-region-1",
+      "query": "In Abaqus 2024 scripting, how is an ODB assembly-level node set retrieved so it can be passed as the region argument to FieldOutput.getSubset(region=OdbSet)? Does OdbAssembly expose a nodeSets repository such as odb.rootAssembly.nodeSets['LEFT']?\nextract_results.py currently calls field.getSubset(region='LEFT') against odb.steps['Load'].frames[-1].fieldOutputs['U'] and fails because a plain string is not an OdbSet. The ODB has an assembly-level node set named LEFT.",
+      "targets": [],
+      "dense_count": 20,
+      "bm25_count": 20,
+      "union_count": 39,
+      "lexical_all_scored": 32091,
+      "top8_reranked": [
+        {
+          "rank": 1,
+          "id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576:975:2044",
+          "score": -1.1747164726257324,
+          "pair_tokens": 400,
+          "truncated": false,
+          "child_id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576:975:2044",
+          "unit_id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+          "document_id": "simaanl-c-scriptparstudies",
+          "heading_path": [
+            "Scripting Parametric Studies",
+            "Parametric Study Results",
+            "Gathering Results"
+          ],
+          "retrieval_text": "Document: Scripting Parametric Studies\nSection: Scripting Parametric Studies > Parametric Study Results > Gathering Results\nWhen gathering results from the output (.odb) database, each result record to be gathered is chosen by specifying one of the available output variable identifier keys appearing under the .odb column heading in Abaqus/Standard Output Variable Identifiers or Abaqus/Explicit Output Variable Identifiers. For field output the component must not be specified, while for history output the component number is required; for example, the U or S variable identifier keys can be specified for field output, while the U1 or S11 variable identifier keys can be specified for history output. Unless the output is at the assembly level, an instance name must be provided as an argument to the gather command. An exception to this instance-name requirement is the case where the output (.odb) database is generated from a model not defined as an assembly of part instances, which is inferred from the presence in the output database of a single assembly named Assembly-1 and a single part instance named PART–1–1. In this case you need not explicitly refer to the instance PART–1–1.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm#simaanl-c-scriptparstudies-t-GatheringResults-sma-topic13",
+          "search_start": 975,
+          "search_end": 2044
+        },
+        {
+          "rank": 2,
+          "id": "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad:0:372",
+          "score": -1.6047463417053223,
+          "pair_tokens": 250,
+          "truncated": false,
+          "child_id": "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad:0:372",
+          "unit_id": "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad",
+          "document_id": "simakey-r-wn",
+          "heading_path": [
+            "What's New",
+            "2024 FD01 February 2024",
+            "*NSET"
+          ],
+          "retrieval_text": "Document: What's New\nSection: What's New > 2024 FD01 February 2024 > *NSET\nYou can now use the new SURFACE parameter to generate a node set from a previously defined surface.\n\nBenefits: This feature expands the capabilities of Abaqus/Standard and Abaqus/Explicit.\n\nThis enhancement makes it easier to create a node set from a surface definition. All the nodes included in the surface are assigned to the specified node set.\n\nRelated topics: *NSET.",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-wn.htm#simakey-r-wn-genxslid-wnentry118-FUN109752",
+          "search_start": 0,
+          "search_end": 372
+        },
+        {
+          "rank": 3,
+          "id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736:0:590",
+          "score": -1.7047793865203857,
+          "pair_tokens": 297,
+          "truncated": false,
+          "child_id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736:0:590",
+          "unit_id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+          "document_id": "simamod-c-node",
+          "heading_path": [
+            "Node Definition",
+            "Grouping Nodes into Node Sets",
+            "Defining Part and Assembly Sets",
+            "Example"
+          ],
+          "retrieval_text": "Document: Node Definition\nSection: Node Definition > Grouping Nodes into Node Sets > Defining Part and Assembly Sets > Example\nAssembly-level node set set1 contains all the nodes from node sets set1 belonging to part instances PartA-1 and PartA-2. Therefore, the nodes are assigned to two separate node sets: one at the part instance level and one at the assembly level. An assembly-level node set called set1 could be created with entirely different nodes than those that belong to the part set; part- and assembly-level node sets are independent. However, since in this example the same nodes are assigned to both the part- and assembly-level node sets set1, the assembly-level set could alternatively be defined by",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-Example-section5",
+          "search_start": 0,
+          "search_end": 590
+        },
+        {
+          "rank": 4,
+          "id": "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2:0:243",
+          "score": -1.7400333881378174,
+          "pair_tokens": 226,
+          "truncated": false,
+          "child_id": "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2:0:243",
+          "unit_id": "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2",
+          "document_id": "simamod-c-node",
+          "heading_path": [
+            "Node Definition",
+            "Grouping Nodes into Node Sets",
+            "Defining Part and Assembly Sets",
+            "Alternate Method for Defining Assembly-Level Node Sets"
+          ],
+          "retrieval_text": "Document: Node Definition\nSection: Node Definition > Grouping Nodes into Node Sets > Defining Part and Assembly Sets > Alternate Method for Defining Assembly-Level Node Sets\nSometimes it is not convenient to define an assembly-level node set by referring to part-level node sets. In such cases a set definition containing many nodes can get quite lengthy. Therefore, an alternate method is provided.\n\nInput File Usage",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-AlternateMethodForDefiningAssemblylevelNodeSets-section6",
+          "search_start": 0,
+          "search_end": 243
+        },
+        {
+          "rank": 5,
+          "id": "1c2b80d94c5cc40f1f590c67baee896fe96cab9f2f1e96923dfbe99c819735f0:0:535",
+          "score": -2.4584312438964844,
+          "pair_tokens": 288,
+          "truncated": false,
+          "child_id": "1c2b80d94c5cc40f1f590c67baee896fe96cab9f2f1e96923dfbe99c819735f0:0:535",
+          "unit_id": "1c2b80d94c5cc40f1f590c67baee896fe96cab9f2f1e96923dfbe99c819735f0",
+          "document_id": "simamod-c-node",
+          "heading_path": [
+            "Node Definition",
+            "Grouping Nodes into Node Sets",
+            "Defining Part and Assembly Sets"
+          ],
+          "retrieval_text": "Document: Node Definition\nSection: Node Definition > Grouping Nodes into Node Sets > Defining Part and Assembly Sets\nIn a model defined in terms of an assembly of part instances, all node sets must be defined within a part, part instance, or the assembly definition. If a node set is defined within a part (or part instance) definition, you can refer to the node numbers directly. To define an assembly-level node set, you must identify the nodes to be added to the set by prefixing each node number with the part instance name and a “.” (as explained in Assembly Definition). An assembly-level node set can have the same name as a part-level node set.",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11",
+          "search_start": 0,
+          "search_end": 535
+        },
+        {
+          "rank": 6,
+          "id": "5ed21767bd7275a5f4a753ca8b309fc888abac173ac24009b09b364347f9839d:674:874",
+          "score": -2.46785306930542,
+          "pair_tokens": 232,
+          "truncated": false,
+          "child_id": "5ed21767bd7275a5f4a753ca8b309fc888abac173ac24009b09b364347f9839d:674:874",
+          "unit_id": "5ed21767bd7275a5f4a753ca8b309fc888abac173ac24009b09b364347f9839d",
+          "document_id": "simamod-c-node",
+          "heading_path": [
+            "Node Definition",
+            "Grouping Nodes into Node Sets",
+            "Defining Part and Assembly Sets",
+            "Alternate Method for Defining Assembly-Level Node Sets"
+          ],
+          "retrieval_text": "Document: Node Definition\nSection: Node Definition > Grouping Nodes into Node Sets > Defining Part and Assembly Sets > Alternate Method for Defining Assembly-Level Node Sets\n*END ASSEMBLY\n[/Code]\n\nWhen the NSET option is used more than once with the same name, as it is with set3, the nodes in the second use of NSET are appended to the set created by the first use of NSET.",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-AlternateMethodForDefiningAssemblylevelNodeSets-section6",
+          "search_start": 674,
+          "search_end": 874
+        },
+        {
+          "rank": 7,
+          "id": "705a694706057acd9220c998926178167f4a6e25a4eaa2ab1921c137ee4be1f0:0:423",
+          "score": -2.788151264190674,
+          "pair_tokens": 255,
+          "truncated": false,
+          "child_id": "705a694706057acd9220c998926178167f4a6e25a4eaa2ab1921c137ee4be1f0:0:423",
+          "unit_id": "705a694706057acd9220c998926178167f4a6e25a4eaa2ab1921c137ee4be1f0",
+          "document_id": "simamod-c-partassy",
+          "heading_path": [
+            "Assembly Definition",
+            "Rules for Defining an Assembly",
+            "Sets and Surfaces",
+            "Defining Assembly-Level Sets"
+          ],
+          "retrieval_text": "Document: Assembly Definition\nSection: Assembly Definition > Rules for Defining an Assembly > Sets and Surfaces > Defining Assembly-Level Sets\nYou can refer to a part instance from an element set or node set definition as a shortcut to using the complete name when defining assembly-level sets. Specify the name of the instance that contains the specified elements or nodes. To add elements or nodes from more than one instance to the set, repeat the element set or node set definition (see Node Definition and Element Definition for more details).\n\nInput File Usage",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-partassy.htm#simamod-c-partassy-t-SetsAndSurfaces-sma-topic14__simamod-c-partassy-s-DefiningAssemblylevelSets-section4",
+          "search_start": 0,
+          "search_end": 423
+        },
+        {
+          "rank": 8,
+          "id": "470e5260375cc9b6987da000809fb7442496a2ee80a212e6c0f0dd41d5a1428a:1035:1476",
+          "score": -2.8906826972961426,
+          "pair_tokens": 268,
+          "truncated": false,
+          "child_id": "470e5260375cc9b6987da000809fb7442496a2ee80a212e6c0f0dd41d5a1428a:1035:1476",
+          "unit_id": "470e5260375cc9b6987da000809fb7442496a2ee80a212e6c0f0dd41d5a1428a",
+          "document_id": "simaanl-c-transferoverview",
+          "heading_path": [
+            "About Transferring Results between Abaqus Analyses",
+            "Specifying the Transfer of Model Data and Results",
+            "Importing Rigid Bodies"
+          ],
+          "retrieval_text": "Document: About Transferring Results between Abaqus Analyses\nSection: About Transferring Results between Abaqus Analyses > Specifying the Transfer of Model Data and Results > Importing Rigid Bodies\nA rigid body from an original analysis cannot be partially imported; that is, the full complement of rigid body elements must be imported. An assembly-level rigid body from the original analysis with parts and instances can be imported only if it refers to a reference node set defined at the part instance level in the original analysis. If the reference node is defined at the assembly level, the set and the rigid body cannot be imported.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-transferoverview.htm#simaanl-c-transferoverview-rigid-bodies",
+          "search_start": 1035,
+          "search_end": 1476
+        }
+      ],
+      "top5_bm25": [
+        {
+          "rank": 1,
+          "score": 54.762059527831994,
+          "child_id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576:975:2044",
+          "unit_id": "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+          "document_id": "simaanl-c-scriptparstudies",
+          "heading_path": [
+            "Scripting Parametric Studies",
+            "Parametric Study Results",
+            "Gathering Results"
+          ],
+          "retrieval_text": "Document: Scripting Parametric Studies\nSection: Scripting Parametric Studies > Parametric Study Results > Gathering Results\nWhen gathering results from the output (.odb) database, each result record to be gathered is chosen by specifying one of the available output variable identifier keys appearing under the .odb column heading in Abaqus/Standard Output Variable Identifiers or Abaqus/Explicit Output Variable Identifiers. For field output the component must not be specified, while for history output the component number is required; for example, the U or S variable identifier keys can be specified for field output, while the U1 or S11 variable identifier keys can be specified for history output. Unless the output is at the assembly level, an instance name must be provided as an argument to the gather command. An exception to this instance-name requirement is the case where the output (.odb) database is generated from a model not defined as an assembly of part instances, which is inferred from the presence in the output database of a single assembly named Assembly-1 and a single part instance named PART–1–1. In this case you need not explicitly refer to the instance PART–1–1.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm#simaanl-c-scriptparstudies-t-GatheringResults-sma-topic13",
+          "search_start": 975,
+          "search_end": 2044
+        },
+        {
+          "rank": 2,
+          "score": 47.48733690357413,
+          "child_id": "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2:0:243",
+          "unit_id": "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2",
+          "document_id": "simamod-c-node",
+          "heading_path": [
+            "Node Definition",
+            "Grouping Nodes into Node Sets",
+            "Defining Part and Assembly Sets",
+            "Alternate Method for Defining Assembly-Level Node Sets"
+          ],
+          "retrieval_text": "Document: Node Definition\nSection: Node Definition > Grouping Nodes into Node Sets > Defining Part and Assembly Sets > Alternate Method for Defining Assembly-Level Node Sets\nSometimes it is not convenient to define an assembly-level node set by referring to part-level node sets. In such cases a set definition containing many nodes can get quite lengthy. Therefore, an alternate method is provided.\n\nInput File Usage",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-AlternateMethodForDefiningAssemblylevelNodeSets-section6",
+          "search_start": 0,
+          "search_end": 243
+        },
+        {
+          "rank": 3,
+          "score": 43.771688874390385,
+          "child_id": "19fcdd7450d842b645bb25b2576a069fc2e54d771d7b027b57bc3c3f73d42494:0:252",
+          "unit_id": "19fcdd7450d842b645bb25b2576a069fc2e54d771d7b027b57bc3c3f73d42494",
+          "document_id": "simamod-c-element",
+          "heading_path": [
+            "Element Definition",
+            "Grouping Elements into Element Sets",
+            "Defining Part and Assembly Sets",
+            "Alternate Method for Defining Assembly-Level Element Sets"
+          ],
+          "retrieval_text": "Document: Element Definition\nSection: Element Definition > Grouping Elements into Element Sets > Defining Part and Assembly Sets > Alternate Method for Defining Assembly-Level Element Sets\nSometimes it is not convenient to define an assembly-level element set by referring to part-level element sets. In such cases a set definition containing many elements can get quite lengthy. Therefore, an alternate method is provided.\n\nInput File Usage",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-element.htm#simamod-c-element-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-element-s-AlternateMethodForDefiningAssemblylevelElementSets-section10",
+          "search_start": 0,
+          "search_end": 252
+        },
+        {
+          "rank": 4,
+          "score": 42.50826147799712,
+          "child_id": "1c2b80d94c5cc40f1f590c67baee896fe96cab9f2f1e96923dfbe99c819735f0:0:535",
+          "unit_id": "1c2b80d94c5cc40f1f590c67baee896fe96cab9f2f1e96923dfbe99c819735f0",
+          "document_id": "simamod-c-node",
+          "heading_path": [
+            "Node Definition",
+            "Grouping Nodes into Node Sets",
+            "Defining Part and Assembly Sets"
+          ],
+          "retrieval_text": "Document: Node Definition\nSection: Node Definition > Grouping Nodes into Node Sets > Defining Part and Assembly Sets\nIn a model defined in terms of an assembly of part instances, all node sets must be defined within a part, part instance, or the assembly definition. If a node set is defined within a part (or part instance) definition, you can refer to the node numbers directly. To define an assembly-level node set, you must identify the nodes to be added to the set by prefixing each node number with the part instance name and a “.” (as explained in Assembly Definition). An assembly-level node set can have the same name as a part-level node set.",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11",
+          "search_start": 0,
+          "search_end": 535
+        },
+        {
+          "rank": 5,
+          "score": 42.08498998076672,
+          "child_id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736:0:590",
+          "unit_id": "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+          "document_id": "simamod-c-node",
+          "heading_path": [
+            "Node Definition",
+            "Grouping Nodes into Node Sets",
+            "Defining Part and Assembly Sets",
+            "Example"
+          ],
+          "retrieval_text": "Document: Node Definition\nSection: Node Definition > Grouping Nodes into Node Sets > Defining Part and Assembly Sets > Example\nAssembly-level node set set1 contains all the nodes from node sets set1 belonging to part instances PartA-1 and PartA-2. Therefore, the nodes are assigned to two separate node sets: one at the part instance level and one at the assembly level. An assembly-level node set called set1 could be created with entirely different nodes than those that belong to the part set; part- and assembly-level node sets are independent. However, since in this example the same nodes are assigned to both the part- and assembly-level node sets set1, the assembly-level set could alternatively be defined by",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-Example-section5",
+          "search_start": 0,
+          "search_end": 590
+        }
+      ],
+      "selected_units": [
+        "73ef75b3868e9fb7f4f41cf7d0dbb46016c5d809efaaef3b685c543e84b7b576",
+        "aaf8ab02641199ba66dc3fd0c72154dba61e9718fd0401993743bb7b3259f0ad",
+        "baa71d4bf4c7a3d5c37b8b23c4ce5e740d8547f2622914832f6265b700a78736",
+        "49cd09b44cb37206b35dd2eedafc156cff370f60c10d56e2e594d70fadfdf9a2"
+      ],
+      "historical_evidence": [
+        {
+          "document_id": "simaanl-c-scriptparstudies",
+          "section_id": "simaanl-c-scriptparstudies-t-GatheringResults-sma-topic13",
+          "title": "Scripting Parametric Studies",
+          "section": "Gathering Results",
+          "excerpt": "Use the aStudy.gather command (see aStudy.gather()) to gather results from the results file or output database of each of the analyses.\n\nIn each use of the gather command you must specify a name that is associated with the gathered result record. This label is used to refer to the results record in the report commands.\n\nWhen gathering results from the results (.fil) file, each result record to be gathered must be chosen by specifying one of the available output variable identifier keys appearing under the .fil column heading in Abaqus/Standard Output Variable Identifiers or Abaqus/Explicit Output Variable Identifiers. For example, the U or S variable identifier keys can be specified, but the U1 or S11 variable identifier keys cannot be specified. In addition, the MODAL variable identifier key can be specified to gather eigenvalue results records (those written to the results file with the record key 1980); in this case, no variable location data are required.\n\nWhen gathering results from the output (.odb) database, each result record to be gathered is chosen by specifying one of the available output variable identifier keys appearing under the .odb column heading in Abaqus/Standard Output Variable Identifiers or Abaqus/Explicit Output Variable Identifiers. For field output the component must not be specified, while for history output the component number is required; for example, the U or S variable identifier keys can be specified for field output, while the U1 or S11 variable identifier keys can be specified for history output. Unless the output is at the assembly level, an instance name must be provided as an argument to the gather command. An exception to this instance-name requirement is the case where the output (.odb) database is generated from a model not defined as an assembly of part instances, which is inferred from the presence in the output database of a single assembly named Assembly-1 and a single part instance named PART–1–1. In this case you need not explicitly refer to the instance PART–1–1.",
+          "original_characters": 2044,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-scriptparstudies.htm#simaanl-c-scriptparstudies-t-GatheringResults-sma-topic13",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "Scripting Parametric Studies",
+            "Parametric Study Results",
+            "Gathering Results"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simakey-r-wn",
+          "section_id": "simakey-r-wn-genxslid-wnentry118-FUN109752",
+          "title": "What's New",
+          "section": "*NSET",
+          "excerpt": "You can now use the new SURFACE parameter to generate a node set from a previously defined surface.\n\nBenefits: This feature expands the capabilities of Abaqus/Standard and Abaqus/Explicit.\n\nThis enhancement makes it easier to create a node set from a surface definition. All the nodes included in the surface are assigned to the specified node set.\n\nRelated topics: *NSET.",
+          "original_characters": 372,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-wn.htm#simakey-r-wn-genxslid-wnentry118-FUN109752",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "What's New",
+            "2024 FD01 February 2024",
+            "*NSET"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simamod-c-node",
+          "section_id": "simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-Example-section5",
+          "title": "Node Definition",
+          "section": "Example",
+          "excerpt": "Assembly-level node set set1 contains all the nodes from node sets set1 belonging to part instances PartA-1 and PartA-2. Therefore, the nodes are assigned to two separate node sets: one at the part instance level and one at the assembly level. An assembly-level node set called set1 could be created with entirely different nodes than those that belong to the part set; part- and assembly-level node sets are independent. However, since in this example the same nodes are assigned to both the part- and assembly-level node sets set1, the assembly-level set could alternatively be defined by",
+          "original_characters": 590,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-Example-section5",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "Node Definition",
+            "Grouping Nodes into Node Sets",
+            "Defining Part and Assembly Sets",
+            "Example"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simamod-c-node",
+          "section_id": "simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-AlternateMethodForDefiningAssemblylevelNodeSets-section6",
+          "title": "Node Definition",
+          "section": "Alternate Method for Defining Assembly-Level Node Sets",
+          "excerpt": "Sometimes it is not convenient to define an assembly-level node set by referring to part-level node sets. In such cases a set definition containing many nodes can get quite lengthy. Therefore, an alternate method is provided.\n\nInput File Usage",
+          "original_characters": 243,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEMODRefMap/simamod-c-node.htm#simamod-c-node-t-DefiningPartAndAssemblySets-sma-topic11__simamod-c-node-s-AlternateMethodForDefiningAssemblylevelNodeSets-section6",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "Node Definition",
+            "Grouping Nodes into Node Sets",
+            "Defining Part and Assembly Sets",
+            "Alternate Method for Defining Assembly-Level Node Sets"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        }
+      ]
+    },
+    {
+      "id": "domain-procedure-applicability-1",
+      "query": "What are the modeling requirements and behavior of the modified Riks method (*STATIC, RIKS) in Abaqus/Standard for tracing the equilibrium path with proportional loading beyond limit points, and what output (e.g. LPF) does it provide?\nAbaqus/Standard nonlinear static equilibrium-path study; load spatial distribution is fixed and scaled by a single proportionality factor; ordinary load control fails near the limit point. This inspection task requests only a technical explanation.",
+      "targets": [],
+      "dense_count": 20,
+      "bm25_count": 20,
+      "union_count": 30,
+      "lexical_all_scored": 32378,
+      "top8_reranked": [
+        {
+          "rank": 1,
+          "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e:0:144",
+          "score": 3.4483721256256104,
+          "pair_tokens": 146,
+          "truncated": false,
+          "child_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e:0:144",
+          "unit_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "document_id": "simakey-r-static",
+          "heading_path": [
+            "*STATIC",
+            "Optional parameters for a general static analysis"
+          ],
+          "retrieval_text": "Document: *STATIC\nSection: *STATIC > Optional parameters for a general static analysis\nEntry: RIKS\nRIKS\n \nInclude this parameter to use the modified Riks method for proportional\n  loading cases (Unstable Collapse and Postbuckling Analysis).\n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "search_start": 0,
+          "search_end": 144
+        },
+        {
+          "rank": 2,
+          "id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060:1178:1767",
+          "score": 3.016016721725464,
+          "pair_tokens": 232,
+          "truncated": false,
+          "child_id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060:1178:1767",
+          "unit_id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "Unstable Response"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > Unstable Response\nAlternatively, static equilibrium states during the unstable phase of the response can be found by using the “modified Riks method.” This method is used for cases where the loading is proportional; that is, where the load magnitudes are governed by a single scalar parameter. The method can provide solutions even in cases of complex, unstable response such as that shown in Figure 1.\n\nFigure 1. Proportional loading with unstable response.\n\nThe Riks method is also useful for solving ill-conditioned problems such as limit load problems or almost unstable problems that exhibit softening.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+          "search_start": 1178,
+          "search_end": 1767
+        },
+        {
+          "rank": 3,
+          "id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3:0:806",
+          "score": 2.3317370414733887,
+          "pair_tokens": 284,
+          "truncated": false,
+          "child_id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3:0:806",
+          "unit_id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "The Riks Method"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > The Riks Method\nIn simple cases linear eigenvalue analysis (Eigenvalue Buckling Prediction) may be sufficient for design evaluation; but if there is concern about material nonlinearity, geometric nonlinearity prior to buckling, or unstable postbuckling response, a load-deflection (Riks) analysis must be performed to investigate the problem further.\n\nThe Riks method uses the load magnitude as an additional unknown; it solves simultaneously for loads and displacements. Therefore, another quantity must be used to measure the progress of the solution; Abaqus/Standard uses the “arc length,” l, along the static equilibrium path in load-displacement space. This approach provides solutions regardless of whether the response is stable or unstable. See the Modified Riks algorithm for a detailed description of the method.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+          "search_start": 0,
+          "search_end": 806
+        },
+        {
+          "rank": 4,
+          "id": "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b:0:809",
+          "score": 1.7486727237701416,
+          "pair_tokens": 277,
+          "truncated": false,
+          "child_id": "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b:0:809",
+          "unit_id": "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "Material Options"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > Material Options\nMost material models that describe mechanical behavior are available for use in a Riks analysis. The following material properties are not active during a Riks analysis: acoustic properties, thermal properties (except for thermal expansion), mass diffusion properties, electrical properties, and pore fluid flow properties. Materials with history dependence can be used; however, it should be realized that the results will depend on the loading history, which is not known in advance.\n\nThe concept of time is replaced by arc length in a Riks analysis. Therefore, any effects involving time or strain rate (such as viscous damping or rate-dependent plasticity) are no longer treated correctly and should not be used.\n\nSee Abaqus Materials Guide for details on the material models available in Abaqus/Standard.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-matsect1",
+          "search_start": 0,
+          "search_end": 809
+        },
+        {
+          "rank": 5,
+          "id": "9304e3884f2dc97f5cc593fb08daeb2f79bbdd18db94e8411e6981f391534279:0:196",
+          "score": 1.6388434171676636,
+          "pair_tokens": 171,
+          "truncated": false,
+          "child_id": "9304e3884f2dc97f5cc593fb08daeb2f79bbdd18db94e8411e6981f391534279:0:196",
+          "unit_id": "9304e3884f2dc97f5cc593fb08daeb2f79bbdd18db94e8411e6981f391534279",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "The Riks Method",
+            "Incrementation"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > The Riks Method > Incrementation\nAbaqus/Standard uses Newton's method (as described in Static Stress Analysis) to solve the nonlinear equilibrium equations. The Riks procedure uses only a 1% extrapolation of the strain increment.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-incrementation",
+          "search_start": 0,
+          "search_end": 196
+        },
+        {
+          "rank": 6,
+          "id": "6b96481cebf39dccd5e9dc9fb79124502dad9e4e57a116657981d461c705e739:0:862",
+          "score": 1.6326630115509033,
+          "pair_tokens": 282,
+          "truncated": false,
+          "child_id": "6b96481cebf39dccd5e9dc9fb79124502dad9e4e57a116657981d461c705e739:0:862",
+          "unit_id": "6b96481cebf39dccd5e9dc9fb79124502dad9e4e57a116657981d461c705e739",
+          "document_id": "simaelm-c-dashpot",
+          "heading_path": [
+            "Dashpots",
+            "Typical Applications"
+          ],
+          "retrieval_text": "Document: Dashpots\nSection: Dashpots > Typical Applications\nDashpots are used to model relative velocity-dependent force or torsional resistance. They can also provide viscous energy dissipation mechanisms.\n\nDashpots are often useful in unstable, nonlinear, static analyses where the modified Riks algorithm is not appropriate (see Unstable Collapse and Postbuckling Analysis for a discussion of the modified Riks algorithm) and where the automatic time stepping algorithm is used because sudden shifts in configuration can be controlled by the forces that arise in the dashpots. In such cases the magnitude of the damping must be chosen in conjunction with the time period so that enough damping is available to control such difficulties but the damping forces are negligible when a stable static response is obtained. See also the contact damping available with contact elements in Abaqus/Standard (see Contact Damping).",
+          "source": "http://localhost:4040/English/SIMACAEELMRefMap/simaelm-c-dashpot.htm#simaelm-c-dashpot-t-typicalapps1",
+          "search_start": 0,
+          "search_end": 862
+        },
+        {
+          "rank": 7,
+          "id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410:0:507",
+          "score": 1.4683911800384521,
+          "pair_tokens": 223,
+          "truncated": false,
+          "child_id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410:0:507",
+          "unit_id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+          "document_id": "simaanl-c-static",
+          "heading_path": [
+            "Static Stress Analysis",
+            "Nonlinear Static Analysis",
+            "Unstable Problems",
+            "Buckling or Collapse"
+          ],
+          "retrieval_text": "Document: Static Stress Analysis\nSection: Static Stress Analysis > Nonlinear Static Analysis > Unstable Problems > Buckling or Collapse\nIn some geometrically nonlinear analyses, buckling or collapse may occur. In these cases a quasi-static solution can be obtained only if the magnitude of the load does not follow a prescribed history; it must be part of the solution. When the loading can be considered proportional (the loading over the complete structure can be scaled with a single parameter), a special approach—called the “modified Riks method”—can be used, as described in Unstable Collapse and Postbuckling Analysis.\n\nInput File Usage",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-unstable__simaanl-c-static-s-BucklingOrCollapse-section1",
+          "search_start": 0,
+          "search_end": 507
+        },
+        {
+          "rank": 8,
+          "id": "3fda80c77f765d13bed89fc014db318ee765eb42fe9d962ffaa10c6b523c9b0a:0:651",
+          "score": 1.0586464405059814,
+          "pair_tokens": 240,
+          "truncated": false,
+          "child_id": "3fda80c77f765d13bed89fc014db318ee765eb42fe9d962ffaa10c6b523c9b0a:0:651",
+          "unit_id": "3fda80c77f765d13bed89fc014db318ee765eb42fe9d962ffaa10c6b523c9b0a",
+          "document_id": "simaanl-c-static",
+          "heading_path": [
+            "Static Stress Analysis",
+            "Nonlinear Static Analysis",
+            "Unstable Problems",
+            "Local Instabilities"
+          ],
+          "retrieval_text": "Document: Static Stress Analysis\nSection: Static Stress Analysis > Nonlinear Static Analysis > Unstable Problems > Local Instabilities\nIn other unstable analyses the instabilities are local (for example, surface wrinkling, material instability, or local buckling), in which case global load control methods such as the Riks method are not appropriate. Abaqus/Standard offers the option to stabilize this class of problems by applying damping throughout the model in such a way that the viscous forces introduced are sufficiently large to prevent instantaneous buckling or collapse but small enough not to affect the behavior significantly while the problem is stable. The available automatic stabilization schemes are described in detail in Automatic Stabilization of Unstable Problems.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-unstable__simaanl-c-static-s-LocalInstabilities-section2",
+          "search_start": 0,
+          "search_end": 651
+        }
+      ],
+      "top5_bm25": [
+        {
+          "rank": 1,
+          "score": 57.379982108779494,
+          "child_id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060:1178:1767",
+          "unit_id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "Unstable Response"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > Unstable Response\nAlternatively, static equilibrium states during the unstable phase of the response can be found by using the “modified Riks method.” This method is used for cases where the loading is proportional; that is, where the load magnitudes are governed by a single scalar parameter. The method can provide solutions even in cases of complex, unstable response such as that shown in Figure 1.\n\nFigure 1. Proportional loading with unstable response.\n\nThe Riks method is also useful for solving ill-conditioned problems such as limit load problems or almost unstable problems that exhibit softening.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+          "search_start": 1178,
+          "search_end": 1767
+        },
+        {
+          "rank": 2,
+          "score": 54.596358710284335,
+          "child_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e:0:144",
+          "unit_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "document_id": "simakey-r-static",
+          "heading_path": [
+            "*STATIC",
+            "Optional parameters for a general static analysis"
+          ],
+          "retrieval_text": "Document: *STATIC\nSection: *STATIC > Optional parameters for a general static analysis\nEntry: RIKS\nRIKS\n \nInclude this parameter to use the modified Riks method for proportional\n  loading cases (Unstable Collapse and Postbuckling Analysis).\n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "search_start": 0,
+          "search_end": 144
+        },
+        {
+          "rank": 3,
+          "score": 52.182142738506606,
+          "child_id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410:0:507",
+          "unit_id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+          "document_id": "simaanl-c-static",
+          "heading_path": [
+            "Static Stress Analysis",
+            "Nonlinear Static Analysis",
+            "Unstable Problems",
+            "Buckling or Collapse"
+          ],
+          "retrieval_text": "Document: Static Stress Analysis\nSection: Static Stress Analysis > Nonlinear Static Analysis > Unstable Problems > Buckling or Collapse\nIn some geometrically nonlinear analyses, buckling or collapse may occur. In these cases a quasi-static solution can be obtained only if the magnitude of the load does not follow a prescribed history; it must be part of the solution. When the loading can be considered proportional (the loading over the complete structure can be scaled with a single parameter), a special approach—called the “modified Riks method”—can be used, as described in Unstable Collapse and Postbuckling Analysis.\n\nInput File Usage",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-unstable__simaanl-c-static-s-BucklingOrCollapse-section1",
+          "search_start": 0,
+          "search_end": 507
+        },
+        {
+          "rank": 4,
+          "score": 50.8608971269979,
+          "child_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84:0:515",
+          "unit_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "The Riks Method",
+            "Proportional Loading"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > The Riks Method > Proportional Loading\nThe loading during a Riks step is always proportional. The current load magnitude, [Formula: (P)_(total)], is defined by\n\n[Formula: (((P)_(total) = ((P)_(0) + (λ × (( ((P)_(ref) - (P)_(0)) ))))) ,)]\n\nwhere [Formula: (P)_(0)] is the “dead load,” [Formula: (P)_(ref)] is the reference load vector, and [Formula: λ] is the “load proportionality factor.” The load proportionality factor is found as part of the solution. Abaqus/Standard prints out the current value of the load proportionality factor at each increment.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-proportional",
+          "search_start": 0,
+          "search_end": 515
+        },
+        {
+          "rank": 5,
+          "score": 48.09914480888003,
+          "child_id": "078a36ca39dc9500d915a5ff84dc47f70e41780421043cff3b3c5ee581700c45:0:118",
+          "unit_id": "078a36ca39dc9500d915a5ff84dc47f70e41780421043cff3b3c5ee581700c45",
+          "document_id": "simaout-c-std-solutiondependentamplitudevariables",
+          "heading_path": [
+            "Solution-Dependent Amplitude Variables"
+          ],
+          "retrieval_text": "Document: Solution-Dependent Amplitude Variables\nSection: Solution-Dependent Amplitude Variables\nEntry: LPF\nLPF\nField: no  History: automatic  .fil: automatic  .dat: no  Load proportionality factor in a static Riks analysis.\n\n",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-std-solutiondependentamplitudevariables.htm#table11",
+          "search_start": 0,
+          "search_end": 118
+        }
+      ],
+      "selected_units": [
+        "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+        "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+        "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+        "0c3c079bc1a0ab66e7bda28596dd3f348b3785aec3f5d9c396e900833521c86b"
+      ],
+      "historical_evidence": [
+        {
+          "document_id": "simakey-r-static",
+          "section_id": "simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "title": "*STATIC",
+          "section": "Optional parameters for a general static analysis",
+          "excerpt": "RIKS\n[DefinitionXML]\n<dd xmlns:mml=\"http://www.w3.org/1998/Math/MathML\" class=\"dd dd paramlistitem\"> \n<p>Include this parameter to use the modified Riks method for proportional\n  loading cases (<a class=\"xref xref\" href=\"../SIMACAEANLRefMap/simaanl-c-postbuckling.htm\">Unstable Collapse and Postbuckling Analysis</a>).\n</p> </dd>\n[/DefinitionXML]",
+          "original_characters": 346,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "*STATIC",
+            "Optional parameters for a general static analysis"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simaanl-c-postbuckling",
+          "section_id": "simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Unstable Response",
+          "excerpt": "Geometrically nonlinear static problems sometimes involve buckling or collapse behavior, where the load-displacement response shows a negative stiffness and the structure must release strain energy to remain in equilibrium. Several approaches are possible for modeling such behavior. One is to treat the buckling response dynamically, thus actually modeling the response with inertia effects included as the structure snaps. This approach is easily accomplished by restarting the terminated static procedure (Restarting an Analysis) and switching to a dynamic procedure (Implicit Dynamic Analysis Using Direct Integration) when the static solution becomes unstable. In some simple cases displacement control can provide a solution, even when the conjugate load (the reaction force) is decreasing as the displacement increases. Another approach would be to use dashpots to stabilize the structure during a static analysis. Abaqus/Standard offers an automated version of this stabilization approach for the static analysis procedures (see Static Stress Analysis, Quasi-Static Analysis, Fully Coupled Thermal-Stress Analysis, or Coupled Pore Fluid Diffusion and Stress Analysis).\n\nAlternatively, static equilibrium states during the unstable phase of the response can be found by using the “modified Riks method.” This method is used for cases where the loading is proportional; that is, where the load magnitudes are governed by a single scalar parameter. The method can provide solutions even in cases of complex, unstable response such as that shown in Figure 1.\n\nFigure 1. Proportional loading with unstable response.\n\nThe Riks method is also useful for solving ill-conditioned problems such as limit load problems or almost unstable problems that exhibit softening.",
+          "original_characters": 1767,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "Unstable Response"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simaanl-c-postbuckling",
+          "section_id": "simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "The Riks Method",
+          "excerpt": "In simple cases linear eigenvalue analysis (Eigenvalue Buckling Prediction) may be sufficient for design evaluation; but if there is concern about material nonlinearity, geometric nonlinearity prior to buckling, or unstable postbuckling response, a load-deflection (Riks) analysis must be performed to investigate the problem further.\n\nThe Riks method uses the load magnitude as an additional unknown; it solves simultaneously for loads and displacements. Therefore, another quantity must be used to measure the progress of the solution; Abaqus/Standard uses the “arc length,” l, along the static equilibrium path in load-displacement space. This approach provides solutions regardless of whether the response is stable or unstable. See the Modified Riks algorithm for a detailed description of the method.",
+          "original_characters": 806,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "The Riks Method"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simaanl-c-postbuckling",
+          "section_id": "simaanl-c-postbuckling-t-matsect1",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Material Options",
+          "excerpt": "Most material models that describe mechanical behavior are available for use in a Riks analysis. The following material properties are not active during a Riks analysis: acoustic properties, thermal properties (except for thermal expansion), mass diffusion properties, electrical properties, and pore fluid flow properties. Materials with history dependence can be used; however, it should be realized that the results will depend on the loading history, which is not known in advance.\n\nThe concept of time is replaced by arc length in a Riks analysis. Therefore, any effects involving time or strain rate (such as viscous damping or rate-dependent plasticity) are no longer treated correctly and should not be used.\n\nSee Abaqus Materials Guide for details on the material models available in Abaqus/Standard.",
+          "original_characters": 809,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-matsect1",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "Material Options"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        }
+      ]
+    },
+    {
+      "id": "domain-procedure-applicability-2",
+      "query": "In a modified Riks analysis (*STATIC, RIKS) in Abaqus/Standard, can non-zero prescribed displacements be used as the (scaled) loading, or must the proportional loading be applied through force-type loads that are scaled by the load proportionality factor?\nAbaqus/Standard nonlinear static equilibrium-path project using modified Riks (*STATIC, RIKS); technical inspection only, no model changes. Need the requirement for how proportional loading must be applied in the Riks step.",
+      "targets": [
+        {
+          "need": "boundary_condition_magnitude",
+          "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+          "source": {
+            "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEANLRefMap\\simaanl-c-postbuckling.htm",
+            "sha256": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+            "nodes": [
+              {
+                "xpath": "/html/body/table/tr/td/article[8]/div/p",
+                "text": "Boundary conditions can be applied to any of the displacement or rotation degrees of freedom (1–6) or to warping degree of freedom 7 in open-section beam elements (Boundary Conditions). Amplitude definitions (Amplitude Curves) cannot be used to vary the magnitudes of prescribed boundary conditions during a Riks analysis."
+              }
+            ]
+          },
+          "body": "Boundary conditions can be applied to any of the displacement or rotation degrees of freedom (1–6) or to warping degree of freedom 7 in open-section beam elements (Boundary Conditions). Amplitude definitions (Amplitude Curves) cannot be used to vary the magnitudes of prescribed boundary conditions during a Riks analysis.",
+          "search_context": "",
+          "search_text": "Boundary conditions can be applied to any of the displacement or rotation degrees of freedom (1–6) or to warping degree of freedom 7 in open-section beam elements (Boundary Conditions). Amplitude definitions (Amplitude Curves) cannot be used to vary the magnitudes of prescribed boundary conditions during a Riks analysis.",
+          "children": [
+            {
+              "child_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d:0:322",
+              "unit_id": "a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d",
+              "document_id": "simaanl-c-postbuckling",
+              "heading_path": [
+                "Unstable Collapse and Postbuckling Analysis",
+                "Boundary Conditions"
+              ],
+              "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > Boundary Conditions\nBoundary conditions can be applied to any of the displacement or rotation degrees of freedom (1–6) or to warping degree of freedom 7 in open-section beam elements (Boundary Conditions). Amplitude definitions (Amplitude Curves) cannot be used to vary the magnitudes of prescribed boundary conditions during a Riks analysis.",
+              "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-bcsect1",
+              "search_start": 0,
+              "search_end": 322,
+              "dense_top20_rank": null,
+              "bm25_top20_rank": null,
+              "bm25_all_rank_and_score": [
+                634,
+                25.494173059288556
+              ],
+              "reranker_rank": null,
+              "reranker": null,
+              "matched_query_terms": [
+                "a",
+                "analysis",
+                "applied",
+                "be",
+                "can",
+                "in",
+                "or",
+                "prescribed",
+                "riks",
+                "the",
+                "used"
+              ]
+            }
+          ],
+          "unique_parent_rank": null,
+          "final_selected": false
+        }
+      ],
+      "dense_count": 20,
+      "bm25_count": 20,
+      "union_count": 34,
+      "lexical_all_scored": 32030,
+      "top8_reranked": [
+        {
+          "rank": 1,
+          "id": "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826:0:373",
+          "score": 3.415569305419922,
+          "pair_tokens": 214,
+          "truncated": false,
+          "child_id": "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826:0:373",
+          "unit_id": "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "The Riks Method",
+            "Proportional Loading"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > The Riks Method > Proportional Loading\nIf the Riks step is a continuation of a previous history, any loads that exist at the beginning of the step and are not redefined are treated as “dead” loads with constant magnitude. A load whose magnitude is defined in the Riks step is referred to as a “reference” load. All prescribed loads are ramped from the initial (dead load) value to the reference values specified.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-proportional",
+          "search_start": 0,
+          "search_end": 373
+        },
+        {
+          "rank": 2,
+          "id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e:0:144",
+          "score": 3.29815673828125,
+          "pair_tokens": 154,
+          "truncated": false,
+          "child_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e:0:144",
+          "unit_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "document_id": "simakey-r-static",
+          "heading_path": [
+            "*STATIC",
+            "Optional parameters for a general static analysis"
+          ],
+          "retrieval_text": "Document: *STATIC\nSection: *STATIC > Optional parameters for a general static analysis\nEntry: RIKS\nRIKS\n \nInclude this parameter to use the modified Riks method for proportional\n  loading cases (Unstable Collapse and Postbuckling Analysis).\n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "search_start": 0,
+          "search_end": 144
+        },
+        {
+          "rank": 3,
+          "id": "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1:0:370",
+          "score": 3.1719861030578613,
+          "pair_tokens": 196,
+          "truncated": false,
+          "child_id": "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1:0:370",
+          "unit_id": "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "Loads"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > Loads\nThe following loads can be prescribed in a Riks analysis:\n\n- Concentrated nodal forces can be applied to the displacement degrees of\n\t\tfreedom (1–6); see \n\t\tConcentrated Loads.\n- Distributed pressure forces or body forces can be applied; see \n\t\tDistributed Loads.\n\t\tThe distributed load types available with particular elements are described in \n\t\tAbaqus Elements Guide.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+          "search_start": 0,
+          "search_end": 370
+        },
+        {
+          "rank": 4,
+          "id": "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0:0:406",
+          "score": 3.124105215072632,
+          "pair_tokens": 208,
+          "truncated": false,
+          "child_id": "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0:0:406",
+          "unit_id": "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "Loads"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > Loads\nSince Abaqus/Standard scales loading magnitudes proportionally based on the user-specified magnitudes, amplitude references are ignored when the Riks method is chosen.\n\nIf follower loads are prescribed, their contribution to the stiffness matrix may be unsymmetric; the unsymmetric matrix storage and solution scheme can be used to improve computational efficiency in such cases (see Defining an Analysis).",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+          "search_start": 0,
+          "search_end": 406
+        },
+        {
+          "rank": 5,
+          "id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3:0:806",
+          "score": 2.9983925819396973,
+          "pair_tokens": 292,
+          "truncated": false,
+          "child_id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3:0:806",
+          "unit_id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "The Riks Method"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > The Riks Method\nIn simple cases linear eigenvalue analysis (Eigenvalue Buckling Prediction) may be sufficient for design evaluation; but if there is concern about material nonlinearity, geometric nonlinearity prior to buckling, or unstable postbuckling response, a load-deflection (Riks) analysis must be performed to investigate the problem further.\n\nThe Riks method uses the load magnitude as an additional unknown; it solves simultaneously for loads and displacements. Therefore, another quantity must be used to measure the progress of the solution; Abaqus/Standard uses the “arc length,” l, along the static equilibrium path in load-displacement space. This approach provides solutions regardless of whether the response is stable or unstable. See the Modified Riks algorithm for a detailed description of the method.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+          "search_start": 0,
+          "search_end": 806
+        },
+        {
+          "rank": 6,
+          "id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84:0:515",
+          "score": 2.66373610496521,
+          "pair_tokens": 303,
+          "truncated": false,
+          "child_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84:0:515",
+          "unit_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "The Riks Method",
+            "Proportional Loading"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > The Riks Method > Proportional Loading\nThe loading during a Riks step is always proportional. The current load magnitude, [Formula: (P)_(total)], is defined by\n\n[Formula: (((P)_(total) = ((P)_(0) + (λ × (( ((P)_(ref) - (P)_(0)) ))))) ,)]\n\nwhere [Formula: (P)_(0)] is the “dead load,” [Formula: (P)_(ref)] is the reference load vector, and [Formula: λ] is the “load proportionality factor.” The load proportionality factor is found as part of the solution. Abaqus/Standard prints out the current value of the load proportionality factor at each increment.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-proportional",
+          "search_start": 0,
+          "search_end": 515
+        },
+        {
+          "rank": 7,
+          "id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410:0:507",
+          "score": 2.645472288131714,
+          "pair_tokens": 231,
+          "truncated": false,
+          "child_id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410:0:507",
+          "unit_id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+          "document_id": "simaanl-c-static",
+          "heading_path": [
+            "Static Stress Analysis",
+            "Nonlinear Static Analysis",
+            "Unstable Problems",
+            "Buckling or Collapse"
+          ],
+          "retrieval_text": "Document: Static Stress Analysis\nSection: Static Stress Analysis > Nonlinear Static Analysis > Unstable Problems > Buckling or Collapse\nIn some geometrically nonlinear analyses, buckling or collapse may occur. In these cases a quasi-static solution can be obtained only if the magnitude of the load does not follow a prescribed history; it must be part of the solution. When the loading can be considered proportional (the loading over the complete structure can be scaled with a single parameter), a special approach—called the “modified Riks method”—can be used, as described in Unstable Collapse and Postbuckling Analysis.\n\nInput File Usage",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-unstable__simaanl-c-static-s-BucklingOrCollapse-section1",
+          "search_start": 0,
+          "search_end": 507
+        },
+        {
+          "rank": 8,
+          "id": "9c931db60554a79249db9a58e564c456b935911e76b7c526d0be13e9d82d623e:0:389",
+          "score": 2.624478816986084,
+          "pair_tokens": 193,
+          "truncated": false,
+          "child_id": "9c931db60554a79249db9a58e564c456b935911e76b7c526d0be13e9d82d623e:0:389",
+          "unit_id": "9c931db60554a79249db9a58e564c456b935911e76b7c526d0be13e9d82d623e",
+          "document_id": "simaanl-c-visco",
+          "heading_path": [
+            "Quasi-Static Analysis",
+            "Loads"
+          ],
+          "retrieval_text": "Document: Quasi-Static Analysis\nSection: Quasi-Static Analysis > Loads\nThe following types of loading can be prescribed in a quasi-static analysis:\n\n- Concentrated nodal forces can be applied to the displacement degrees of\n\t\tfreedom (1–6); see \n\t\tConcentrated Loads.\n- Distributed pressure forces or body forces can be applied; see \n\t\tDistributed Loads.\n\t\tThe distributed load types available with particular elements are described in \n\t\tAbaqus Elements Guide.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-visco.htm#simaanl-c-visco-t-loadsect1",
+          "search_start": 0,
+          "search_end": 389
+        }
+      ],
+      "top5_bm25": [
+        {
+          "rank": 1,
+          "score": 55.0428779777804,
+          "child_id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410:0:507",
+          "unit_id": "a5c3a17f789533e78b838f4fefba18e04d39ff4557a5f5f4c56c881d07e33410",
+          "document_id": "simaanl-c-static",
+          "heading_path": [
+            "Static Stress Analysis",
+            "Nonlinear Static Analysis",
+            "Unstable Problems",
+            "Buckling or Collapse"
+          ],
+          "retrieval_text": "Document: Static Stress Analysis\nSection: Static Stress Analysis > Nonlinear Static Analysis > Unstable Problems > Buckling or Collapse\nIn some geometrically nonlinear analyses, buckling or collapse may occur. In these cases a quasi-static solution can be obtained only if the magnitude of the load does not follow a prescribed history; it must be part of the solution. When the loading can be considered proportional (the loading over the complete structure can be scaled with a single parameter), a special approach—called the “modified Riks method”—can be used, as described in Unstable Collapse and Postbuckling Analysis.\n\nInput File Usage",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-static.htm#simaanl-c-static-unstable__simaanl-c-static-s-BucklingOrCollapse-section1",
+          "search_start": 0,
+          "search_end": 507
+        },
+        {
+          "rank": 2,
+          "score": 50.23948293662511,
+          "child_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e:0:144",
+          "unit_id": "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+          "document_id": "simakey-r-static",
+          "heading_path": [
+            "*STATIC",
+            "Optional parameters for a general static analysis"
+          ],
+          "retrieval_text": "Document: *STATIC\nSection: *STATIC > Optional parameters for a general static analysis\nEntry: RIKS\nRIKS\n \nInclude this parameter to use the modified Riks method for proportional\n  loading cases (Unstable Collapse and Postbuckling Analysis).\n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "search_start": 0,
+          "search_end": 144
+        },
+        {
+          "rank": 3,
+          "score": 49.95398123085365,
+          "child_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84:0:515",
+          "unit_id": "993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "The Riks Method",
+            "Proportional Loading"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > The Riks Method > Proportional Loading\nThe loading during a Riks step is always proportional. The current load magnitude, [Formula: (P)_(total)], is defined by\n\n[Formula: (((P)_(total) = ((P)_(0) + (λ × (( ((P)_(ref) - (P)_(0)) ))))) ,)]\n\nwhere [Formula: (P)_(0)] is the “dead load,” [Formula: (P)_(ref)] is the reference load vector, and [Formula: λ] is the “load proportionality factor.” The load proportionality factor is found as part of the solution. Abaqus/Standard prints out the current value of the load proportionality factor at each increment.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-proportional",
+          "search_start": 0,
+          "search_end": 515
+        },
+        {
+          "rank": 4,
+          "score": 49.77026186781917,
+          "child_id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060:1178:1767",
+          "unit_id": "7c9adce3ed0fefc6df05cce8dee1381adce585e5e5342d843cf2f9cb4dbdf060",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "Unstable Response"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > Unstable Response\nAlternatively, static equilibrium states during the unstable phase of the response can be found by using the “modified Riks method.” This method is used for cases where the loading is proportional; that is, where the load magnitudes are governed by a single scalar parameter. The method can provide solutions even in cases of complex, unstable response such as that shown in Figure 1.\n\nFigure 1. Proportional loading with unstable response.\n\nThe Riks method is also useful for solving ill-conditioned problems such as limit load problems or almost unstable problems that exhibit softening.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-UnstableResponse-sma-topic1",
+          "search_start": 1178,
+          "search_end": 1767
+        },
+        {
+          "rank": 5,
+          "score": 46.55348464964582,
+          "child_id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3:0:806",
+          "unit_id": "e004150bc9f878eb35834f0da4e8c0217db347c67da75e16bac8584535739ff3",
+          "document_id": "simaanl-c-postbuckling",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "The Riks Method"
+          ],
+          "retrieval_text": "Document: Unstable Collapse and Postbuckling Analysis\nSection: Unstable Collapse and Postbuckling Analysis > The Riks Method\nIn simple cases linear eigenvalue analysis (Eigenvalue Buckling Prediction) may be sufficient for design evaluation; but if there is concern about material nonlinearity, geometric nonlinearity prior to buckling, or unstable postbuckling response, a load-deflection (Riks) analysis must be performed to investigate the problem further.\n\nThe Riks method uses the load magnitude as an additional unknown; it solves simultaneously for loads and displacements. Therefore, another quantity must be used to measure the progress of the solution; Abaqus/Standard uses the “arc length,” l, along the static equilibrium path in load-displacement space. This approach provides solutions regardless of whether the response is stable or unstable. See the Modified Riks algorithm for a detailed description of the method.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-TheRiksMethod-sma-topic2",
+          "search_start": 0,
+          "search_end": 806
+        }
+      ],
+      "selected_units": [
+        "b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826",
+        "83a9afbe93d7d4456a883341bd2b37739fb493310a4ae401a4151cb52fbaf04e",
+        "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1",
+        "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0"
+      ],
+      "historical_evidence": [
+        {
+          "document_id": "simaanl-c-postbuckling",
+          "section_id": "simaanl-c-postbuckling-proportional",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Proportional Loading",
+          "excerpt": "If the Riks step is a continuation of a previous history, any loads that exist at the beginning of the step and are not redefined are treated as “dead” loads with constant magnitude. A load whose magnitude is defined in the Riks step is referred to as a “reference” load. All prescribed loads are ramped from the initial (dead load) value to the reference values specified.",
+          "original_characters": 373,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-proportional",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "The Riks Method",
+            "Proportional Loading"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simakey-r-static",
+          "section_id": "simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "title": "*STATIC",
+          "section": "Optional parameters for a general static analysis",
+          "excerpt": "RIKS\n[DefinitionXML]\n<dd xmlns:mml=\"http://www.w3.org/1998/Math/MathML\" class=\"dd dd paramlistitem\"> \n<p>Include this parameter to use the modified Riks method for proportional\n  loading cases (<a class=\"xref xref\" href=\"../SIMACAEANLRefMap/simaanl-c-postbuckling.htm\">Unstable Collapse and Postbuckling Analysis</a>).\n</p> </dd>\n[/DefinitionXML]",
+          "original_characters": 346,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-static.htm#simakey-r-static__simakey-r-static-s-OptionalParametersForAGeneralStaticAnalysis-paramscustom2",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "*STATIC",
+            "Optional parameters for a general static analysis"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simaanl-c-postbuckling",
+          "section_id": "simaanl-c-postbuckling-t-loadsect1",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Loads",
+          "excerpt": "The following loads can be prescribed in a Riks analysis:\n\n[ListXML]\n<ul xmlns:mml=\"http://www.w3.org/1998/Math/MathML\" class=\"ul ul\"> \n  <li class=\"li li\"> \n\t <p>Concentrated nodal forces can be applied to the displacement degrees of\n\t\tfreedom (1–6); see \n\t\t<a class=\"xref xref\" href=\"../SIMACAEPRCRefMap/simaprc-c-loadgeneral.htm\" title=\"You can apply concentrated forces or moments at any nodal degree of freedom.\">Concentrated Loads</a>.\n\t\t\n\t </p> \n  </li> \n  <li class=\"li li\"> \n\t <p>Distributed pressure forces or body forces can be applied; see \n\t\t<a class=\"xref xref\" href=\"../SIMACAEPRCRefMap/simaprc-c-loaddistributed.htm\" title=\"You can prescribe distributed loads on element faces, element bodies, or element edges and over geometric surfaces or geometric edges.\">Distributed Loads</a>.\n\t\tThe distributed load types available with particular elements are described in \n\t\t<a class=\"xref xref\" href=\"../SIMACAEELMRefMap/simaelm-c-ov.htm\" title=\"The Abaqus Elements Guide describes the extensive element library that Abaqus provides as a powerful set of tools for solving many different problems.\">Abaqus Elements Guide</a>.\n\t\t\n\t </p> \n  </li> \n</ul>\n[/ListXML]",
+          "original_characters": 1170,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "Loads"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simaanl-c-postbuckling",
+          "section_id": "simaanl-c-postbuckling-t-loadsect1",
+          "title": "Unstable Collapse and Postbuckling Analysis",
+          "section": "Loads",
+          "excerpt": "Since Abaqus/Standard scales loading magnitudes proportionally based on the user-specified magnitudes, amplitude references are ignored when the Riks method is chosen.\n\nIf follower loads are prescribed, their contribution to the stiffness matrix may be unsymmetric; the unsymmetric matrix storage and solution scheme can be used to improve computational efficiency in such cases (see Defining an Analysis).",
+          "original_characters": 406,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-postbuckling.htm#simaanl-c-postbuckling-t-loadsect1",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "Unstable Collapse and Postbuckling Analysis",
+            "Loads"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        }
+      ]
+    },
+    {
+      "id": "recorded-solver-diagnostic-1",
+      "query": "In Abaqus/Standard, what does the warning \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" mean when the step uses automatic time incrementation, and does it indicate lack of convergence or merely require increment adjustment to hit the requested output times?\nrecorded_diagnostic.txt contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The project uses automatic time incrementation and requests field output at exact predefined time points. No other error/warning lines appear in the excerpt.",
+      "targets": [
+        {
+          "need": "complete_time_adjustment",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "source": {
+            "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEOUTRefMap\\simaout-c-dboutput-frequency.htm",
+            "sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+            "nodes": [
+              {
+                "xpath": "/html/body/table/tr/td/article[1]/div/div[9]/p[1]",
+                "text": "If the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, Abaqus/Standard adjusts the time increments to ensure that data are written at the exact time points. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write output data at the first increment after the time point."
+              },
+              {
+                "xpath": "/html/body/table/tr/td/article[1]/div/div[9]/p[2]",
+                "text": "When the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, the number of increments necessary to complete the analysis might increase, which might adversely affect performance."
+              }
+            ]
+          },
+          "body": "If the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, Abaqus/Standard adjusts the time increments to ensure that data are written at the exact time points. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write output data at the first increment after the time point.\n\nWhen the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, the number of increments necessary to complete the analysis might increase, which might adversely affect performance.",
+          "search_context": "",
+          "search_text": "If the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, Abaqus/Standard adjusts the time increments to ensure that data are written at the exact time points. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write output data at the first increment after the time point.\n\nWhen the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, the number of increments necessary to complete the analysis might increase, which might adversely affect performance.",
+          "children": [
+            {
+              "child_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+              "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "document_id": "simaout-c-dboutput-frequency",
+              "heading_path": [
+                "Controlling the Frequency of Output to the Output Database",
+                "Controlling the Output Frequency in Abaqus/Standard",
+                "Time Domain Analysis: Time Incrementation"
+              ],
+              "retrieval_text": "Document: Controlling the Frequency of Output to the Output Database\nSection: Controlling the Frequency of Output to the Output Database > Controlling the Output Frequency in Abaqus/Standard > Time Domain Analysis: Time Incrementation\nIf the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, Abaqus/Standard adjusts the time increments to ensure that data are written at the exact time points. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write output data at the first increment after the time point.\n\n",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+              "search_start": 0,
+              "search_end": 907,
+              "dense_top20_rank": null,
+              "bm25_top20_rank": 10,
+              "bm25_all_rank_and_score": [
+                10,
+                40.230233293399834
+              ],
+              "reranker_rank": 7,
+              "reranker": {
+                "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+                "score": 2.2375528812408447,
+                "pair_tokens": 354,
+                "truncated": false
+              },
+              "matched_query_terms": [
+                "abaqus",
+                "and",
+                "at",
+                "exact",
+                "in",
+                "increment",
+                "incrementation",
+                "of",
+                "or",
+                "output",
+                "points",
+                "standard",
+                "step",
+                "the",
+                "time",
+                "times",
+                "to"
+              ]
+            },
+            {
+              "child_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:907:1165",
+              "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "document_id": "simaout-c-dboutput-frequency",
+              "heading_path": [
+                "Controlling the Frequency of Output to the Output Database",
+                "Controlling the Output Frequency in Abaqus/Standard",
+                "Time Domain Analysis: Time Incrementation"
+              ],
+              "retrieval_text": "Document: Controlling the Frequency of Output to the Output Database\nSection: Controlling the Frequency of Output to the Output Database > Controlling the Output Frequency in Abaqus/Standard > Time Domain Analysis: Time Incrementation\nWhen the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, the number of increments necessary to complete the analysis might increase, which might adversely affect performance.",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+              "search_start": 907,
+              "search_end": 1165,
+              "dense_top20_rank": null,
+              "bm25_top20_rank": 20,
+              "bm25_all_rank_and_score": [
+                20,
+                38.11788584241705
+              ],
+              "reranker_rank": 19,
+              "reranker": {
+                "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:907:1165",
+                "score": 1.5676844120025635,
+                "pair_tokens": 216,
+                "truncated": false
+              },
+              "matched_query_terms": [
+                "abaqus",
+                "and",
+                "at",
+                "exact",
+                "in",
+                "incrementation",
+                "of",
+                "or",
+                "output",
+                "points",
+                "standard",
+                "the",
+                "time",
+                "times",
+                "to",
+                "when"
+              ]
+            }
+          ],
+          "unique_parent_rank": 7,
+          "final_selected": false
+        }
+      ],
+      "dense_count": 20,
+      "bm25_count": 20,
+      "union_count": 38,
+      "lexical_all_scored": 31959,
+      "top8_reranked": [
+        {
+          "rank": 1,
+          "id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce:0:344",
+          "score": 2.9159486293792725,
+          "pair_tokens": 219,
+          "truncated": false,
+          "child_id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce:0:344",
+          "unit_id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+          "document_id": "simakey-r-output",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Standard analysis",
+            "Optional parameters"
+          ],
+          "retrieval_text": "Document: *OUTPUT\nSection: *OUTPUT > Defining output requests in an Abaqus/Standard analysis > Optional parameters\nEntry: TIME MARKS\nTIME MARKS\n \nSet TIME MARKS=YES (default) to write results at the exact times dictated by the NUMBER INTERVAL, TIME INTERVAL, or TIME POINTS parameter. \n\n \nSet TIME MARKS=NO to write results to the output database at the increment\n  ending immediately after the time dictated by the NUMBER INTERVAL, TIME INTERVAL, or TIME POINTS parameter. \n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "search_start": 0,
+          "search_end": 344
+        },
+        {
+          "rank": 2,
+          "id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2:0:198",
+          "score": 2.907010316848755,
+          "pair_tokens": 183,
+          "truncated": false,
+          "child_id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2:0:198",
+          "unit_id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+          "document_id": "simaanl-c-directcyclic",
+          "heading_path": [
+            "Direct Cyclic Analysis",
+            "Output",
+            "Specifying Output at Exact Times"
+          ],
+          "retrieval_text": "Document: Direct Cyclic Analysis\nSection: Direct Cyclic Analysis > Output > Specifying Output at Exact Times\nOutput at exact times is not supported for direct cyclic analysis. If output at exact times is requested, Abaqus will issue a warning message and change the output to an output at approximate times.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclic.htm#simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+          "search_start": 0,
+          "search_end": 198
+        },
+        {
+          "rank": 3,
+          "id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896:0:546",
+          "score": 2.6447339057922363,
+          "pair_tokens": 250,
+          "truncated": false,
+          "child_id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896:0:546",
+          "unit_id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+          "document_id": "simakey-r-output",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Standard analysis",
+            "Optional parameters"
+          ],
+          "retrieval_text": "Document: *OUTPUT\nSection: *OUTPUT > Defining output requests in an Abaqus/Standard analysis > Optional parameters\nEntry: TIME POINTS\nTIME POINTS\n \nSet this parameter equal to the name of the \n  TIME POINTS option that defines the time points at which output is to\n  be written. \n\n \nIf this parameter and the FREQUENCY, NUMBER INTERVAL, and TIME INTERVAL parameters are omitted, output will be written at every\n  increment of the analysis for all procedure types except \n  DYNAMIC and \n  MODAL DYNAMIC; output will be written every 10 increments for these\n  procedure types. \n\n \nThe FREQUENCY, NUMBER INTERVAL, TIME INTERVAL, and TIME POINTS parameters are mutually exclusive. \n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "search_start": 0,
+          "search_end": 546
+        },
+        {
+          "rank": 4,
+          "id": "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370:0:902",
+          "score": 2.5788698196411133,
+          "pair_tokens": 341,
+          "truncated": false,
+          "child_id": "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370:0:902",
+          "unit_id": "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370",
+          "document_id": "simaout-c-output",
+          "heading_path": [
+            "About Output",
+            "The Message File in Abaqus/Standard and Abaqus/Explicit",
+            "The Abaqus/Standard Message File"
+          ],
+          "retrieval_text": "Document: About Output\nSection: About Output > The Message File in Abaqus/Standard and Abaqus/Explicit > The Abaqus/Standard Message File\nIn Abaqus/Standard the message file contains diagnostic or informative messages about the progress of the solution. If any of these messages describe errors or warnings, the number of such errors or warnings is also given at the end of the data file. The message file is written automatically during an Abaqus/Standard analysis.\n\nThe Abaqus/Standard message file contains information about the increment number, step time, fraction of a step completed, equilibrium iterations, severe discontinuity (contact) iterations, plasticity algorithms, adaptive mesh smoothing, the load proportionality factor in a Riks analysis, etc. A portion of the diagnostic information in the message file is also written to the output database for use in Abaqus/CAE (for more information, see Requesting Output to the Output Database).\n\nYou can control the amount of information written to the message file for each step. ",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-output.htm#simaout-c-output-message-std",
+          "search_start": 0,
+          "search_end": 902
+        },
+        {
+          "rank": 5,
+          "id": "f277b3516da47ec6947e76efdeade6a9e3bd15b9a9e51e7b28ffae6b568f77b7:0:617",
+          "score": 2.4843833446502686,
+          "pair_tokens": 267,
+          "truncated": false,
+          "child_id": "f277b3516da47ec6947e76efdeade6a9e3bd15b9a9e51e7b28ffae6b568f77b7:0:617",
+          "unit_id": "f277b3516da47ec6947e76efdeade6a9e3bd15b9a9e51e7b28ffae6b568f77b7",
+          "document_id": "simakey-r-output",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Standard analysis",
+            "Optional parameters"
+          ],
+          "retrieval_text": "Document: *OUTPUT\nSection: *OUTPUT > Defining output requests in an Abaqus/Standard analysis > Optional parameters\nEntry: FREQUENCY\nFREQUENCY\n \nSet this parameter equal to the output frequency, in increments. The output\n  will always be written to the output database at the last increment of each\n  step. Set FREQUENCY=0 to suppress the output. \n\n \nIf this parameter and the NUMBER INTERVAL, TIME INTERVAL, and TIME POINTS parameters are omitted, output will be written at every\n  increment of the analysis for all procedure types except \n  DYNAMIC and \n  MODAL DYNAMIC; output will be written every 10 increments for these\n  procedure types. \n\n \nThe FREQUENCY, NUMBER INTERVAL, TIME INTERVAL, and TIME POINTS parameters are mutually exclusive. \n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "search_start": 0,
+          "search_end": 617
+        },
+        {
+          "rank": 6,
+          "id": "c38c08ae60544cdeb1f78bf8f93ff9c53359ce420cec5ed0798e4230ab7803c3:0:509",
+          "score": 2.2592380046844482,
+          "pair_tokens": 257,
+          "truncated": false,
+          "child_id": "c38c08ae60544cdeb1f78bf8f93ff9c53359ce420cec5ed0798e4230ab7803c3:0:509",
+          "unit_id": "c38c08ae60544cdeb1f78bf8f93ff9c53359ce420cec5ed0798e4230ab7803c3",
+          "document_id": "simakey-r-output",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Standard analysis",
+            "The following parameters are optional and valid only if the FIELD or HISTORY parameter is included"
+          ],
+          "retrieval_text": "Document: *OUTPUT\nSection: *OUTPUT > Defining output requests in an Abaqus/Standard analysis > The following parameters are optional and valid only if the FIELD or HISTORY parameter is included\nEntry: TIME INTERVAL\nTIME INTERVAL\n \nSet this parameter equal to the time interval at which the output states are\n  to be written. \n\n \nIf this parameter and the FREQUENCY, NUMBER INTERVAL, and TIME POINTS parameters are omitted, output will be written at every\n  increment of the analysis for all procedure types except \n  DYNAMIC and \n  MODAL DYNAMIC; output will be written every 10 increments for these\n  procedure types. \n\n \nThe FREQUENCY, NUMBER INTERVAL, TIME INTERVAL, and TIME POINTS parameters are mutually exclusive. \n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-TheFollowingParametersAreOptionalAndValidOnlyIfTheFIELDOrHISTORYParameterIsIncluded-paramscustom2",
+          "search_start": 0,
+          "search_end": 509
+        },
+        {
+          "rank": 7,
+          "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+          "score": 2.2375528812408447,
+          "pair_tokens": 354,
+          "truncated": false,
+          "child_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "document_id": "simaout-c-dboutput-frequency",
+          "heading_path": [
+            "Controlling the Frequency of Output to the Output Database",
+            "Controlling the Output Frequency in Abaqus/Standard",
+            "Time Domain Analysis: Time Incrementation"
+          ],
+          "retrieval_text": "Document: Controlling the Frequency of Output to the Output Database\nSection: Controlling the Frequency of Output to the Output Database > Controlling the Output Frequency in Abaqus/Standard > Time Domain Analysis: Time Incrementation\nIf the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, Abaqus/Standard adjusts the time increments to ensure that data are written at the exact time points. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write output data at the first increment after the time point.\n\n",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+          "search_start": 0,
+          "search_end": 907
+        },
+        {
+          "rank": 8,
+          "id": "bb6aa468a2a0fbce1c64cdfeeded58d6ea5ff51f7ce33ad26c909df55ad13437:0:183",
+          "score": 2.199864625930786,
+          "pair_tokens": 193,
+          "truncated": false,
+          "child_id": "bb6aa468a2a0fbce1c64cdfeeded58d6ea5ff51f7ce33ad26c909df55ad13437:0:183",
+          "unit_id": "bb6aa468a2a0fbce1c64cdfeeded58d6ea5ff51f7ce33ad26c909df55ad13437",
+          "document_id": "simakey-r-output",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Standard analysis",
+            "One of the following mutually exclusive parameters is required"
+          ],
+          "retrieval_text": "Document: *OUTPUT\nSection: *OUTPUT > Defining output requests in an Abaqus/Standard analysis > One of the following mutually exclusive parameters is required\nEntry: DIAGNOSTICS\nDIAGNOSTICS\n \nSet DIAGNOSTICS=YES (default) to indicate that detailed diagnostic information\n  should be written to the output database. Set DIAGNOSTICS=NO to suppress the output. \n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-OneOfTheFollowingMutuallyExclusiveParametersIsRequired-paramscustom1",
+          "search_start": 0,
+          "search_end": 183
+        }
+      ],
+      "top5_bm25": [
+        {
+          "rank": 1,
+          "score": 46.06597717634555,
+          "child_id": "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503:0:459",
+          "unit_id": "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503",
+          "document_id": "simakey-r-output",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Explicit analysis",
+            "The following parameters are optional and valid only if the FIELD parameter is included"
+          ],
+          "retrieval_text": "Document: *OUTPUT\nSection: *OUTPUT > Defining output requests in an Abaqus/Explicit analysis > The following parameters are optional and valid only if the FIELD parameter is included\nEntry: TIME MARKS\nTIME MARKS\n \nSet TIME MARKS=NO (default) to write results to the output database at the\n  increment ending immediately after the time dictated by the NUMBER INTERVAL or TIME POINTS parameter. \n\n \nSet TIME MARKS=YES to write results at the exact times dictated by the NUMBER INTERVAL or TIME POINTS parameter. \n\n \nTIME MARKS=YES cannot be used when either the FIXED TIME INCREMENTATION or DIRECT USER CONTROL parameter is included on the \n  DYNAMIC option. \n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2__simakey-r-output-s-TheFollowingParametersAreOptionalAndValidOnlyIfTheFIELDParameterIsIncluded-paramscustom5",
+          "search_start": 0,
+          "search_end": 459
+        },
+        {
+          "rank": 2,
+          "score": 43.799382638943214,
+          "child_id": "8925a4e731c95c6f02e0731cf1bda7b22edb4ce31b7eefbd19400e6affc400c5:0:1087",
+          "unit_id": "8925a4e731c95c6f02e0731cf1bda7b22edb4ce31b7eefbd19400e6affc400c5",
+          "document_id": "simakey-r-coupledthermal-electrochemical",
+          "heading_path": [
+            "*COUPLED THERMAL-ELECTROCHEMICAL",
+            "Data line to define incrementation"
+          ],
+          "retrieval_text": "Document: *COUPLED THERMAL-ELECTROCHEMICAL\nSection: *COUPLED THERMAL-ELECTROCHEMICAL > Data line to define incrementation\nEntry: First (and only) line\nFirst (and only) line\n\n\t\t\t\t\t\t\n\t\t\t\t\t\t\tInitial time increment. If automatic incrementation is used, this value should\n\t\t\t\t\t\t\t\t\tbe a reasonable suggestion for the initial step and is adjusted\n\t\t\t\t\t\t\t\t\tas required. If direct incrementation is used, this value is the\n\t\t\t\t\t\t\t\t\tfixed time increment size. \n\n\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\tTotal time period. \n\n\t\t\t\t\t\t\t\n\n\t\t\t\t\t\t\tMinimum time increment allowed. If Abaqus/Standard finds it needs a smaller time increment than this value, the\n\t\t\t\t\t\t\t\t\tanalysis ends. If a value is given, Abaqus/Standard uses the minimum of the given value and 0.8 times the initial\n\t\t\t\t\t\t\t\t\ttime increment. If no value is given, Abaqus/Standard sets the minimum increment equal to the minimum of 0.8 times\n\t\t\t\t\t\t\t\t\tthe initial time increment (first data item on this data line)\n\t\t\t\t\t\t\t\t\tand 10−5 times the total time period (second data\n\t\t\t\t\t\t\t\t\titem on this data line). This value is used only for automatic\n\t\t\t\t\t\t\t\t\ttime incrementation.\n\n\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\tMaximum time increment allowed. If this\n\t\t\t\t\t\t\t\t\tvalue is not specified, the upper limit is the total step time.\n\t\t\t\t\t\t\t\t\t",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-coupledthermal-electrochemical.htm#simakey-r-coupledthermal-electrochemical__simakey-r-coupledthermal-electrochemica-datadesc",
+          "search_start": 0,
+          "search_end": 1087
+        },
+        {
+          "rank": 3,
+          "score": 42.64908505334135,
+          "child_id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce:0:344",
+          "unit_id": "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+          "document_id": "simakey-r-output",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Standard analysis",
+            "Optional parameters"
+          ],
+          "retrieval_text": "Document: *OUTPUT\nSection: *OUTPUT > Defining output requests in an Abaqus/Standard analysis > Optional parameters\nEntry: TIME MARKS\nTIME MARKS\n \nSet TIME MARKS=YES (default) to write results at the exact times dictated by the NUMBER INTERVAL, TIME INTERVAL, or TIME POINTS parameter. \n\n \nSet TIME MARKS=NO to write results to the output database at the increment\n  ending immediately after the time dictated by the NUMBER INTERVAL, TIME INTERVAL, or TIME POINTS parameter. \n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "search_start": 0,
+          "search_end": 344
+        },
+        {
+          "rank": 4,
+          "score": 42.50587319946278,
+          "child_id": "6c7b4a92c5223d99b7fdc0e78dd41695b7895f5a282f73d0a0b2251985cf2cef:0:964",
+          "unit_id": "6c7b4a92c5223d99b7fdc0e78dd41695b7895f5a282f73d0a0b2251985cf2cef",
+          "document_id": "simakey-r-coupledthermal-electrical",
+          "heading_path": [
+            "*COUPLED THERMAL-ELECTRICAL",
+            "Data line to define incrementation and steady state"
+          ],
+          "retrieval_text": "Document: *COUPLED THERMAL-ELECTRICAL\nSection: *COUPLED THERMAL-ELECTRICAL > Data line to define incrementation and steady state\nEntry: First (and only) line\nFirst (and only) line\n\nInitial time increment. If automatic incrementation is used, this value should be a reasonable suggestion for the initial step and will be adjusted as necessary. If direct incrementation is used, this value will be the fixed time increment size. \n\n\n\nTotal time period. If END=SS is chosen, the step ends when steady state is reached or after this time period, whichever occurs first.\n\n\n\nMinimum time increment allowed. If Abaqus/Standard finds it needs a smaller time increment than this value, the analysis is terminated. If a value is given, Abaqus/Standard will use the minimum of the given value and 0.8 times the initial time increment. If no value is given, Abaqus/Standard sets the minimum increment equal to the minimum of 0.8 times the initial time increment (first data item on this data line) and 10−5 times the total time period (second data item on this data line). This value is used only for automatic time incrementation.\n\n\n\n",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-coupledthermal-electrical.htm#simakey-r-coupledthermal-electrical__simakey-r-coupledthermal-electrical-s-datadesc1",
+          "search_start": 0,
+          "search_end": 964
+        },
+        {
+          "rank": 5,
+          "score": 42.07530246424127,
+          "child_id": "8edc1a0e2a3d42d673a5c45e5ade895e94f8236510ae5a9ec1e9ec3b29d0c370:0:1326",
+          "unit_id": "8edc1a0e2a3d42d673a5c45e5ade895e94f8236510ae5a9ec1e9ec3b29d0c370",
+          "document_id": "simaanl-r-wn",
+          "heading_path": [
+            "What's New",
+            "2024 FD01 February 2024",
+            "Random Response Analysis Performance Improvements"
+          ],
+          "retrieval_text": "Document: What's New\nSection: What's New > 2024 FD01 February 2024 > Random Response Analysis Performance Improvements\nThe models and results are as follows:\n\n- Model 1 is comprised of 2.3 million elements containing approximately 9 million\n                  degrees of freedom. The random response analysis was performed using 83 eigenmodes\n                  and 840 frequency points. Stress field output was requested in all increments.\n                    The Abaqus/Standard wall time was reduced approximately 5.25 times, while the element results\n                    computation phase was sped up approximately 9 times.\n- Model 2 is comprised of 10.8 million elements containing approximately 53\n                  million degrees of freedom. The random response analysis was performed using 38\n                  eigenmodes and 20 frequency points. Stress and strain field output was requested\n                  in all increments. The Abaqus/Standard wall time was reduced approximately 3 times, while the element results\n                    computation phase was sped up approximately 10 times.\n- Model 3 is comprised of 5 million elements containing approximately 25 million\n                  degrees of freedom. The random response analysis was performed using 110\n                  eigenmodes and 38 frequency points. Stress and Mises stress field output was\n                  requested in 0.6 million elements at all frequency points. ",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-r-wn.htm#simaanl-r-wn-genxslid-wnentry49-FUN137655",
+          "search_start": 0,
+          "search_end": 1326
+        }
+      ],
+      "selected_units": [
+        "5bc8e4412e6521eeeab78060ad47afe519c9a540e8d250131ddc0e1c6fdd60ce",
+        "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+        "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+        "d3bc24fc427953e1df249b12e241211ee70ff270165730e8e0162d5eee789370"
+      ],
+      "historical_evidence": [
+        {
+          "document_id": "simakey-r-output",
+          "section_id": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "excerpt": "TIME MARKS\n[DefinitionXML]\n<dd xmlns:mml=\"http://www.w3.org/1998/Math/MathML\" class=\"dd dd paramlistitem\"> \n<p>Set <span class=\"ph ph abqparameter\">TIME MARKS</span>=<span class=\"ph ph abqparamvalue\">YES</span> (default) to write results at the exact times dictated by the <span class=\"ph ph abqparameter\">NUMBER INTERVAL</span>, <span class=\"ph ph abqparameter\">TIME INTERVAL</span>, or <span class=\"ph ph abqparameter\">TIME POINTS</span> parameter. \n</p> \n<p>Set <span class=\"ph ph abqparameter\">TIME MARKS</span>=<span class=\"ph ph abqparamvalue\">NO</span> to write results to the output database at the increment\n  ending immediately after the time dictated by the <span class=\"ph ph abqparameter\">NUMBER INTERVAL</span>, <span class=\"ph ph abqparameter\">TIME INTERVAL</span>, or <span class=\"ph ph abqparameter\">TIME POINTS</span> parameter. \n</p> </dd>\n[/DefinitionXML]",
+          "original_characters": 875,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Standard analysis",
+            "Optional parameters"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simaanl-c-directcyclic",
+          "section_id": "simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+          "title": "Direct Cyclic Analysis",
+          "section": "Specifying Output at Exact Times",
+          "excerpt": "Output at exact times is not supported for direct cyclic analysis. If output at exact times is requested, Abaqus will issue a warning message and change the output to an output at approximate times.",
+          "original_characters": 198,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclic.htm#simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "Direct Cyclic Analysis",
+            "Output",
+            "Specifying Output at Exact Times"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simakey-r-output",
+          "section_id": "simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "title": "*OUTPUT",
+          "section": "Optional parameters",
+          "excerpt": "TIME POINTS\n[DefinitionXML]\n<dd xmlns:mml=\"http://www.w3.org/1998/Math/MathML\" class=\"dd dd paramlistitem\"> \n<p>Set this parameter equal to the name of the \n  <a class=\"xref xref\" href=\"simakey-r-timepoints.htm#simakey-r-timepoints\" title=\"Specify time points at which data are written to the output database file, or specify time points in the loading history at which the response of a structure will be evaluated in a direct cyclic analysis.\"><span class=\"keyword keyword abqkeyword\">TIME POINTS</span></a> option that defines the time points at which output is to\n  be written. \n</p> \n<p>If this parameter and the <span class=\"ph ph abqparameter\">FREQUENCY</span>, <span class=\"ph ph abqparameter\">NUMBER INTERVAL</span>, and <span class=\"ph ph abqparameter\">TIME INTERVAL</span> parameters are omitted, output will be written at every\n  increment of the analysis for all procedure types except \n  <a class=\"xref xref\" href=\"simakey-r-dynamic.htm#simakey-r-dynamic\" title=\"Dynamic stress/displacement analysis.\"><span class=\"keyword keyword abqkeyword\">DYNAMIC</span></a> and \n  <a class=\"xref xref\" href=\"simakey-r-modaldynamic.htm#simakey-r-modaldynamic\" title=\"Dynamic time history analysis using modal superposition.\"><span class=\"keyword keyword abqkeyword\">MODAL DYNAMIC</span></a>; output will be written every 10 increments for these\n  procedure types. \n</p> \n<p>The <span class=\"ph ph abqparameter\">FREQUENCY</span>, <span class=\"ph ph abqparameter\">NUMBER INTERVAL</span>, <span class=\"ph ph abqparameter\">TIME INTERVAL</span>, and <span class=\"ph ph abqparameter\">TIME POINTS</span> parameters are mutually exclusive. \n</p> </dd>\n[/DefinitionXML]",
+          "original_characters": 1661,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Standard analysis",
+            "Optional parameters"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simaout-c-output",
+          "section_id": "simaout-c-output-message-std",
+          "title": "About Output",
+          "section": "The Abaqus/Standard Message File",
+          "excerpt": "In Abaqus/Standard the message file contains diagnostic or informative messages about the progress of the solution. If any of these messages describe errors or warnings, the number of such errors or warnings is also given at the end of the data file. The message file is written automatically during an Abaqus/Standard analysis.\n\nThe Abaqus/Standard message file contains information about the increment number, step time, fraction of a step completed, equilibrium iterations, severe discontinuity (contact) iterations, plasticity algorithms, adaptive mesh smoothing, the load proportionality factor in a Riks analysis, etc. A portion of the diagnostic information in the message file is also written to the output database for use in Abaqus/CAE (for more information, see Requesting Output to the Output Database).\n\nYou can control the amount of information written to the message file for each step. This feature is sometimes helpful in difficult analyses since it allows detailed diagnostic information to be written about certain events (such as contact) during a nonlinear solution; this information can often be useful in developing a strategy for the solution of highly nonlinear problems.\n\nInput File Usage",
+          "original_characters": 1214,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-output.htm#simaout-c-output-message-std",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "About Output",
+            "The Message File in Abaqus/Standard and Abaqus/Explicit",
+            "The Abaqus/Standard Message File"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        }
+      ]
+    },
+    {
+      "id": "recorded-solver-diagnostic-2",
+      "query": "Exact warning text: \"OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP\" — in Abaqus/Standard with automatic time incrementation, does this warning mean the solver will adjust increment sizes to land exactly on those output times (potentially forcing smaller increments), and is it informational rather than a sign of nonconvergence?\nAbaqus/Standard analysis log contains only: ***WARNING: OUTPUT AT EXACT, PREDEFINED TIME POINTS WAS REQUESTED IN THIS STEP. The step uses automatic time incrementation and field output is requested at exact predefined time points. No convergence errors appear elsewhere in the excerpt.",
+      "targets": [
+        {
+          "need": "complete_time_adjustment",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "source": {
+            "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEOUTRefMap\\simaout-c-dboutput-frequency.htm",
+            "sha256": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+            "nodes": [
+              {
+                "xpath": "/html/body/table/tr/td/article[1]/div/div[9]/p[1]",
+                "text": "If the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, Abaqus/Standard adjusts the time increments to ensure that data are written at the exact time points. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write output data at the first increment after the time point."
+              },
+              {
+                "xpath": "/html/body/table/tr/td/article[1]/div/div[9]/p[2]",
+                "text": "When the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, the number of increments necessary to complete the analysis might increase, which might adversely affect performance."
+              }
+            ]
+          },
+          "body": "If the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, Abaqus/Standard adjusts the time increments to ensure that data are written at the exact time points. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write output data at the first increment after the time point.\n\nWhen the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, the number of increments necessary to complete the analysis might increase, which might adversely affect performance.",
+          "search_context": "",
+          "search_text": "If the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, Abaqus/Standard adjusts the time increments to ensure that data are written at the exact time points. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write output data at the first increment after the time point.\n\nWhen the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, the number of increments necessary to complete the analysis might increase, which might adversely affect performance.",
+          "children": [
+            {
+              "child_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+              "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "document_id": "simaout-c-dboutput-frequency",
+              "heading_path": [
+                "Controlling the Frequency of Output to the Output Database",
+                "Controlling the Output Frequency in Abaqus/Standard",
+                "Time Domain Analysis: Time Incrementation"
+              ],
+              "retrieval_text": "Document: Controlling the Frequency of Output to the Output Database\nSection: Controlling the Frequency of Output to the Output Database > Controlling the Output Frequency in Abaqus/Standard > Time Domain Analysis: Time Incrementation\nIf the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, Abaqus/Standard adjusts the time increments to ensure that data are written at the exact time points. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write output data at the first increment after the time point.\n\n",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+              "search_start": 0,
+              "search_end": 907,
+              "dense_top20_rank": null,
+              "bm25_top20_rank": 1,
+              "bm25_all_rank_and_score": [
+                1,
+                55.875098964823835
+              ],
+              "reranker_rank": 3,
+              "reranker": {
+                "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+                "score": 1.3706122636795044,
+                "pair_tokens": 373,
+                "truncated": false
+              },
+              "matched_query_terms": [
+                "a",
+                "abaqus",
+                "analysis",
+                "and",
+                "at",
+                "exact",
+                "in",
+                "increment",
+                "incrementation",
+                "increments",
+                "is",
+                "of",
+                "output",
+                "points",
+                "smaller",
+                "standard",
+                "step",
+                "than",
+                "the",
+                "time",
+                "times",
+                "to",
+                "will"
+              ]
+            },
+            {
+              "child_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:907:1165",
+              "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+              "document_id": "simaout-c-dboutput-frequency",
+              "heading_path": [
+                "Controlling the Frequency of Output to the Output Database",
+                "Controlling the Output Frequency in Abaqus/Standard",
+                "Time Domain Analysis: Time Incrementation"
+              ],
+              "retrieval_text": "Document: Controlling the Frequency of Output to the Output Database\nSection: Controlling the Frequency of Output to the Output Database > Controlling the Output Frequency in Abaqus/Standard > Time Domain Analysis: Time Incrementation\nWhen the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, the number of increments necessary to complete the analysis might increase, which might adversely affect performance.",
+              "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+              "search_start": 907,
+              "search_end": 1165,
+              "dense_top20_rank": null,
+              "bm25_top20_rank": null,
+              "bm25_all_rank_and_score": [
+                34,
+                41.440363021402334
+              ],
+              "reranker_rank": null,
+              "reranker": null,
+              "matched_query_terms": [
+                "abaqus",
+                "analysis",
+                "and",
+                "at",
+                "exact",
+                "in",
+                "incrementation",
+                "increments",
+                "is",
+                "of",
+                "output",
+                "points",
+                "standard",
+                "the",
+                "time",
+                "times",
+                "to"
+              ]
+            }
+          ],
+          "unique_parent_rank": 3,
+          "final_selected": true
+        }
+      ],
+      "dense_count": 20,
+      "bm25_count": 20,
+      "union_count": 39,
+      "lexical_all_scored": 32267,
+      "top8_reranked": [
+        {
+          "rank": 1,
+          "id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2:0:198",
+          "score": 2.629164218902588,
+          "pair_tokens": 202,
+          "truncated": false,
+          "child_id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2:0:198",
+          "unit_id": "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+          "document_id": "simaanl-c-directcyclic",
+          "heading_path": [
+            "Direct Cyclic Analysis",
+            "Output",
+            "Specifying Output at Exact Times"
+          ],
+          "retrieval_text": "Document: Direct Cyclic Analysis\nSection: Direct Cyclic Analysis > Output > Specifying Output at Exact Times\nOutput at exact times is not supported for direct cyclic analysis. If output at exact times is requested, Abaqus will issue a warning message and change the output to an output at approximate times.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclic.htm#simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+          "search_start": 0,
+          "search_end": 198
+        },
+        {
+          "rank": 2,
+          "id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500:0:202",
+          "score": 1.7254040241241455,
+          "pair_tokens": 218,
+          "truncated": false,
+          "child_id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500:0:202",
+          "unit_id": "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+          "document_id": "simaanl-c-directcyclicfatigue",
+          "heading_path": [
+            "Low-Cycle Fatigue Analysis Using the Direct Cyclic Approach",
+            "Output",
+            "Specifying Output at Exact Times"
+          ],
+          "retrieval_text": "Document: Low-Cycle Fatigue Analysis Using the Direct Cyclic Approach\nSection: Low-Cycle Fatigue Analysis Using the Direct Cyclic Approach > Output > Specifying Output at Exact Times\nOutput at exact times is not supported for low-cycle fatigue analysis. If output at exact times is requested, Abaqus will issue a warning message and change the output to an output at approximate times.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclicfatigue.htm#simaanl-c-directcyclicfatigue-t-SpecifyingOutputAtExactTimes-sma-topic19",
+          "search_start": 0,
+          "search_end": 202
+        },
+        {
+          "rank": 3,
+          "id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+          "score": 1.3706122636795044,
+          "pair_tokens": 373,
+          "truncated": false,
+          "child_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "document_id": "simaout-c-dboutput-frequency",
+          "heading_path": [
+            "Controlling the Frequency of Output to the Output Database",
+            "Controlling the Output Frequency in Abaqus/Standard",
+            "Time Domain Analysis: Time Incrementation"
+          ],
+          "retrieval_text": "Document: Controlling the Frequency of Output to the Output Database\nSection: Controlling the Frequency of Output to the Output Database > Controlling the Output Frequency in Abaqus/Standard > Time Domain Analysis: Time Incrementation\nIf the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, Abaqus/Standard adjusts the time increments to ensure that data are written at the exact time points. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write output data at the first increment after the time point.\n\n",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+          "search_start": 0,
+          "search_end": 907
+        },
+        {
+          "rank": 4,
+          "id": "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503:0:459",
+          "score": 0.5701377987861633,
+          "pair_tokens": 269,
+          "truncated": false,
+          "child_id": "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503:0:459",
+          "unit_id": "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503",
+          "document_id": "simakey-r-output",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Explicit analysis",
+            "The following parameters are optional and valid only if the FIELD parameter is included"
+          ],
+          "retrieval_text": "Document: *OUTPUT\nSection: *OUTPUT > Defining output requests in an Abaqus/Explicit analysis > The following parameters are optional and valid only if the FIELD parameter is included\nEntry: TIME MARKS\nTIME MARKS\n \nSet TIME MARKS=NO (default) to write results to the output database at the\n  increment ending immediately after the time dictated by the NUMBER INTERVAL or TIME POINTS parameter. \n\n \nSet TIME MARKS=YES to write results at the exact times dictated by the NUMBER INTERVAL or TIME POINTS parameter. \n\n \nTIME MARKS=YES cannot be used when either the FIXED TIME INCREMENTATION or DIRECT USER CONTROL parameter is included on the \n  DYNAMIC option. \n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2__simakey-r-output-s-TheFollowingParametersAreOptionalAndValidOnlyIfTheFIELDParameterIsIncluded-paramscustom5",
+          "search_start": 0,
+          "search_end": 459
+        },
+        {
+          "rank": 5,
+          "id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896:0:546",
+          "score": 0.562393069267273,
+          "pair_tokens": 269,
+          "truncated": false,
+          "child_id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896:0:546",
+          "unit_id": "f1f0cfc484974533bfa30424fea450d8112535cb0256dcb865e8e754ae8fb896",
+          "document_id": "simakey-r-output",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Standard analysis",
+            "Optional parameters"
+          ],
+          "retrieval_text": "Document: *OUTPUT\nSection: *OUTPUT > Defining output requests in an Abaqus/Standard analysis > Optional parameters\nEntry: TIME POINTS\nTIME POINTS\n \nSet this parameter equal to the name of the \n  TIME POINTS option that defines the time points at which output is to\n  be written. \n\n \nIf this parameter and the FREQUENCY, NUMBER INTERVAL, and TIME INTERVAL parameters are omitted, output will be written at every\n  increment of the analysis for all procedure types except \n  DYNAMIC and \n  MODAL DYNAMIC; output will be written every 10 increments for these\n  procedure types. \n\n \nThe FREQUENCY, NUMBER INTERVAL, TIME INTERVAL, and TIME POINTS parameters are mutually exclusive. \n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnASAnalysis-abqkeysubsection1__simakey-r-output-s-paramsoptional1",
+          "search_start": 0,
+          "search_end": 546
+        },
+        {
+          "rank": 6,
+          "id": "9110e738de043d6a5158de1e7c2f06d03bfaa77b90b28daf1e44aaca5fadd843:0:683",
+          "score": 0.46967804431915283,
+          "pair_tokens": 315,
+          "truncated": false,
+          "child_id": "9110e738de043d6a5158de1e7c2f06d03bfaa77b90b28daf1e44aaca5fadd843:0:683",
+          "unit_id": "9110e738de043d6a5158de1e7c2f06d03bfaa77b90b28daf1e44aaca5fadd843",
+          "document_id": "simakey-r-output",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Explicit analysis",
+            "The following parameters are optional and valid only if the FIELD parameter is included"
+          ],
+          "retrieval_text": "Document: *OUTPUT\nSection: *OUTPUT > Defining output requests in an Abaqus/Explicit analysis > The following parameters are optional and valid only if the FIELD parameter is included\nEntry: NUMBER INTERVAL\nNUMBER INTERVAL\n \nSet this parameter equal to the number of intervals during the step at which\n  the output database states are to be written. \n  Abaqus/Explicit\n  will always write the results at the beginning of the step. For example, if NUMBER INTERVAL=10, \n  Abaqus/Explicit\n  will write 11 output database states consisting of the values at the beginning\n  of the step and the values at the end of 10 intervals throughout the step. The\n  value of this parameter must be a positive integer or zero. A value of zero\n  suppresses all output. If this parameter is omitted, its value will be set to\n  20. \n\n \nThe NUMBER INTERVAL and TIME POINTS parameters are mutually exclusive. \n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2__simakey-r-output-s-TheFollowingParametersAreOptionalAndValidOnlyIfTheFIELDParameterIsIncluded-paramscustom5",
+          "search_start": 0,
+          "search_end": 683
+        },
+        {
+          "rank": 7,
+          "id": "59cbf7760bb4db776e89d4f7d24242a8d94145df06e66c3946a1a3e7ca8bebac:0:371",
+          "score": 0.4345773458480835,
+          "pair_tokens": 246,
+          "truncated": false,
+          "child_id": "59cbf7760bb4db776e89d4f7d24242a8d94145df06e66c3946a1a3e7ca8bebac:0:371",
+          "unit_id": "59cbf7760bb4db776e89d4f7d24242a8d94145df06e66c3946a1a3e7ca8bebac",
+          "document_id": "simakey-r-output",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Explicit analysis",
+            "The following parameters are optional and valid only if the FIELD parameter is included"
+          ],
+          "retrieval_text": "Document: *OUTPUT\nSection: *OUTPUT > Defining output requests in an Abaqus/Explicit analysis > The following parameters are optional and valid only if the FIELD parameter is included\nEntry: TIME POINTS\nTIME POINTS\n \nSet this parameter equal to the name of the \n  TIME POINTS option that defines the time points at which output is to\n  be written. If this parameter and the NUMBER INTERVAL parameter are omitted, field output will be written at 20\n  equally spaced intervals throughout the step. \n\n \nThe NUMBER INTERVAL and TIME POINTS parameters are mutually exclusive. \n\n ",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2__simakey-r-output-s-TheFollowingParametersAreOptionalAndValidOnlyIfTheFIELDParameterIsIncluded-paramscustom5",
+          "search_start": 0,
+          "search_end": 371
+        },
+        {
+          "rank": 8,
+          "id": "63fc99524c891976d1469a21cb350d20eae55eeeea8c0088e3fe64c44446016e:0:1050",
+          "score": 0.33940044045448303,
+          "pair_tokens": 384,
+          "truncated": false,
+          "child_id": "63fc99524c891976d1469a21cb350d20eae55eeeea8c0088e3fe64c44446016e:0:1050",
+          "unit_id": "63fc99524c891976d1469a21cb350d20eae55eeeea8c0088e3fe64c44446016e",
+          "document_id": "simaanl-c-restart",
+          "heading_path": [
+            "Restarting an Analysis",
+            "Writing Restart Files",
+            "Controlling the Frequency of Output to the Restart Files",
+            "Time Incrementation"
+          ],
+          "retrieval_text": "Document: Restarting an Analysis\nSection: Restarting an Analysis > Writing Restart Files > Controlling the Frequency of Output to the Restart Files > Time Incrementation\nIf the output frequency is specified in terms of the number of intervals, Abaqus/Standard will adjust the time increments to ensure that data are written at the exact time points specified. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write restart data at the first increment after the time point.\n\nWhen the output frequency is specified in terms of the number of intervals, the number of increments necessary to complete the analysis might increase, which might adversely affect performance.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-restart.htm#simaanl-c-restart-t-ControllingTheFrequencyOfOutputToTheRestartFiles-sma-topic1__simaanl-c-restart-s-TimeIncrementation-section3",
+          "search_start": 0,
+          "search_end": 1050
+        }
+      ],
+      "top5_bm25": [
+        {
+          "rank": 1,
+          "score": 55.875098964823835,
+          "child_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc:0:907",
+          "unit_id": "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+          "document_id": "simaout-c-dboutput-frequency",
+          "heading_path": [
+            "Controlling the Frequency of Output to the Output Database",
+            "Controlling the Output Frequency in Abaqus/Standard",
+            "Time Domain Analysis: Time Incrementation"
+          ],
+          "retrieval_text": "Document: Controlling the Frequency of Output to the Output Database\nSection: Controlling the Frequency of Output to the Output Database > Controlling the Output Frequency in Abaqus/Standard > Time Domain Analysis: Time Incrementation\nIf the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, Abaqus/Standard adjusts the time increments to ensure that data are written at the exact time points. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write output data at the first increment after the time point.\n\n",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+          "search_start": 0,
+          "search_end": 907
+        },
+        {
+          "rank": 2,
+          "score": 53.950356644425774,
+          "child_id": "8925a4e731c95c6f02e0731cf1bda7b22edb4ce31b7eefbd19400e6affc400c5:0:1087",
+          "unit_id": "8925a4e731c95c6f02e0731cf1bda7b22edb4ce31b7eefbd19400e6affc400c5",
+          "document_id": "simakey-r-coupledthermal-electrochemical",
+          "heading_path": [
+            "*COUPLED THERMAL-ELECTROCHEMICAL",
+            "Data line to define incrementation"
+          ],
+          "retrieval_text": "Document: *COUPLED THERMAL-ELECTROCHEMICAL\nSection: *COUPLED THERMAL-ELECTROCHEMICAL > Data line to define incrementation\nEntry: First (and only) line\nFirst (and only) line\n\n\t\t\t\t\t\t\n\t\t\t\t\t\t\tInitial time increment. If automatic incrementation is used, this value should\n\t\t\t\t\t\t\t\t\tbe a reasonable suggestion for the initial step and is adjusted\n\t\t\t\t\t\t\t\t\tas required. If direct incrementation is used, this value is the\n\t\t\t\t\t\t\t\t\tfixed time increment size. \n\n\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\tTotal time period. \n\n\t\t\t\t\t\t\t\n\n\t\t\t\t\t\t\tMinimum time increment allowed. If Abaqus/Standard finds it needs a smaller time increment than this value, the\n\t\t\t\t\t\t\t\t\tanalysis ends. If a value is given, Abaqus/Standard uses the minimum of the given value and 0.8 times the initial\n\t\t\t\t\t\t\t\t\ttime increment. If no value is given, Abaqus/Standard sets the minimum increment equal to the minimum of 0.8 times\n\t\t\t\t\t\t\t\t\tthe initial time increment (first data item on this data line)\n\t\t\t\t\t\t\t\t\tand 10−5 times the total time period (second data\n\t\t\t\t\t\t\t\t\titem on this data line). This value is used only for automatic\n\t\t\t\t\t\t\t\t\ttime incrementation.\n\n\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\tMaximum time increment allowed. If this\n\t\t\t\t\t\t\t\t\tvalue is not specified, the upper limit is the total step time.\n\t\t\t\t\t\t\t\t\t",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-coupledthermal-electrochemical.htm#simakey-r-coupledthermal-electrochemical__simakey-r-coupledthermal-electrochemica-datadesc",
+          "search_start": 0,
+          "search_end": 1087
+        },
+        {
+          "rank": 3,
+          "score": 53.09611230488804,
+          "child_id": "6c7b4a92c5223d99b7fdc0e78dd41695b7895f5a282f73d0a0b2251985cf2cef:0:964",
+          "unit_id": "6c7b4a92c5223d99b7fdc0e78dd41695b7895f5a282f73d0a0b2251985cf2cef",
+          "document_id": "simakey-r-coupledthermal-electrical",
+          "heading_path": [
+            "*COUPLED THERMAL-ELECTRICAL",
+            "Data line to define incrementation and steady state"
+          ],
+          "retrieval_text": "Document: *COUPLED THERMAL-ELECTRICAL\nSection: *COUPLED THERMAL-ELECTRICAL > Data line to define incrementation and steady state\nEntry: First (and only) line\nFirst (and only) line\n\nInitial time increment. If automatic incrementation is used, this value should be a reasonable suggestion for the initial step and will be adjusted as necessary. If direct incrementation is used, this value will be the fixed time increment size. \n\n\n\nTotal time period. If END=SS is chosen, the step ends when steady state is reached or after this time period, whichever occurs first.\n\n\n\nMinimum time increment allowed. If Abaqus/Standard finds it needs a smaller time increment than this value, the analysis is terminated. If a value is given, Abaqus/Standard will use the minimum of the given value and 0.8 times the initial time increment. If no value is given, Abaqus/Standard sets the minimum increment equal to the minimum of 0.8 times the initial time increment (first data item on this data line) and 10−5 times the total time period (second data item on this data line). This value is used only for automatic time incrementation.\n\n\n\n",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-coupledthermal-electrical.htm#simakey-r-coupledthermal-electrical__simakey-r-coupledthermal-electrical-s-datadesc1",
+          "search_start": 0,
+          "search_end": 964
+        },
+        {
+          "rank": 4,
+          "score": 52.89201192126959,
+          "child_id": "268857aa13bc9efa5c6ffcf55bf57679f42abb1787c7c7329fb705db0c09db27:0:746",
+          "unit_id": "268857aa13bc9efa5c6ffcf55bf57679f42abb1787c7c7329fb705db0c09db27",
+          "document_id": "simakey-r-steadystatetransport",
+          "heading_path": [
+            "*STEADY STATE TRANSPORT",
+            "Data line to define a steady-state transport analysis"
+          ],
+          "retrieval_text": "Document: *STEADY STATE TRANSPORT\nSection: *STEADY STATE TRANSPORT > Data line to define a steady-state transport analysis\nEntry: First (and only) line\nFirst (and only) line\n \n  \nInitial time increment. This value will be modified as required if the\n  automatic time stepping scheme is used or will be used as the constant time\n  increment if the DIRECT parameter is used. \n\n \n  \nTime period of the step. \n\n \n  \nMinimum time increment allowed. Only used for automatic time incrementation.\n  If \n  Abaqus/Standard\n  finds it needs a smaller time increment than this value, the analysis is\n  terminated. If this entry is zero, a default value of the smaller of the\n  suggested initial time increment or 10−5 times the total time period\n  is assumed. \n\n \n  \nMaximum time increment allowed. Only used for automatic time incrementation.\n  If this value is not specified, no upper limit is imposed. \n\n \n\n",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-steadystatetransport.htm#simakey-r-steadystatetransport__simakey-r-steadystatetransport-s-datadesc1",
+          "search_start": 0,
+          "search_end": 746
+        },
+        {
+          "rank": 5,
+          "score": 52.71672246577722,
+          "child_id": "63fc99524c891976d1469a21cb350d20eae55eeeea8c0088e3fe64c44446016e:0:1050",
+          "unit_id": "63fc99524c891976d1469a21cb350d20eae55eeeea8c0088e3fe64c44446016e",
+          "document_id": "simaanl-c-restart",
+          "heading_path": [
+            "Restarting an Analysis",
+            "Writing Restart Files",
+            "Controlling the Frequency of Output to the Restart Files",
+            "Time Incrementation"
+          ],
+          "retrieval_text": "Document: Restarting an Analysis\nSection: Restarting an Analysis > Writing Restart Files > Controlling the Frequency of Output to the Restart Files > Time Incrementation\nIf the output frequency is specified in terms of the number of intervals, Abaqus/Standard will adjust the time increments to ensure that data are written at the exact time points specified. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write restart data at the first increment after the time point.\n\nWhen the output frequency is specified in terms of the number of intervals, the number of increments necessary to complete the analysis might increase, which might adversely affect performance.",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-restart.htm#simaanl-c-restart-t-ControllingTheFrequencyOfOutputToTheRestartFiles-sma-topic1__simaanl-c-restart-s-TimeIncrementation-section3",
+          "search_start": 0,
+          "search_end": 1050
+        }
+      ],
+      "selected_units": [
+        "0140a8e94cbda734904ef4e5d0ee159dfd0f6f007eba011c59a2d86ec8723cc2",
+        "01808d66b6488c72c0de282cf636705324130e97e048ad205b0edebb7d901500",
+        "bade4860f8491a95e032af5b034e8f8f8d5e86983b05793673209a633f0770bc",
+        "fb850ef3f1762eb48a11b700796a94284e2c5e1f6a97783ce9a4673ab0d6b503"
+      ],
+      "historical_evidence": [
+        {
+          "document_id": "simaanl-c-directcyclic",
+          "section_id": "simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+          "title": "Direct Cyclic Analysis",
+          "section": "Specifying Output at Exact Times",
+          "excerpt": "Output at exact times is not supported for direct cyclic analysis. If output at exact times is requested, Abaqus will issue a warning message and change the output to an output at approximate times.",
+          "original_characters": 198,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclic.htm#simaanl-c-directcyclic-t-SpecifyingOutputAtExactTimes-sma-topic12",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "Direct Cyclic Analysis",
+            "Output",
+            "Specifying Output at Exact Times"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simaanl-c-directcyclicfatigue",
+          "section_id": "simaanl-c-directcyclicfatigue-t-SpecifyingOutputAtExactTimes-sma-topic19",
+          "title": "Low-Cycle Fatigue Analysis Using the Direct Cyclic Approach",
+          "section": "Specifying Output at Exact Times",
+          "excerpt": "Output at exact times is not supported for low-cycle fatigue analysis. If output at exact times is requested, Abaqus will issue a warning message and change the output to an output at approximate times.",
+          "original_characters": 202,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEANLRefMap/simaanl-c-directcyclicfatigue.htm#simaanl-c-directcyclicfatigue-t-SpecifyingOutputAtExactTimes-sma-topic19",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "Low-Cycle Fatigue Analysis Using the Direct Cyclic Approach",
+            "Output",
+            "Specifying Output at Exact Times"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simaout-c-dboutput-frequency",
+          "section_id": "simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+          "title": "Controlling the Frequency of Output to the Output Database",
+          "section": "Time Domain Analysis: Time Incrementation",
+          "excerpt": "If the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, Abaqus/Standard adjusts the time increments to ensure that data are written at the exact time points. In some cases Abaqus might use a time increment smaller than the minimum time increment allowed in the step in the increment directly before a time point. However, Abaqus will not violate the minimum time increment allowed for consolidation, transient mass diffusion, transient heat transfer, transient couple thermal-electrical, transient coupled temperature-displacement, and transient coupled thermal-electrical-structural analyses. For these procedures if a time increment smaller than the minimum time increment is required, Abaqus will use the minimum time increment allowed in the step and will write output data at the first increment after the time point.\n\nWhen the output frequency is specified at exact times and in terms of the number of intervals, in regular time intervals, or in time points, the number of increments necessary to complete the analysis might increase, which might adversely affect performance.",
+          "original_characters": 1165,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm#simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "Controlling the Frequency of Output to the Output Database",
+            "Controlling the Output Frequency in Abaqus/Standard",
+            "Time Domain Analysis: Time Incrementation"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        },
+        {
+          "document_id": "simakey-r-output",
+          "section_id": "simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2__simakey-r-output-s-TheFollowingParametersAreOptionalAndValidOnlyIfTheFIELDParameterIsIncluded-paramscustom5",
+          "title": "*OUTPUT",
+          "section": "The following parameters are optional and valid only if the FIELD parameter is included",
+          "excerpt": "TIME MARKS\n[DefinitionXML]\n<dd xmlns:mml=\"http://www.w3.org/1998/Math/MathML\" class=\"dd dd paramlistitem\"> \n<p>Set <span class=\"ph ph abqparameter\">TIME MARKS</span>=<span class=\"ph ph abqparamvalue\">NO</span> (default) to write results to the output database at the\n  increment ending immediately after the time dictated by the <span class=\"ph ph abqparameter\">NUMBER INTERVAL</span> or <span class=\"ph ph abqparameter\">TIME POINTS</span> parameter. \n</p> \n<p>Set <span class=\"ph ph abqparameter\">TIME MARKS</span>=<span class=\"ph ph abqparamvalue\">YES</span> to write results at the exact times dictated by the <span class=\"ph ph abqparameter\">NUMBER INTERVAL</span> or <span class=\"ph ph abqparameter\">TIME POINTS</span> parameter. \n</p> \n<p><span class=\"ph ph abqparameter\">TIME MARKS</span>=<span class=\"ph ph abqparamvalue\">YES</span> cannot be used when either the <span class=\"ph ph abqparameter\">FIXED TIME INCREMENTATION</span> or <span class=\"ph ph abqparameter\">DIRECT USER CONTROL</span> parameter is included on the \n  <a class=\"xref xref\" href=\"simakey-r-dynamic.htm#simakey-r-dynamic\" title=\"Dynamic stress/displacement analysis.\"><span class=\"keyword keyword abqkeyword\">DYNAMIC</span></a> option. \n</p> </dd>\n[/DefinitionXML]",
+          "original_characters": 1243,
+          "truncated": false,
+          "truncation_reason": null,
+          "delivery_version": "indexed-passage-body-budget-v1",
+          "source": "http://localhost:4040/English/SIMACAEKEYRefMap/simakey-r-output.htm#simakey-r-output-t-DefiningOutputRequestsInAnAEXPAnalysis-abqkeysubsection2__simakey-r-output-s-TheFollowingParametersAreOptionalAndValidOnlyIfTheFIELDParameterIsIncluded-paramscustom5",
+          "release": "2026 FD02",
+          "match": "semantic",
+          "heading_path": [
+            "*OUTPUT",
+            "Defining output requests in an Abaqus/Explicit analysis",
+            "The following parameters are optional and valid only if the FIELD parameter is included"
+          ],
+          "page_products": [],
+          "page_products_source": "unrecorded",
+          "section_product_mentions": [],
+          "section_product_heading": null
+        }
+      ]
+    }
+  ],
+  "api_source_pages": [
+    {
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEKERRefMap\\simaker-c-odbassemblypyc.htm",
+      "sha256": "97adf37b9933ac467e340251b4379d6096cce8306a4b45e1aa82371a6ec272bd",
+      "in_source_manifest": false,
+      "matching_source_nodes": [
+        {
+          "xpath": "/html/body/table/tr/td/article[1]/div/div[1]/dl/dd",
+          "text": "An OdbSet specifying a region."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[1]/div/div[1]/dl/dd/p",
+          "text": "An OdbSet specifying a region."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[2]/div/div[1]/dl/dd[1]",
+          "text": "An OdbSet specifying a region."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[2]/div/div[1]/dl/dd[1]/p",
+          "text": "An OdbSet specifying a region."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[5]/div/div[1]/dl/dd",
+          "text": "An OdbSet specifying the reference node assigned to the rigid body."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[5]/div/div[1]/dl/dd/p",
+          "text": "An OdbSet specifying the reference node assigned to the rigid body."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[5]/div/div[2]/dl/dd[3]",
+          "text": "An OdbSet specifying an element set assigned to the rigid body."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[5]/div/div[2]/dl/dd[3]/p",
+          "text": "An OdbSet specifying an element set assigned to the rigid body."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[5]/div/div[2]/dl/dd[4]",
+          "text": "An OdbSet specifying pin-type nodes assigned to the rigid body."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[5]/div/div[2]/dl/dd[4]/p",
+          "text": "An OdbSet specifying pin-type nodes assigned to the rigid body."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[5]/div/div[2]/dl/dd[5]",
+          "text": "An OdbSet specifying tie-type nodes assigned to the rigid body."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[5]/div/div[2]/dl/dd[5]/p",
+          "text": "An OdbSet specifying tie-type nodes assigned to the rigid body."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[6]/div/div[2]/dl/dd[1]",
+          "text": "An OdbSet object specifying element sets or a string containing a name of the element set. The default element set present in odb named \"ALL ELEMENTS\" is queried by default."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[6]/div/div[2]/dl/dd[1]/p",
+          "text": "An OdbSet object specifying element sets or a string containing a name of the element set. The default element set present in odb named \"ALL ELEMENTS\" is queried by default."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[7]/div/div/dl/dt[2]",
+          "text": "nodeSets"
+        }
+      ]
+    },
+    {
+      "path": "D:\\SIMULIA\\Documentation\\2026LE\\English\\SIMACAEKERRefMap\\simaker-c-fieldoutputpyc.htm",
+      "sha256": "7fc3492c84c49deb1307dfe745354d60bc04b328a343d44b431325a905a948bf",
+      "in_source_manifest": false,
+      "matching_source_nodes": [
+        {
+          "xpath": "/html/body/table/tr/td/article[5]/div/div[1]/dl/dd[2]",
+          "text": "An OdbSet object specifying the instance-level set defining the region for addData. The set must be defined in the same output database as the output database into which the new field output data is being written. For better performance, the node or element labels in the set are preferred to be sorted in ascending order and must be specified in the same order as the values provided for the data argument."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[5]/div/div[1]/dl/dd[2]/p",
+          "text": "An OdbSet object specifying the instance-level set defining the region for addData. The set must be defined in the same output database as the output database into which the new field output data is being written. For better performance, the node or element labels in the set are preferred to be sorted in ascending order and must be specified in the same order as the values provided for the data argument."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[9]/div/div[2]/dl/dd",
+          "text": "An OdbSet specifying the region for which to extract values. For better performance, the node or element labels in the sets are preferred to be sorted in ascending order."
+        },
+        {
+          "xpath": "/html/body/table/tr/td/article[9]/div/div[2]/dl/dd/p",
+          "text": "An OdbSet specifying the region for which to extract values. For better performance, the node or element labels in the sets are preferred to be sorted in ascending order."
+        }
+      ]
+    }
+  ],
+  "api_index_counts": {
+    "simaker-c-odbassemblypyc": 0,
+    "simaker-c-fieldoutputpyc": 0
+  },
+  "all_corpus_nodesets_or_odbassembly_mentions": [],
+  "source_checks": {
+    "SIMACAEANLRefMap/simaanl-c-postbuckling.htm": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+    "SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c"
+  },
+  "binding": {
+    "candidate_manifest_sha256": "cdd92c955d96e93f21ed0d9a256976678337cf44eb99f13a6ed9cca57ae25e57",
+    "prepared": {
+      "units_sha256": "5ead77d2b57c269043ddae73e8ac453ab221581988d873827da5a14f9580cbd9",
+      "children_sha256": "0954420241c9d8f6be13527ab89b588cf8600ebab22477869a8023f45451e530",
+      "coverage_sha256": "6ab300b213e370b19ac765288e37759059b6bd0653fe30bb6bae87976be5ea1c",
+      "manifest_sha256": "cdd92c955d96e93f21ed0d9a256976678337cf44eb99f13a6ed9cca57ae25e57"
+    },
+    "replay_manifest_sha256": "d23b644f05aeda8fc0659d49152473dbf1e5c0837702577e84299b2054b2ca5c",
+    "bm25_database_sha256_before_and_after": "193e28380b92b904e2dc29d5035b23be1422c9137b14c5ca51f1419274489dfd",
+    "driver_sha256": "798cba20764f472c7660d423c835090eb7a8f1fb2b1fac0b8be29323e52f7f06"
+  },
+  "limits": "Post-hoc failure diagnosis on existing exposed queries. Reproduced full BM25 ranking is diagnostic, not a new Top-k treatment or task success metric. Dense ranks beyond historical Top20 and reasons internal to learned scores remain unknown."
+}
+
+

@@ -1,0 +1,75 @@
+{
+  "version": "evidence-followup-annotations-v1",
+  "requests_sha256": "3e0123d711f5ce96c43f9305b99e3cb7264cafc79b7a62075143f3077a3cd45b",
+  "role": "Host-only source audit and scoring rubric frozen before current rankings and model calls. Never supplied to the gap model, answer model, retriever or reranker. Unit hits are diagnostic; citation entailment and complete answers require a separate recorded semantic review. Accept genuinely equivalent returned evidence, but report such post-hoc alternatives separately from these predeclared exact-unit checks.",
+  "global_rubric": [
+    "Compare the same model's final answers under a common answer prompt. A schema-valid answer or a model's own answered label is not acceptance.",
+    "Review every substantive claim against its cited passages, including product and release. Distinguish correct supported facts, supported inference, unsupported claim, contradiction and explicit unresolved issue.",
+    "A technical conclusion that happens to be correct from outside knowledge is not grounded if its returned citations do not support it.",
+    "Do not equate a rule forbidding amplitude variation with a rule about LPF scaling of prescribed displacement. Do not infer force-only loading merely from an examples list.",
+    "The pre-audit is not a proof that no alternative passage exists anywhere. Previously unannotated evidence may resolve an open issue only after explicit entailment review and must be reported as an alternative, not silently added to the frozen exact-unit denominator.",
+    "Report the original slices even when source audit reveals that an intended-simple question has missing indexed evidence. No replacement or easier rewording.",
+    "Separate documentation-answer coverage, safe partial answers/abstention, unnecessary follow-up, source/index gaps and provider/schema failures. No Agent-task or Abaqus benefit claim.",
+    "No aggregate passing gate or deployment promotion is defined for seven cases. Report paired differences descriptively; the newly written cases are not family-disjoint held-out."
+  ],
+  "cases": [
+    {
+      "id": "riks-loading-regression",
+      "source_audit_status": "central_relation_not_established_by_preannotated_sources",
+      "requirements": [
+        {"id": "riks_load_scaling", "description": "Explain the dead/reference load relationship and the solution-dependent LPF; do not claim that the formula itself specifies displacement-BC scaling.", "acceptable_unit_sets": [["993bd2d684857b2bc4ed7cf83be9a8146910beb8215c481a0fc8e70328b13e84"]]},
+        {"id": "riks_bc_amplitude", "description": "State the documented restriction on using amplitude definitions to vary prescribed BC magnitudes, without promoting it to an unproved LPF statement.", "acceptable_unit_sets": [["a82b1ef13d38573c042bca60078a807a9cc664e28627a878cb1bc8214b31ac1d"]]}
+      ],
+      "open_issue": "The reviewed BC, proportional-loading, loads and restrictions passages do not explicitly settle whether a non-zero prescribed displacement can itself serve as LPF-scaled loading. A bounded partial answer should preserve that uncertainty unless newly returned evidence genuinely resolves it.",
+      "supplemental_units": ["b703afd86b68341b96dba258acf6bb1c3b5db77761d877f9f4cb901a90c0d826", "755ad419055c526a4c1d098bf3ae3e63a58f5ff2e2efa3c72a4db62d19c6a2b1", "7fb7bc838ec79663222d7de7ee32869d5f8c6eedd690a1f4c69fb9049caeffe0", "dcf402900fd5d8fba053d23e98c492635658efa943b178365137f4b502fe59c2"]
+    },
+    {
+      "id": "consistent-unit-system",
+      "source_audit_status": "direct_searchable_evidence_available",
+      "requirements": [
+        {"id": "unit_convention", "description": "The analyst must use self-consistent units; Abaqus has no built-in physical unit system apart from its rotation/angle conventions. Avoid an unqualified claim that even angular units are arbitrary.", "acceptable_unit_sets": [["c0cee566bb76c7f17644a9005c2715226ec5132f70b666bd040a43ab71ae6b50"]]}
+      ]
+    },
+    {
+      "id": "odb-history-precision",
+      "source_audit_status": "direct_history_restriction_outside_candidate_page_set",
+      "requirements": [
+        {"id": "odb_default_precision", "description": "Recognize default single-precision ODB floating point output and that optional double precision described in this indexed passage concerns nodal field output, not a proven history-output setting.", "acceptable_unit_sets": [["75c5496178929b9fe98e5758ff5b84985acbfe4e20c9582cb703456efcbf3ee4"]]}
+      ],
+      "open_issue": "The direct execution-guide statement says history output is available only in single precision and output_precision governs field output. That page is not in the frozen candidate source manifest; the indexed generic precision-control page alone does not prove the history restriction.",
+      "external_reference": {"source": "SIMACAEEXCRefMap/simaexc-c-analysisproc.htm", "selector": "//dt[normalize-space(.)='output_precision']/following-sibling::dd[1]", "not_supplied_to_model": true},
+      "supplemental_units": ["5591d04891dbfd8d5d0229c6e54b9693e2ec938a3b9b5ad6ac1a54dd5aff0111", "d9287cff6d33b48622012ad969c13978d4163d4924d35f26e76009e5e9a484fa"]
+    },
+    {
+      "id": "steady-transient-heat-properties",
+      "source_audit_status": "direct_searchable_evidence_available",
+      "requirements": [
+        {"id": "steady_internal_energy", "description": "In the described steady-state heat-transfer procedure the internal-energy/specific-heat term is omitted; do not extrapolate this to every possible steady multiphysics procedure.", "acceptable_unit_sets": [["41b62d2766366b032da2c5884e8d5d288338be9d07ecca9fd799e7bbeb15809e"]]},
+        {"id": "transient_material_requirements", "description": "Thermal conductivity is required, and specific heat and density must also be defined for transient heat-transfer problems; no invented property values.", "acceptable_unit_sets": [["a32e837dd84d53266aea7f866dbe8f8b8e74f9d31cb9e2120f036e7a3ff960f5"]]}
+      ]
+    },
+    {
+      "id": "temperature-thermal-expansion",
+      "source_audit_status": "partially_searchable_initial_reference_distinction_deferred",
+      "requirements": [
+        {"id": "temperature_requires_expansion", "description": "Temperature change relative to initial temperature produces thermal strains when a material thermal expansion definition is provided; temperature-dependent properties alone are not that definition.", "acceptable_unit_sets": [["31b79082e8bc7ad279ba1d9c0d44acbc9b01e2a259b8ed90117f4b9c2e5c80dc"]]},
+        {"id": "coefficient_reference", "description": "The reference temperature defines total/secant expansion; its value is not needed for a constant coefficient and matters when the coefficient depends on temperature/fields.", "acceptable_unit_sets": [["4f3812d78afa585e3f2626bf5be4de721af3e324fdcc6891285038db915da082", "9ba719366138f868ec6a154f5c02ed4f5556d39362d956e7ba8d1843f0235cd9"]]}
+      ],
+      "open_issue": "The question's phrase stress-free reference temperature must not silently conflate the coefficient reference temperature with the initial temperature. The official secant formula includes an initial-state subtraction to enforce zero initial thermal strain even when those temperatures differ; this combined formula/explanation unit is stored as deferred_math and is unsearchable in the current candidate index. Zero initial thermal strain also does not prove zero total mechanical stress.",
+      "unsearchable_reference_units": ["d893b1b34ca62529ef73f655225f829582e64e0f5ef7667714b622bd54fb86b5"],
+      "supplemental_units": ["d96d6dc8862a0b4747645f01354645c4b212c4cced5f5686339a19da75b60cb3"]
+    },
+    {
+      "id": "missing-project-stress-result",
+      "source_audit_status": "missing_user_specific_input",
+      "requirements": [],
+      "expected_boundary": "Do not invent a maximum stress or infer it from generic docs. Identify the missing model/result input. A further documentation query cannot supply this user's absent ODB and is unnecessary."
+    },
+    {
+      "id": "unavailable-2024-release-evidence",
+      "source_audit_status": "requested_release_unavailable",
+      "requirements": [],
+      "expected_boundary": "Do not certify 2024 behavior using 2026 documentation. Keep source_release=2024 for any follow-up; do not drop the requirement to make retrieval succeed. State missing 2024 evidence."
+    }
+  ]
+}

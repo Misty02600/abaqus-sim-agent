@@ -1,0 +1,15 @@
+{
+  "partTypes": [
+    "text",
+    "file",
+    "data-host-state",
+    "text"
+  ],
+  "visibleImages": [
+    {
+      "src": "/probe-image.png?kind=markdown",
+      "width": 120
+    }
+  ],
+  "hostDataVisible": false
+}

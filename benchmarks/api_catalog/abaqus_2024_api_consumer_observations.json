@@ -1,0 +1,70 @@
+{
+  "schema_version": "1",
+  "observed_at": "2026-08-28",
+  "scope": "Minimal Abaqus/CAE 2024 noGUI probe for repeated high-cost API consumer bindings, including both surface sides and the BeamSection/orientation boundary; no input write, job submission, or solve.",
+  "runtime": {
+    "release": "2024",
+    "launcher": "D:/SIMULIA/Commands/abq2024.bat",
+    "python": "3.10.5"
+  },
+  "selection_basis": {
+    "history_files_scanned": 162,
+    "typed_runtime_calls_scanned": 745,
+    "criteria": [
+      "the binding failed in multiple Product-Agent traces",
+      "the signature or official prose did not make the accepted container shape obvious",
+      "a minimal licensed probe can distinguish accepted and rejected forms without physical assumptions"
+    ]
+  },
+  "reproduction": {
+    "fixture": "tests/fixtures/abaqus2024/api_consumer_probe.py",
+    "fixture_sha256": "0cf8decfd95c7f8aa40f49ba0a92faee5ee41e48c22a8a28a58cd31bf2dc8a43",
+    "pytest": "ABAQUS_LICENSED_TESTS=1 pytest tests/test_abaqus2024_api_consumer_probe.py -m abaqus",
+    "result_file": "api_consumer_probe_results.json"
+  },
+  "raw_evidence": {
+    "path": "D:/abaqus-runs/api-cards-final13-licensed-combined-20260828-v1/test_abaqus2024_api_consumer_p0/workspace/api_consumer_probe_results.json",
+    "sha256": "58ac736f521bd381c5f3a5db57298ff824931ef90ad207aacdbd63122c6cd158"
+  },
+  "observations": {
+    "Part.setElementType.regions": {
+      "direct_face_array": "TypeError: a bare GeomSequence was rejected because this top-level union branch expected a Set",
+      "tuple_face_array": "accepted",
+      "nested_tuple_face_array": "accepted in this one-face 2D fixture",
+      "direct_part_set": "accepted",
+      "tuple_part_set": "TypeError: wrapping a Set changed dispatch to the geometry-sequence branch and was rejected"
+    },
+    "Part.assignBeamSectionOrientation.region": {
+      "direct_edge_sequence": "accepted",
+      "tuple_edge_sequence": "accepted",
+      "direct_part_set": "accepted",
+      "single_edge": "accepted",
+      "recommended_minimal_form": "pass the native part edge Sequence directly; no wrapper or probe is required"
+    },
+    "Assembly.Surface.side1Edges": {
+      "native_instance_edge_sequence": "accepted and created the Surface repository entry",
+      "tuple_native_sequence": "accepted and created the Surface repository entry",
+      "flat_tuple_of_edges": "AbaqusException: feature creation failed",
+      "flat_list_of_edges": "AbaqusException: feature creation failed"
+    },
+    "Assembly.Surface.side2Edges": {
+      "native_instance_edge_sequence": "accepted and created the Surface repository entry",
+      "tuple_native_sequence": "accepted and created the Surface repository entry",
+      "flat_tuple_of_edges": "AbaqusException: feature creation failed",
+      "flat_list_of_edges": "AbaqusException: feature creation failed"
+    },
+    "Model.BeamSection.constructor_boundary": {
+      "ordinary_section_definition": "accepted and created the BeamSection repository entry",
+      "orientation_keyword": "TypeError: keyword error; orientation is not a BeamSection constructor argument",
+      "geometricType_keyword": "TypeError: keyword error; geometricType is not a BeamSection constructor argument",
+      "invariant": "beam orientation is assigned separately through Part.assignBeamSectionOrientation"
+    },
+    "Model.FieldOutputRequest.variables": {
+      "U_RF_SF": "accepted for the B31 Static step",
+      "U_RF_SF_RM": "accepted for the B31 Static step",
+      "U_RF_SF_SM": "rejected as invalid output variables",
+      "U_RF_SF_RM_SM": "rejected as invalid output variables",
+      "scope": "B31/Static output-variable behavior; this observation does not define valid variables for other element or procedure families"
+    }
+  }
+}

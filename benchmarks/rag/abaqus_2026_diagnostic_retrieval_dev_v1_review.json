@@ -1,0 +1,22 @@
+{
+  "schema_version": "1",
+  "dataset_id": "abaqus-2026-diagnostic-retrieval-dev-v1",
+  "dataset_sha256": "9f4b8f386e972049580ae9ae016ac09c59705dd3d86ec630f9147f92ec890e6a",
+  "status": "reviewed",
+  "review_method": "source_derivation_and_direct_html_without_retrieval_rankings",
+  "reviewer_id": "codex-subagent-blind-review-20260904",
+  "case_count": 86,
+  "need_group_count": 39,
+  "case_ids_sha256": "2c53c27320d728615a9c947e8984a32a14f541beab081727d263b722801c14d8",
+  "reviewed_at": "2026-09-04T08:13:50.831282Z",
+  "limitations": [
+    "This is a development diagnostic stress set, not a held-out benchmark and not production traffic.",
+    "The 86 cases are query variants for 39 diagnostic needs; they are not 86 independent failures.",
+    "Only eight need groups bind observed solver artifacts, drawn from five .dat files in evaluator runs; four groups share one probe run.",
+    "The other 31 need groups were derived from official documentation conditions and intentionally stress lexical diagnostic retrieval.",
+    "The observed artifacts contain no natural too-many-attempts, nonlinear nonconvergence, contact termination, Explicit termination, .msg, .sta, or launcher-stdout example.",
+    "Observed evaluator traces are not claimed to represent a production user distribution.",
+    "Gold pages and answer sections were reviewed directly against bound official HTML before retrieval rankings were run.",
+    "No page-family-disjoint or unseen-feature guarantee is claimed for this development set."
+  ]
+}

@@ -2,7 +2,7 @@
 
 ## 状态
 
-已采纳
+已替代
 
 ## 日期
 
@@ -40,6 +40,12 @@ LangGraph 可以显式表达父图、子图、条件循环、checkpoint 和 inte
 
 - 实施情况：已建立角色 Protocol、领域契约和 Graph State；LangGraph 父图与各角色实现尚未开始。
 - 代码或测试：`src/abaqus_sim_agent/agents/contracts.py`、`src/abaqus_sim_agent/application/state.py`。
+
+## 替代关系
+
+- 被替代：[ADR-0008：首轮采用 Pydantic AI Harness 单 Coder 的原生 Abaqus CodingRun](0008-pydantic-ai-harness-abaqus-coding-run.md)。
+- 本 ADR 保留为 LangGraph-first 与分层多 Agent 首轮路线的历史记录；未来重新采用多 Agent 或 LangGraph
+  需要以 CodingRun 评测证据形成新决定。
 
 ## 相关文档
 

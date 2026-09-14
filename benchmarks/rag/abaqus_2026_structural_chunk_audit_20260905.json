@@ -1,0 +1,482 @@
+{
+  "schema_version": "source-to-chunk-structural-audit-v1",
+  "manifest": {
+    "started_at": "2026-09-05T12:22:40.117332+00:00",
+    "role": "Structure-stratified development audit, includes previously failing pages; no retrieval or model ranking",
+    "sources": {
+      "SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm": "655e63120d486729125e7c8d70f7fda806535d2258a9de9034b870455a1da89c",
+      "SIMACAEANLRefMap/simaanl-c-postbuckling.htm": "35d5d5f053c54dcd99cf9ab3e7fca8f4cba741892d3ad38fe4bfbb88497a9f9f",
+      "SIMACAEKEYRefMap/simakey-r-adaptivemeshcontrols.htm": "2a3b1f4034410d092e7a6a030787b7adab47ad30b542bc65a63c136e5b2cbd91",
+      "SIMACAECSTRefMap/simacst-c-coupling.htm": "830635d69b98ae2c64c7795b5eb776bd095bcc990589fcf7d8a300d6b738fad6",
+      "SIMACAECSTRefMap/simacst-c-tiedconstraint.htm": "85e6046ec7c3bd584084253d4ff570907339ea6bfaf579de9d3ae9a9415be0be",
+      "SIMACAEELMRefMap/simaelm-c-solidcont.htm": "ab0bd6dfa74caf514157828931afb9358fbed398bfc4b214302de1da139db021",
+      "SIMACAEELMRefMap/simaelm-c-dimension.htm": "abba0873c5b6b7fddc9421e8a30275b8522e058d8d96bb096b64c28765987838",
+      "SIMACAEANLRefMap/simaanl-c-massscaling.htm": "1bc423ce9eaf7fccf3371c7b25a27964ffcab6d1a6423236e512b2d8ff8ddac8",
+      "SIMACAEOUTRefMap/simaout-c-dboutput-elementoutput.htm": "5e5c57f5255ab5662a9c8c0e0b402cee181db4ff0fc332900ec77336b22e69ab",
+      "SIMACAEKEYRefMap/simakey-r-output.htm": "e51a441421e1ee05e9e68c57a002d33cdeb16624edf651eb14c26ef15b5821c4",
+      "SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm": "e515d2a9cfbdf08108f5aac0407b4a46c8ef7f93d36fddb9c662947f4db130a5",
+      "SIMACAEANLRefMap/simaanl-c-expdynamic.htm": "40068c894cbeba621be753802074f3c390a59660ac50bc83eb09b0f77d03d2bf"
+    },
+    "implementation": {
+      "src/abaqus_sim_agent/retrieval/documents.py": "4ee1defc70673d29bbdbf772389ec91dbb9b0ea6f4a762beab838118ff2fb366",
+      "src/abaqus_sim_agent/evaluation/structural_chunking.py": "d352883ce0f62daa48868f15bdb079bf880d23aeac9baaf39c743aee07f62b87",
+      "tests/test_structural_chunking.py": "c41d6b30a89137895d4759654bc63f311bc7dec3b9abf22d24dc65832f902a79",
+      "uv.lock": "6d8af39f4e6dfe7535f5610c0b85ed3ef023bc1ab2965ad320bc6ccc9713ca82"
+    },
+    "script_sha256": "9d4a3edb9732d963191468135a509447aa330460be93c4a30c6c9cec124f8497",
+    "soft_chunk_characters": 1000,
+    "scope": "Prototype only; product parser remains unchanged."
+  },
+  "manifest_sha256": "f49d998657e166d6fcf58149f2897721000a5fa4b06ad42ba4abdb490e45128d",
+  "tokenizer_sha256": "da0e79933b9ed51798a3ae27893d3c5fa4a201126cef75586296df9b4d2c62a0",
+  "raw_directory": "D:/Projects/abaqus-agent/abaqus-sim-agent/var/audits/structural-chunk-audit-v1",
+  "raw_sha256": {
+    "manifest.json": "f49d998657e166d6fcf58149f2897721000a5fa4b06ad42ba4abdb490e45128d",
+    "simaanl-c-expdynamic.json": "4e012e0d59163734aa78b8fdfa2c26f8bcbee55c25b74789027d3d818b74b2f1",
+    "simaanl-c-massscaling.json": "0256a49aa742590e5d377a08ff1af50ea047c4500b8dd710115e6a9a26e29054",
+    "simaanl-c-postbuckling.json": "ff8c8d6fd3239e8369545f14ce81407b18ef4cd857324d85d33192389687159f",
+    "simacst-c-coupling.json": "92265dc1393aeaed6f1c48870ef6d6ce96e24433e0d48941e3bc2a890f60bc33",
+    "simacst-c-tiedconstraint.json": "2c235f042e9abe4bc0e86a391a1785f58992cdaf3087065113c4813e948834f8",
+    "simaelm-c-dimension.json": "3bbfab4eb38ff2079d1518a0f3a9c8dbd246b46f6c69d26006a9ef07dd3a087f",
+    "simaelm-c-solidcont.json": "e4a8a65c0bbf6ff1008d18abffd86731108f9e669608c0ef28010f3caf51f4d2",
+    "simakey-r-adaptivemeshcontrols.json": "7e39ac2f988a0ed64dfe4cbbd5fd7d02b2dff2aeaa12a0d9a514ff3e71d4fa26",
+    "simakey-r-output.json": "81a3fb8c191db1957675ce83f42291f44f09cd2bba1503542ac9c2b0136349f1",
+    "simaout-c-dboutput-elementoutput.json": "1a51bc58d6dc2de49bd8e9b48893c88e0d26a721a4856ef018a11f7229c8191a",
+    "simaout-c-dboutput-frequency.json": "5cf593e165431ed84893d45ad098bb05efbf55a04a45bee2e0544fdf9953777f",
+    "simaout-c-std-nodalvariables.json": "30360662be5fa381bff56dddb2c53e0f126cee10018257fb5dcee8c2dc087fdd"
+  },
+  "pages": [
+    {
+      "source": "SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm",
+      "structure_counts_in_content_roots": {
+        "pre": 32
+      },
+      "counts": {
+        "old_records": 48,
+        "old_semantic_records": 48,
+        "old_heading_only_concept_records": 19,
+        "old_exact_records_with_ellipsis_tail": 0,
+        "old_summary_records_with_ellipsis_tail": 0,
+        "prototype_blocks": 40,
+        "prototype_chunks": 29,
+        "prototype_oversized_chunks": 0,
+        "prototype_heading_only_chunks": 0,
+        "added_abstract_roots": 1,
+        "checked_simple_paragraphs": 26,
+        "paragraphs_not_whole_in_any_old_chunk": 11,
+        "old_semantic_over_256_tokens": 0,
+        "prototype_chunks_over_256_tokens": 0,
+        "prototype_max_characters": 962,
+        "prototype_max_tokens": 236
+      },
+      "block_kind_counts": {
+        "p": 29,
+        "text": 11
+      }
+    },
+    {
+      "source": "SIMACAEANLRefMap/simaanl-c-postbuckling.htm",
+      "structure_counts_in_content_roots": {
+        "ul": 4,
+        "math": 18,
+        "pre": 5
+      },
+      "counts": {
+        "old_records": 40,
+        "old_semantic_records": 40,
+        "old_heading_only_concept_records": 18,
+        "old_exact_records_with_ellipsis_tail": 0,
+        "old_summary_records_with_ellipsis_tail": 0,
+        "prototype_blocks": 45,
+        "prototype_chunks": 31,
+        "prototype_oversized_chunks": 7,
+        "prototype_heading_only_chunks": 0,
+        "added_abstract_roots": 1,
+        "checked_simple_paragraphs": 25,
+        "paragraphs_not_whole_in_any_old_chunk": 17,
+        "old_semantic_over_256_tokens": 0,
+        "prototype_chunks_over_256_tokens": 9,
+        "prototype_max_characters": 2775,
+        "prototype_max_tokens": 1187
+      },
+      "block_kind_counts": {
+        "p": 35,
+        "ul": 4,
+        "text": 3,
+        "math": 2,
+        "pre": 1
+      }
+    },
+    {
+      "source": "SIMACAEKEYRefMap/simakey-r-adaptivemeshcontrols.htm",
+      "structure_counts_in_content_roots": {
+        "dl": 4,
+        "math": 15,
+        "ol": 2
+      },
+      "counts": {
+        "old_records": 28,
+        "old_semantic_records": 16,
+        "old_heading_only_concept_records": 4,
+        "old_exact_records_with_ellipsis_tail": 1,
+        "old_summary_records_with_ellipsis_tail": 0,
+        "prototype_blocks": 19,
+        "prototype_chunks": 15,
+        "prototype_oversized_chunks": 5,
+        "prototype_heading_only_chunks": 0,
+        "added_abstract_roots": 1,
+        "checked_simple_paragraphs": 2,
+        "paragraphs_not_whole_in_any_old_chunk": 2,
+        "old_semantic_over_256_tokens": 0,
+        "prototype_chunks_over_256_tokens": 8,
+        "prototype_max_characters": 2555,
+        "prototype_max_tokens": 1017
+      },
+      "block_kind_counts": {
+        "text": 1,
+        "p": 5,
+        "definition": 13
+      }
+    },
+    {
+      "source": "SIMACAECSTRefMap/simacst-c-coupling.htm",
+      "structure_counts_in_content_roots": {
+        "ul": 11,
+        "pre": 37,
+        "ol": 1,
+        "math": 15
+      },
+      "counts": {
+        "old_records": 77,
+        "old_semantic_records": 77,
+        "old_heading_only_concept_records": 23,
+        "old_exact_records_with_ellipsis_tail": 0,
+        "old_summary_records_with_ellipsis_tail": 0,
+        "prototype_blocks": 87,
+        "prototype_chunks": 65,
+        "prototype_oversized_chunks": 11,
+        "prototype_heading_only_chunks": 0,
+        "added_abstract_roots": 1,
+        "checked_simple_paragraphs": 42,
+        "paragraphs_not_whole_in_any_old_chunk": 21,
+        "old_semantic_over_256_tokens": 0,
+        "prototype_chunks_over_256_tokens": 14,
+        "prototype_max_characters": 9556,
+        "prototype_max_tokens": 2304
+      },
+      "block_kind_counts": {
+        "text": 26,
+        "ul": 11,
+        "p": 47,
+        "math": 3
+      }
+    },
+    {
+      "source": "SIMACAECSTRefMap/simacst-c-tiedconstraint.htm",
+      "structure_counts_in_content_roots": {
+        "ul": 9,
+        "pre": 22,
+        "table": 3,
+        "math": 3
+      },
+      "counts": {
+        "old_records": 93,
+        "old_semantic_records": 93,
+        "old_heading_only_concept_records": 24,
+        "old_exact_records_with_ellipsis_tail": 0,
+        "old_summary_records_with_ellipsis_tail": 0,
+        "prototype_blocks": 100,
+        "prototype_chunks": 75,
+        "prototype_oversized_chunks": 9,
+        "prototype_heading_only_chunks": 0,
+        "added_abstract_roots": 1,
+        "checked_simple_paragraphs": 63,
+        "paragraphs_not_whole_in_any_old_chunk": 48,
+        "old_semantic_over_256_tokens": 0,
+        "prototype_chunks_over_256_tokens": 13,
+        "prototype_max_characters": 13886,
+        "prototype_max_tokens": 5456
+      },
+      "block_kind_counts": {
+        "text": 20,
+        "p": 68,
+        "ul": 9,
+        "table": 3
+      }
+    },
+    {
+      "source": "SIMACAEELMRefMap/simaelm-c-solidcont.htm",
+      "structure_counts_in_content_roots": {
+        "ul": 7,
+        "dl": 1,
+        "pre": 10,
+        "ol": 1
+      },
+      "counts": {
+        "old_records": 123,
+        "old_semantic_records": 123,
+        "old_heading_only_concept_records": 35,
+        "old_exact_records_with_ellipsis_tail": 0,
+        "old_summary_records_with_ellipsis_tail": 0,
+        "prototype_blocks": 124,
+        "prototype_chunks": 98,
+        "prototype_oversized_chunks": 11,
+        "prototype_heading_only_chunks": 0,
+        "added_abstract_roots": 1,
+        "checked_simple_paragraphs": 97,
+        "paragraphs_not_whole_in_any_old_chunk": 72,
+        "old_semantic_over_256_tokens": 0,
+        "prototype_chunks_over_256_tokens": 11,
+        "prototype_max_characters": 2320,
+        "prototype_max_tokens": 739
+      },
+      "block_kind_counts": {
+        "p": 106,
+        "ul": 6,
+        "definition": 2,
+        "text": 9,
+        "ol": 1
+      }
+    },
+    {
+      "source": "SIMACAEELMRefMap/simaelm-c-dimension.htm",
+      "structure_counts_in_content_roots": {
+        "ul": 2,
+        "math": 47,
+        "dl": 1,
+        "table": 1
+      },
+      "counts": {
+        "old_records": 35,
+        "old_semantic_records": 35,
+        "old_heading_only_concept_records": 11,
+        "old_exact_records_with_ellipsis_tail": 0,
+        "old_summary_records_with_ellipsis_tail": 0,
+        "prototype_blocks": 47,
+        "prototype_chunks": 29,
+        "prototype_oversized_chunks": 10,
+        "prototype_heading_only_chunks": 0,
+        "added_abstract_roots": 1,
+        "checked_simple_paragraphs": 20,
+        "paragraphs_not_whole_in_any_old_chunk": 13,
+        "old_semantic_over_256_tokens": 0,
+        "prototype_chunks_over_256_tokens": 16,
+        "prototype_max_characters": 7652,
+        "prototype_max_tokens": 2384
+      },
+      "block_kind_counts": {
+        "p": 34,
+        "ul": 2,
+        "text": 4,
+        "math": 1,
+        "definition": 5,
+        "table": 1
+      }
+    },
+    {
+      "source": "SIMACAEANLRefMap/simaanl-c-massscaling.htm",
+      "structure_counts_in_content_roots": {
+        "ul": 9,
+        "pre": 41,
+        "math": 5
+      },
+      "counts": {
+        "old_records": 90,
+        "old_semantic_records": 90,
+        "old_heading_only_concept_records": 30,
+        "old_exact_records_with_ellipsis_tail": 0,
+        "old_summary_records_with_ellipsis_tail": 0,
+        "prototype_blocks": 105,
+        "prototype_chunks": 65,
+        "prototype_oversized_chunks": 3,
+        "prototype_heading_only_chunks": 0,
+        "added_abstract_roots": 1,
+        "checked_simple_paragraphs": 62,
+        "paragraphs_not_whole_in_any_old_chunk": 30,
+        "old_semantic_over_256_tokens": 0,
+        "prototype_chunks_over_256_tokens": 7,
+        "prototype_max_characters": 1942,
+        "prototype_max_tokens": 533
+      },
+      "block_kind_counts": {
+        "text": 26,
+        "ul": 9,
+        "p": 65,
+        "pre": 5
+      }
+    },
+    {
+      "source": "SIMACAEOUTRefMap/simaout-c-dboutput-elementoutput.htm",
+      "structure_counts_in_content_roots": {
+        "ul": 1,
+        "pre": 25
+      },
+      "counts": {
+        "old_records": 41,
+        "old_semantic_records": 41,
+        "old_heading_only_concept_records": 16,
+        "old_exact_records_with_ellipsis_tail": 0,
+        "old_summary_records_with_ellipsis_tail": 0,
+        "prototype_blocks": 42,
+        "prototype_chunks": 24,
+        "prototype_oversized_chunks": 2,
+        "prototype_heading_only_chunks": 0,
+        "added_abstract_roots": 1,
+        "checked_simple_paragraphs": 28,
+        "paragraphs_not_whole_in_any_old_chunk": 21,
+        "old_semantic_over_256_tokens": 0,
+        "prototype_chunks_over_256_tokens": 2,
+        "prototype_max_characters": 1583,
+        "prototype_max_tokens": 423
+      },
+      "block_kind_counts": {
+        "p": 29,
+        "ul": 1,
+        "text": 12
+      }
+    },
+    {
+      "source": "SIMACAEKEYRefMap/simakey-r-output.htm",
+      "structure_counts_in_content_roots": {
+        "dl": 10,
+        "ol": 1
+      },
+      "counts": {
+        "old_records": 58,
+        "old_semantic_records": 31,
+        "old_heading_only_concept_records": 13,
+        "old_exact_records_with_ellipsis_tail": 0,
+        "old_summary_records_with_ellipsis_tail": 0,
+        "prototype_blocks": 29,
+        "prototype_chunks": 26,
+        "prototype_oversized_chunks": 10,
+        "prototype_heading_only_chunks": 0,
+        "added_abstract_roots": 1,
+        "checked_simple_paragraphs": 1,
+        "paragraphs_not_whole_in_any_old_chunk": 1,
+        "old_semantic_over_256_tokens": 0,
+        "prototype_chunks_over_256_tokens": 17,
+        "prototype_max_characters": 1661,
+        "prototype_max_tokens": 562
+      },
+      "block_kind_counts": {
+        "text": 1,
+        "p": 1,
+        "definition": 27
+      }
+    },
+    {
+      "source": "SIMACAEOUTRefMap/simaout-c-std-nodalvariables.htm",
+      "structure_counts_in_content_roots": {
+        "dl": 12,
+        "math": 56
+      },
+      "counts": {
+        "old_records": 186,
+        "old_semantic_records": 48,
+        "old_heading_only_concept_records": 11,
+        "old_exact_records_with_ellipsis_tail": 0,
+        "old_summary_records_with_ellipsis_tail": 0,
+        "prototype_blocks": 148,
+        "prototype_chunks": 141,
+        "prototype_oversized_chunks": 52,
+        "prototype_heading_only_chunks": 0,
+        "added_abstract_roots": 1,
+        "checked_simple_paragraphs": 10,
+        "paragraphs_not_whole_in_any_old_chunk": 4,
+        "old_semantic_over_256_tokens": 0,
+        "prototype_chunks_over_256_tokens": 138,
+        "prototype_max_characters": 1427,
+        "prototype_max_tokens": 635
+      },
+      "block_kind_counts": {
+        "p": 10,
+        "definition": 138
+      }
+    },
+    {
+      "source": "SIMACAEANLRefMap/simaanl-c-expdynamic.htm",
+      "structure_counts_in_content_roots": {
+        "ul": 4,
+        "math": 87,
+        "pre": 31
+      },
+      "counts": {
+        "old_records": 115,
+        "old_semantic_records": 115,
+        "old_heading_only_concept_records": 43,
+        "old_exact_records_with_ellipsis_tail": 0,
+        "old_summary_records_with_ellipsis_tail": 0,
+        "prototype_blocks": 155,
+        "prototype_chunks": 117,
+        "prototype_oversized_chunks": 39,
+        "prototype_heading_only_chunks": 0,
+        "added_abstract_roots": 1,
+        "checked_simple_paragraphs": 79,
+        "paragraphs_not_whole_in_any_old_chunk": 41,
+        "old_semantic_over_256_tokens": 0,
+        "prototype_chunks_over_256_tokens": 45,
+        "prototype_max_characters": 4145,
+        "prototype_max_tokens": 1820
+      },
+      "block_kind_counts": {
+        "p": 104,
+        "ul": 4,
+        "text": 21,
+        "math": 25,
+        "pre": 1
+      }
+    }
+  ],
+  "totals": {
+    "old_records": 934,
+    "old_semantic_records": 757,
+    "old_heading_only_concept_records": 247,
+    "old_exact_records_with_ellipsis_tail": 1,
+    "old_summary_records_with_ellipsis_tail": 0,
+    "prototype_blocks": 941,
+    "prototype_chunks": 715,
+    "prototype_oversized_chunks": 159,
+    "prototype_heading_only_chunks": 0,
+    "added_abstract_roots": 12,
+    "checked_simple_paragraphs": 455,
+    "paragraphs_not_whole_in_any_old_chunk": 281,
+    "old_semantic_over_256_tokens": 0,
+    "prototype_chunks_over_256_tokens": 280
+  },
+  "checked_examples": {
+    "warning": {
+      "source": "SIMACAEOUTRefMap/simaout-c-dboutput-frequency.htm",
+      "xpath": "/html/body/table/tr/td/article[1]/div/div[9]/p[1]",
+      "anchor": "simaout-c-dboutput-freq-std__simaout-c-dboutput-s-TimeDomainAnalysisTimeIncrementation-section9",
+      "characters": 905,
+      "full_rule_exception_fallback_in_one_block": true,
+      "inline_product_order_restored": true,
+      "old_contains_correct_inline_order": false,
+      "body_sha256": "a9e3f476368d5bb6a4898d639d1fd686daada04f6bd21f95ccd9da12394a18ec"
+    },
+    "long_parameter": {
+      "source": "SIMACAEKEYRefMap/simakey-r-adaptivemeshcontrols.htm",
+      "xpath": "/html/body/table/tr/td/div[1]/div[3]/dl/dd[6]",
+      "new_characters": 1636,
+      "old_exact_truncated": true,
+      "original_mesh_tail_restored": true,
+      "body_sha256": "02d11bb08b36939e05533c774f6fb737141192e410bcf7b7a3099ce6f8417ca4"
+    }
+  },
+  "checks": {
+    "source_and_product_parser_unchanged": true,
+    "source_block_order_and_whole_block_containment": true,
+    "neighbor_links_and_source_anchor_existence": true,
+    "simple_non_math_paragraph_text_matches_source_DOM_order": true
+  },
+  "limits": [
+    "Old paragraph non-containment counts include valid chunk-boundary splits, overlap and omissions; they are not a count of destroyed paragraphs.",
+    "Ellipsis tails are an audit signal; only the named parameter example is independently confirmed here as cutoff of source text.",
+    "Prototype preserves long paragraphs/definitions/lists/tables, so some chunks exceed the soft length and encoder token limit. No embedding or retrieval benefit is claimed.",
+    "MathML, table XML and complex-definition/list XML preserve source structure, not necessarily good embedding text; these paths need separate downstream representation decisions.",
+    "Neighbor links are metadata only; no retrieval-time expansion implemented. Cross-paragraph rules/qualifications may still fall in separate chunks.",
+    "The prototype adds source abstract roots but is not an exhaustive whole-page/source-type coverage proof.",
+    "No product parser replacement, index rebuild, model call, Abaqus execution or historical artifact mutation."
+  ]
+}

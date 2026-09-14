@@ -1,0 +1,38 @@
+{
+  "schema_version": "chunk-token-stress-v1",
+  "scope": "Synthetic non-domain fixtures; validates length/coverage invariants, not semantic retrieval quality or readability",
+  "tokenizer_sha256": "da0e79933b9ed51798a3ae27893d3c5fa4a201126cef75586296df9b4d2c62a0",
+  "helper_sha256": "8d7035c3acff8c5b70a2d08a00ccebbea8c3667c7849ed147df7fa406c7a8fd6",
+  "script_sha256": "63c45430d4bcb5af61b0048d59c4d9ab5b1cd0d710961464ca0b0fa12935be44",
+  "cases": [
+    {
+      "name": "long_paragraph",
+      "body_characters": 26440,
+      "children": 21,
+      "max_tokens": 253,
+      "no_gap_and_full_parent_restoration": true
+    },
+    {
+      "name": "long_definition",
+      "body_characters": 20743,
+      "children": 12,
+      "max_tokens": 256,
+      "no_gap_and_full_parent_restoration": true
+    },
+    {
+      "name": "long_code",
+      "body_characters": 19500,
+      "children": 19,
+      "max_tokens": 253,
+      "no_gap_and_full_parent_restoration": true
+    },
+    {
+      "name": "long_sentence",
+      "body_characters": 25000,
+      "children": 11,
+      "max_tokens": 256,
+      "no_gap_and_full_parent_restoration": true
+    }
+  ],
+  "model_inference_calls": 0
+}

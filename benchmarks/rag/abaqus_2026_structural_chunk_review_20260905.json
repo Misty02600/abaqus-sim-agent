@@ -1,0 +1,62 @@
+{
+  "schema_version": "structural-chunk-review-v1",
+  "status": "completed_bounded_audit_and_prototype_validation",
+  "audit_report": "benchmarks/rag/abaqus_2026_structural_chunk_audit_20260905.json",
+  "audit_report_sha256": "ef46ede5e484ce8400a7c955ec49214bacb72b09c4281645d484116cd7614459",
+  "scope": "Twelve structure-stratified local official pages, including previously failed queries; not a random or full-corpus sample, and no retrieval/Agent benchmark.",
+  "findings": [
+    {
+      "topic": "heading-only chunks",
+      "evidence": "The old parser generated 757 semantic records on these pages; 247 concept records contain only the same normalized text as their section heading. The prototype generated zero heading-only chunks.",
+      "limit": "Record counts are not directly comparable as a compression/quality score: the old loader also creates summaries and atomic exact records, while the prototype is a block-preserving representation only."
+    },
+    {
+      "topic": "inline text order and precise provenance",
+      "evidence": "The warning rule is preserved as one 905-character source paragraph, with Abaqus/Standard preceding adjusts and Abaqus preceding will not violate. Its exact source section anchor is retained. The old concept text moves those inline product spans to the end.",
+      "limit": "This checks the named source paragraph and synthetic mixed-inline fixtures, not every formula, source type or language."
+    },
+    {
+      "topic": "ingestion truncation",
+      "evidence": "MESHING PREDICTOR is cut off with an ellipsis in the old exact record. The prototype retains its complete definition, including the PREVIOUS/original-mesh condition.",
+      "limit": "This restores the definition in prototype output, not the product exact-symbol index. The unchanged default loader still contains its earlier reference truncation rule."
+    },
+    {
+      "topic": "introductory content",
+      "evidence": "The prototype includes one previously excluded abstract root per sampled page. Some source abstracts contain lists of scope or behavior conditions beyond the brief metadata abstract used for page summaries.",
+      "limit": "Added roots are not all newly recovered facts; the old summary may already contain part of the abstract. This is not a proof of exhaustive whole-page extraction."
+    },
+    {
+      "topic": "paragraph and structured-block preservation",
+      "evidence": "The prototype preserves 941 emitted source blocks in DOM order across 715 grouped chunks, without character overlap or hard splitting inside blocks. All blocks are wholly contained in output, neighbor IDs resolve, and output source anchors exist. 455 short non-math paragraph renderings match source DOM text order.",
+      "limit": "281 of those paragraphs are not whole in any old chunk, but that includes valid boundary splits and cannot be reported as 281 destroyed paragraphs. Output completeness is relative to emitted blocks and selected roots, not a proof that the extractor sees everything."
+    },
+    {
+      "topic": "tables, formulas and code",
+      "evidence": "Tables retain XML with header/span relationships, formulas retain MathML at their source position, and code retains line breaks/indentation. Complex definitions and lists retain XML; simple lists retain ordered markers. Synthetic fixtures cover rowspan, superscript MathML, nested lists and embedded code.",
+      "limit": "This is a faithful storage/debug representation, not a validated embedding or model-reading representation. No mathematical equivalence or general table understanding is claimed."
+    },
+    {
+      "topic": "encoder length incompatibility",
+      "evidence": "159 prototype chunks exceed the 1000-character soft target; 280 of 715 exceed the current MiniLM encoder's 256-token limit with title/section context. None of the 757 old semantic records in this sample exceeds that tokenizer limit. Some large table/XML blocks reach thousands of tokens.",
+      "limit": "Token lengths were measured with the actual cached tokenizer without truncation. No embeddings were generated. Feeding the prototype straight to the existing encoder would reintroduce truncation, so it must not be deployed as-is."
+    }
+  ],
+  "decision": "Keep this as a validated preservation prototype and audit fixture. Do not replace the default parser or rebuild either existing full index. Before adoption, separate complete source evidence from bounded retrieval text and define how long paragraphs, parameter definitions, lists, tables and MathML are represented and linked. Test that layer before returning to ranking or Agent A/B.",
+  "remaining_boundaries": [
+    "Whole-block preservation does not guarantee that rules and exceptions in separate source paragraphs remain together.",
+    "Neighbor links are metadata only; no runtime parent/neighbor expansion is implemented.",
+    "The prototype is not a replacement for the exact API Catalog or its member-coverage work.",
+    "Multiple dd entries sharing a dt are not covered by this prototype's tests; no adjacent dd entries occurred in the twelve sampled pages.",
+    "No global parser default, product prompt, retrieval algorithm, corpus version or historical report was changed."
+  ],
+  "verification": {
+    "new_prototype_tests_passed": 6,
+    "targeted_tests_total_passed": 18,
+    "ruff_and_format": "passed",
+    "basedpyright": "0 errors, 0 warnings",
+    "source_file_and_product_parser_hashes_unchanged": true,
+    "full_index_rebuilds": 0,
+    "generative_or_embedding_model_calls": 0,
+    "abaqus_calls": 0
+  }
+}

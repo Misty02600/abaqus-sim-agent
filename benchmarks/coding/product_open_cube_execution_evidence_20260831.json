@@ -1,0 +1,73 @@
+{
+  "schema_version": "1",
+  "experiment": "open-product-cli-cube-deliverable-manifest",
+  "date": "2026-08-31",
+  "question": "Can the ordinary product CLI complete a real non-plate Abaqus authoring task using only execution evidence and a typed deliverable manifest?",
+  "configuration": {
+    "model_gateway": "opencode-go",
+    "model": "deepseek-v4-flash",
+    "http_retries": 10,
+    "http_timeout_seconds": 60.0,
+    "api_catalog_mode": "automatic_verified_only",
+    "api_catalog_cards_sha256": "2dcf85685a011e149ae00828fd4988985a400fd1fde76c0b24b4964ac6f7f5c7",
+    "concept_retrieval_mode": "off",
+    "verification_scope": "execution_evidence",
+    "task_oracle": false
+  },
+  "raw_evidence": {
+    "run_root": "D:/abaqus-runs/product-open-cube-20260831-manifest-v2",
+    "request_sha256": "bba00b88ccaec3573a31fc69cec216fce4570a3ef9fc2ccc3a71f8c5982c43c9",
+    "history_sha256": "f356b0214b1c9ff7e9d6b5d71fb9846312e9895f1bfe82440cac4e69b90ed8a0",
+    "events_sha256": "f9c86eaff5ee8612b418776fad0a9f990f5a6d33134c83e4b33097a5ba9d44cc",
+    "outcome_sha256": "b31644ceddbd325a71056f88ac9d6ce013e7413702c523ee0dda5677a57f0dcc"
+  },
+  "result": {
+    "run_id": "product-open-cube-20260831-manifest-v2",
+    "status": "completed",
+    "verification_scope": "execution_evidence",
+    "declared_deliverables": [
+      "make_cube.py",
+      "cube.cae",
+      "cube.inp"
+    ],
+    "checked_python_scripts": [
+      "make_cube.py"
+    ],
+    "latest_successful_invocations": [
+      "cae_nogui"
+    ],
+    "model_requests": 9,
+    "tool_calls": 10,
+    "abaqus_calls": 1,
+    "solver_calls": 0,
+    "wall_time_seconds": 209.08766960000503,
+    "clarifications": 0,
+    "plate_named_artifacts": 0
+  },
+  "observed_model": {
+    "geometry": "10 x 10 x 10 mm deformable solid cube",
+    "material": "isotropic linear elastic, E=210000 MPa, nu=0.3",
+    "element_choice": "C3D8R",
+    "mesh": "4 x 4 x 4, 64 elements",
+    "solver_submitted": false,
+    "odb_created": false
+  },
+  "decision": {
+    "status": "The real product CLI smoke passed without a plate prompt or task-specific physics oracle.",
+    "claims_allowed": [
+      "The ordinary CLI can author and execute a non-plate Abaqus task and complete with execution_evidence scope.",
+      "The model declared exactly the three user-facing deliverables and the host verified they were fresh.",
+      "The host checked Python 3.10 syntax and the latest CAE stage while preserving zero Solver calls."
+    ],
+    "claims_forbidden": [
+      "The cube is physically validated by a solve.",
+      "The product CLI can verify arbitrary natural-language goal fidelity.",
+      "This single smoke proves stable success across open Abaqus tasks."
+    ]
+  },
+  "limits": [
+    "This is one stochastic Product-Agent run, not a repeat gate.",
+    "Execution evidence does not independently verify the model's physical suitability.",
+    "The host verifies declared deliverables but cannot prove that the declaration exhausts every semantic requirement in free-form user text."
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "schema_version": "1",
+  "observed_at": "2026-08-28",
+  "scope": "Abaqus 2024 standalone odbAccess probe over a solved 20-element B31 cantilever; records object ownership, vendor sequence behavior, node-set nesting, and JSON conversion only.",
+  "runtime": {
+    "release": "2024",
+    "launcher": "D:/SIMULIA/Commands/abq2024.bat",
+    "python": "3.10.5"
+  },
+  "selection_basis": {
+    "repeated_product_failures": {
+      "FieldOutput.position": 4,
+      "FieldValueArray slicing": 4,
+      "float32 JSON serialization": 4,
+      "SymbolicConstant JSON serialization": 3,
+      "assembly OdbSet node-array flattening": 2
+    },
+    "reason": "Each failure consumed a real standalone Abaqus Python call and the official callable cards do not describe these cross-object container boundaries compactly."
+  },
+  "reproduction": {
+    "model_fixture": "tests/fixtures/abaqus2024/beam_bending_change/build_model.py",
+    "model_fixture_sha256": "0f12b093f5fdf389ea213aee865613974bb33dc9f54b141a77b4e2ec4ad97cb3",
+    "probe_fixture": "tests/fixtures/abaqus2024/odb_behavior_probe.py",
+    "probe_fixture_sha256": "817f0b306e578611dd406dd6b4063de1d670a2dcb9bf4a8390c2fb7d9647ae3d",
+    "pytest": "ABAQUS_LICENSED_TESTS=1 pytest tests/test_abaqus2024_odb_behavior_probe.py -m abaqus",
+    "result_file": "odb_behavior_probe_results.json"
+  },
+  "raw_evidence": {
+    "path": "D:/abaqus-runs/api-cards-final13-licensed-combined-20260828-v1/test_abaqus2024_odb_behavior_p0/workspace/odb_behavior_probe_results.json",
+    "sha256": "6808eb27b20a98d52fe3b029de1a9cf172f2430480da9db3b3ab880181bd6366",
+    "inp_sha256": "52c3aca6deb92752ee81d284936306f03685e8bfa26b0694655a0f65ab31435f",
+    "odb_sha256": "506c09cc9261a65c7732b128f9af1bc544622ffb84c8103d7ff90523a4074e19"
+  },
+  "observations": {
+    "FieldOutput_and_FieldValue": {
+      "component_labels_owner": "FieldOutput.componentLabels",
+      "position_owner": "each FieldValue.position; FieldOutput.position is absent",
+      "section_point": "FieldValue.sectionPoint can be None",
+      "component_data": "FieldValue.data follows the owning FieldOutput componentLabels; FieldValue.componentLabels is absent"
+    },
+    "FieldValueArray": {
+      "len": "supported",
+      "integer_index": "supported",
+      "iteration": "supported",
+      "slice": "OdbError: Slice for an FieldValue Sequence is not supported"
+    },
+    "JSON_boundary": {
+      "FieldOutput.type": "Abaqus SymbolicConstant; json.dumps fails, str(value) succeeds",
+      "FieldValue.data_scalar": "numpy.float32 in every probed U/RF/RM/SF/SM/UR field; json.dumps fails, float(value) succeeds"
+    },
+    "B31_companion_fields": {
+      "author_request": [
+        "U",
+        "RF",
+        "SF"
+      ],
+      "final_odb_fields": [
+        "RF",
+        "RM",
+        "SF",
+        "SM",
+        "U",
+        "UR"
+      ],
+      "component_ownership": {
+        "RF": [
+          "RF1",
+          "RF2",
+          "RF3"
+        ],
+        "RM": [
+          "RM1",
+          "RM2",
+          "RM3"
+        ],
+        "SF": [
+          "SF1",
+          "SF2",
+          "SF3"
+        ],
+        "SM": [
+          "SM1",
+          "SM2",
+          "SM3"
+        ]
+      }
+    },
+    "OdbMeshNodeArray_and_OdbSet": {
+      "instance_nodes": "flat OdbMeshNodeArray; integer index, slice, and iteration work; findAt is absent",
+      "instance_node_set_nodes": "flat OdbMeshNodeArray of OdbMeshNode",
+      "assembly_node_set_nodes": "tuple whose entries are per-instance OdbMeshNodeArray objects; iterate the outer tuple, then each inner array",
+      "failure_explained": "Treating assembly_set.nodes as a flat node list yields OdbMeshNodeArray has no attribute label"
+    },
+    "FieldOutput.getSubset": {
+      "individual_node_region": "accepted an OdbMeshNode and returned one U FieldValue with unchanged U1/U2/U3 componentLabels"
+    }
+  }
+}

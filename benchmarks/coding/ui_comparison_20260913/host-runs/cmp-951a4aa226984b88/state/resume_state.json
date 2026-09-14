@@ -1,0 +1,64 @@
+{
+  "schema_version": "coding-run-resume-v5",
+  "question_protocol": "ask_user_v1",
+  "run_id": "cmp-951a4aa226984b88",
+  "status": "completed",
+  "turn": 2,
+  "amendment_sequence": 0,
+  "task_revision": 0,
+  "revision_workspace_snapshot": {
+    "files": []
+  },
+  "revision_execution_start_index": 0,
+  "active_wall_time_seconds": 0.20486009999876842,
+  "workspace_snapshot": {
+    "files": [
+      {
+        "relative_path": "out.txt",
+        "size_bytes": 25,
+        "sha256": "b8008a00f13f5e7030290e762acb0a1d9022b776e445fdfb24d55c274be840f7"
+      }
+    ]
+  },
+  "usage": {
+    "requests": 3,
+    "tool_calls": 1,
+    "input_tokens": 173,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 63,
+    "input_audio_tokens": 0,
+    "cache_audio_read_tokens": 0,
+    "output_audio_tokens": 0,
+    "details": {},
+    "cost": null
+  },
+  "clarifications": [],
+  "dependencies": {
+    "api_lookup_calls": 0,
+    "concept_lookup_calls": 0,
+    "diagnostic_retrieval_calls": 0,
+    "api_lookup_queries": [],
+    "concept_lookup_queries": [],
+    "diagnostic_retrieval_keys": [],
+    "returned_api_card_ids": [],
+    "returned_api_parameter_keys": [],
+    "abaqus_calls": 0,
+    "solver_calls": 0,
+    "executions": [],
+    "static_preflight_calls": 0,
+    "static_preflight_cache": [],
+    "syntax_checks": 0,
+    "syntax_edit_checks": 0,
+    "syntax_runtime_checks": 0,
+    "syntax_denials": 0,
+    "probe_protocol_active": false,
+    "concept_trigger_source": "task_start",
+    "concept_trigger_outcome": "none",
+    "concept_trigger_reference": null,
+    "concept_trigger_evidence_sha256": null
+  },
+  "last_error_type": null,
+  "last_error_message": null,
+  "updated_at": "2026-09-13T15:40:08.832853Z"
+}

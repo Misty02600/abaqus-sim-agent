@@ -2,7 +2,7 @@
 
 ## 状态
 
-已采纳
+已替代
 
 ## 日期
 
@@ -70,6 +70,12 @@ usage 和相同超时行为。
   `ChatOpenAI` factory；真实专业 Agent 调用链、真实 endpoint 合同测试和模型 benchmark 尚未实现。
 - 代码或测试：`src/abaqus_sim_agent/inference/`、`tests/test_inference_fake.py`、
   `tests/test_langchain_inference.py`。
+
+## 替代关系
+
+- 被替代：[ADR-0008：首轮采用 Pydantic AI Harness 单 Coder 的原生 Abaqus CodingRun](0008-pydantic-ai-harness-abaqus-coding-run.md)。
+- `StructuredModelPort` 和 LangChain adapter 保留为已测试的研究资产；首轮 Coder 直接使用 Pydantic AI
+  model/provider，不经过该端口。
 
 ## 相关文档
 

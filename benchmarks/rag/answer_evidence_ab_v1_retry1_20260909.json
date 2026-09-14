@@ -1,0 +1,166 @@
+{
+  "version": "answer-evidence-ab-v1-retry-1",
+  "scope": "explicit user retry of identical frozen inputs; answer-only, not Agent execution",
+  "calls": 6,
+  "responses_received": 6,
+  "schema_valid": 2,
+  "complete_valid_pairs": 0,
+  "input_tokens": 23462,
+  "output_tokens": 3662,
+  "call_seconds_total": 37.01425569993444,
+  "checks": [
+    {
+      "task": "api_region",
+      "arm": "A",
+      "schema_status": "invalid",
+      "schema_errors": [
+        {
+          "type": "extra_forbidden",
+          "loc": [
+            "next_action"
+          ],
+          "msg": "Extra inputs are not permitted"
+        },
+        {
+          "type": "extra_forbidden",
+          "loc": [
+            "evidence_refs"
+          ],
+          "msg": "Extra inputs are not permitted"
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "analysis",
+            "next_action"
+          ],
+          "msg": "Field required"
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "analysis",
+            "evidence_refs"
+          ],
+          "msg": "Field required"
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "proposed_script"
+          ],
+          "msg": "Field required"
+        }
+      ],
+      "status": "failed",
+      "seconds": 4.888038499979302,
+      "input_tokens": 6004,
+      "output_tokens": 435
+    },
+    {
+      "task": "api_region",
+      "arm": "B",
+      "schema_status": "valid",
+      "schema_errors": [],
+      "status": "answered",
+      "seconds": 4.146194600034505,
+      "input_tokens": 3062,
+      "output_tokens": 458,
+      "api_proposed_script_only_region_changed": true
+    },
+    {
+      "task": "riks_advice",
+      "arm": "B",
+      "schema_status": "valid",
+      "schema_errors": [],
+      "status": "answered",
+      "seconds": 9.888444000040181,
+      "input_tokens": 3394,
+      "output_tokens": 936
+    },
+    {
+      "task": "riks_advice",
+      "arm": "A",
+      "schema_status": "invalid",
+      "schema_errors": [
+        {
+          "type": "missing",
+          "loc": [
+            "analysis",
+            "next_action"
+          ],
+          "msg": "Field required"
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "analysis",
+            "evidence_refs"
+          ],
+          "msg": "Field required"
+        }
+      ],
+      "status": "failed",
+      "seconds": 7.266670299926773,
+      "input_tokens": 3949,
+      "output_tokens": 635
+    },
+    {
+      "task": "warning_advice",
+      "arm": "A",
+      "schema_status": "invalid",
+      "schema_errors": [
+        {
+          "type": "missing",
+          "loc": [
+            "analysis",
+            "next_action"
+          ],
+          "msg": "Field required"
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "analysis",
+            "evidence_refs"
+          ],
+          "msg": "Field required"
+        }
+      ],
+      "status": "failed",
+      "seconds": 4.416865299921483,
+      "input_tokens": 3855,
+      "output_tokens": 647
+    },
+    {
+      "task": "warning_advice",
+      "arm": "B",
+      "schema_status": "invalid",
+      "schema_errors": [
+        {
+          "type": "missing",
+          "loc": [
+            "analysis",
+            "next_action"
+          ],
+          "msg": "Field required"
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "analysis",
+            "evidence_refs"
+          ],
+          "msg": "Field required"
+        }
+      ],
+      "status": "failed",
+      "seconds": 6.408043000032194,
+      "input_tokens": 3198,
+      "output_tokens": 551
+    }
+  ],
+  "raw_directory": "D:\\Projects\\abaqus-agent\\abaqus-sim-agent\\var\\audits\\answer-evidence-ab-v1-retry-1",
+  "run_manifest_sha256": "41b7eefdc45e219b4c5caef4fcfd85465f628a5e9387ef6e317435af1e10d67a",
+  "interpretation": "No formal paired semantic conclusion. Invalid outputs remain invalid; raw text observations are qualitative only. Do not infer B superiority or task success rate."
+}
