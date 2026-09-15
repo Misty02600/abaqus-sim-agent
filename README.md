@@ -136,6 +136,11 @@ workspace 漂移、损坏的 effect ledger、同 state 并发或未决 Abaqus ef
 
 ## 可选功能
 
+Go的DeepSeek适配沿用Pydantic AI原生profile，将已保存的thinking内容通过`reasoning_content`回传，
+符合[DeepSeek工具调用协议](https://api-docs.deepseek.com/guides/thinking_mode/)。
+2026-09-14已移除历史“不回传”覆盖；thinking enabled/high与HTTP重试配置不受影响。
+旧日志与结果保留，恢复时使用已有历史内容；缺失的推理内容不补造。新评测需重新封存源码版本。
+
 以下能力默认关闭，需要显式配置；实现或离线测试通过不等于已证明真实任务收益。
 
 | 能力 | 启用方式与边界 |
@@ -209,6 +214,45 @@ uv run python -m abaqus_sim_agent.api_catalog lookup `
 
 当前推荐的历史实验Catalog为immutable final15，但重新构建不能自动声称复现该hash；
 使用前核对[final15绑定](benchmarks/api_catalog/abaqus_api_catalog_final15_20260828.json)。
+
+新建Catalog会保留abqpy方法docstring；已有lookup可用`Part.setElementType.__doc__`按需读取原文，
+参数查询仍使用`Part.setElementType.regions`。旧目录保持可读，不自动补写说明。
+离线自然语言发现已实现，但首轮中文关键操作仅2/3命中，尚未接入Coder：
+
+```powershell
+uv run --no-sync python -m abaqus_sim_agent.api_catalog discover `
+  --catalog-dir var/api-catalog/abaqus-2024-docstrings-v1 `
+  --index-dir var/api-catalog/discovery-docstrings-v1-e5 `
+  --strategy dense --encoder-dir var/models/multilingual-e5-base-d128750 `
+  "将指定有限元单元类型赋给零件中的几何区域"
+```
+
+`--strategy bm25`不需要encoder；`index`构建新索引，`read`按候选card_id读取绑定的完整卡片。
+这些命令需要本地构建资产，不自动下载模型。候选不证明适用性或物理正确性。
+复核命令、固定模型文件绑定和失败分析见[1B/2A报告](benchmarks/api_catalog/docstrings_discovery_v1_20260914.md)。
+
+后续v2已补官方对象用途与方法Table data，并支持`index --projection api-discovery-view-v2`显式构建；
+旧v1仍可读取。独立候选为`var/api-catalog/abaqus-2024-reference-context-v2`，索引为
+`var/api-catalog/discovery-reference-context-v2-e5`。v2 BM25/E5为17/36、19/36，但中文关键操作仍2/3，
+E5有原命中退化，仍不接入Coder。说明读取、兼容与逐题结果见[v2报告](benchmarks/api_catalog/reference_context_discovery_v2_20260914.md)。
+
+离线发现还可显式使用`discover --intent-file <JSON>`，JSON包含宿主保留的`original_request`和用于排名的
+`operation`。`--lexical-profile english-snowball-v1`启用英文停用词/词干处理，仅作用于BM25；默认legacy和Exact定位不变。
+原需求会完整回传供采用前核对，不代表自动验证了约束。一次开发验证有局部改善，但仍有保真和复杂查询失败，
+尚未成为Coder工具或默认策略，见[操作意图与词法处理报告](benchmarks/api_catalog/operation_intent_lexical_v1_20260914.md)。
+
+后续已扩为一题一会话：15条旧回归、20条新验收题及8次预声明重复，共43次查询准备运行。
+新题16条检索的合格Hit@5为旧BM25/Snowball/E5的11/16、11/16、12/16；4条缺参/冲突分流正确。
+存在保真和稳定性边界，不代表完整建模能力；数据、运行脚本和评分修正见[扩展测评报告](benchmarks/api_catalog/intent_suite_expansion_20260914.md)。
+
+后续小闭环评测允许模型提出API假说并在同一会话核实：5个方案场景的主入口均选对且有实际读卡，
+1个缺厚度场景发出原生ask_user；其中1次真实语义发现后继续Exact查证。仍有解释和引用格式问题，
+发现入口仅在评测组装中注册，未接入普通CLI或恢复协议，见[API查证小闭环](benchmarks/api_catalog/api_discovery_loop_v1_20260915.md)。
+
+后续增加8个真实历史失败断点，已从成功文件工具记录重建上下文并独立运行一次：5份API方案交付、
+3次ModelAPIError中断，全部0次Abaqus；解释/引用仍有问题，不能称仿真通过。
+来源、题包、局限及运行入口见[历史失败API查证](benchmarks/api_catalog/historical_api_feedback_v1_20260915.md)。
+
 检索评测、当前证据基线和已知缺口统一见[RAG索引](benchmarks/rag/README.md)；
 独立服务参数可通过 `uv run python -m abaqus_sim_agent.evaluation.runtime_evidence_service --help` 查看；
 它需要已有且hash匹配的索引、ranker与scope配置，冷启动成本见[服务记录](benchmarks/rag/runtime_evidence_service_v1_20260912.md)。

@@ -16,6 +16,9 @@ SQL、DBOS、持久 Job ledger、外部 Job 崩溃对账和多进程 Coordinator
 launch v3及新默认v4保存有效值，旧v1/v2只构造provider-default兼容视图，不改写原文件或重套新默认。
 推理策略run内固定；不兼容provider/model amendment在既有state锁内、任何ledger/终态变更前拒绝。
 新run允许先读取用户工作区事实再澄清，不能补造缺失物理参数；旧run和旧Gold指令保持legacy。
+Go DeepSeek自2026-09-14恢复框架原生reasoning_content回传，移除历史禁用覆盖；
+持久历史中的ThinkingPart继续通过原字段送回。此为工具调用协议修正，不改变enabled/high或补造历史推理，
+不改写旧实验与launch；使用新适配器继续旧run不等于复现旧版线上请求。
 新默认CLI以ask_user(question)交接用户输入，宿主保存waiting_for_user后释放运行锁，Console答复不消耗active wall；
 resume先展示未答问题或按ID提交答案。launch v4/resume v5与问题记录拥有该协议。
 新CLI显式API Catalog支持与ask_user组合，full暴露主动查询，automatic模式仍只在错误后送达证据；
