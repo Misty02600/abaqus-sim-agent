@@ -1,0 +1,459 @@
+import asyncio
+from datetime import UTC, datetime, timedelta
+
+import httpx
+import pytest
+from pydantic import SecretStr
+from pydantic_ai import Agent
+from pydantic_ai.exceptions import ModelAPIError
+from pydantic_ai.messages import ModelResponse, ToolCallPart
+from pydantic_ai.models.function import FunctionModel
+
+from abaqus_sim_agent.coding.model import (
+    DEEPSEEK_V4_FLASH,
+    DeepSeekGateway,
+    create_deepseek_chat_model,
+    new_run_execution_config,
+)
+from abaqus_sim_agent.evaluation import public_mechanics_suite as suite
+from abaqus_sim_agent.evaluation.public_mechanics_cases import get_case
+from abaqus_sim_agent.evaluation.public_mechanics_control import (
+    ObservedTransport,
+    append_event,
+    build_report,
+    read_json,
+    run_until_pause,
+    save_json,
+    transport_summary,
+)
+
+
+def root_fixture(tmp_path):
+    names = ["solid-cantilever-directional-bending", "plate-with-hole-tension"]
+    config = new_run_execution_config(
+        model_provider=DeepSeekGateway.OPENCODE_GO,
+        model_name=DEEPSEEK_V4_FLASH,
+        http_retries=1,
+        http_timeout_seconds=180.0,
+    )
+    save_json(
+        tmp_path / "manifest.json",
+        {
+            "case_ids": names,
+            "batch_id": "test",
+            "foundation": True,
+            "verification_policy": "results_first_v1",
+            "max_explicit_resumes": 1,
+            "execution_config": config.model_dump(mode="json"),
+        },
+    )
+    save_json(tmp_path / "seal.json", {})
+    save_json(tmp_path / "goals.json", {n: get_case(n).goal() for n in names})
+    return names
+
+
+def test_solid_goal_uses_contract_values_without_ambiguous_ranges():
+    case = get_case("solid-cantilever-directional-bending")
+    assert "0 ≤ y ≤ 0.2 in，0 ≤ z ≤ 0.1 in" in case.goal()
+    assert "..." not in case.goal()
+    changed = case.model_copy(update={"width": 0.35, "height": 0.07, "length": 9.0})
+    assert "0 ≤ x ≤ 9 in，0 ≤ y ≤ 0.35 in，0 ≤ z ≤ 0.07 in" in changed.goal()
+    assert "y ≤ 0.2" not in changed.goal()
+
+
+@pytest.mark.parametrize("first_failure", ["503", "read_timeout"])
+def test_sdk_retry_transport_records_actual_attempts_without_secrets(
+    tmp_path, first_failure
+):
+    path = tmp_path / "http.jsonl"
+    calls = []
+
+    async def respond(request):
+        calls.append(request)
+        if len(calls) == 1:
+            if first_failure == "read_timeout":
+                raise httpx.ReadTimeout("sensitive timeout message", request=request)
+            return httpx.Response(
+                503, json={"error": "temporary"}, headers={"retry-after-ms": "1"}
+            )
+        return httpx.Response(
+            200,
+            json={
+                "id": "fixture",
+                "object": "chat.completion",
+                "created": 1,
+                "model": DEEPSEEK_V4_FLASH,
+                "choices": [
+                    {
+                        "index": 0,
+                        "finish_reason": "stop",
+                        "message": {"role": "assistant", "content": "OK"},
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 3,
+                    "completion_tokens": 1,
+                    "total_tokens": 4,
+                },
+            },
+        )
+
+    async def run():
+        model, client = create_deepseek_chat_model(
+            gateway=DeepSeekGateway.OPENCODE_GO,
+            model_name=DEEPSEEK_V4_FLASH,
+            api_key=SecretStr("secret-do-not-log"),
+            conversation_id="telemetry-test",
+            http_retries=1,
+            http_client=httpx.AsyncClient(
+                transport=ObservedTransport(path, httpx.MockTransport(respond))
+            ),
+        )
+        try:
+            assert (
+                await Agent(model).run("private prompt not for logs")
+            ).output == "OK"
+        finally:
+            await client.close()
+
+    asyncio.run(run())
+    assert transport_summary(path) == {
+        "attempts": 2,
+        "completed": 2 if first_failure == "503" else 1,
+        "failed": 0 if first_failure == "503" else 1,
+        "unknown": 0,
+    }
+    text = path.read_text(encoding="utf-8")
+    assert "secret-do-not-log" not in text
+    assert "private prompt" not in text
+    if first_failure == "503":
+        assert '"status": 503' in text
+    else:
+        assert '"error_type": "ReadTimeout"' in text
+        assert "sensitive timeout message" not in text
+    assert '"retry": "1"' in text
+
+
+def test_body_timeout_and_process_interruption_remain_observable(tmp_path):
+    path = tmp_path / "http.jsonl"
+
+    class BrokenBody(httpx.AsyncByteStream):
+        async def __aiter__(self):
+            yield b"partial"
+            raise httpx.ReadTimeout("sensitive error text")
+
+    async def run():
+        transport = ObservedTransport(
+            path,
+            httpx.MockTransport(
+                lambda request: httpx.Response(200, stream=BrokenBody())
+            ),
+        )
+        async with httpx.AsyncClient(transport=transport) as client:
+            with pytest.raises(httpx.ReadTimeout):
+                await client.get("https://example.invalid")
+
+    asyncio.run(run())
+    append_event(path, "http_started", attempt="killed", retry="0")
+    assert transport_summary(path) == {
+        "attempts": 2,
+        "completed": 0,
+        "failed": 1,
+        "unknown": 1,
+    }
+    assert "sensitive error text" not in path.read_text(encoding="utf-8")
+
+
+def test_pause_cancels_service_and_waits_for_its_cleanup(tmp_path):
+    marker = tmp_path / "pause.json"
+    cleaned = []
+
+    class Service:
+        async def run(self):
+            save_json(marker, {})
+            try:
+                await asyncio.Event().wait()
+            finally:
+                cleaned.append(True)
+
+    asyncio.run(run_until_pause(Service(), marker))
+    assert cleaned == [True]
+
+
+def test_report_rebuild_preserves_unknown_and_does_not_write_outcome(tmp_path):
+    names = root_fixture(tmp_path)
+    state = tmp_path / names[0] / "state"
+    save_json(
+        state / "resume_state.json",
+        {
+            "status": "running",
+            "usage": {"requests": 3},
+            "dependencies": {"abaqus_calls": 2, "solver_calls": 1},
+            "active_wall_time_seconds": 23.0,
+        },
+    )
+    report = build_report(tmp_path, bindings_unchanged=True)
+    assert report["trials"][0]["classification"] == "interrupted_unknown"
+    assert report["trials"][0]["http"]["attempts"] is None
+    assert report["trials"][1]["classification"] == "not_started"
+    assert not (state / "outcome.json").exists()
+    assert (tmp_path / "report.md").exists()
+
+
+def test_health_stale_or_failed_prevents_run(tmp_path):
+    root_fixture(tmp_path)
+    with pytest.raises(ValueError, match="doctor"):
+        suite._ensure_health(tmp_path)
+    save_json(
+        tmp_path / "health.json",
+        {
+            "passed": True,
+            "seal_sha256": suite.file_digest(tmp_path / "seal.json"),
+            "at": (datetime.now(UTC) - timedelta(minutes=11)).isoformat(),
+        },
+    )
+    with pytest.raises(ValueError, match="expired"):
+        suite._ensure_health(tmp_path)
+
+
+def test_continue_never_replays_and_resume_is_bounded(tmp_path):
+    names = root_fixture(tmp_path)
+    save_json(tmp_path / "started.json", {})
+    state = tmp_path / names[0] / "state"
+    save_json(
+        state / "resume_state.json",
+        {"status": "interrupted", "active_wall_time_seconds": 20.0},
+    )
+    assert suite.selected_cases(tmp_path, "continue", None) == names[1:]
+    assert suite.selected_cases(tmp_path, "resume", names[:1]) == names[:1]
+    save_json(state / "attempts/001.json", {"mode": "resume"})
+    with pytest.raises(ValueError, match="allowance"):
+        suite.selected_cases(tmp_path, "resume", names[:1])
+    with pytest.raises(FileExistsError):
+        suite.selected_cases(tmp_path, "run", None)
+
+
+def test_batch_provider_failure_stops_remaining_cases_and_keeps_report(
+    tmp_path, monkeypatch
+):
+    names = root_fixture(tmp_path)
+    monkeypatch.setattr(suite, "_checked_preflight", lambda root: None)
+    monkeypatch.setattr(suite, "verify_binding", lambda root: None)
+    monkeypatch.setattr(suite, "_ensure_health", lambda root: None)
+    monkeypatch.setattr(
+        suite,
+        "take_gateway_api_key_from_environment",
+        lambda gateway: SecretStr("fixture"),
+    )
+    monkeypatch.setattr(suite.ApiCatalog, "open", lambda root: None)
+    called = []
+
+    async def fail(root, name, **kwargs):
+        called.append(name)
+        save_json(
+            root / name / "state/resume_state.json",
+            {
+                "status": "interrupted",
+                "usage": {"requests": 1},
+                "dependencies": {},
+                "last_error_type": "ModelAPIError",
+            },
+        )
+
+    monkeypatch.setattr(suite, "_run_case", fail)
+    asyncio.run(suite.run(tmp_path))
+    assert called == names[:1]
+    assert (
+        read_json(tmp_path / "report.json")["trials"][1]["classification"]
+        == "not_started"
+    )
+    assert read_json(tmp_path / "health.json")["passed"] is False
+
+
+def test_suite_same_run_resume_retains_usage_and_file_work(tmp_path, monkeypatch):
+    name = root_fixture(tmp_path)[0]
+    factory = suite.create_abaqus_coding_agent
+    monkeypatch.setattr(suite, "_eval_api_catalog_binding", lambda catalog: None)
+
+    def agent_factory(*args, **kwargs):
+        # Exercise the real service/agent loop with no test catalog installed.
+        kwargs["api_catalog_mode"] = "off"
+        return factory(*args, **kwargs)
+
+    monkeypatch.setattr(suite, "create_abaqus_coding_agent", agent_factory)
+    calls = 0
+
+    def model(messages, info):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "write_file", {"path": "evidence.txt", "content": "retained"}
+                    )
+                ]
+            )
+        if calls == 2:
+            raise ModelAPIError("injected outage")
+        assert "retained" in str(messages)
+        tool = next(
+            t.name for t in info.output_tools if t.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    tool,
+                    {
+                        "status": "failed",
+                        "summary": "Fixture stopped after successful restore.",
+                        "failure_stage": "fixture",
+                    },
+                )
+            ]
+        )
+
+    class Client:
+        async def close(self):
+            pass
+
+    def model_factory(**kwargs):
+        return FunctionModel(model), Client()
+
+    monkeypatch.setattr(suite, "create_deepseek_chat_model", model_factory)
+    asyncio.run(
+        suite._run_case(
+            tmp_path, name, resume=False, key=SecretStr("fixture"), catalog=None
+        )
+    )
+    state = tmp_path / name / "state"
+    before = read_json(state / "resume_state.json")
+    assert before["status"] == "interrupted"
+    asyncio.run(
+        suite._run_case(
+            tmp_path, name, resume=True, key=SecretStr("fixture"), catalog=None
+        )
+    )
+    after = read_json(state / "resume_state.json")
+    assert after["turn"] == 2
+    assert after["usage"]["requests"] == 2
+    assert after["active_wall_time_seconds"] >= before["active_wall_time_seconds"]
+    assert (state.parent / "workspace/evidence.txt").read_text() == "retained"
+    assert len(list((state / "attempts").glob("*.json"))) == 2
+    assert (
+        read_json(state / "attempts/001.json")["resume_state_snapshot"]["status"]
+        == "interrupted"
+    )
+    assert (
+        read_json(state / "attempts/001.json")["resume_state_snapshot"]["usage"][
+            "requests"
+        ]
+        == 1
+    )
+    assert read_json(state / "outcome.json")["status"] == "failed"
+
+
+def test_report_keeps_corrupt_evidence_visible(tmp_path):
+    names = root_fixture(tmp_path)
+    state = tmp_path / names[0] / "state"
+    state.mkdir(parents=True)
+    (state / "resume_state.json").write_text('{"broken":', encoding="utf-8")
+    report = build_report(tmp_path, bindings_unchanged=True)
+    assert report["trials"][0]["classification"] == "invalid_evidence"
+    assert report["trials"][1]["classification"] == "not_started"
+
+
+def test_model_factory_error_is_retained_without_an_outcome(tmp_path, monkeypatch):
+    name = root_fixture(tmp_path)[0]
+    monkeypatch.setattr(suite, "_eval_api_catalog_binding", lambda catalog: None)
+
+    def broken(**kwargs):
+        raise ValueError("credential-like-text-must-not-be-logged")
+
+    monkeypatch.setattr(suite, "create_deepseek_chat_model", broken)
+    asyncio.run(
+        suite._run_case(
+            tmp_path, name, resume=False, key=SecretStr("fixture"), catalog=None
+        )
+    )
+    report = build_report(tmp_path, bindings_unchanged=True)
+    assert report["trials"][0]["classification"] == "setup_error"
+    assert "credential-like-text" not in (tmp_path / "report.json").read_text(
+        encoding="utf-8"
+    )
+
+
+def test_hidden_worker_starts_after_launcher_releases_lock(tmp_path, monkeypatch):
+    import os
+    import time
+
+    if os.name != "nt":
+        pytest.skip("Windows detached-process integration")
+    root_fixture(tmp_path)
+    monkeypatch.setattr(suite, "_checked_preflight", lambda root: None)
+    monkeypatch.setattr(suite, "_ensure_health", lambda root: None)
+    (tmp_path / "worker.py").write_text(
+        "from pathlib import Path\nimport sys\n"
+        f"sys.path.insert(0, {str(suite.ROOT / 'src')!r})\n"
+        "from abaqus_sim_agent.coding.run_lock import CodingRunFileLock\n"
+        "root=Path(__file__).parent\n"
+        "with CodingRunFileLock(root/'control'):\n"
+        "    (root/'detached.ok').write_text('no model or Abaqus calls')\n",
+        encoding="utf-8",
+    )
+    suite.launch(tmp_path, "run", None)
+    deadline = time.monotonic() + 10
+    while not (tmp_path / "detached.ok").exists() and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert (tmp_path / "detached.ok").exists()
+    assert list((tmp_path / "control").glob("*/launch.json"))
+
+
+def test_doctor_records_setup_and_client_close_errors(tmp_path, monkeypatch):
+    root_fixture(tmp_path)
+    monkeypatch.setattr(suite, "_checked_preflight", lambda root: None)
+    monkeypatch.setattr(
+        suite,
+        "take_gateway_api_key_from_environment",
+        lambda gateway: SecretStr("fixture"),
+    )
+
+    class BrokenClose:
+        async def close(self):
+            raise OSError("secret-like-close-error")
+
+    def model(messages, info):
+        from pydantic_ai.messages import TextPart
+
+        return ModelResponse(parts=[TextPart("OK")])
+
+    monkeypatch.setattr(
+        suite,
+        "create_deepseek_chat_model",
+        lambda **kwargs: (FunctionModel(model), BrokenClose()),
+    )
+    result = asyncio.run(suite.doctor(tmp_path))
+    assert result["passed"] is False
+    assert result["client_close_error_type"] == "OSError"
+    assert read_json(tmp_path / "health.json")["passed"] is False
+    assert len(list((tmp_path / "health").glob("*.json"))) == 1
+
+
+def test_new_report_command_never_overwrites_historical_reports(tmp_path, monkeypatch):
+    save_json(tmp_path / "manifest.json", {"version": "public-mechanics-e2e-v1"})
+    original = b'{"historical":true}'
+    (tmp_path / "report.json").write_bytes(original)
+    monkeypatch.setattr("sys.argv", ["worker", "report", "--root", str(tmp_path)])
+    with pytest.raises(ValueError, match="historical reports"):
+        suite.main()
+    assert (tmp_path / "report.json").read_bytes() == original
+
+
+def test_frozen_worker_rejects_ignored_transport_overrides(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "sys.argv", ["worker", "run", "--root", str(tmp_path), "--http-retries", "10"]
+    )
+    with pytest.raises(SystemExit) as exc:
+        suite.main()
+    assert exc.value.code == 2
+    assert not (tmp_path / "started.json").exists()

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, Literal
 
 from pydantic_ai import Agent, DeferredToolRequests, RunContext, ToolOutput
 from pydantic_ai.models import Model
@@ -56,6 +56,10 @@ from abaqus_sim_agent.coding.harness_compat import (
 from abaqus_sim_agent.coding.instructions import (
     build_instructions as _build_instructions,
 )
+from abaqus_sim_agent.coding.knowledge_files import (
+    KNOWLEDGE_INSTRUCTIONS,
+    knowledge_toolset,
+)
 from abaqus_sim_agent.coding.model import ConfiguredModel, ModelExecutionConfig
 from abaqus_sim_agent.coding.probe import ProbeProtocolMode as _ProbeProtocolMode
 from abaqus_sim_agent.coding.resume import create_step_store as _create_step_store
@@ -70,6 +74,14 @@ from abaqus_sim_agent.coding.user_questions import (
 )
 
 CODER_GENERAL_SHELL_POLICY_VERSION = "coder-general-shell-disabled-v1"
+
+_LINEAR_STRUCTURAL_FEA_FOUNDATION_SKILLS = (
+    "linear-structural-fea-formulation",
+    "linear-structural-fea-modeling",
+    "linear-structural-fea-discretization",
+    "linear-structural-fea-postprocess",
+    "linear-structural-fea-verification",
+)
 
 __all__ = ["CODER_GENERAL_SHELL_POLICY_VERSION", "create_abaqus_coding_agent"]
 
@@ -141,6 +153,8 @@ def create_abaqus_coding_agent(
     step_store: StepStore | None = None,
     execution_config: ModelExecutionConfig | None = None,
     question_protocol: QuestionProtocol = "legacy_decision",
+    foundation_skill_profile: Literal["off", "linear_structural_fea_v1"] = "off",
+    knowledge_resources_dir: Path | None = None,
 ) -> Agent[_CodingAgentDependencies, CodingAgentOutput]:
     """组装只在指定工作区活动的 Abaqus 2024 Coding Agent。
 
@@ -172,6 +186,10 @@ def create_abaqus_coding_agent(
             未提供时保持历史调用方行为。
         step_store: 可选的 Harness 步骤持久化后端；默认在 state 目录使用
             ``FileStepStore``，与模型可写 workspace 隔离。
+        foundation_skill_profile: 显式 ``linear_structural_fea_v1`` 时为受控评测
+            暴露五个线性结构基础 deferred Skills；默认 ``off``，保持产品现状。
+        knowledge_resources_dir: 显式评测的只读资料目录；调用者负责冻结内容。
+            仅新增读取工具，不执行资料；尚无普通 CLI/launch/resume 绑定。
 
     Returns:
         配置完成、但尚未运行的单 Agent 实例。
@@ -194,6 +212,10 @@ def create_abaqus_coding_agent(
                 "pure edit scope cannot enable runtime probe or diagnostic profiles"
             )
         planning_enabled = False
+    if foundation_skill_profile not in {"off", "linear_structural_fea_v1"}:
+        raise ValueError("unknown foundation Skill profile")
+    if foundation_skill_profile != "off" and skill_library is None:
+        raise ValueError("foundation Skill profile requires skill_library")
     apply_harness_windows_newline_hash_patch()
     apply_harness_windows_shell_tree_patch()
     apply_harness_windows_jsonl_append_patch()
@@ -233,10 +255,13 @@ def create_abaqus_coding_agent(
             )
         )
     if skill_library is not None:
+        skill_include = ("abaqus-2024-coding",)
+        if foundation_skill_profile == "linear_structural_fea_v1":
+            skill_include += _LINEAR_STRUCTURAL_FEA_FOUNDATION_SKILLS
         capabilities.append(
             Skills[_CodingAgentDependencies](
                 skill_library,
-                include=("abaqus-2024-coding",),
+                include=skill_include,
             )
         )
 
@@ -292,6 +317,17 @@ def create_abaqus_coding_agent(
 
     agent = Agent[_CodingAgentDependencies, CodingAgentOutput](
         model,
+        toolsets=(
+            [
+                knowledge_toolset(
+                    knowledge_resources_dir,
+                    workspace=request.workspace,
+                    state_dir=request.state_dir,
+                )
+            ]
+            if knowledge_resources_dir is not None
+            else ()
+        ),
         name="abaqus_2024_coder",
         deps_type=_CodingAgentDependencies,
         output_type=outputs,
@@ -314,6 +350,11 @@ def create_abaqus_coding_agent(
             interaction_policy=execution_config.interaction_policy
             if execution_config
             else "legacy",
+        )
+        + (
+            "\n\n" + KNOWLEDGE_INSTRUCTIONS
+            if knowledge_resources_dir is not None
+            else ""
         )
         + (
             "\n\n"

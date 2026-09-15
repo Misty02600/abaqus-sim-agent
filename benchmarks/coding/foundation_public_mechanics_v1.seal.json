@@ -1,0 +1,12 @@
+{
+  "benchmark_version": "foundation-public-mechanics-v1",
+  "sealed_at": "2026-09-15",
+  "case_count": 6,
+  "sha256": {
+    "cases": "8ca205bd2d0df6fe3fdc219406711d8eba4b30c56f9dc1bdd9534433ef2ca910",
+    "rubric": "73da2c77292aa105c7d05f3be59da1514b2a3d786f8c0e33b18e80db975cbb94",
+    "sources": "9e0eddd6564986b3901bb033b13de37463b0db94731fa0ad96fd34868ed4272e",
+    "protocol": "526ad6c80eac6c2ceb3e7ef5c0183b818eeca2c5aa5a2dcf256b0b9f937d9dba"
+  },
+  "scope": "Public/classic linear-structural mechanics behavior benchmark only. Frozen before any control/foundation treatment run; no Skill, model, Catalog, retrieval or Abaqus execution is part of this seal."
+}

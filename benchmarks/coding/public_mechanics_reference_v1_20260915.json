@@ -1,0 +1,435 @@
+{
+  "scope": "Host-authored licensed reference development; not Agent scores; earlier failures retained in v1/v2 folders",
+  "cases": [
+    {
+      "case_id": "uniform-axial-bar",
+      "root": "D:\\abaqus-runs\\public-mechanics-reference-20260915-v1\\uniform-axial-bar",
+      "passed": true,
+      "measured": {
+        "tip_u1": 0.5,
+        "reaction_x": -10000.0,
+        "mean_s11": 100.0
+      },
+      "case_contract": {
+        "case_id": "uniform-axial-bar",
+        "family": "truss",
+        "description": "mm-N-MPa 单位。一维轴向杆沿 X 从0到1000 mm，A=100 mm²，E=200000 MPa、nu=0.3。左端轴向固定，右端+X 10000 N。",
+        "source": "经典轴向杆关系；参数沿用 foundation_public_mechanics_v1，Abaqus 端到端补充 nu=0.3。",
+        "adaptation": "允许 T3D2/T3D3。所有杆节点 U2=U3=0，仅代表一维轴向运动；U1 仅在左端约束。截面积是全部截面物理输入，不另猜三维形状。",
+        "length": 1000.0,
+        "width": 0.0,
+        "height": 0.0,
+        "young": 200000.0,
+        "poisson": 0.3,
+        "load": 10000.0,
+        "segments": [
+          [
+            1000.0,
+            100.0
+          ]
+        ],
+        "distributed": false,
+        "refinement": false,
+        "metrics": {
+          "tip_u1": {
+            "target": 0.5,
+            "relative_tolerance": 0.001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "右端U1/mm"
+          },
+          "reaction_x": {
+            "target": -10000.0,
+            "relative_tolerance": 0.0001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "左端RF1合力/N"
+          },
+          "mean_s11": {
+            "target": 100.0,
+            "relative_tolerance": 0.001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "积分点轴向S11均值/MPa"
+          }
+        }
+      },
+      "files": {
+        "state\\cae_result.json": "462887a6a7179f513b94add5fca4c2e9d60c9010963dcd49f1f220ec0721d147",
+        "state\\extract_result.json": "d31d33bde691e88a0996688f1fcf1eba0493cf34f849ca511d764b6e175f8d02",
+        "state\\model_solver_result.json": "e7c5f9c2625ce78ee0f8d96f9ff5fbceaadfdd1d220d6a6ff10190d1674c7c8e",
+        "state\\public_verification_final.json": "18475275c406e4d58000704d6ad85a8620d3b4a42d1116ef4acdb75b25f6136c",
+        "state\\public_verification_v1.json": "18475275c406e4d58000704d6ad85a8620d3b4a42d1116ef4acdb75b25f6136c",
+        "workspace\\build_model.py": "d46ac569a985314766a651595ebfd1686eeb4d2efc4b6b93457c025a965a6cd8",
+        "workspace\\extract_results.py": "351632543a0b2c98383b114a2cd50c6d0cbaad75504d3ac9cbd1b59e6d007486",
+        "workspace\\model.inp": "7d2ffc1d90a87f6048c5f1f3beae61e9ee62f2163eab7af8ed2ed4f8574762ec",
+        "workspace\\model.odb": "44d2666ea3fcb20e0a76defbe776fa420110d9397bb537c899ac6b0fef0e1ca0",
+        "workspace\\reference_case.json": "93818a006b7bca08c6a50982881b966804ab0e7c91fa9a39c103098af2d8bae9",
+        "workspace\\results.json": "25b3b39fa7b000694f99e633e6dc2b42f69ee06205f061aa99fd12bc31e47024"
+      }
+    },
+    {
+      "case_id": "stepped-axial-bar",
+      "root": "D:\\abaqus-runs\\public-mechanics-reference-20260915-v1\\stepped-axial-bar",
+      "passed": true,
+      "measured": {
+        "tip_u1": 0.3499999940395355,
+        "reaction_x": -10000.0,
+        "interface_u1": 0.20000000298023224,
+        "segment_1_s11": 100.0,
+        "segment_2_s11": 50.0
+      },
+      "case_contract": {
+        "case_id": "stepped-axial-bar",
+        "family": "truss",
+        "description": "mm-N-MPa 单位。一维轴向杆：x=0..400 mm 的A=100 mm²，x=400..1000 mm 的A=200 mm²，E=200000 MPa、nu=0.3。x=400共节点连续连接；左端轴向固定，右端+X 10000 N。",
+        "source": "经典轴向杆关系；参数沿用 foundation_public_mechanics_v1，Abaqus 端到端补充 nu=0.3。",
+        "adaptation": "允许 T3D2/T3D3；不能让一个单元跨越x=400截面界面。所有节点U2=U3=0，U1只约束左端。不用平均截面积替代分段。",
+        "length": 1000.0,
+        "width": 0.0,
+        "height": 0.0,
+        "young": 200000.0,
+        "poisson": 0.3,
+        "load": 10000.0,
+        "segments": [
+          [
+            400.0,
+            100.0
+          ],
+          [
+            600.0,
+            200.0
+          ]
+        ],
+        "distributed": false,
+        "refinement": false,
+        "metrics": {
+          "tip_u1": {
+            "target": 0.35,
+            "relative_tolerance": 0.001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "右端U1/mm"
+          },
+          "interface_u1": {
+            "target": 0.2,
+            "relative_tolerance": 0.001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "x=400界面U1/mm"
+          },
+          "reaction_x": {
+            "target": -10000.0,
+            "relative_tolerance": 0.0001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "左端RF1/N"
+          },
+          "segment_1_s11": {
+            "target": 100.0,
+            "relative_tolerance": 0.001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "第一段积分点轴向应力均值/MPa"
+          },
+          "segment_2_s11": {
+            "target": 50.0,
+            "relative_tolerance": 0.001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "第二段积分点轴向应力均值/MPa"
+          }
+        }
+      },
+      "files": {
+        "state\\cae_result.json": "10be2cca15428781e6d6f5c74a302f91baddeaa29dfcd99266f3a2fe5061967c",
+        "state\\extract_result.json": "aa3c4da514b8c03e763f86c76903b06f1da3a2f3e319e9709f0ead64d4142c4e",
+        "state\\model_solver_result.json": "fd02e4fa06574c01eaf49cc4a330ebd6af03b43072017a749cc59e932371071e",
+        "state\\public_verification_final.json": "ff4262e79eeab99dd94471d680cdf27da90078835b12f02da842a963bf0b6471",
+        "state\\public_verification_v1.json": "ff4262e79eeab99dd94471d680cdf27da90078835b12f02da842a963bf0b6471",
+        "workspace\\build_model.py": "d46ac569a985314766a651595ebfd1686eeb4d2efc4b6b93457c025a965a6cd8",
+        "workspace\\extract_results.py": "351632543a0b2c98383b114a2cd50c6d0cbaad75504d3ac9cbd1b59e6d007486",
+        "workspace\\model.inp": "29c6614ec06ca2038a3dd972b55b22b142d037617833cff1ab1d39efd0ae034a",
+        "workspace\\model.odb": "df8f200413455e6f7d851ab79d8408a708dfc0b74eeaa29ca09f7fd2c885bf48",
+        "workspace\\reference_case.json": "4fd21af0e5e894dc8865f659dc44bd20e2a2d17eb7c87621f4ec9197dc5b9021",
+        "workspace\\results.json": "315e1ce973d79d7cf409cc06254532205e1a8d97a7386a3b620c20d1d70117a3"
+      }
+    },
+    {
+      "case_id": "cantilever-tip-load",
+      "root": "D:\\abaqus-runs\\public-mechanics-reference-20260915-v3\\cantilever-tip-load",
+      "passed": true,
+      "measured": {
+        "tip_u2": -8.015000343322754,
+        "tip_ur3": -0.012000000104308128,
+        "reaction_y": 1000.0,
+        "reaction_mz": 1000000.0,
+        "root_bending_stress": 120.0
+      },
+      "case_contract": {
+        "case_id": "cantilever-tip-load",
+        "family": "beam",
+        "description": "mm-N-MPa 单位。沿X长1000 mm的三维wire梁，矩形截面全局Y向高50 mm、Z向宽20 mm，E=200000 MPa、nu=.3；左端固支全部梁自由度，右端-Y 1000 N。",
+        "source": "经典 Euler–Bernoulli 悬臂梁参考；参数沿用 foundation_public_mechanics_v1。",
+        "adaptation": "允许 B31/B32 梁；自行设置正确截面方向。根部名义弯曲应力定义为 abs(左端RM3)*(50/2)/(20*50^3/12)，不是取约束角点实体应力峰值。RF输出对应的RM、U对应的UR须按实际ODB字段读取。",
+        "length": 1000.0,
+        "width": 20.0,
+        "height": 50.0,
+        "young": 200000.0,
+        "poisson": 0.3,
+        "load": 1000.0,
+        "segments": [],
+        "distributed": false,
+        "refinement": false,
+        "metrics": {
+          "tip_u2": {
+            "target": -8.0,
+            "relative_tolerance": 0.01,
+            "absolute_tolerance": 1e-08,
+            "meaning": "右端U2/mm"
+          },
+          "tip_ur3": {
+            "target": -0.012,
+            "relative_tolerance": 0.01,
+            "absolute_tolerance": 1e-08,
+            "meaning": "右端UR3/rad"
+          },
+          "reaction_y": {
+            "target": 1000.0,
+            "relative_tolerance": 0.0001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "左端RF2/N"
+          },
+          "reaction_mz": {
+            "target": 1000000.0,
+            "relative_tolerance": 0.0001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "左端RM3/Nmm"
+          },
+          "root_bending_stress": {
+            "target": 120.0,
+            "relative_tolerance": 0.001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "由ODB根部力矩恢复的名义弯曲应力/MPa"
+          }
+        }
+      },
+      "files": {
+        "state\\cae_result.json": "d50d596daf0af5008967758e6d04763886d1c8ed1e6b20420dfcafd0530316bb",
+        "state\\extract_result.json": "99e6cffaf755c2f2de06150dc6c8dcdc926338abb38ae193fe290a642571b4de",
+        "state\\model_solver_result.json": "6638686ed0b837f4ceaa1e85898af0582841b10d2d9d372fd93825a003cd00a7",
+        "state\\public_verification_final.json": "66e24162458169368ada9c8bae6a9a4f03e83094ca8ee5d39bbbdb6db3ae3823",
+        "state\\public_verification_v1.json": "66e24162458169368ada9c8bae6a9a4f03e83094ca8ee5d39bbbdb6db3ae3823",
+        "workspace\\build_model.py": "b15062b530632d65d1886a22a27b921ddd6515a23d037d9a02fa04d5d90a9654",
+        "workspace\\extract_results.py": "724e742dc94afd47a444c1b1a2e3533f6da253164fba2fe14afce775aeb2ebf4",
+        "workspace\\model.inp": "12cc45267a2fce4c76d2e7a780c72618ea0d90088eaaa8b74c227385d6d0b196",
+        "workspace\\model.odb": "1acdf18baa00cce1aeb28372344a4d53743f1d86efb94333e113671265ac3c22",
+        "workspace\\reference_case.json": "60901a52b93fdf666a41761986e393f00f9ee3e42c9593272fcc1b130c1e3c7a",
+        "workspace\\results.json": "cec0313a5c4348ff20492f7254bca3f9020542762d72b1f5a5b4b13669a74b35"
+      }
+    },
+    {
+      "case_id": "cantilever-uniform-load",
+      "root": "D:\\abaqus-runs\\public-mechanics-reference-20260915-v3\\cantilever-uniform-load",
+      "passed": true,
+      "measured": {
+        "tip_u2": -3.008125066757202,
+        "tip_ur3": -0.004001250024884939,
+        "reaction_y": 1000.0,
+        "reaction_mz": 500000.0,
+        "root_bending_stress": 60.0
+      },
+      "case_contract": {
+        "case_id": "cantilever-uniform-load",
+        "family": "beam",
+        "description": "mm-N-MPa 单位。沿X长1000 mm的三维wire梁，矩形截面Y向高50 mm、Z向宽20 mm，E=200000 MPa、nu=.3；左端全固支，全跨度-Y均布线载荷1 N/mm。",
+        "source": "经典 Euler–Bernoulli 悬臂梁参考；参数沿用 foundation_public_mechanics_v1。",
+        "adaptation": "允许 B31/B32；使用真正的均布线载荷，不以端部集中力替代。截面方向自行实现；根部名义弯曲应力由abs(RM3)*25/(20*50^3/12)恢复，RM来自ODB而非参考常数。",
+        "length": 1000.0,
+        "width": 20.0,
+        "height": 50.0,
+        "young": 200000.0,
+        "poisson": 0.3,
+        "load": 1.0,
+        "segments": [],
+        "distributed": true,
+        "refinement": false,
+        "metrics": {
+          "tip_u2": {
+            "target": -3.0,
+            "relative_tolerance": 0.01,
+            "absolute_tolerance": 1e-08,
+            "meaning": "右端U2/mm"
+          },
+          "tip_ur3": {
+            "target": -0.004,
+            "relative_tolerance": 0.01,
+            "absolute_tolerance": 1e-08,
+            "meaning": "右端UR3/rad"
+          },
+          "reaction_y": {
+            "target": 1000.0,
+            "relative_tolerance": 0.0001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "左端RF2/N"
+          },
+          "reaction_mz": {
+            "target": 500000.0,
+            "relative_tolerance": 0.0001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "左端RM3/Nmm"
+          },
+          "root_bending_stress": {
+            "target": 60.0,
+            "relative_tolerance": 0.001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "由ODB力矩恢复的根部名义弯曲应力/MPa"
+          }
+        }
+      },
+      "files": {
+        "state\\cae_result.json": "be6c3a840d6fcb152e3989d79dfddc1b519d7753380fd10f2848f020f75e27a2",
+        "state\\extract_result.json": "1635080c7d0b97c1e8b0961c1921877d0bf6ea241eed3c66628cea83d7388e9c",
+        "state\\model_solver_result.json": "6531e4124e13f2e838ac946edd143212ec1e8a0b7e8bccda43807a8c355f4426",
+        "state\\public_verification_final.json": "22c78bfa2ffff26ca03f7d3b09a7eb3544468dc2781e40010bc1dc98f4832471",
+        "state\\public_verification_v1.json": "22c78bfa2ffff26ca03f7d3b09a7eb3544468dc2781e40010bc1dc98f4832471",
+        "workspace\\build_model.py": "b15062b530632d65d1886a22a27b921ddd6515a23d037d9a02fa04d5d90a9654",
+        "workspace\\extract_results.py": "724e742dc94afd47a444c1b1a2e3533f6da253164fba2fe14afce775aeb2ebf4",
+        "workspace\\model.inp": "2d1ffcc61c204f31aed56436909319f3c8007730b636989d6ef1b7fffd636060",
+        "workspace\\model.odb": "5ce05ff0907443e593098539fa5e479156d00630395052ea5449bdd96f091fa4",
+        "workspace\\reference_case.json": "fd5525edfcc9188fcc3c3b5d565132671da6039f0f5eb3aa5df8e7d4e3f90ee5",
+        "workspace\\results.json": "7ac88a033eab1e5e68eb4f9b5691e30ce90f5a130659831399e629ef7bc1a1b2"
+      }
+    },
+    {
+      "case_id": "plate-with-hole-tension",
+      "root": "D:\\abaqus-runs\\public-mechanics-reference-20260915-v2\\plate-with-hole-tension",
+      "passed": true,
+      "measured": {
+        "hole_max_s11": 316.2991027832031,
+        "reaction_x": -499.99999994796735
+      },
+      "case_contract": {
+        "case_id": "plate-with-hole-tension",
+        "family": "hole",
+        "description": "m-N-Pa 单位。3D实体板x=0..15、y=0..5、z=0..1 m；贯穿圆孔轴线x=7.5,y=2.5，半径0.5 m；E=1000 Pa、nu=0。x=0端面全固定，x=15端面+X均匀拉伸面力100 Pa。",
+        "source": "https://ansyshelp.ansys.com/public/Views/Secured/corp/v242/en/wb_vm/wbvt_VM-WB-MECH-002.html",
+        "adaptation": "必须保留完整3D实体，不用对称缩减；允许C3D4/C3D10/C3D8/C3D8R/C3D20/C3D20R。只在端面使用法向拉伸pressure或traction，不附加节点约束/载荷。孔表面应力定义为S11外推到孔壁节点的未平均ELEMENT_NODAL贡献最大值，全局坐标，不用全板最大值或Mises替代。该Abaqus读取口径是本题的显式移植定义。",
+        "length": 15.0,
+        "width": 5.0,
+        "height": 1.0,
+        "young": 1000.0,
+        "poisson": 0.0,
+        "load": 100.0,
+        "segments": [],
+        "distributed": false,
+        "refinement": true,
+        "metrics": {
+          "hole_max_s11": {
+            "target": 312.5,
+            "relative_tolerance": 0.03,
+            "absolute_tolerance": 1e-08,
+            "meaning": "孔柱面未平均外推S11最大值/Pa"
+          },
+          "reaction_x": {
+            "target": -500.0,
+            "relative_tolerance": 0.001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "左端RF1总和/N"
+          }
+        }
+      },
+      "files": {
+        "state\\cae_result.json": "b696f2641941ab7875325fa6650ac726e4fa1ef36d6920c552e868e5e7cc4900",
+        "state\\extract_result.json": "2595ba34050961fd0dd5b3dc381a025ecafa6086f3cb196f074bf6721a07834b",
+        "state\\model_coarse_solver_result.json": "966a71611125cdf36b9c83d0db97cf5aa32888eb21bb749a2312f14d8ac751f7",
+        "state\\model_solver_result.json": "1417f54f19c670ff3618e2da67a81acd19b98089bc7b117b6927cd8f7401de61",
+        "state\\public_verification_final.json": "8cdc7dc918f0f3ea1fd6c7e728e94524324ddb7321f96d4822dbf0afc028aa4f",
+        "state\\public_verification_v1.json": "7e8c1dc90c6540a82ef199802552fb9b4ad5e6cd192862ac6b1c4c04057b9fce",
+        "workspace\\build_model.py": "8a5dd51f304532d7659350e9220444dad44189fe18d47fa26204fb9cd5a3fc4a",
+        "workspace\\extract_results.py": "351632543a0b2c98383b114a2cd50c6d0cbaad75504d3ac9cbd1b59e6d007486",
+        "workspace\\model.inp": "022a1b7a63a7d6fab992f9fd9995d125a99dbbae697bb659d25f9f966d5b2419",
+        "workspace\\model.odb": "a6869c2e84a7ebde65b8ebcd181f02e8dd4262ae1a7dd82020465d3f84d529f7",
+        "workspace\\model_coarse.inp": "7c585488412d257b7e212b01dec0f0a356a64d797804d3beb116c9dae545f8a2",
+        "workspace\\model_coarse.odb": "66b1abd953d877b421de77497c2781db737e3a7b64a3affbab9c2d301a5f03bd",
+        "workspace\\reference_case.json": "a33294935ad21a4473315edeb715b158416f6030cab4080b49d7bc0ab14ceede",
+        "workspace\\results.json": "809bdf0c443cf727fb7c507d287d4ba504385b976b3d90b3926d9fa79f619d6c"
+      }
+    },
+    {
+      "case_id": "solid-cantilever-directional-bending",
+      "root": "D:\\abaqus-runs\\public-mechanics-reference-20260915-v2\\solid-cantilever-directional-bending",
+      "passed": true,
+      "measured": {
+        "tip_u1_x": 3.0623625207226723e-05,
+        "reaction_x_x": -1.0000011126394384,
+        "tip_u2_y": 0.10791664570569992,
+        "reaction_y_y": -1.0000010021030903,
+        "tip_u3_z": 0.43103840947151184,
+        "reaction_z_z": -1.00000074878335
+      },
+      "case_contract": {
+        "case_id": "solid-cantilever-directional-bending",
+        "family": "solid_beam",
+        "description": "in-lbf-psi 单位。3D实体梁x=0..6、y=0...2、z=0...1 in，E=1e7 psi、nu=.3；x=0全固定。依次建立+X、+Y、+Z端面合力各1 lbf的三个独立线性载荷工况。",
+        "source": "https://ansyshelp.ansys.com/public/Views/Secured/corp/v252/en/ans_vm/Hlp_V_VM184.html",
+        "adaptation": "必须3D实体，允许C3D4/C3D10/C3D8/C3D8R/C3D20/C3D20R。一个INP/ODB包含依次X/Y/Z三个静力步，每步只有该方向载荷，不叠加前步载荷。合力在x=6端面节点对称分配，不用参考点/耦合；所有加载节点均在该端面。自由端目标是该面对应方向位移最大值。不得用梁/杆替代。",
+        "length": 6.0,
+        "width": 0.2,
+        "height": 0.1,
+        "young": 10000000.0,
+        "poisson": 0.3,
+        "load": 1.0,
+        "segments": [],
+        "distributed": false,
+        "refinement": true,
+        "metrics": {
+          "tip_u1_x": {
+            "target": 3e-05,
+            "relative_tolerance": 0.03,
+            "absolute_tolerance": 1e-08,
+            "meaning": "X工况端面最大U1/in"
+          },
+          "tip_u2_y": {
+            "target": 0.108,
+            "relative_tolerance": 0.03,
+            "absolute_tolerance": 1e-08,
+            "meaning": "Y工况端面最大U2/in"
+          },
+          "tip_u3_z": {
+            "target": 0.432,
+            "relative_tolerance": 0.03,
+            "absolute_tolerance": 1e-08,
+            "meaning": "Z工况端面最大U3/in"
+          },
+          "reaction_x_x": {
+            "target": -1.0,
+            "relative_tolerance": 0.001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "X工况左端RF1/lbf"
+          },
+          "reaction_y_y": {
+            "target": -1.0,
+            "relative_tolerance": 0.001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "Y工况左端RF2/lbf"
+          },
+          "reaction_z_z": {
+            "target": -1.0,
+            "relative_tolerance": 0.001,
+            "absolute_tolerance": 1e-08,
+            "meaning": "Z工况左端RF3/lbf"
+          }
+        }
+      },
+      "files": {
+        "state\\cae_result.json": "be48a91f1cf2335a85350b35d3d332744ae71bb21a26df26741a528178c83e0c",
+        "state\\extract_result.json": "f4e109dfe4198bef7054801ccd09b2f13fbf3b007c175d31e55b1f0cb3135250",
+        "state\\model_coarse_solver_result.json": "a6a11fb2057e2388fc63b9e3c5e1720b2aceec4d4a0c9691b9c7cc01e687d6f2",
+        "state\\model_solver_result.json": "c5b0cac16d05ba22511860a7b62318aa8c5032653d1382a80cbbce86feca7425",
+        "state\\public_verification_final.json": "9aa6c649b7a91aa83b71e34b01f2caa699c3e7d4af2d61e46955c19360ed20c8",
+        "state\\public_verification_v1.json": "3ebdba1474206be4afaca02f45542a37f0ab34ea4176839979a053297c5d71ac",
+        "workspace\\build_model.py": "b15062b530632d65d1886a22a27b921ddd6515a23d037d9a02fa04d5d90a9654",
+        "workspace\\extract_results.py": "351632543a0b2c98383b114a2cd50c6d0cbaad75504d3ac9cbd1b59e6d007486",
+        "workspace\\model.inp": "64c4852bb5e14e96abdbbdf10e7ff4db0f99abec36836ae9474bd481387c188c",
+        "workspace\\model.odb": "2d6e2363676a7967389d2ad59161da8bb4fa674d7f6dc43444dcfa6381cc401f",
+        "workspace\\model_coarse.inp": "64cf5202d347a5cd35259e0617946e3b95acf6a8ec0791557806e09fbb8efe9d",
+        "workspace\\model_coarse.odb": "4f2193cdfdfba1b8fc0364332995ada253fb142263ca33aa5a39ac19091ecf6a",
+        "workspace\\reference_case.json": "53de619a2b70069e1d2b57df62d386d303800d31a20dd35d6a26b277f855d96d",
+        "workspace\\results.json": "c9f54496f6ae5c43fa8bc7347035cf5836a65336096a5bc3fc985c0b5adb0394"
+      }
+    }
+  ]
+}

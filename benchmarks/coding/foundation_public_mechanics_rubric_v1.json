@@ -1,0 +1,67 @@
+{
+  "schema_version": "foundation-public-mechanics-rubric-v1",
+  "task_source": "benchmarks/coding/foundation_public_mechanics_cases_v1.jsonl",
+  "cases": [
+    {
+      "case_id": "uniform-axial-bar",
+      "accepted_completions": ["delivered"],
+      "criteria": [
+        {"id":"uniaxial_problem_meaning","category":"task","origin":"user_task","requirement":"Treat the member as a small-strain linear elastic uniaxial bar with a 10000 N total axial load and an equal-magnitude support reaction.","basis":"The task fully specifies a prismatic bar, axial support and centroidal axial load."},
+        {"id":"closed_form_qoi","category":"task","origin":"measurement","requirement":"Give stress 100 MPa, strain 0.0005 and tip elongation 0.5 mm, with signs/directions consistent with the chosen convention.","basis":"Independent reference follows sigma=F/A, epsilon=sigma/E and delta=FL/(AE)."},
+        {"id":"independent_fea_check","category":"task","origin":"measurement","requirement":"Use total force balance and the closed-form axial deformation/stress as independent checks for a later FEA result.","basis":"The benchmark is intended to test whether the Skill turns basic mechanics into a verification habit."},
+        {"id":"no_added_physics","category":"constraint","origin":"host_contract","requirement":"Do not invent extra material properties, geometric dimensions or acceptance thresholds that are unnecessary for the requested reference calculation.","basis":"All required physical inputs are already supplied."}
+      ]
+    },
+    {
+      "case_id": "stepped-axial-bar",
+      "accepted_completions": ["delivered"],
+      "criteria": [
+        {"id":"series_equilibrium","category":"task","origin":"measurement","requirement":"Keep the internal axial force at 10000 N in both serial segments and give segment stresses of 100 MPa and 50 MPa.","basis":"With no intermediate external load, equilibrium requires the same axial force through both segments."},
+        {"id":"segment_deformations","category":"task","origin":"measurement","requirement":"Give segment elongations 0.2 mm and 0.15 mm, interface displacement 0.2 mm, and total tip elongation 0.35 mm.","basis":"Compatibility gives the interface displacement from segment 1 and total elongation as the sum of both segments."},
+        {"id":"preserve_stiffness_discontinuity","category":"task","origin":"user_task","requirement":"Explain that replacing the two segments by one average area changes the stiffness distribution and is not the same boundary-value problem without a separately justified equivalent-model objective.","basis":"The task explicitly asks why the stepped geometry cannot simply be averaged away."},
+        {"id":"no_false_uniform_stress","category":"constraint","origin":"measurement","requirement":"Do not claim the axial stress is uniform across both segments merely because the axial force is uniform.","basis":"Stress changes with area even though the force is continuous."}
+      ]
+    },
+    {
+      "case_id": "cantilever-tip-load",
+      "accepted_completions": ["delivered"],
+      "criteria": [
+        {"id":"correct_bending_axis","category":"task","origin":"measurement","requirement":"Use I=b h^3/12=208333.333... mm^4 for bending through the 50 mm section depth.","basis":"The load direction and stated section orientation fix the bending axis."},
+        {"id":"cantilever_tip_reference","category":"task","origin":"measurement","requirement":"Give fixed-end shear 1000 N, fixed-end moment 1,000,000 N mm, tip rotation magnitude 0.012 rad, tip deflection magnitude 8.0 mm and maximum fixed-end bending stress 120 MPa.","basis":"These values follow the classical small-deflection Euler-Bernoulli cantilever solution."},
+        {"id":"reference_assumptions","category":"task","origin":"profile_contract","requirement":"State that the closed-form comparison relies on linear elasticity, small deflection and beam assumptions; do not present it as exact for every possible continuum discretization or short/deep beam.","basis":"A mechanics benchmark is useful only when the assumptions of the independent reference are explicit."},
+        {"id":"no_universal_mesh_recipe","category":"constraint","origin":"profile_contract","requirement":"Do not introduce a fixed element count, mesh size or convergence percentage as a universal rule for this beam.","basis":"The Foundation Skill is intended to tie discretization checks to the requested QoI rather than a universal mesh heuristic."}
+      ]
+    },
+    {
+      "case_id": "cantilever-uniform-load",
+      "accepted_completions": ["delivered"],
+      "criteria": [
+        {"id":"distributed_load_meaning","category":"task","origin":"user_task","requirement":"Preserve w=1 N/mm as a distributed load over the full span while recognizing its total resultant is 1000 N.","basis":"The task explicitly tests whether total force is confused with the load distribution."},
+        {"id":"cantilever_udl_reference","category":"task","origin":"measurement","requirement":"Give fixed-end shear 1000 N, fixed-end moment 500000 N mm, tip rotation magnitude 0.004 rad, tip deflection magnitude 3.0 mm and maximum fixed-end bending stress 60 MPa.","basis":"These values follow the classical uniform-load cantilever solution for the stated section."},
+        {"id":"not_tip_force_substitution","category":"constraint","origin":"measurement","requirement":"Do not use the tip-load deflection or moment formulas by replacing the full-span UDL with a 1000 N tip force.","basis":"Equal total force does not make the two boundary-value problems equivalent."},
+        {"id":"reference_assumptions","category":"task","origin":"profile_contract","requirement":"State the small-deflection linear beam assumptions behind the analytical reference.","basis":"The independent reference must be used within its assumptions."}
+      ]
+    },
+    {
+      "case_id": "plate-with-hole-tension",
+      "accepted_completions": ["delivered"],
+      "criteria": [
+        {"id":"published_target","category":"task","origin":"measurement","requirement":"Report the public benchmark target maximum global-X normal stress on the hole surface as 312.5 Pa, corresponding to a target ratio 3.125 relative to the 100 Pa applied tension.","basis":"Ansys VM-WB-MECH-002 2024 R2 publicly reports the 312.5 Pa target."},
+        {"id":"local_stress_gradient","category":"task","origin":"user_task","requirement":"Identify the hole boundary as the stress-gradient region that needs local discretization attention and define the QoI on that region rather than using a remote/global stress maximum without position semantics.","basis":"The benchmark's engineering difficulty is the local concentration around the circular hole."},
+        {"id":"finite_vs_infinite_plate","category":"task","origin":"measurement","requirement":"Keep the infinite-plate Kirsch Kt=3 result distinct from the finite-width benchmark target Kt=3.125; it may be used as a related sanity check but not as the exact target for this geometry.","basis":"The public case uses a finite rectangular plate and reports a different target."},
+        {"id":"no_vendor_threshold_generalization","category":"constraint","origin":"profile_contract","requirement":"Do not promote the source manual's particular adaptive-mesh settings or convergence percentage into a universal FEA acceptance rule.","basis":"Source provenance is evidence for this benchmark, not a universal meshing prescription."}
+      ]
+    },
+    {
+      "case_id": "solid-cantilever-directional-bending",
+      "accepted_completions": ["delivered"],
+      "criteria": [
+        {"id":"three_independent_load_cases","category":"task","origin":"user_task","requirement":"Treat +X, +Y and +Z unit loads as three independent linear load cases, not one simultaneous vector load.","basis":"The public VM184 reference reports the three directional deflections separately."},
+        {"id":"directional_section_properties","category":"task","origin":"measurement","requirement":"Use A=0.02 in^2, I_z=t h^3/12=6.6666667e-5 in^4 for Y bending and I_y=h t^3/12=1.6666667e-5 in^4 for Z bending.","basis":"The rectangular section has different strong/weak bending inertias."},
+        {"id":"published_deflection_targets","category":"task","origin":"measurement","requirement":"Give theoretical free-end targets delta_x=3.0e-5 in, delta_y=0.108 in and delta_z=0.432 in.","basis":"Ansys VM184 publicly lists these theoretical targets and they are independently reproduced by bar/beam formulas."},
+        {"id":"continuum_discretization_reasoning","category":"task","origin":"profile_contract","requirement":"For a 3D continuum model, discuss bending discretization/convergence using the displacement QoIs and relevant interpolation/integration risks rather than a universal element-count rule.","basis":"This case intentionally tests whether foundation knowledge transfers from beam theory to continuum FEA judgment."},
+        {"id":"solid_dof_semantics","category":"constraint","origin":"measurement","requirement":"Do not require independent nodal rotational DOFs from a standard displacement-based 3D solid merely because the analytical comparison is a beam solution.","basis":"The continuum kinematics and the beam reference have different nodal variable semantics."}
+      ]
+    }
+  ]
+}

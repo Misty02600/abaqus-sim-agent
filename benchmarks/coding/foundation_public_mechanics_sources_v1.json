@@ -1,0 +1,54 @@
+{
+  "schema_version": "foundation-public-mechanics-sources-v1",
+  "accessed_at": "2026-09-15",
+  "sources": [
+    {
+      "source_id": "libretexts-roylance-axial-v1",
+      "publisher": "Engineering LibreTexts",
+      "title": "Mechanics of Materials (Roylance), 2.1: Trusses",
+      "url": "https://eng.libretexts.org/Bookshelves/Mechanical_Engineering/Mechanics_of_Materials_%28Roylance%29/02%3A_Simple_Tensile_and_Shear_Structures/2.01%3A_Trusses",
+      "source_type": "open_textbook",
+      "used_for": [
+        "uniform-axial-bar",
+        "stepped-axial-bar"
+      ],
+      "boundary": "Uses the public mechanics relation delta = P L / (A E) and equilibrium/compatibility reasoning only. The benchmark parameters and numeric targets are independently recomputed in this repository."
+    },
+    {
+      "source_id": "libretexts-cantilever-deflection-v1",
+      "publisher": "Engineering LibreTexts",
+      "title": "Computing fundamental natural frequency of vibration of beams",
+      "url": "https://eng.libretexts.org/Courses/Illinois_Institute_of_Technology/Building_Envelope_Inspection_and_Rehabilitation_Engineering/08%3A_Non-Destructive_Evaluation_and_Facade_Monitoring_for_Distress_Conditions/8.06%3A_Vibration_Analysis/8.6.01%3A_Computing_fundamental_natural_frequency_of_vibration_of_beams",
+      "source_type": "open_textbook",
+      "used_for": [
+        "cantilever-tip-load",
+        "cantilever-uniform-load"
+      ],
+      "boundary": "Uses the public Euler-Bernoulli cantilever reference formulas delta_tip = P L^3 / (3 E I) and delta_tip = w L^4 / (8 E I). The benchmark adds independently recomputed reactions, rotations and bending stresses."
+    },
+    {
+      "source_id": "ansys-vm-wb-mech-002-2024r2",
+      "publisher": "Ansys",
+      "title": "VM-WB-MECH-002: Rectangular Plate with Circular Hole Subjected to Tensile Loading",
+      "version": "2024 R2",
+      "url": "https://ansyshelp.ansys.com/public/Views/Secured/corp/v242/en/wb_vm/wbvt_VM-WB-MECH-002.html",
+      "source_type": "public_vendor_verification_manual",
+      "used_for": [
+        "plate-with-hole-tension"
+      ],
+      "boundary": "Uses only the publicly displayed geometry, material, loading and target maximum normal X stress. Vendor project files, figures and the vendor-specific adaptive-mesh recipe are not copied into the benchmark."
+    },
+    {
+      "source_id": "ansys-vm184-2025r2",
+      "publisher": "Ansys",
+      "title": "VM184: Straight Cantilever Beam",
+      "version": "2025 R2",
+      "url": "https://ansyshelp.ansys.com/public/Views/Secured/corp/v252/en/ans_vm/Hlp_V_VM184.html",
+      "source_type": "public_vendor_verification_manual",
+      "used_for": [
+        "solid-cantilever-directional-bending"
+      ],
+      "boundary": "Uses only the publicly displayed beam dimensions, material, three independent unit-load cases and theoretical target deflections. Ansys element names and input listings are outside the benchmark answer contract."
+    }
+  ]
+}

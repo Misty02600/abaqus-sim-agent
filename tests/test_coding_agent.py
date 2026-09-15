@@ -390,6 +390,67 @@ def test_agent_composes_coder_skill_and_typed_decisions(tmp_path: Path) -> None:
     assert "same evidence-backed repair" in instructions
 
 
+def test_agent_can_expose_linear_structural_foundation_skills_for_routing_smoke(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    observed: dict[str, object] = {}
+
+    def model_function(
+        _messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        observed["deferred_capabilities"] = (
+            info.model_request_parameters.deferred_capability_ids
+        )
+        output_tool = next(
+            tool
+            for tool in info.output_tools
+            if tool.name.endswith("NeedsInputDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "needs_input",
+                        "clarification": {
+                            "field_id": "plate_thickness",
+                            "kind": "missing_physical_input",
+                            "question": "板厚是多少？",
+                            "impact": "板厚会改变平面应力截面刚度和反力。",
+                        },
+                        "summary": "仅检查路由 smoke 的 deferred capability 元数据。",
+                    },
+                )
+            ]
+        )
+
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+    )
+    agent = create_abaqus_coding_agent(
+        FunctionModel(model_function),
+        request,
+        skill_library=skill_library_path(),
+        foundation_skill_profile="linear_structural_fea_v1",
+    )
+
+    result = asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    assert isinstance(result.output, NeedsInputDecision)
+    assert observed["deferred_capabilities"] == {
+        "abaqus-2024-coding",
+        "linear-structural-fea-formulation",
+        "linear-structural-fea-modeling",
+        "linear-structural-fea-discretization",
+        "linear-structural-fea-postprocess",
+        "linear-structural-fea-verification",
+    }
+    assert dependencies.abaqus_calls == 0
+
+
 def test_runtime_script_policy_blocks_unlisted_cae_without_budget(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

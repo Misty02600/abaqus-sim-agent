@@ -1,0 +1,257 @@
+{
+  "schema_version": "foundation-skill-behavior-rubric-v1",
+  "task_source": "benchmarks/coding/skill_routing_cases_v1.jsonl",
+  "cases": [
+    {
+      "case_id": "from-scratch-linear-plate",
+      "accepted_completions": ["delivered"],
+      "criteria": [
+        {
+          "id": "qoi_and_representation",
+          "category": "task",
+          "origin": "user_task",
+          "requirement": "Define the requested displacement/stress quantities before choosing a structural representation, and choose a representation consistent with the thin in-plane loading described by the task.",
+          "basis": "Frozen task asks for the structural idealization and the right-end mean U1 / mid-plate S11 meaning."
+        },
+        {
+          "id": "load_and_support_meaning",
+          "category": "task",
+          "origin": "user_task",
+          "requirement": "Preserve 1000 N as the specified total X-direction load and explain any distribution/support interpretation as an explicit modeling assumption rather than an additional user fact.",
+          "basis": "Frozen task supplies a total load and a left-end constraint but does not separately prescribe every continuum boundary-detail choice."
+        },
+        {
+          "id": "discretization_reasoning",
+          "category": "task",
+          "origin": "measurement",
+          "requirement": "Relate interpolation/integration and mesh refinement to the chosen representation, characteristic numerical risks and the requested QoIs.",
+          "basis": "Foundation behavior target: discretization decisions should follow the approximation mechanism and QoI instead of an element-first recipe."
+        },
+        {
+          "id": "no_universal_numeric_heuristics",
+          "category": "constraint",
+          "origin": "profile_contract",
+          "requirement": "Do not present case-specific mesh sizes, element counts, convergence percentages or energy percentages as universal or unsupported acceptance rules; any illustrative number must be clearly non-authoritative and justified for this case.",
+          "basis": "Predeclared foundation rule rejects universal mesh-count, convergence and hourglass-energy thresholds."
+        },
+        {
+          "id": "no_fabricated_evidence_or_binding",
+          "category": "constraint",
+          "origin": "host_contract",
+          "requirement": "Do not invent missing physical inputs or claim release-specific Abaqus evidence/API facts that were not available in this zero-Catalog, zero-docs experiment.",
+          "basis": "Experiment disables Catalog/docs/runtime and project policy forbids inventing user-specific physical inputs."
+        }
+      ]
+    },
+    {
+      "case_id": "existing-property-load-edit",
+      "accepted_completions": ["delivered"],
+      "criteria": [
+        {
+          "id": "requested_changes_only",
+          "category": "task",
+          "origin": "user_task",
+          "requirement": "Treat the 10x10 to 20x10 section change and 500 N to 1000 N axial-force change as the only requested changes in physical model meaning.",
+          "basis": "Frozen task and seed contract explicitly delimit the edit."
+        },
+        {
+          "id": "preserve_accepted_model",
+          "category": "task",
+          "origin": "user_task",
+          "requirement": "Preserve the accepted beam idealization, mesh, material, supports and result semantics.",
+          "basis": "Seed contract marks these items as already accepted."
+        },
+        {
+          "id": "no_scope_reopening",
+          "category": "constraint",
+          "origin": "profile_contract",
+          "requirement": "Do not reopen formulation, discretization or postprocessing decisions without a concrete inconsistency exposed by the requested edit.",
+          "basis": "Progressive-disclosure foundation policy routes by unresolved decision rather than re-reviewing the whole lifecycle."
+        }
+      ]
+    },
+    {
+      "case_id": "element-mesh-review",
+      "accepted_completions": ["delivered"],
+      "criteria": [
+        {
+          "id": "formulation_risks",
+          "category": "task",
+          "origin": "user_task",
+          "requirement": "Review interpolation/integration behavior and the relevant locking, hourglass/zero-energy or distortion risks for the fixed 3D continuum representation.",
+          "basis": "Frozen task explicitly asks for these numerical formulation risks."
+        },
+        {
+          "id": "targeted_refinement_and_qoi_convergence",
+          "category": "task",
+          "origin": "user_task",
+          "requirement": "Tie local refinement and mesh-convergence checks to the bending-dominated region and the fixed displacement/stress QoIs.",
+          "basis": "Frozen task requests local refinement and QoI-based convergence review."
+        },
+        {
+          "id": "no_universal_numeric_heuristics",
+          "category": "constraint",
+          "origin": "profile_contract",
+          "requirement": "Do not turn fixed through-thickness counts, mesh-quality limits, convergence percentages or energy ratios into universal pass/fail rules.",
+          "basis": "Predeclared discretization foundation rule explicitly rejects these shortcuts."
+        },
+        {
+          "id": "preserve_physical_scope",
+          "category": "constraint",
+          "origin": "user_task",
+          "requirement": "Do not alter the fixed physical model or expand into ODB/result-extraction semantics unless needed to define the already-stated QoI consistently.",
+          "basis": "Frozen task fixes geometry/material/load/support and excludes ODB extraction."
+        }
+      ]
+    },
+    {
+      "case_id": "stress-result-semantics",
+      "accepted_completions": ["delivered"],
+      "criteria": [
+        {
+          "id": "positions_distinguished",
+          "category": "task",
+          "origin": "user_task",
+          "requirement": "Keep integration-point stress, ELEMENT_NODAL extrapolated contributions and Viewer-smoothed/averaged nodal display values semantically distinct.",
+          "basis": "Frozen task is specifically about reconciling these three reported stress meanings."
+        },
+        {
+          "id": "reproducible_qoi_contract",
+          "category": "task",
+          "origin": "measurement",
+          "requirement": "Define enough region, step/frame, result position, component/invariant, aggregation and relevant orientation/section-point semantics for a reproducible stress QoI.",
+          "basis": "Foundation postprocess target requires result meaning to be reproducible rather than merely labeled S11/max stress."
+        },
+        {
+          "id": "operation_order_and_peak_meaning",
+          "category": "task",
+          "origin": "measurement",
+          "requirement": "Acknowledge when extrapolation/averaging/derived-value operation order or a singular peak can change the reported quantity.",
+          "basis": "Foundation postprocess rules treat averaging order and singular peaks as part of result definition."
+        },
+        {
+          "id": "no_scope_drift",
+          "category": "constraint",
+          "origin": "user_task",
+          "requirement": "Do not turn the result-semantics question into a general model credibility, remeshing or solver-validation review.",
+          "basis": "Frozen task asks only for result semantics and excludes a new solve."
+        }
+      ]
+    },
+    {
+      "case_id": "completed-result-credibility",
+      "accepted_completions": ["delivered"],
+      "criteria": [
+        {
+          "id": "equilibrium_check",
+          "category": "task",
+          "origin": "user_task",
+          "requirement": "Check static equilibrium using consistent global force/moment resultants rather than treating one arbitrary nodal reaction as the model balance.",
+          "basis": "Frozen task asks whether an already-solved result is credible."
+        },
+        {
+          "id": "independent_sanity_checks",
+          "category": "task",
+          "origin": "measurement",
+          "requirement": "Use an analytical reference, proportional scaling, symmetry or deformation-mode check only when its assumptions match the solved model and requested QoI.",
+          "basis": "Foundation verification rules require independent checks with explicit assumption matching."
+        },
+        {
+          "id": "verification_validation_boundary",
+          "category": "task",
+          "origin": "profile_contract",
+          "requirement": "Keep code verification, solution verification, physical validation and project host acceptance distinct.",
+          "basis": "Predeclared verification terminology is part of the foundation behavior target."
+        },
+        {
+          "id": "no_universal_acceptance_threshold",
+          "category": "constraint",
+          "origin": "profile_contract",
+          "requirement": "Do not invent a universal discrepancy, convergence or energy threshold to declare the result credible.",
+          "basis": "Foundation verification rules require task/QoI-specific acceptance evidence."
+        }
+      ]
+    },
+    {
+      "case_id": "pure-abaqus-api-repair",
+      "accepted_completions": ["delivered"],
+      "criteria": [
+        {
+          "id": "preserve_result_intent",
+          "category": "task",
+          "origin": "user_task",
+          "requirement": "Keep the intended step/frame/field/region meaning fixed while addressing only the API/object-binding issue.",
+          "basis": "Frozen task states that engineering intent is already fixed."
+        },
+        {
+          "id": "separate_workspace_fact_from_api_evidence",
+          "category": "constraint",
+          "origin": "host_contract",
+          "requirement": "Distinguish facts visible in the seed script from exact Abaqus 2024 API claims; do not cite or imply authoritative release evidence that was not available in the experiment.",
+          "basis": "Catalog/docs/runtime are disabled, so exact release claims cannot be attributed to those sources in this batch."
+        },
+        {
+          "id": "no_foundation_scope_drift",
+          "category": "constraint",
+          "origin": "profile_contract",
+          "requirement": "Do not reopen physical formulation, modeling, mesh or result-definition decisions merely because the artifact is an Abaqus script.",
+          "basis": "Foundation routing policy assigns pure release-specific binding to Abaqus coding evidence."
+        }
+      ]
+    },
+    {
+      "case_id": "local-name-mismatch",
+      "accepted_completions": ["delivered"],
+      "criteria": [
+        {
+          "id": "use_local_name",
+          "category": "task",
+          "origin": "user_task",
+          "requirement": "Use the set name already established by the local file to identify and repair the mismatched reference.",
+          "basis": "Frozen seed contains the created set name and the mismatched use."
+        },
+        {
+          "id": "minimal_edit_meaning",
+          "category": "task",
+          "origin": "user_task",
+          "requirement": "Keep BC values, physical meaning and unrelated code unchanged while describing the single local-name correction.",
+          "basis": "Frozen task is a local consistency repair, not an API or engineering redesign."
+        },
+        {
+          "id": "no_unsupported_external_claim",
+          "category": "constraint",
+          "origin": "measurement",
+          "requirement": "Do not rely on external domain/API claims when the local file already establishes the needed fact.",
+          "basis": "This case measures whether extra knowledge distracts from direct workspace evidence."
+        }
+      ]
+    },
+    {
+      "case_id": "missing-user-physical-input",
+      "accepted_completions": ["appropriately_stopped"],
+      "criteria": [
+        {
+          "id": "identify_thickness_dependency",
+          "category": "task",
+          "origin": "user_task",
+          "requirement": "Identify plate thickness as a required user-specific physical input because the requested reaction depends on it.",
+          "basis": "Frozen task asks for reaction from a 2D plate while omitting thickness."
+        },
+        {
+          "id": "no_fabricated_thickness",
+          "category": "constraint",
+          "origin": "host_contract",
+          "requirement": "Do not invent or import a default thickness from examples, templates, model priors or retrieval.",
+          "basis": "Project contract requires clarification for missing physical inputs that change the model/result."
+        },
+        {
+          "id": "stop_before_dependent_work",
+          "category": "constraint",
+          "origin": "host_contract",
+          "requirement": "Stop before downstream model/discretization choices or numerical reaction claims that depend on the missing thickness.",
+          "basis": "Clarification is a dependency boundary, not merely a note appended after proceeding."
+        }
+      ]
+    }
+  ]
+}

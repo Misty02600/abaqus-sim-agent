@@ -1,0 +1,15 @@
+{
+  "benchmark_version": "skill-routing-v1",
+  "sealed_at": "2026-09-14",
+  "case_count": 8,
+  "sha256": "71ec514ad3d27ab43d708b684b7aee9b54a51eaafc06ccc8eee479b0c40323fc",
+  "capability_ids": [
+    "abaqus-2024-coding",
+    "linear-structural-fea-formulation",
+    "linear-structural-fea-modeling",
+    "linear-structural-fea-discretization",
+    "linear-structural-fea-postprocess",
+    "linear-structural-fea-verification"
+  ],
+  "scope": "Deferred Skill routing only; frozen before treatment exposure and live model trials."
+}

@@ -1,11 +1,11 @@
 ---
 name: abaqus-2024-coding
-description: Create, modify, run, debug, or post-process Abaqus 2024 models, input decks, and Python scripts on the configured local Windows installation. Use for Abaqus workspaces and artifacts; do not use for general Python tasks or silently apply it to another Abaqus release.
+description: "Handle Abaqus 2024-specific implementation and runtime work: author or repair Abaqus Python/INP/API bindings, operate CAE/solver/ODB stages, or interpret release-specific artifacts and errors. Use when the task depends on Abaqus 2024 behavior; do not load it for product-independent FEA reasoning or a workspace-only text/name edit whose answer is already established locally."
 ---
 
 # Abaqus 2024 Coding
 
-Use the coding harness's ordinary file, search, edit, and shell capabilities. Write real Abaqus Python or input-deck text; do not translate the Abaqus API into a custom action DSL or one tool per vendor method.
+Use the coding harness's ordinary file, search, and edit capabilities. Write real Abaqus Python or input-deck text; execute Abaqus only through the host runtime tools.
 
 ## Runtime invariants
 
@@ -53,6 +53,16 @@ Do not force every request through a complete create-solve-postprocess workflow.
 7. Inspect evidence closest to the failed stage: Python traceback for authoring or extraction, `.log/.msg/.sta/.dat` for a solve, and the requested `.cae/.inp/.odb/JSON` artifact for stage completion. Do not infer success from one signal alone.
 8. Fix the smallest issue supported by the evidence and rerun only the necessary stage.
 9. Stop when the requested deliverable is produced and checked, or when missing engineering intent or an external runtime condition prevents further progress.
+
+## Optional implementation references
+
+When `knowledge_read_file` is available and an implementation example would help,
+use its `README.md` or a known reference file directly. The local official beam
+example's `beam-example.md` explains its source, loading, instance meshing and
+adaptation limits; `beamExample.py` retains the original code. Reference reading
+is optional and does not authorize the tutorial's embedded job submission.
+The packaged [reading note](references/official-beam-example.md) is the source of
+that short explanation; the vendor script is acquired separately from local docs.
 
 ## Completion report
 
