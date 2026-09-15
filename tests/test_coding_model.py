@@ -1,8 +1,12 @@
 import asyncio
 import hashlib
+import json
 
+import httpx
 import pytest
+from openai import AsyncOpenAI
 from pydantic import SecretStr
+from pydantic_ai import ModelMessagesTypeAdapter
 from pydantic_ai.messages import (
     ModelRequest,
     ModelResponse,
@@ -12,6 +16,7 @@ from pydantic_ai.messages import (
     UserPromptPart,
 )
 from pydantic_ai.models import ModelRequestParameters
+from pydantic_ai.tools import ToolDefinition
 
 from abaqus_sim_agent.coding.model import (
     APPLICATION_USER_AGENT,
@@ -28,6 +33,7 @@ from abaqus_sim_agent.coding.model import (
     create_deepseek_chat_model,
     create_deepseek_v4_flash_model,
     gateway_api_key_env,
+    new_run_execution_config,
     take_gateway_api_key_from_environment,
 )
 
@@ -107,13 +113,7 @@ def test_create_deepseek_chat_model_uses_explicit_gateway(
         assert gateway_api_key_env(gateway) == expected_key_env
         assert model.profile["supports_thinking"] is True
         assert model.profile["openai_chat_thinking_field"] == "reasoning_content"
-        expected_thinking_replay = (
-            False if gateway is DeepSeekGateway.OPENCODE_GO else "field"
-        )
-        assert (
-            model.profile["openai_chat_send_back_thinking_parts"]
-            == expected_thinking_replay
-        )
+        assert model.profile["openai_chat_send_back_thinking_parts"] == "field"
         assert model.profile["openai_supports_tool_choice_required"] is False
     finally:
         asyncio.run(client.close())
@@ -168,7 +168,7 @@ def test_http_retries_can_be_disabled_and_cannot_be_negative() -> None:
         )
 
 
-def test_go_mapping_omits_historical_thinking_but_preserves_tool_history() -> None:
+def test_go_mapping_preserves_historical_thinking_and_tool_history() -> None:
     call_id = "call-clarification"
     history = [
         ModelResponse(
@@ -217,7 +217,7 @@ def test_go_mapping_omits_historical_thinking_but_preserves_tool_history() -> No
     zen_assistant = next(
         message for message in zen_messages if message["role"] == "assistant"
     )
-    assert "reasoning_content" not in go_assistant
+    assert go_assistant["reasoning_content"] == "private reasoning"
     assert go_assistant["tool_calls"][0]["id"] == call_id
     assert [message["role"] for message in go_messages] == [
         "assistant",
@@ -225,6 +225,143 @@ def test_go_mapping_omits_historical_thinking_but_preserves_tool_history() -> No
         "user",
     ]
     assert zen_assistant["reasoning_content"] == "private reasoning"
+
+
+@pytest.mark.asyncio
+async def test_go_http_replays_thinking_after_tool_return_and_json_history_restore(
+    tmp_path, monkeypatch
+):
+    bodies = []
+
+    def response(request):
+        body = json.loads(request.content)
+        bodies.append(body)
+        assert body["thinking"] == {"type": "enabled"}
+        assert body["reasoning_effort"] == "high"
+        assert body["tools"]
+        assert "max_tokens" not in body
+        assert request.headers[OPENCODE_SESSION_HEADER]
+        assert request.headers["User-Agent"] == APPLICATION_USER_AGENT
+        assistants = [m for m in body["messages"] if m["role"] == "assistant"]
+        expected_reasoning = [
+            f"fixture reasoning {index}" for index in range(1, len(bodies))
+        ]
+        if [m.get("reasoning_content") for m in assistants] != expected_reasoning:
+            return httpx.Response(
+                400,
+                json={
+                    "error": {
+                        "type": "invalid_request_error",
+                        "message": "The reasoning_content in the thinking mode must be passed back to the API.",
+                    }
+                },
+            )
+        if len(bodies) > 1:
+            assert assistants[0]["tool_calls"][0]["id"] == "tool-1"
+            returned = [m for m in body["messages"] if m["role"] == "tool"]
+            assert returned[0]["tool_call_id"] == "tool-1"
+            assert returned[0]["content"] == "fixture file contents"
+        message = {
+            "role": "assistant",
+            "content": "fixture answer",
+            "reasoning_content": f"fixture reasoning {len(bodies)}",
+        }
+        if len(bodies) == 1:
+            message.update(
+                content=None,
+                tool_calls=[
+                    {
+                        "id": "tool-1",
+                        "type": "function",
+                        "function": {
+                            "name": "read_file",
+                            "arguments": '{"path":"input.txt"}',
+                        },
+                    }
+                ],
+            )
+        return httpx.Response(
+            200,
+            json={
+                "id": f"fixture-{len(bodies)}",
+                "object": "chat.completion",
+                "created": 0,
+                "model": DEEPSEEK_V4_FLASH,
+                "choices": [
+                    {
+                        "index": 0,
+                        "finish_reason": "tool_calls" if len(bodies) == 1 else "stop",
+                        "message": message,
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 20,
+                    "completion_tokens": 5,
+                    "total_tokens": 25,
+                },
+            },
+        )
+
+    monkeypatch.setattr(
+        "abaqus_sim_agent.coding.model.AsyncOpenAI",
+        lambda **kwargs: AsyncOpenAI(
+            **kwargs,
+            http_client=httpx.AsyncClient(transport=httpx.MockTransport(response)),
+        ),
+    )
+    config = new_run_execution_config(
+        model_provider=DeepSeekGateway.OPENCODE_GO, model_name=DEEPSEEK_V4_FLASH
+    )
+    model, client = create_deepseek_chat_model(
+        gateway=DeepSeekGateway.OPENCODE_GO,
+        model_name=DEEPSEEK_V4_FLASH,
+        api_key=SecretStr("fixture-key"),
+        conversation_id="persisted-thinking-fixture",
+        execution_config=config,
+    )
+    parameters = ModelRequestParameters(
+        function_tools=[
+            ToolDefinition(
+                name="read_file",
+                parameters_json_schema={
+                    "type": "object",
+                    "properties": {"path": {"type": "string"}},
+                    "required": ["path"],
+                },
+            )
+        ]
+    )
+    try:
+        history = [ModelRequest(parts=[UserPromptPart("Read input.txt")])]
+        first = await model.request(history, None, parameters)
+        assert any(isinstance(p, ThinkingPart) for p in first.parts)
+        history.extend(
+            [
+                first,
+                ModelRequest(
+                    parts=[
+                        ToolReturnPart(
+                            "read_file", "fixture file contents", tool_call_id="tool-1"
+                        )
+                    ]
+                ),
+            ]
+        )
+        file = tmp_path / "history.json"
+        file.write_bytes(ModelMessagesTypeAdapter.dump_json(history))
+        restored = ModelMessagesTypeAdapter.validate_json(file.read_bytes())
+        second = await model.request(restored, None, parameters)
+        restored.extend(
+            [
+                second,
+                ModelRequest(parts=[UserPromptPart("Continue with the next task")]),
+            ]
+        )
+        # Include thinking from a response without a tool call in subsequent tool-enabled requests too.
+        await model.request(restored, None, parameters)
+    finally:
+        await client.close()
+    assert len(bodies) == 3
 
 
 def test_go_routing_headers_are_stable_host_owned_and_conversation_scoped() -> None:

@@ -8,15 +8,13 @@ from enum import StrEnum
 from importlib.metadata import version
 from typing import Any, Literal, cast
 
+import httpx
 from openai import AsyncOpenAI
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, model_validator
-from pydantic_ai import ModelProfile
 from pydantic_ai.messages import ModelMessage, ModelResponse
 from pydantic_ai.models import Model, ModelRequestParameters, StreamedResponse
 from pydantic_ai.models.openai import OpenAIChatModel, OpenAIChatModelSettings
 from pydantic_ai.models.wrapper import WrapperModel
-from pydantic_ai.profiles import merge_profile
-from pydantic_ai.profiles.openai import OpenAIModelProfile
 from pydantic_ai.providers.deepseek import DeepSeekProvider
 from pydantic_ai.settings import ModelSettings
 
@@ -184,6 +182,8 @@ class OpenCodeZenDeepSeekProvider(DeepSeekProvider):
 
 
 class OpenCodeGoDeepSeekProvider(DeepSeekProvider):
+    # Inherit DeepSeek's reasoning_content round-trip for tool-enabled requests.
+    # https://api-docs.deepseek.com/guides/thinking_mode/
     @property
     def name(self) -> str:
         return DeepSeekGateway.OPENCODE_GO.value
@@ -191,19 +191,6 @@ class OpenCodeGoDeepSeekProvider(DeepSeekProvider):
     @property
     def base_url(self) -> str:
         return OPENCODE_GO_BASE_URL
-
-    @staticmethod
-    def model_profile(model_name: str) -> ModelProfile | None:
-        """保留 DeepSeek profile，但不向 Go 回放历史 thinking parts。
-
-        Note:
-            本机固定探针中，Go 能返回当前 `reasoning_content`，但第二轮回放该字段会
-            稳定触发 500/503；移除回放后相同 tool history 成功。
-        """
-        return merge_profile(
-            DeepSeekProvider.model_profile(model_name),
-            OpenAIModelProfile(openai_chat_send_back_thinking_parts=False),
-        )
 
 
 class OpenCodeGoChatModel(OpenAIChatModel):
@@ -323,6 +310,7 @@ def create_deepseek_chat_model(
     http_retries: int = DEFAULT_MODEL_HTTP_RETRIES,
     conversation_id: str | None = None,
     execution_config: ModelExecutionConfig | None = None,
+    http_client: httpx.AsyncClient | None = None,
 ) -> tuple[OpenAIChatModel, AsyncOpenAI]:
     """创建显式配置 HTTP retry policy 的 DeepSeek Chat Completions 模型。
 
@@ -335,6 +323,7 @@ def create_deepseek_chat_model(
         conversation_id: OpenCode Go必需的稳定会话标识；宿主传run/conversation ID，
             适配器只发送其带版本域的SHA-256，不发送原文。其他网关必须省略。
         execution_config: 可选的宿主有效配置；身份、重试和超时必须与显式参数一致。
+        http_client: 可选的宿主 HTTP 客户端，用于评测传输观测；返回的 SDK 客户端负责关闭它。
 
     Returns:
         模型与其底层客户端。调用方拥有客户端生命周期并负责关闭。
@@ -370,11 +359,16 @@ def create_deepseek_chat_model(
         execution_config.model_settings() if execution_config is not None else None
     )
 
+    # SDK normalizes legacy httpx clients as well as its current transport type.
+    client_options: dict[str, Any] = (
+        {"http_client": http_client} if http_client is not None else {}
+    )
     client = AsyncOpenAI(
         api_key=api_key.get_secret_value(),
         base_url=gateway_base_url(gateway),
         timeout=timeout_seconds,
         max_retries=http_retries,
+        **client_options,
     )
     provider_type = {
         DeepSeekGateway.OFFICIAL: DeepSeekProvider,
