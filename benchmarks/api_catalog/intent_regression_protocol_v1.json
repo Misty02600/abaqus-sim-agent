@@ -1,0 +1,18 @@
+{
+  "goal_lines": [
+    "这是离线检索意图准备任务，不是实际建模或求解任务。读取cases.json。",
+    "对于需要查资料的条目，只输出一条简短英文操作短语operation，突出要完成的动作、作用对象、必要类型/条件。不是翻译整句话，不使用How do I等问句框架，不重复本项目默认的Abaqus/CAE/Python API背景措辞。",
+    "原始请求由宿主原样保存，并会与检索结果一起返回供采用时核对；你不需要重写或复制所有原始约束。不会改变API选择的执行禁止事项和具体数值可以不重复进入operation，但绝不能把禁止操作变成目标操作，或把目标状态写成已完成事实。",
+    "保留区分API所必需的对象归属、表示类型、用户明确选定的单元族和已给出的正向API符号。不补造原文没有的物理参数或具体API方法名。",
+    "例如“对已有零件使用某种单元”的意思是接下来指定该单元，不意味着它已经赋值。这个原则适用于所有条目，不得假定操作已完成。",
+    "若条目明确要求向用户索取缺少的物理值，action写clarify并给出中文问题；不要用查资料或默认材料值代替。不要在本次任务实际调用ask_user向用户索取案例参数。",
+    "输出UTF-8 operations.json，顶层数组，id和顺序与cases.json相同；每项恰好有id、action、operation、clarification。",
+    "search条目的operation为简短英文操作短语、clarification为null；clarify条目的operation为null、clarification为中文问题。",
+    "不得执行任何程序或Abaqus，不检索Catalog或文档，不读取排名，不修改cases.json。检查输出文件后将operations.json声明为交付物，提交ready_for_verification。不要给方法答案或建模代码。"
+  ],
+  "guards": [
+    {"id":"guard_symbols","question":"在Part.faces中按坐标(10, 0, 0)找面，保留现有网格，不要调用generateMesh。","expected":["FaceArray.findAt"]},
+    {"id":"guard_missing","question":"给零件设置线弹性材料，泊松比已给定0.3，但杨氏模量尚未提供。应向用户索取杨氏模量，不得按钢材默认值补齐。","expected":[]},
+    {"id":"guard_constraints","question":"对已有二维平面应力零件使用CPS4R，材料参数已给定；只查怎样指定单元类型，不求解、不修改厚度。","expected":["Part.setElementType"]}
+  ]
+}

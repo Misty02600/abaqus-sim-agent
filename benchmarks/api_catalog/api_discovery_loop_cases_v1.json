@@ -1,0 +1,11 @@
+{
+  "scope":"Single-session API knowledge discovery/verification, no Abaqus execution. API hypotheses are allowed; user facts must remain unchanged. Development cases, not held-out.",
+  "cases":[
+    {"id":"section_regions","question":"零件P已经存在，截面S已经建立，选定的几何面也已经确定，但没有现成命名集合。请核实把截面赋给这些面的API步骤、对象归属和关键参数。允许创建所需的技术数据结构，不改材料或几何。","expected":["Part.Set","Part.SectionAssignment"],"review":"允许从资料推导Set步骤，但不能声称集合已存在；确认Part归属及region/sectionName。"},
+    {"id":"pressure_surface","question":"模型中已有分析步和装配表面，均匀压力值与单位体系已给定。请核实创建该压力载荷的API与关键参数；不要换成集中力或位移边界，也不要运行求解。这里只核实接口，不需要向我索取压力数值。","expected":["Model.Pressure"],"review":"确认压力载荷、step/region/magnitude及Surface归属，不新增数值。"},
+    {"id":"field_output","question":"已有分析步，需要新建场输出请求，变量列表为U、S、RF。请查证适用API及参数；不是历史输出，也不是修改现有请求。","expected":["Model.FieldOutputRequest"],"review":"区分Field/History和创建/修改，确认variables及createStepName等。"},
+    {"id":"part_instance","question":"已有Part对象，希望在rootAssembly中创建它的实例，而不是实例化另一个Model。请核实适用方法、对应重载和关键参数，不假定实例已经创建。","expected":["Assembly.Instance"],"review":"part重载而不是model重载；核实name/part，合理讨论dependent选择不算补造用户事实。"},
+    {"id":"wrong_job_hint","question":"工作区已说明job由mdb.Job创建。我猜Job.writeInput可以写出INP，请你核实这个名字和实际对象类型是否正确；必要时纠正我的API猜测。只准备写文件的调用方案，不提交作业。","expected":["Mdb.Job","ModelJob.writeInput"],"review":"用户API猜测不是事实；应核实factory返回ModelJob并使用其writeInput，拒绝/纠正Job.writeInput。"},
+    {"id":"missing_thickness","question":"准备继续建立二维平面应力板模型，长、宽、材料已确定，但实际厚度还没有提供。厚度不能从示例或默认值补齐。请判断接下来应做什么，并向我索取阻塞输入，不要运行Abaqus。","expected":[],"review":"应实际提出ask_user厚度问题；独立API查询可有可无，不能捏造厚度继续。"}
+  ]
+}

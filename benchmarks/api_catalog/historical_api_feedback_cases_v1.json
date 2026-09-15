@@ -1,0 +1,343 @@
+{
+  "version": "historical-api-feedback-v1",
+  "cases": [
+    {
+      "id": "history_box",
+      "question": "这是历史失败反馈后的离线API查证场景，不是新的仿真执行任务。请先读original_task.json、historical_build.py和runtime_error.txt。历史脚本是待核实的错误尝试，不是所有语句都正确；原任务和已确认输入优先。只核实长方体几何创建这一处错误尝试应如何替换，保持原100×10×10几何目标；不要处理后续网格/求解。 允许提出不同API或删除多余错误步骤，但要实际查证并说明依据。不要修改这三个证据文件，不运行任何脚本或Abaqus。",
+      "seed_files": {
+        "historical_build.py": "# -*- coding: utf-8 -*-\n\"\"\"\n3-D rectangular bar (100 x 10 x 10 mm) single-axis tension model, mm-N-MPa.\nAbaqus/Standard, Static General, NLGEOM=OFF, C3D8R, 20x2x2 = 80 structured hex.\nCreates bar_tension.cae and bar_tension.inp. Does NOT submit a job.\n\"\"\"\nfrom abaqus import mdb\nfrom abaqusConstants import *\nfrom caeModules import *\nimport mesh\n\n# 'Model-1' is the default startup model in a fresh CAE session; use our own\n# name to avoid the unreliable deletion of the pre-existing repository entry.\nMODEL_NAME = 'BarTension'\nmodel = mdb.Model(name=MODEL_NAME)\n\n# ----------------------------------------------------------------------\n# Part: solid box, X: 0..100, Y: 0..10, Z: 0..10\n# ----------------------------------------------------------------------\npart = model.Part(name='Bar', dimensionality=THREE_D, type=DEFORMABLE_BODY)\npart.BaseSolidBox(corner1=(0.0, 0.0, 0.0), corner2=(100.0, 10.0, 10.0))\n\n# ----------------------------------------------------------------------\n# Material & section\n# ----------------------------------------------------------------------\nmaterial = model.Material(name='Steel')\nmaterial.Elastic(table=((210000.0, 0.3),))\n\nmodel.HomogeneousSolidSection(name='SolidSection', material='Steel')\ncell_set = part.Set(cells=part.cells, name='AllCells')\npart.SectionAssignment(region=cell_set, sectionName='SolidSection')\n\n# ----------------------------------------------------------------------\n# Step: Static, General, NLGEOM OFF\n# ----------------------------------------------------------------------\nmodel.StaticStep(name='Step-1', previous='Initial', nlgeom=OFF)\n\n# ----------------------------------------------------------------------\n# Output requests: U, S, RF\n# ----------------------------------------------------------------------\nif 'F-Output-1' in model.fieldOutputRequests:\n    del model.fieldOutputRequests['F-Output-1']\nmodel.FieldOutputRequest(name='F-Output-1', createStepName='Step-1',\n                         variables=('U', 'S', 'RF'))\nif 'H-Output-1' in model.historyOutputRequests:\n    del model.historyOutputRequests['H-Output-1']\nmodel.HistoryOutputRequest(name='H-Output-1', createStepName='Step-1',\n                           variables=('RF',))\n\n# ----------------------------------------------------------------------\n# Mesh: C3D8R, structured hex, 20 (X) x 2 (Y) x 2 (Z) = 80 elements\n# ----------------------------------------------------------------------\nedges_x = []\nfor y in (0.0, 10.0):\n    for z in (0.0, 10.0):\n        edges_x.append(part.edges.findAt(((50.0, y, z),)))\nedges_y = []\nfor x in (0.0, 100.0):\n    for z in (0.0, 10.0):\n        edges_y.append(part.edges.findAt(((x, 5.0, z),)))\nedges_z = []\nfor x in (0.0, 100.0):\n    for y in (0.0, 10.0):\n        edges_z.append(part.edges.findAt(((x, y, 5.0),)))\n\npart.seedEdgeByNumber(edges=edges_x, number=20)\npart.seedEdgeByNumber(edges=edges_y, number=2)\npart.seedEdgeByNumber(edges=edges_z, number=2)\n\npart.setMeshControls(regions=part.cells, elemShape=HEX, technique=STRUCTURED)\nelem_type = mesh.ElemType(elemCode=C3D8R, elemLibrary=STANDARD)\npart.setElementType(regions=(part.cells,), elemTypes=(elem_type,))\npart.generateMesh()\n\nn_elems = len(part.elements)\nn_nodes = len(part.nodes)\nassert n_elems == 80, 'unexpected element count: %d' % n_elems\nassert n_nodes == 189, 'unexpected node count: %d' % n_nodes\nprint('Mesh: %d elements, %d nodes' % (n_elems, n_nodes))\n\n# ----------------------------------------------------------------------\n# Assembly\n# ----------------------------------------------------------------------\nassembly = model.rootAssembly\nassembly.DatumCsysByDefault(CARTESIAN)\ninstance = assembly.Instance(name='Bar-1', part=part, dependent=ON)\n\n# ----------------------------------------------------------------------\n# Sets for BCs\n# ----------------------------------------------------------------------\nleft_face = instance.faces.findAt(((0.0, 5.0, 5.0),))\nright_face = instance.faces.findAt(((100.0, 5.0, 5.0),))\nvertex_a = instance.vertices.findAt(((0.0, 0.0, 0.0),))\nvertex_b = instance.vertices.findAt(((0.0, 10.0, 0.0),))\n\nset_left = instance.Set(faces=left_face, name='LeftFace')\nset_right = instance.Set(faces=right_face, name='RightFace')\nset_a = instance.Set(vertices=vertex_a, name='VertexA')\nset_b = instance.Set(vertices=vertex_b, name='VertexB')\n\n# ----------------------------------------------------------------------\n# Boundary conditions\n# ----------------------------------------------------------------------\nmodel.DisplacementBC(name='BC-Left-U1', createStepName='Step-1',\n                     region=set_left, u1=0.0)\nmodel.DisplacementBC(name='BC-A-U23', createStepName='Step-1',\n                     region=set_a, u2=0.0, u3=0.0)\nmodel.DisplacementBC(name='BC-B-U3', createStepName='Step-1',\n                     region=set_b, u3=0.0)\nmodel.DisplacementBC(name='BC-Right-U1', createStepName='Step-1',\n                     region=set_right, u1=0.1)\n\n# ----------------------------------------------------------------------\n# Job (created only; write input deck, no submission)\n# ----------------------------------------------------------------------\njob = mdb.Job(name='bar_tension', model=MODEL_NAME)\njob.writeInput(consistencyChecking=OFF)\n\nmdb.saveAs(pathName='bar_tension')\nprint('Authoring complete: bar_tension.cae and bar_tension.inp written.')",
+        "runtime_error.txt": "Abaqus License Manager checked out the following license:\n\"cae\" from Flexnet server localhost\n<9998 out of 9999 licenses remain available>.\nAttributeError: 'Part' object has no attribute 'BaseSolidBox'\nFile \"build_model.py\", line 21, in <module>\n    part.BaseSolidBox(corner1=(0.0, 0.0, 0.0), corner2=(100.0, 10.0, 10.0))\n\n",
+        "original_task.json": "{\n  \"goal\": \"请在当前空工作目录中，使用本机 Abaqus 2024 从零建立并完成一个三维矩形杆单轴拉伸分析。\\n\\n模型是沿 X 方向长 100 mm、Y 和 Z 方向均为 10 mm 的三维实体，单位制为 mm-N-MPa。\\n材料为各向同性线弹性，弹性模量 E=210000 MPa，泊松比 ν=0.3。使用 Abaqus/Standard 的\\nStatic, General，NLGEOM=OFF；使用 C3D8R，沿长度 20 个单元、两个横向各 2 个单元的\\n结构化网格，共 80 个单元。\\n\\n左端面 U1=0；在左端角点 A=(0,0,0) 设置 U2=U3=0，并在左端角点\\nB=(0,10,0) 设置 U3=0，以最少约束消除其余刚体运动而允许泊松收缩。右端面规定\\nU1=0.1 mm。请求 U、S、RF。\\n\\n建模脚本必须命名为 build_model.py，并且只生成 bar_tension.cae 与 bar_tension.inp，不在\\nCAE 脚本中提交 Job；随后通过独立 Solver 阶段生成 bar_tension.odb，再用命名为\\nextract_results.py 的独立 odbAccess 脚本生成 results.json。results.json 必须包含数值字段\\nright_mean_u1、mean_s11 和 left_sum_rf1。分析步名称可自行选择，但只能创建一个分析步。\\n本任务的物理输入已经完整，不需要询问补充信息；只有在结果产物和运行证据齐全后才请求验证。\",\n  \"clarifications\": []\n}"
+      },
+      "source_run": "bar3d-concept-ablation-20260824-v2/automatic-plus-concept-preflight/bar3d-9e159ae7e5d3",
+      "provenance": {
+        "history_path": "D:\\abaqus-runs\\bar3d-concept-ablation-20260824-v2\\automatic-plus-concept-preflight\\bar3d-9e159ae7e5d3\\state\\history.json",
+        "history_sha256": "784a8cb2423c747c39df4d4c27802c4e94f00b3e28bcae159866a2b08237be9a",
+        "error_path": "D:\\abaqus-runs\\bar3d-concept-ablation-20260824-v2\\automatic-plus-concept-preflight\\bar3d-9e159ae7e5d3\\state\\executions\\cae_nogui-9b13370e7d914316938e6f5199afb26b\\stderr.bin",
+        "error_sha256": "dc6bed747f1720f0fcd6519bd047337c421f754639cc5979e5c2f5d2c6f2d0e7",
+        "message_index": 30,
+        "runtime_tool_call_id": "call_e1fb44d050d74b778e6ed2d6",
+        "script_path": "build_model.py",
+        "script_sha256": "0dabd4e78160df01c2f02f046ad8799bc02d93f3384d0329e32ff38b3dd99a55",
+        "last_file_tool_hash": "0dabd4e78160",
+        "error_encoding": "utf-8",
+        "reconstruction": "Successful write_file/edit_file only; each tool-return hash checked. Runtime stderr matched full normalized text. Not a whole filesystem replay or runtime input-byte attestation.",
+        "request_sha256": "220e2c3fbac1f670bb17e0e98630b5a08350c41a4777d9f20079673d8efd8c0f",
+        "outcome_sha256": "bf77bd555422b4ec728e9dd38309d1adfc3313137163b4b96e0b078f88feedd1",
+        "events_sha256": null
+      },
+      "expected": [],
+      "expected_groups": [
+        [
+          "Part.BaseSolidExtrude",
+          "Part.BaseSolidRevolve",
+          "Part.BaseSolidSweep"
+        ],
+        [
+          "Model.ConstrainedSketch"
+        ]
+      ],
+      "availability": {
+        "Part.BaseSolidExtrude": "found",
+        "Part.BaseSolidRevolve": "found",
+        "Part.BaseSolidSweep": "found",
+        "Model.ConstrainedSketch": "found"
+      },
+      "review": "给出合法几何路径与来源，不猜另一个Box便利方法；接受有证据且满足相同几何的替代。",
+      "scope": "historical_failure_feedback_development",
+      "alternatives": "Groups are declared reference routes, not exhaustive correctness rules. Other evidenced valid solutions may pass manual review."
+    },
+    {
+      "id": "history_global_seed",
+      "question": "这是历史失败反馈后的离线API查证场景，不是新的仿真执行任务。请先读original_task.json、historical_build.py和runtime_error.txt。历史脚本是待核实的错误尝试，不是所有语句都正确；原任务和已确认输入优先。只核实脚本中全局按尺寸播种的正确入口，保留既有size=5.0及网格目标；不要换成按边数量，也不要实际生成网格。 允许提出不同API或删除多余错误步骤，但要实际查证并说明依据。不要修改这三个证据文件，不运行任何脚本或Abaqus。",
+      "seed_files": {
+        "historical_build.py": "# -*- coding: utf-8 -*-\n# Abaqus/CAE 2024 authoring script: 3D rectangular bar uniaxial tension.\n# Creates bar_tension.cae and bar_tension.inp only (no Job submit).\nfrom abaqus import mdb\nfrom abaqusConstants import *\nfrom caeModules import *\nimport mesh\n\nmodelName = 'BarTension'\nmodel = mdb.Model(name=modelName)\n\n# ----------------------------------------------------------------------\n# Geometry: solid box 100 mm (X) x 10 mm (Y) x 10 mm (Z)\n# ----------------------------------------------------------------------\ns = model.ConstrainedSketch(name='__profile__', sheetSize=200.0)\ns.rectangle(point1=(0.0, 0.0), point2=(100.0, 10.0))\np = model.Part(name='Bar', dimensionality=THREE_D, type=DEFORMABLE_BODY)\np.BaseSolidExtrude(sketch=s, depth=10.0)\ndel model.sketches['__profile__']\n\n# ----------------------------------------------------------------------\n# Material: isotropic linear elastic, E = 210000 MPa, nu = 0.3\n# ----------------------------------------------------------------------\nmat = model.Material(name='Steel')\nmat.Elastic(table=((210000.0, 0.3),))\n\n# ----------------------------------------------------------------------\n# Section assignment\n# ----------------------------------------------------------------------\nmodel.HomogeneousSolidSection(name='Section-1', material='Steel')\ncellSet = p.Set(cells=p.cells, name='AllCells')\np.SectionAssignment(region=cellSet, sectionName='Section-1')\n\n# ----------------------------------------------------------------------\n# Mesh: C3D8R, structured hex, 20 x 2 x 2 = 80 elements\n# ----------------------------------------------------------------------\np.seedPartBySize(size=5.0, deviationFactor=0.1, minSizeFactor=0.1)\np.setMeshControls(regions=p.cells, elemShape=HEX, technique=STRUCTURED)\nelemType1 = mesh.ElemType(elemCode=C3D8R, elemLibrary=STANDARD)\np.setElementType(regions=(p.cells,), elemTypes=(elemType1,))\np.generateMesh()\nnElems = len(p.elements)\nprint('Number of elements generated: %d' % nElems)\nassert nElems == 80, 'Expected 80 C3D8R elements, got %d' % nElems\n\n# ----------------------------------------------------------------------\n# Assembly and sets\n# ----------------------------------------------------------------------\na = model.rootAssembly\ninst = a.Instance(name='Bar-1', part=p, dependent=ON)\n\nleftFace = inst.faces.findAt((0.0, 5.0, 5.0))\nrightFace = inst.faces.findAt((100.0, 5.0, 5.0))\nvertA = inst.vertices.findAt((0.0, 0.0, 0.0))      # A = (0,0,0)\nvertB = inst.vertices.findAt((0.0, 10.0, 0.0))     # B = (0,10,0)\n\na.Set(name='LeftFace', faces=leftFace)\na.Set(name='RightFace', faces=rightFace)\na.Set(name='VertexA', vertices=vertA)\na.Set(name='VertexB', vertices=vertB)\n\n# ----------------------------------------------------------------------\n# Step: Static, General, NLGEOM = OFF (only one analysis step)\n# ----------------------------------------------------------------------\nmodel.StaticStep(name='Step-1', previous='Initial', nlgeom=OFF)\n\n# ----------------------------------------------------------------------\n# Output requests: U, S, RF\n# ----------------------------------------------------------------------\nif 'F-Output-1' in model.fieldOutputRequests:\n    model.fieldOutputRequests['F-Output-1'].setValues(variables=('U', 'S', 'RF'))\nelse:\n    model.FieldOutputRequest(name='F-Output-1', createStepName='Step-1',\n                             variables=('U', 'S', 'RF'))\nif 'H-Output-1' in model.historyOutputRequests:\n    model.historyOutputRequests['H-Output-1'].setValues(variables=('U', 'RF'))\nelse:\n    model.HistoryOutputRequest(name='H-Output-1', createStepName='Step-1',\n                               variables=('U', 'RF'))\n\n# ----------------------------------------------------------------------\n# Boundary conditions\n# ----------------------------------------------------------------------\n# Left face: U1 = 0 (blocks X translation and Y/Z rotations)\nmodel.DisplacementBC(name='BC-Left-U1', createStepName='Step-1',\n                     region=a.sets['LeftFace'], u1=0.0)\n# Corner A = (0,0,0): U2 = U3 = 0\nmodel.DisplacementBC(name='BC-A-U23', createStepName='Step-1',\n                     region=a.sets['VertexA'], u2=0.0, u3=0.0)\n# Corner B = (0,10,0): U3 = 0 (kills rotation about X, allows Poisson shrink)\nmodel.DisplacementBC(name='BC-B-U3', createStepName='Step-1',\n                     region=a.sets['VertexB'], u3=0.0)\n# Right face: prescribed U1 = 0.1 mm\nmodel.DisplacementBC(name='BC-Right-U1', createStepName='Step-1',\n                     region=a.sets['RightFace'], u1=0.1)\n\n# ----------------------------------------------------------------------\n# Job: create object + write input deck only (NO submit)\n# ----------------------------------------------------------------------\njob = mdb.Job(name='bar_tension', model=modelName,\n              description='3D rectangular bar uniaxial tension')\njob.writeInput(consistencyChecking=OFF)\nmdb.saveAs(pathName='bar_tension')\n\nprint('build_model.py completed OK')",
+        "runtime_error.txt": "Abaqus License Manager checked out the following license:\n\"cae\" from Flexnet server localhost\n<9998 out of 9999 licenses remain available>.\nAttributeError: 'Part' object has no attribute 'seedPartBySize'\nFile \"build_model.py\", line 37, in <module>\n    p.seedPartBySize(size=5.0, deviationFactor=0.1, minSizeFactor=0.1)\n\n",
+        "original_task.json": "{\n  \"goal\": \"请在当前空工作目录中，使用本机 Abaqus 2024 从零建立并完成一个三维矩形杆单轴拉伸分析。\\n\\n模型是沿 X 方向长 100 mm、Y 和 Z 方向均为 10 mm 的三维实体，单位制为 mm-N-MPa。\\n材料为各向同性线弹性，弹性模量 E=210000 MPa，泊松比 ν=0.3。使用 Abaqus/Standard 的\\nStatic, General，NLGEOM=OFF；使用 C3D8R，沿长度 20 个单元、两个横向各 2 个单元的\\n结构化网格，共 80 个单元。\\n\\n左端面 U1=0；在左端角点 A=(0,0,0) 设置 U2=U3=0，并在左端角点\\nB=(0,10,0) 设置 U3=0，以最少约束消除其余刚体运动而允许泊松收缩。右端面规定\\nU1=0.1 mm。请求 U、S、RF。\\n\\n建模脚本必须命名为 build_model.py，并且只生成 bar_tension.cae 与 bar_tension.inp，不在\\nCAE 脚本中提交 Job；随后通过独立 Solver 阶段生成 bar_tension.odb，再用命名为\\nextract_results.py 的独立 odbAccess 脚本生成 results.json。results.json 必须包含数值字段\\nright_mean_u1、mean_s11 和 left_sum_rf1。分析步名称可自行选择，但只能创建一个分析步。\\n本任务的物理输入已经完整，不需要询问补充信息；只有在结果产物和运行证据齐全后才请求验证。\",\n  \"clarifications\": []\n}"
+      },
+      "source_run": "bar3d-concept-ablation-20260824-v1/automatic-plus-concept/bar3d-4a5642732e18",
+      "provenance": {
+        "history_path": "D:\\abaqus-runs\\bar3d-concept-ablation-20260824-v1\\automatic-plus-concept\\bar3d-4a5642732e18\\state\\history.json",
+        "history_sha256": "f7b4b6860ac17f022fee7ab21fef850101fbb3ea5008c50ea635e19b6bd50f71",
+        "error_path": "D:\\abaqus-runs\\bar3d-concept-ablation-20260824-v1\\automatic-plus-concept\\bar3d-4a5642732e18\\state\\executions\\cae_nogui-0a210e2700984ec7b8c99a5cbed5a77b\\stderr.bin",
+        "error_sha256": "f93fd85e020a9387ba56e3d7f0baf7390f4d552a57e620339e759cf80e7ba8f9",
+        "message_index": 8,
+        "runtime_tool_call_id": "call_68264a86e61c4cac836d5b90",
+        "script_path": "build_model.py",
+        "script_sha256": "55819943851cfaaada56f4427e547c2b521a22381c675a406e285a138edd3beb",
+        "last_file_tool_hash": "55819943851c",
+        "error_encoding": "utf-8",
+        "reconstruction": "Successful write_file/edit_file only; each tool-return hash checked. Runtime stderr matched full normalized text. Not a whole filesystem replay or runtime input-byte attestation.",
+        "request_sha256": "a6d207cc76120d3aaa4722ee96813caa65e0f9fbc7d1d0e4f922c99449f8fc20",
+        "outcome_sha256": "b0bbb7a29a09f269c5bf50dabc48cecf68a303098a3cdf0c96eeac7ea5ce2b95",
+        "events_sha256": "0c1fc58d89115c77f4f2974ebecf6b3bee138e8c5e79d4c5ce4aaf79d1e22139"
+      },
+      "expected": [],
+      "expected_groups": [
+        [
+          "Part.seedPart"
+        ]
+      ],
+      "availability": {
+        "Part.seedPart": "found"
+      },
+      "review": "全局尺寸而非数量；保留给定参数，查证调用归属。",
+      "scope": "historical_failure_feedback_development",
+      "alternatives": "Groups are declared reference routes, not exhaustive correctness rules. Other evidenced valid solutions may pass manual review."
+    },
+    {
+      "id": "history_beam_section",
+      "question": "这是历史失败反馈后的离线API查证场景，不是新的仿真执行任务。请先读original_task.json、historical_build.py和runtime_error.txt。历史脚本是待核实的错误尝试，不是所有语句都正确；原任务和已确认输入优先。重点核实梁截面构造及其紧邻的profile引用、截面赋值步骤。保持矩形截面和材料设定，区分对象和仓库键；不要修复后面不相关的边界/作业代码。 允许提出不同API或删除多余错误步骤，但要实际查证并说明依据。不要修改这三个证据文件，不运行任何脚本或Abaqus。",
+      "seed_files": {
+        "historical_build.py": "# build_model.py\n# Abaqus 2024 CAE authoring script (noGUI).\n# Creates beam_tension.cae and beam_tension.inp only; does NOT submit a Job.\n#\n# Model: 3D wire from (0,0,0) to (100,0,0) mm, 10x10 rectangular beam profile,\n# isotropic linear elastic steel (E=210000 MPa, nu=0.3), Static/General NLGEOM=OFF,\n# B31 mesh, 20 elements / 21 nodes. Left end encastre, right end U1=0.1 mm.\n# Output requests: U, RF, SF.\nfrom abaqus import mdb\nfrom abaqusConstants import *\nimport mesh\n\nmodel_name = 'BeamTension'\nmdb.Model(name=model_name, modelType=STANDARD_EXPLICIT)\nmodel = mdb.models[model_name]\n\n# ---------------------------------------------------------------- geometry\nsketch = model.ConstrainedSketch(name='__profile__', sheetSize=200.0)\nsketch.Line(point1=(0.0, 0.0), point2=(100.0, 0.0))\npart = model.Part(name='Beam', dimensionality=THREE_D, type=DEFORMABLE_BODY)\npart.BaseWire(sketch=sketch)\ndel model.sketches['__profile__']\n\n# ---------------------------------------------------------------- material\nmaterial = model.Material(name='Steel')\nmaterial.Elastic(table=((210000.0, 0.3),))\n\n# ------------------------------------------------ profile and beam section\nmodel.RectangularProfile(name='Rect10x10', a=10.0, b=10.0)\n# n1 = (0,0,-1): valid, perpendicular to the X-directed beam axis.\nmodel.HomogeneousBeamSection(\n    name='BeamSection',\n    profileName='Rect10x10',\n    materialName='Steel',\n    orientation=(0.0, 0.0, -1.0),\n)\n\n# ------------------------------------------------------- section assignment\nsection_region = part.Set(name='BeamSectionRegion', elements=part.elements)\npart.SectionAssignment(region=section_region, sectionName='BeamSection')\n\n# ----------------------------------------------------------------- assembly\nassembly = model.rootAssembly\nassembly.DatumCsysByDefault(CARTESIAN)\ninstance = assembly.Instance(name='Beam-1', part=part, dependent=ON)\n\n# -------------------------------------------------------------------- step\nmodel.StaticStep(name='Step-1', previous='Initial', nlgeom=OFF)\n\n# -------------------------------------------------------- output requests\nmodel.fieldOutputRequests['F-Output-1'].setValues(variables=('U', 'RF', 'SF'))\n\n# --------------------------------------------------------------------- BCs\nleft_vertices = instance.vertices.findAt((0.0, 0.0, 0.0))\nright_vertices = instance.vertices.findAt((100.0, 0.0, 0.0))\nleft_set = instance.Set(name='LeftEnd', vertices=left_vertices)\nright_set = instance.Set(name='RightEnd', vertices=right_vertices)\n\nmodel.EncastreBC(name='BC-Left', createStepName='Step-1', region=left_set)\nmodel.DisplacementBC(\n    name='BC-Right', createStepName='Step-1', region=right_set, u1=0.1\n)\n\n# -------------------------------------------------------------------- mesh\npart.seedPartBySize(size=5.0, deviationFactor=0.1, minSizeFactor=0.1)\nelem_type = mesh.ElemType(elemCode=B31, elemLibrary=STANDARD)\npart.setElementType(regions=(part.elements,), elemTypes=(elem_type,))\npart.generateMesh()\n\nassert len(part.elements) == 20, 'expected 20 elements, got %d' % len(part.elements)\nassert len(part.nodes) == 21, 'expected 21 nodes, got %d' % len(part.nodes)\n\n# ---------------------------------------------------------------- job/decks\nmdb.Job(name='beam_tension', model=model_name, description='B31 beam tension')\nmdb.jobs['beam_tension'].writeInput(consistencyChecking=OFF)\nmdb.saveAs(pathName='beam_tension.cae')\n\nprint('build_model.py done: beam_tension.cae and beam_tension.inp written')",
+        "runtime_error.txt": "Abaqus License Manager checked out the following license:\n\"cae\" from Flexnet server localhost\n<9998 out of 9999 licenses remain available>.\nAttributeError: 'Model' object has no attribute 'HomogeneousBeamSection'\nFile \"build_model.py\", line 31, in <module>\n    model.HomogeneousBeamSection(\n\n",
+        "original_task.json": "{\n  \"goal\": \"请在当前空工作目录中，使用本机 Abaqus 2024 从零建立并完成一个三维梁单轴拉伸分析。\\n\\n模型是一条沿全局 X 方向、从 (0,0,0) 到 (100,0,0) mm 的三维 wire，单位制为 mm-N-MPa。\\n截面为 10×10 mm 的矩形梁截面，材料为各向同性线弹性，弹性模量 E=210000 MPa，泊松比\\nν=0.3；必须给出有效且与梁轴线不平行的梁截面方向。使用 Abaqus/Standard 的\\nStatic, General，NLGEOM=OFF；使用 B31，沿长度均匀划分 20 个单元，共 21 个节点。\\n\\n左端点使用 Encastre，约束全部 6 个自由度；右端点只规定 U1=0.1 mm，其余自由度不额外\\n约束。请求 U、RF、SF。\\n\\n建模脚本必须命名为 build_model.py，并且只生成 beam_tension.cae 与 beam_tension.inp，不在\\nCAE 脚本中提交 Job；随后通过独立 Solver 阶段生成 beam_tension.odb，再用命名为\\nextract_results.py 的独立 odbAccess 脚本生成 results.json。results.json 必须包含数值字段\\nright_mean_u1、left_sum_rf1 和 mean_sf1。分析步名称可自行选择，但只能创建一个分析步。\\n本任务的物理输入已经完整，不需要询问补充信息；只有在结果产物和运行证据齐全后才请求验证。\",\n  \"clarifications\": []\n}"
+      },
+      "source_run": "beam-b31-final15-runtime-allowlist-v1-20260829/beam-fb15ba29f6a5",
+      "provenance": {
+        "history_path": "D:\\abaqus-runs\\beam-b31-final15-runtime-allowlist-v1-20260829\\beam-fb15ba29f6a5\\state\\history.json",
+        "history_sha256": "689dd1c2af8bab4c1357af1a76181ee990cadd1e50066bee19a31690521ab922",
+        "error_path": "D:\\abaqus-runs\\beam-b31-final15-runtime-allowlist-v1-20260829\\beam-fb15ba29f6a5\\state\\executions\\cae_nogui-2fc00f19558c45fc8810b1b705ea3438\\stderr.bin",
+        "error_sha256": "707f5a0b0a66b29b6af7c34f18bf40b5c05e59dc507129935c1ba8a207ba74fc",
+        "message_index": 6,
+        "runtime_tool_call_id": "call_e01aebd2ad934b2da9edd3e1",
+        "script_path": "build_model.py",
+        "script_sha256": "d358a0e36531dce923d38c532809ffe2aded32b480cead229fe7b74dc1613d54",
+        "last_file_tool_hash": "d358a0e36531",
+        "error_encoding": "utf-8",
+        "reconstruction": "Successful write_file/edit_file only; each tool-return hash checked. Runtime stderr matched full normalized text. Not a whole filesystem replay or runtime input-byte attestation.",
+        "request_sha256": "a4505459510e05a96f3fc185b8accc426adbe67430fdd4ada58c315afb70ac65",
+        "outcome_sha256": "3023224af4a198f216f29dffd4179b0793f1956ef102bf01cba94266b1cbc68f",
+        "events_sha256": null
+      },
+      "expected": [],
+      "expected_groups": [
+        [
+          "Model.BeamSection"
+        ],
+        [
+          "Model.RectangularProfile"
+        ]
+      ],
+      "availability": {
+        "Model.BeamSection": "found",
+        "Model.RectangularProfile": "found"
+      },
+      "review": "合法梁截面构造，profile/material使用正确引用；识别网格前elements集合可能为空，允许有证据的几何区域方案。",
+      "scope": "historical_failure_feedback_development",
+      "alternatives": "Groups are declared reference routes, not exhaustive correctness rules. Other evidenced valid solutions may pass manual review."
+    },
+    {
+      "id": "history_planar_hole",
+      "question": "这是历史失败反馈后的离线API查证场景，不是新的仿真执行任务。请先读original_task.json、historical_build.py和runtime_error.txt。历史脚本是待核实的错误尝试，不是所有语句都正确；原任务和已确认输入优先。重点核实二维平面板开圆孔的几何步骤，保持已有外轮廓和圆的中心/半径，不升级为三维模型，不改网格方案。可以说明某个错误操作应直接删除而不是必须找一个替代方法。 允许提出不同API或删除多余错误步骤，但要实际查证并说明依据。不要修改这三个证据文件，不运行任何脚本或Abaqus。",
+      "seed_files": {
+        "historical_build.py": "# -*- coding: utf-8 -*-\n\"\"\"Abaqus/CAE 2024 authoring script: 2D plane-stress tensile plate with hole.\n\nCreates plate_tension.cae and plate_tension.inp only (no job submission).\nPlate: 100 mm x 20 mm rectangle, thickness 1 mm (user input plate_thickness).\nCircular through-hole: centre (50, 10) mm, radius 3 mm (full 2D model, no\nquarter/half symmetry).\nMaterial: isotropic linear elastic, E = 210000 MPa, nu = 0.3.\nAnalysis: Abaqus/Standard Static, General, NLGEOM=OFF (single step).\nMesh: CPS4R only, free quad mesh, hole boundary discretised by >= 24 element\nedges, refined near the hole.\nBCs: left edge U1=0; left-bottom corner U2=0; right edge U1=+0.1 mm.\nOutput requests: U, S, RF.\n\"\"\"\n\nfrom abaqus import mdb\nfrom abaqusConstants import *\nfrom caeModules import *\nimport mesh\n\n# --------------------------------------------------------------------------\n# Model\n# --------------------------------------------------------------------------\nmodel_name = 'PlateTension'\nmodel = mdb.Model(name=model_name, modelType=STANDARD_EXPLICIT)\n\n# --------------------------------------------------------------------------\n# Geometry: 100 mm x 20 mm rectangle with a circular through-hole\n# --------------------------------------------------------------------------\ns = model.ConstrainedSketch(name='__profile__', sheetSize=200.0)\ns.rectangle(point1=(0.0, 0.0), point2=(100.0, 20.0))\ns.CircleByCenterPerimeter(center=(50.0, 10.0), point1=(53.0, 10.0))\ns.cut(linearObjects=(s.circles[0],))      # punch the 3 mm radius hole\np = model.Part(name='Plate', dimensionality=TWO_D_PLANAR, type=DEFORMABLE_BODY)\np.BaseShell(sketch=s)\n\n# --------------------------------------------------------------------------\n# Material and section (plane stress, thickness = 1.0 mm)\n# --------------------------------------------------------------------------\nmat = model.Material(name='Steel')\nmat.Elastic(table=((210000.0, 0.3),))\nmodel.HomogeneousSolidSection(name='PlateSection', material='Steel', thickness=1.0)\n\nall_faces = p.Set(faces=p.faces, name='AllFaces')\np.SectionAssignment(region=all_faces, sectionName='PlateSection')\n\n# --------------------------------------------------------------------------\n# Mesh: CPS4R only, free quad, refined near the hole\n# --------------------------------------------------------------------------\n# Minimum contract: the hole boundary is discretised by at least 24 element\n# edges. 36 seeds along the (3 mm radius) hole give a fine, nearly regular\n# circle; the global seed keeps quads reasonably shaped across the plate.\nhole_edge = p.edges.findAt(((50.0, 13.0, 0.0),))\np.seedEdgeByNumber(edges=hole_edge, number=36)\np.seedPart(size=1.5)\np.setMeshControls(regions=p.faces, elemShape=QUAD, technique=FREE)\nelem_type = mesh.ElemType(elemCode=CPS4R, elemLibrary=STANDARD)\np.setElementType(regions=all_faces, elemTypes=(elem_type,))\np.generateMesh()\n\n# --------------------------------------------------------------------------\n# Assembly and BC regions\n# --------------------------------------------------------------------------\na = model.rootAssembly\ninst = a.Instance(name='Plate-1', part=p, dependent=ON)\nleft_set = a.Set(edges=inst.edges.findAt(((0.0, 10.0, 0.0),)), name='BCLeft')\nright_set = a.Set(edges=inst.edges.findAt(((100.0, 10.0, 0.0),)), name='BCRight')\ncorner_set = a.Set(vertices=inst.vertices.findAt(((0.0, 0.0, 0.0),)), name='BCCorner')\n\n# --------------------------------------------------------------------------\n# Analysis step (single Static, General step)\n# --------------------------------------------------------------------------\nmodel.StaticStep(name='Step-1', previous='Initial', nlgeom=OFF)\n\n# --------------------------------------------------------------------------\n# Boundary conditions\n# --------------------------------------------------------------------------\nmodel.DisplacementBC(name='FixU1Left', createStepName='Initial',\n                     region=left_set, u1=0.0)\nmodel.DisplacementBC(name='FixU2Corner', createStepName='Initial',\n                     region=corner_set, u2=0.0)\nmodel.DisplacementBC(name='PullRight', createStepName='Step-1',\n                     region=right_set, u1=0.1)\n\n# --------------------------------------------------------------------------\n# Field output: U, S, RF\n# --------------------------------------------------------------------------\nif 'F-Output-1' in model.fieldOutputRequests:\n    del model.fieldOutputRequests['F-Output-1']\nmodel.FieldOutputRequest(name='F-Output-1', createStepName='Step-1',\n                         variables=('U', 'S', 'RF'))\n\n# --------------------------------------------------------------------------\n# Job definition and artifacts (no submission here)\n# --------------------------------------------------------------------------\nmdb.Job(name='plate_tension', model=model_name,\n        description='2D plane stress tension, 100x20 mm, t=1 mm, d=6 mm hole')\nmdb.saveAs(pathName='plate_tension.cae')\nmdb.jobs['plate_tension'].writeInput()\nprint('BUILD OK')",
+        "runtime_error.txt": "Abaqus License Manager checked out the following license:\n\"cae\" from Flexnet server localhost\n<9998 out of 9999 licenses remain available>.\nAttributeError: 'ConstrainedSketch' object has no attribute 'cut'\nFile \"build_model.py\", line 33, in <module>\n    s.cut(linearObjects=(s.circles[0],))      # punch the 3 mm radius hole\n\n",
+        "original_task.json": "{\n  \"goal\": \"当前工作区提供了一份已经在 Abaqus 2024 中完成物理验收的二维矩形板拉伸模型。请理解并修改已有\\nbuild_model.py 与 extract_results.py，不要从空目录另写一个无关模型。\\n\\n在现有完整板上增加一个圆形贯穿孔：外轮廓仍为 (0, 0) 到 (100, 20) mm，孔心为\\n(50, 10) mm，孔半径为 3 mm；不得改成四分之一或二分之一对称模型。\\n\\n必须保留 mm-N-MPa 单位制、二维平面应力、厚度 1 mm、E=210000 MPa、泊松比 0.3、\\nAbaqus/Standard、唯一 Static, General 分析步、NLGEOM=OFF、左边界 U1=0、左下角 U2=0、\\n右边界 U1=0.1 mm，以及 U、S、RF 输出。不得增加压力、集中力、体力或其他机械载荷。\\n\\n原来的 20×4 结构化网格不再是保留项。最终网格必须只使用 CPS4R，孔边界至少由 24 条单元边离散，\\n并在孔附近合理加密；partition、seed 方法和总单元数由你决定。\\n\\n保持现有文件和阶段合同：build_model.py 只能经 CAE noGUI 生成 plate_tension.cae 和\\nplate_tension.inp，不得提交 Job；Solver 必须从 plate_tension.inp 启动 plate_tension；\\nextract_results.py 必须经独立 abaqus python/odbAccess 读取 plate_tension.odb 并生成 results.json。\\n\\nresults.json 必须保留 right_mean_u1、mean_s11、left_sum_rf1，并新增 hole_boundary_max_s11；\\n后者定义为与孔边界相邻 CPS4R 单元积分点中的最大 S11。所有物理输入已经给全，不要请求澄清。\\n只有新需求、原合同、运行产物和结果提取都完成后才请求验证。\",\n  \"clarifications\": []\n}"
+      },
+      "source_run": "plate-hole-change-go-flash-20260825-v2/plate-hole-6e073b8264",
+      "provenance": {
+        "history_path": "D:\\abaqus-runs\\plate-hole-change-go-flash-20260825-v2\\plate-hole-6e073b8264\\state\\history.json",
+        "history_sha256": "c85988f762ecfb30c463e76b72644a901099cd08268e11ac96ca4582a90c5bb3",
+        "error_path": "D:\\abaqus-runs\\plate-hole-change-go-flash-20260825-v2\\plate-hole-6e073b8264\\state\\executions\\cae_nogui-c0c9a16c09c24f28807c2bc8d3e6a674\\stderr.bin",
+        "error_sha256": "0db24d7c0d44f05c2c8396f22c224053efe6cc33d7c09cc08ce297d6e53f9417",
+        "message_index": 10,
+        "runtime_tool_call_id": "call_8582d21c7472493ea87bce54",
+        "script_path": "build_model.py",
+        "script_sha256": "f07d75d490c12e2a0e2ccd69e15f2e6de8970b69db879e2ba03d687607f1c27e",
+        "last_file_tool_hash": "f07d75d490c1",
+        "error_encoding": "utf-8",
+        "reconstruction": "Successful write_file/edit_file only; each tool-return hash checked. Runtime stderr matched full normalized text. Not a whole filesystem replay or runtime input-byte attestation.",
+        "request_sha256": "c165cef5112a6afcecf0666f3a9a2a2c15262e6bc4d3f72638bd5d6623fb66d1",
+        "outcome_sha256": "24fb2a37c49d9aebc2ff0e4f3a65a7376d8894674d90c3b61c9fa670fcf61483",
+        "events_sha256": "b0d6d937ca605734d69d783f51d90ddb586fdf2683e89a8393e22a12c19e655f"
+      },
+      "expected": [],
+      "expected_groups": [
+        [
+          "Part.BaseShell"
+        ],
+        [
+          "ConstrainedSketch.CircleByCenterPerimeter"
+        ]
+      ],
+      "availability": {
+        "Part.BaseShell": "found",
+        "ConstrainedSketch.CircleByCenterPerimeter": "found"
+      },
+      "review": "区分草图对象与Part特征；已有闭合轮廓的处理要有证据，不能虚构草图cut/删除圆后声称开孔。",
+      "scope": "historical_failure_feedback_development",
+      "alternatives": "Groups are declared reference routes, not exhaustive correctness rules. Other evidenced valid solutions may pass manual review."
+    },
+    {
+      "id": "history_instance_set",
+      "question": "这是历史失败反馈后的离线API查证场景，不是新的仿真执行任务。请先读original_task.json、historical_build.py和runtime_error.txt。历史脚本是待核实的错误尝试，不是所有语句都正确；原任务和已确认输入优先。重点核实实例几何用于边界集合的构造归属，保持当前选面/顶点坐标和装配层用途，不改变几何或约束。 允许提出不同API或删除多余错误步骤，但要实际查证并说明依据。不要修改这三个证据文件，不运行任何脚本或Abaqus。",
+      "seed_files": {
+        "historical_build.py": "# -*- coding: utf-8 -*-\n\"\"\"\n3-D rectangular bar (100 x 10 x 10 mm) single-axis tension model, mm-N-MPa.\nAbaqus/Standard, Static General, NLGEOM=OFF, C3D8R, 20x2x2 = 80 structured hex.\nCreates bar_tension.cae and bar_tension.inp. Does NOT submit a job.\n\"\"\"\nfrom abaqus import mdb\nfrom abaqusConstants import *\nfrom caeModules import *\nimport mesh\n\n# 'Model-1' is the default startup model in a fresh CAE session; use our own\n# name to avoid the unreliable deletion of the pre-existing repository entry.\nMODEL_NAME = 'BarTension'\nmodel = mdb.Model(name=MODEL_NAME)\n\n# ----------------------------------------------------------------------\n# Part: solid box, X: 0..100, Y: 0..10, Z: 0..10\n# (sketch rectangle 100 x 10 in X-Y plane, extruded 10 along Z)\n# ----------------------------------------------------------------------\nsketch = model.ConstrainedSketch(name='__profile__', sheetSize=200.0)\nsketch.rectangle(point1=(0.0, 0.0), point2=(100.0, 10.0))\npart = model.Part(name='Bar', dimensionality=THREE_D, type=DEFORMABLE_BODY)\npart.BaseSolidExtrude(sketch=sketch, depth=10.0)\n\n# ----------------------------------------------------------------------\n# Material & section\n# ----------------------------------------------------------------------\nmaterial = model.Material(name='Steel')\nmaterial.Elastic(table=((210000.0, 0.3),))\n\nmodel.HomogeneousSolidSection(name='SolidSection', material='Steel')\ncell_set = part.Set(cells=part.cells, name='AllCells')\npart.SectionAssignment(region=cell_set, sectionName='SolidSection')\n\n# ----------------------------------------------------------------------\n# Step: Static, General, NLGEOM OFF\n# ----------------------------------------------------------------------\nmodel.StaticStep(name='Step-1', previous='Initial', nlgeom=OFF)\n\n# ----------------------------------------------------------------------\n# Output requests: U, S, RF\n# ----------------------------------------------------------------------\nif 'F-Output-1' in model.fieldOutputRequests:\n    del model.fieldOutputRequests['F-Output-1']\nmodel.FieldOutputRequest(name='F-Output-1', createStepName='Step-1',\n                         variables=('U', 'S', 'RF'))\nif 'H-Output-1' in model.historyOutputRequests:\n    del model.historyOutputRequests['H-Output-1']\nmodel.HistoryOutputRequest(name='H-Output-1', createStepName='Step-1',\n                           variables=('RF',))\n\n# ----------------------------------------------------------------------\n# Mesh: C3D8R, structured hex, 20 (X) x 2 (Y) x 2 (Z) = 80 elements\n# ----------------------------------------------------------------------\nedges_x = []\nfor y in (0.0, 10.0):\n    for z in (0.0, 10.0):\n        edges_x.append(part.edges.findAt((50.0, y, z)))\nedges_y = []\nfor x in (0.0, 100.0):\n    for z in (0.0, 10.0):\n        edges_y.append(part.edges.findAt((x, 5.0, z)))\nedges_z = []\nfor x in (0.0, 100.0):\n    for y in (0.0, 10.0):\n        edges_z.append(part.edges.findAt((x, y, 5.0)))\n\npart.seedEdgeByNumber(edges=edges_x, number=20)\npart.seedEdgeByNumber(edges=edges_y, number=2)\npart.seedEdgeByNumber(edges=edges_z, number=2)\n\npart.setMeshControls(regions=part.cells, elemShape=HEX, technique=STRUCTURED)\nelem_type = mesh.ElemType(elemCode=C3D8R, elemLibrary=STANDARD)\npart.setElementType(regions=(part.cells,), elemTypes=(elem_type,))\npart.generateMesh()\n\nn_elems = len(part.elements)\nn_nodes = len(part.nodes)\nassert n_elems == 80, 'unexpected element count: %d' % n_elems\nassert n_nodes == 189, 'unexpected node count: %d' % n_nodes\nprint('Mesh: %d elements, %d nodes' % (n_elems, n_nodes))\n\n# ----------------------------------------------------------------------\n# Assembly\n# ----------------------------------------------------------------------\nassembly = model.rootAssembly\nassembly.DatumCsysByDefault(CARTESIAN)\ninstance = assembly.Instance(name='Bar-1', part=part, dependent=ON)\n\n# ----------------------------------------------------------------------\n# Sets for BCs\n# ----------------------------------------------------------------------\nleft_face = instance.faces.findAt(((0.0, 5.0, 5.0),))\nright_face = instance.faces.findAt(((100.0, 5.0, 5.0),))\nvertex_a = instance.vertices.findAt(((0.0, 0.0, 0.0),))\nvertex_b = instance.vertices.findAt(((0.0, 10.0, 0.0),))\n\nset_left = instance.Set(faces=left_face, name='LeftFace')\nset_right = instance.Set(faces=right_face, name='RightFace')\nset_a = instance.Set(vertices=vertex_a, name='VertexA')\nset_b = instance.Set(vertices=vertex_b, name='VertexB')\n\n# ----------------------------------------------------------------------\n# Boundary conditions\n# ----------------------------------------------------------------------\nmodel.DisplacementBC(name='BC-Left-U1', createStepName='Step-1',\n                     region=set_left, u1=0.0)\nmodel.DisplacementBC(name='BC-A-U23', createStepName='Step-1',\n                     region=set_a, u2=0.0, u3=0.0)\nmodel.DisplacementBC(name='BC-B-U3', createStepName='Step-1',\n                     region=set_b, u3=0.0)\nmodel.DisplacementBC(name='BC-Right-U1', createStepName='Step-1',\n                     region=set_right, u1=0.1)\n\n# ----------------------------------------------------------------------\n# Job (created only; write input deck, no submission)\n# ----------------------------------------------------------------------\njob = mdb.Job(name='bar_tension', model=MODEL_NAME)\njob.writeInput(consistencyChecking=OFF)\n\nmdb.saveAs(pathName='bar_tension')\nprint('Authoring complete: bar_tension.cae and bar_tension.inp written.')",
+        "runtime_error.txt": "Abaqus License Manager checked out the following license:\n\"cae\" from Flexnet server localhost\n<9998 out of 9999 licenses remain available>.\nAttributeError: 'PartInstance' object has no attribute 'Set'\nFile \"build_model.py\", line 99, in <module>\n    set_left = instance.Set(faces=left_face, name='LeftFace')\n\n",
+        "original_task.json": "{\n  \"goal\": \"请在当前空工作目录中，使用本机 Abaqus 2024 从零建立并完成一个三维矩形杆单轴拉伸分析。\\n\\n模型是沿 X 方向长 100 mm、Y 和 Z 方向均为 10 mm 的三维实体，单位制为 mm-N-MPa。\\n材料为各向同性线弹性，弹性模量 E=210000 MPa，泊松比 ν=0.3。使用 Abaqus/Standard 的\\nStatic, General，NLGEOM=OFF；使用 C3D8R，沿长度 20 个单元、两个横向各 2 个单元的\\n结构化网格，共 80 个单元。\\n\\n左端面 U1=0；在左端角点 A=(0,0,0) 设置 U2=U3=0，并在左端角点\\nB=(0,10,0) 设置 U3=0，以最少约束消除其余刚体运动而允许泊松收缩。右端面规定\\nU1=0.1 mm。请求 U、S、RF。\\n\\n建模脚本必须命名为 build_model.py，并且只生成 bar_tension.cae 与 bar_tension.inp，不在\\nCAE 脚本中提交 Job；随后通过独立 Solver 阶段生成 bar_tension.odb，再用命名为\\nextract_results.py 的独立 odbAccess 脚本生成 results.json。results.json 必须包含数值字段\\nright_mean_u1、mean_s11 和 left_sum_rf1。分析步名称可自行选择，但只能创建一个分析步。\\n本任务的物理输入已经完整，不需要询问补充信息；只有在结果产物和运行证据齐全后才请求验证。\",\n  \"clarifications\": []\n}"
+      },
+      "source_run": "bar3d-concept-ablation-20260824-v2/automatic-plus-concept-preflight/bar3d-9e159ae7e5d3",
+      "provenance": {
+        "history_path": "D:\\abaqus-runs\\bar3d-concept-ablation-20260824-v2\\automatic-plus-concept-preflight\\bar3d-9e159ae7e5d3\\state\\history.json",
+        "history_sha256": "784a8cb2423c747c39df4d4c27802c4e94f00b3e28bcae159866a2b08237be9a",
+        "error_path": "D:\\abaqus-runs\\bar3d-concept-ablation-20260824-v2\\automatic-plus-concept-preflight\\bar3d-9e159ae7e5d3\\state\\executions\\cae_nogui-471727e650844d9680d039475c8947f9\\stderr.bin",
+        "error_sha256": "2dcdd2389575b6113a6a6bd62e411a15f27e33e891f784a72411cbfd1f1965a3",
+        "message_index": 54,
+        "runtime_tool_call_id": "call_3bbc276c6c3d4568a031778a",
+        "script_path": "build_model.py",
+        "script_sha256": "45001a2a1fbf8b630184bc0bd151d28caf632da06bb0eb17c40333eb443b194f",
+        "last_file_tool_hash": "45001a2a1fbf",
+        "error_encoding": "utf-8",
+        "reconstruction": "Successful write_file/edit_file only; each tool-return hash checked. Runtime stderr matched full normalized text. Not a whole filesystem replay or runtime input-byte attestation.",
+        "request_sha256": "220e2c3fbac1f670bb17e0e98630b5a08350c41a4777d9f20079673d8efd8c0f",
+        "outcome_sha256": "bf77bd555422b4ec728e9dd38309d1adfc3313137163b4b96e0b078f88feedd1",
+        "events_sha256": null
+      },
+      "expected": [],
+      "expected_groups": [
+        [
+          "Assembly.Set"
+        ]
+      ],
+      "availability": {
+        "Assembly.Set": "found"
+      },
+      "review": "区分PartInstance仓库与构造器；保持实例几何及native序列，不改成Part层边界对象。",
+      "scope": "historical_failure_feedback_development",
+      "alternatives": "Groups are declared reference routes, not exhaustive correctness rules. Other evidenced valid solutions may pass manual review."
+    },
+    {
+      "id": "history_mesh_node_select",
+      "question": "这是历史失败反馈后的离线API查证场景，不是新的仿真执行任务。请先读original_task.json、historical_build.py和runtime_error.txt。历史脚本是待核实的错误尝试，不是所有语句都正确；原任务和已确认输入优先。重点核实当前CAE网格节点选择及端部集合的正确方法，保留已有节点/网格和端点坐标；不是ODB读取，也不通过重新划分网格绕过。 允许提出不同API或删除多余错误步骤，但要实际查证并说明依据。不要修改这三个证据文件，不运行任何脚本或Abaqus。",
+      "seed_files": {
+        "historical_build.py": "# -*- coding: utf-8 -*-\n\"\"\"\nAbaqus 2024 CAE authoring script: 3D beam (B31) single-axis tension test.\n\nModel   : wire from (0,0,0) to (100,0,0) mm, 10x10 rectangular beam section,\n          E = 210000 MPa, nu = 0.3, units mm-N-MPa.\nMesh    : 20 B31 elements / 21 nodes along the axis.\nStep    : one Static, General step, NLGEOM=OFF.\nBCs     : left end Encastre (6 DOFs); right end U1 = 0.1 mm only.\nOutput  : U, RF, SF.\n\nThis script ONLY creates beam_tension.cae and beam_tension.inp.\nIt does NOT submit a job.\n\"\"\"\nfrom abaqus import mdb\nfrom abaqusConstants import *\nimport sketch\nimport part\nimport material\nimport section\nimport assembly\nimport step\nimport load\nimport mesh\nimport job\n\nMODEL_NAME = 'Model-1'\nPART_NAME = 'Beam'\n\n# ---------------------------------------------------------------------------\n# Model and geometry\n# ---------------------------------------------------------------------------\nmodel = mdb.Model(name=MODEL_NAME)\n\ns = model.ConstrainedSketch(name='__profile__', sheetSize=200.0)\ns.Line(point1=(0.0, 0.0), point2=(100.0, 0.0))\npart_obj = model.Part(name=PART_NAME, dimensionality=THREE_D, type=DEFORMABLE_BODY)\npart_obj.BaseWire(sketch=s)\ndel model.sketches['__profile__']\n\n# ---------------------------------------------------------------------------\n# Material and section (beam axis = X, local n1 = -Z, perpendicular to axis)\n# ---------------------------------------------------------------------------\nmat = model.Material(name='Steel')\nmat.Elastic(table=((210000.0, 0.3),))\n\nprofile = model.RectangularProfile(name='Rect10x10', a=10.0, b=10.0)\nmodel.BeamSection(\n    name='BeamSection',\n    integration=DURING_ANALYSIS,\n    poissonRatio=0.3,\n    profile='Rect10x10',\n    material='Steel',\n)\n\nregion_all = part_obj.Set(edges=part_obj.edges, name='AllEdges')\npart_obj.SectionAssignment(region=region_all, sectionName='BeamSection')\n\n# Beam local direction: n1 = (0, 0, -1) is perpendicular to the\n# beam axis (global X), so the section orientation is valid.\npart_obj.assignBeamSectionOrientation(\n    region=part_obj.edges[:], method=N1_COSINES, n1=(0.0, 0.0, -1.0))\n\n# ---------------------------------------------------------------------------\n# Assembly\n# ---------------------------------------------------------------------------\nassembly = model.rootAssembly\ninst = assembly.Instance(name=PART_NAME + '-1', part=part_obj, dependent=ON)\n\n# ---------------------------------------------------------------------------\n# Step (single Static, General step, NLGEOM off)\n# ---------------------------------------------------------------------------\nmodel.StaticStep(name='Step-1', previous='Initial', nlgeom=OFF)\n\n# ---------------------------------------------------------------------------\n# Output requests: U, RF, SF\n# ---------------------------------------------------------------------------\nif 'F-Output-1' in model.fieldOutputRequests:\n    model.fieldOutputRequests['F-Output-1'].setValues(\n        variables=('U', 'RF', 'SF'))\nelse:\n    model.FieldOutputRequest(\n        name='F-Output-1', createStepName='Step-1',\n        variables=('U', 'RF', 'SF'))\n\n# ---------------------------------------------------------------------------\n# Mesh: B31, 20 elements / 21 nodes (size 5 mm)\n# ---------------------------------------------------------------------------\npart_obj.seedPart(size=5.0, deviationFactor=0.1, minSizeFactor=0.1)\nelem_type = mesh.ElemType(elemCode=B31, elemLibrary=STANDARD)\npart_obj.setElementType(regions=(part_obj.edges,), elemTypes=(elem_type,))\npart_obj.generateMesh()\n\nn_nodes = len(part_obj.nodes)\nn_elems = len(part_obj.elements)\nprint('Generated mesh: %d nodes, %d elements' % (n_nodes, n_elems))\nassert n_nodes == 21 and n_elems == 20, 'Mesh does not have 21 nodes / 20 elements'\n\n# ---------------------------------------------------------------------------\n# Boundary conditions (assembly-level sets on the end nodes)\n# ---------------------------------------------------------------------------\nleft_set = assembly.Set(\n    name='LeftEnd',\n    nodes=inst.nodes.findAt(((0.0, 0.0, 0.0),)))\nright_set = assembly.Set(\n    name='RightEnd',\n    nodes=inst.nodes.findAt(((100.0, 0.0, 0.0),)))\n\nmodel.EncastreBC(name='BC-Encastre', createStepName='Step-1', region=left_set)\nmodel.DisplacementBC(name='BC-U1', createStepName='Step-1',\n                     region=right_set, u1=0.1)\n\n# ---------------------------------------------------------------------------\n# Save CAE database and write input deck (no job submission)\n# ---------------------------------------------------------------------------\nmdb.saveAs(pathName='beam_tension')\n\njob_obj = mdb.Job(name='beam_tension', model=MODEL_NAME)\njob_obj.writeInput(consistencyChecking=OFF)\n\nprint('build_model.py completed: beam_tension.cae and beam_tension.inp written')",
+        "runtime_error.txt": "Abaqus License Manager checked out the following license:\n\"cae\" from Flexnet server localhost\n<9998 out of 9999 licenses remain available>.\nAttributeError: 'MeshNodeArray' object has no attribute 'findAt'\nFile \"build_model.py\", line 104, in <module>\n    nodes=inst.nodes.findAt(((0.0, 0.0, 0.0),)))\n\n",
+        "original_task.json": "{\n  \"goal\": \"请在当前空工作目录中，使用本机 Abaqus 2024 从零建立并完成一个三维梁单轴拉伸分析。\\n\\n模型是一条沿全局 X 方向、从 (0,0,0) 到 (100,0,0) mm 的三维 wire，单位制为 mm-N-MPa。\\n截面为 10×10 mm 的矩形梁截面，材料为各向同性线弹性，弹性模量 E=210000 MPa，泊松比\\nν=0.3；必须给出有效且与梁轴线不平行的梁截面方向。使用 Abaqus/Standard 的\\nStatic, General，NLGEOM=OFF；使用 B31，沿长度均匀划分 20 个单元，共 21 个节点。\\n\\n左端点使用 Encastre，约束全部 6 个自由度；右端点只规定 U1=0.1 mm，其余自由度不额外\\n约束。请求 U、RF、SF。\\n\\n建模脚本必须命名为 build_model.py，并且只生成 beam_tension.cae 与 beam_tension.inp，不在\\nCAE 脚本中提交 Job；随后通过独立 Solver 阶段生成 beam_tension.odb，再用命名为\\nextract_results.py 的独立 odbAccess 脚本生成 results.json。results.json 必须包含数值字段\\nright_mean_u1、left_sum_rf1 和 mean_sf1。分析步名称可自行选择，但只能创建一个分析步。\\n本任务的物理输入已经完整，不需要询问补充信息；只有在结果产物和运行证据齐全后才请求验证。\",\n  \"clarifications\": []\n}"
+      },
+      "source_run": "beam-b31-final15-auto-convergence-v1-20260828/beam-a13ad8f53298",
+      "provenance": {
+        "history_path": "D:\\abaqus-runs\\beam-b31-final15-auto-convergence-v1-20260828\\beam-a13ad8f53298\\state\\history.json",
+        "history_sha256": "89b4acd605163885de2f1ea9554ad3b95363068e245cc27270c9918900fa56e5",
+        "error_path": "D:\\abaqus-runs\\beam-b31-final15-auto-convergence-v1-20260828\\beam-a13ad8f53298\\state\\executions\\cae_nogui-6ef89d6ea8a44fff896aae2973d9367e\\stderr.bin",
+        "error_sha256": "47d01bd8a19ace729b39471a6a238d16d5b73090c5bd363cd0a75dc0ed0a4c73",
+        "message_index": 18,
+        "runtime_tool_call_id": "call_b66ae9fc477e4e0d800e6513",
+        "script_path": "build_model.py",
+        "script_sha256": "c7b59c252a4f5ab4ec139b1e96a40f05f3fae5017fd12d5bb5aa7f1e6cfffb7c",
+        "last_file_tool_hash": "c7b59c252a4f",
+        "error_encoding": "utf-8",
+        "reconstruction": "Successful write_file/edit_file only; each tool-return hash checked. Runtime stderr matched full normalized text. Not a whole filesystem replay or runtime input-byte attestation.",
+        "request_sha256": "c1f007f6d122162511c62f7d24a09631effecd67931f13e44d201397818d2333",
+        "outcome_sha256": "e7d1eab9df29b0ea25e30a83cdd3f236d6c354c39395fa33863ea5e2a0da6bd7",
+        "events_sha256": null
+      },
+      "expected": [],
+      "expected_groups": [
+        [
+          "MeshNodeArray.getByBoundingBox",
+          "MeshNodeArray.getClosest",
+          "MeshNodeArray.getFromLabel"
+        ],
+        [
+          "Assembly.Set"
+        ]
+      ],
+      "availability": {
+        "MeshNodeArray.getByBoundingBox": "found",
+        "MeshNodeArray.getClosest": "found",
+        "MeshNodeArray.getFromLabel": "found",
+        "Assembly.Set": "found"
+      },
+      "review": "区分几何/CAE网格/ODB容器；接受合法节点选择路径并解释结果形状、容差/数量核查，不能把现有节点重新生成。",
+      "scope": "historical_failure_feedback_development",
+      "alternatives": "Groups are declared reference routes, not exhaustive correctness rules. Other evidenced valid solutions may pass manual review."
+    },
+    {
+      "id": "history_beam_orientation",
+      "question": "这是历史失败反馈后的离线API查证场景，不是新的仿真执行任务。请先读original_task.json、historical_build.py和runtime_error.txt。历史脚本是待核实的错误尝试，不是所有语句都正确；原任务和已确认输入优先。重点核实梁截面构造与梁方向设置是否属于同一个调用，并检查相关参数与对象归属。保持历史方案的截面、材料和声明方向，不改变载荷/网格。 允许提出不同API或删除多余错误步骤，但要实际查证并说明依据。不要修改这三个证据文件，不运行任何脚本或Abaqus。",
+      "seed_files": {
+        "historical_build.py": "# -*- coding: utf-8 -*-\n\"\"\"\nAbaqus 2024 CAE authoring script: 3D beam (B31) single-axis tension test.\n\nModel   : wire from (0,0,0) to (100,0,0) mm, 10x10 rectangular beam section,\n          E = 210000 MPa, nu = 0.3, units mm-N-MPa.\nMesh    : 20 B31 elements / 21 nodes along the axis.\nStep    : one Static, General step, NLGEOM=OFF.\nBCs     : left end Encastre (6 DOFs); right end U1 = 0.1 mm only.\nOutput  : U, RF, SF.\n\nThis script ONLY creates beam_tension.cae and beam_tension.inp.\nIt does NOT submit a job.\n\"\"\"\nfrom abaqus import mdb\nfrom abaqusConstants import *\nimport sketch\nimport part\nimport material\nimport section\nimport assembly\nimport step\nimport load\nimport mesh\nimport job\n\nMODEL_NAME = 'Model-1'\nPART_NAME = 'Beam'\n\n# ---------------------------------------------------------------------------\n# Model and geometry\n# ---------------------------------------------------------------------------\nmodel = mdb.Model(name=MODEL_NAME)\n\ns = model.ConstrainedSketch(name='__profile__', sheetSize=200.0)\ns.Line(point1=(0.0, 0.0), point2=(100.0, 0.0))\npart_obj = model.Part(name=PART_NAME, dimensionality=THREE_D, type=DEFORMABLE_BODY)\npart_obj.BaseWire(sketch=s)\ndel model.sketches['__profile__']\n\n# ---------------------------------------------------------------------------\n# Material and section (beam axis = X, local n1 = -Z, perpendicular to axis)\n# ---------------------------------------------------------------------------\nmat = model.Material(name='Steel')\nmat.Elastic(table=((210000.0, 0.3),))\n\nprofile = model.RectangularProfile(name='Rect10x10', a=10.0, b=10.0)\nmodel.BeamSection(\n    name='BeamSection',\n    integration=DURING_ANALYSIS,\n    poissonRatio=0.3,\n    profile=profile,\n    material='Steel',\n    orientation=(0.0, 0.0, -1.0),\n)\n\nregion_all = part_obj.Set(edges=part_obj.edges, name='AllEdges')\npart_obj.SectionAssignment(region=region_all, sectionName='BeamSection')\n\n# ---------------------------------------------------------------------------\n# Assembly\n# ---------------------------------------------------------------------------\nassembly = model.rootAssembly\ninst = assembly.Instance(name=PART_NAME + '-1', part=part_obj, dependent=ON)\n\n# ---------------------------------------------------------------------------\n# Step (single Static, General step, NLGEOM off)\n# ---------------------------------------------------------------------------\nmodel.StaticStep(name='Step-1', previous='Initial', nlgeom=OFF)\n\n# ---------------------------------------------------------------------------\n# Output requests: U, RF, SF\n# ---------------------------------------------------------------------------\nif 'F-Output-1' in model.fieldOutputRequests:\n    model.fieldOutputRequests['F-Output-1'].setValues(\n        variables=('U', 'RF', 'SF'))\nelse:\n    model.FieldOutputRequest(\n        name='F-Output-1', createStepName='Step-1',\n        variables=('U', 'RF', 'SF'))\n\n# ---------------------------------------------------------------------------\n# Mesh: B31, 20 elements / 21 nodes (size 5 mm)\n# ---------------------------------------------------------------------------\npart_obj.seedPart(size=5.0, deviationFactor=0.1, minSizeFactor=0.1)\nelem_type = mesh.ElemType(elemCode=B31, elemLibrary=STANDARD)\npart_obj.setElementType(regions=(part_obj.edges,), elemTypes=(elem_type,))\npart_obj.generateMesh()\n\nn_nodes = len(part_obj.nodes)\nn_elems = len(part_obj.elements)\nprint('Generated mesh: %d nodes, %d elements' % (n_nodes, n_elems))\nassert n_nodes == 21 and n_elems == 20, 'Mesh does not have 21 nodes / 20 elements'\n\n# ---------------------------------------------------------------------------\n# Boundary conditions (assembly-level sets on the end nodes)\n# ---------------------------------------------------------------------------\nleft_set = assembly.Set(\n    name='LeftEnd',\n    nodes=inst.nodes.findAt(((0.0, 0.0, 0.0),)))\nright_set = assembly.Set(\n    name='RightEnd',\n    nodes=inst.nodes.findAt(((100.0, 0.0, 0.0),)))\n\nmodel.EncastreBC(name='BC-Encastre', createStepName='Step-1', region=left_set)\nmodel.DisplacementBC(name='BC-U1', createStepName='Step-1',\n                     region=right_set, u1=0.1)\n\n# ---------------------------------------------------------------------------\n# Save CAE database and write input deck (no job submission)\n# ---------------------------------------------------------------------------\nmdb.saveAs(pathName='beam_tension')\n\njob_obj = mdb.Job(name='beam_tension', model=MODEL_NAME)\njob_obj.writeInput(consistencyChecking=OFF)\n\nprint('build_model.py completed: beam_tension.cae and beam_tension.inp written')",
+        "runtime_error.txt": "Abaqus License Manager checked out the following license:\n\"cae\" from Flexnet server localhost\n<9998 out of 9999 licenses remain available>.\nTypeError:  关键字错误: orientation\nFile \"build_model.py\", line 48, in <module>\n    model.BeamSection(\n\n",
+        "original_task.json": "{\n  \"goal\": \"请在当前空工作目录中，使用本机 Abaqus 2024 从零建立并完成一个三维梁单轴拉伸分析。\\n\\n模型是一条沿全局 X 方向、从 (0,0,0) 到 (100,0,0) mm 的三维 wire，单位制为 mm-N-MPa。\\n截面为 10×10 mm 的矩形梁截面，材料为各向同性线弹性，弹性模量 E=210000 MPa，泊松比\\nν=0.3；必须给出有效且与梁轴线不平行的梁截面方向。使用 Abaqus/Standard 的\\nStatic, General，NLGEOM=OFF；使用 B31，沿长度均匀划分 20 个单元，共 21 个节点。\\n\\n左端点使用 Encastre，约束全部 6 个自由度；右端点只规定 U1=0.1 mm，其余自由度不额外\\n约束。请求 U、RF、SF。\\n\\n建模脚本必须命名为 build_model.py，并且只生成 beam_tension.cae 与 beam_tension.inp，不在\\nCAE 脚本中提交 Job；随后通过独立 Solver 阶段生成 beam_tension.odb，再用命名为\\nextract_results.py 的独立 odbAccess 脚本生成 results.json。results.json 必须包含数值字段\\nright_mean_u1、left_sum_rf1 和 mean_sf1。分析步名称可自行选择，但只能创建一个分析步。\\n本任务的物理输入已经完整，不需要询问补充信息；只有在结果产物和运行证据齐全后才请求验证。\",\n  \"clarifications\": []\n}"
+      },
+      "source_run": "beam-b31-final15-auto-convergence-v1-20260828/beam-a13ad8f53298",
+      "provenance": {
+        "history_path": "D:\\abaqus-runs\\beam-b31-final15-auto-convergence-v1-20260828\\beam-a13ad8f53298\\state\\history.json",
+        "history_sha256": "89b4acd605163885de2f1ea9554ad3b95363068e245cc27270c9918900fa56e5",
+        "error_path": "D:\\abaqus-runs\\beam-b31-final15-auto-convergence-v1-20260828\\beam-a13ad8f53298\\state\\executions\\cae_nogui-8b0fa8bfd19047b9b3d783ac0b929710\\stderr.bin",
+        "error_sha256": "b700da0228be304df6560b87ac9ee46c05df3b1d4a032b7c64f393df4e2464ce",
+        "message_index": 6,
+        "runtime_tool_call_id": "call_d64c9a1855904a1ea7ae12de",
+        "script_path": "build_model.py",
+        "script_sha256": "93f396caa4f2a500d993f097eff85d7bd965826706629f05bd57106f3dab7cb0",
+        "last_file_tool_hash": "93f396caa4f2",
+        "error_encoding": "cp936",
+        "reconstruction": "Successful write_file/edit_file only; each tool-return hash checked. Runtime stderr matched full normalized text. Not a whole filesystem replay or runtime input-byte attestation.",
+        "request_sha256": "c1f007f6d122162511c62f7d24a09631effecd67931f13e44d201397818d2333",
+        "outcome_sha256": "e7d1eab9df29b0ea25e30a83cdd3f236d6c354c39395fa33863ea5e2a0da6bd7",
+        "events_sha256": null
+      },
+      "expected": [],
+      "expected_groups": [
+        [
+          "Model.BeamSection"
+        ],
+        [
+          "Part.assignBeamSectionOrientation"
+        ]
+      ],
+      "availability": {
+        "Model.BeamSection": "found",
+        "Part.assignBeamSectionOrientation": "found"
+      },
+      "review": "不再把orientation放入BeamSection；核实profile是名字及方向方法region/method/n1等，不新增物理设定。",
+      "scope": "historical_failure_feedback_development",
+      "alternatives": "Groups are declared reference routes, not exhaustive correctness rules. Other evidenced valid solutions may pass manual review."
+    },
+    {
+      "id": "history_surface_traction",
+      "question": "这是历史失败反馈后的离线API查证场景，不是新的仿真执行任务。请先读original_task.json、historical_build.py和runtime_error.txt。历史脚本是待核实的错误尝试，不是所有语句都正确；原任务和已确认输入优先。重点核实当前面牵引调用的参数和区域构造。保持general surface traction、均匀210MPa、全局+X、非随动及原右端作用区域；不改成Pressure或集中力，不无故改变已有正确参数。 允许提出不同API或删除多余错误步骤，但要实际查证并说明依据。不要修改这三个证据文件，不运行任何脚本或Abaqus。",
+      "seed_files": {
+        "historical_build.py": "# -*- coding: utf-8 -*-\n\"\"\"Abaqus/CAE 2024 authoring script: 2D plane-stress tensile plate.\n\nCreates plate_tension.cae and plate_tension.inp only (no job submission).\nPlate: 100 mm x 20 mm rectangle, thickness 1 mm (user input plate_thickness).\nMaterial: isotropic linear elastic, E = 210000 MPa, nu = 0.3.\nAnalysis: Abaqus/Standard Static, General, NLGEOM=OFF (single step).\nMesh: CPS4R, structured, 20 elements along length, 4 along height.\nBCs: left edge U1=0; left-bottom corner U2=0; right edge has NO prescribed\n     displacement.\nLoad: general surface traction on the whole right edge (x = 100 mm),\n      global +X direction, uniform 210 MPa, non-follower (follow=OFF),\n      applied over the current area.\nOutput requests: U, S, RF.\n\"\"\"\n\nfrom abaqus import mdb\nfrom abaqusConstants import *\nfrom caeModules import *\nimport mesh\n\n# --------------------------------------------------------------------------\n# Model\n# --------------------------------------------------------------------------\nmodel_name = 'PlateTension'\nmodel = mdb.Model(name=model_name, modelType=STANDARD_EXPLICIT)\n\n# --------------------------------------------------------------------------\n# Geometry: 100 mm x 20 mm rectangle (2D planar part)\n# --------------------------------------------------------------------------\ns = model.ConstrainedSketch(name='__profile__', sheetSize=200.0)\ns.rectangle(point1=(0.0, 0.0), point2=(100.0, 20.0))\np = model.Part(name='Plate', dimensionality=TWO_D_PLANAR, type=DEFORMABLE_BODY)\np.BaseShell(sketch=s)\n\n# --------------------------------------------------------------------------\n# Material and section (plane stress, thickness = 1.0 mm)\n# --------------------------------------------------------------------------\nmat = model.Material(name='Steel')\nmat.Elastic(table=((210000.0, 0.3),))\nmodel.HomogeneousSolidSection(name='PlateSection', material='Steel', thickness=1.0)\n\nall_faces = p.Set(faces=p.faces, name='AllFaces')\np.SectionAssignment(region=all_faces, sectionName='PlateSection')\n\n# --------------------------------------------------------------------------\n# Mesh: CPS4R, structured 20 x 4\n# --------------------------------------------------------------------------\ne_bottom = p.edges.findAt((50.0, 0.0, 0.0))\ne_right = p.edges.findAt((100.0, 10.0, 0.0))\ne_top = p.edges.findAt((50.0, 20.0, 0.0))\ne_left = p.edges.findAt((0.0, 10.0, 0.0))\np.seedEdgeByNumber(edges=(e_bottom, e_top), number=20)\np.seedEdgeByNumber(edges=(e_right, e_left), number=4)\np.setMeshControls(regions=p.faces, elemShape=QUAD, technique=STRUCTURED)\nelem_type = mesh.ElemType(elemCode=CPS4R, elemLibrary=STANDARD)\np.setElementType(regions=all_faces, elemTypes=(elem_type,))\np.generateMesh()\n\n# --------------------------------------------------------------------------\n# Assembly and BC/load regions\n# --------------------------------------------------------------------------\na = model.rootAssembly\ninst = a.Instance(name='Plate-1', part=p, dependent=ON)\nleft_set = a.Set(edges=inst.edges.findAt(((0.0, 10.0, 0.0),)), name='BCLeft')\nright_set = a.Set(edges=inst.edges.findAt(((100.0, 10.0, 0.0),)), name='BCRight')\ncorner_set = a.Set(vertices=inst.vertices.findAt(((0.0, 0.0, 0.0),)), name='BCCorner')\n\n# --------------------------------------------------------------------------\n# Analysis step (single Static, General step)\n# --------------------------------------------------------------------------\nmodel.StaticStep(name='Step-1', previous='Initial', nlgeom=OFF)\n\n# --------------------------------------------------------------------------\n# Boundary conditions (no prescribed displacement on the right edge)\n# --------------------------------------------------------------------------\nmodel.DisplacementBC(name='FixU1Left', createStepName='Initial',\n                     region=left_set, u1=0.0)\nmodel.DisplacementBC(name='FixU2Corner', createStepName='Initial',\n                     region=corner_set, u2=0.0)\n\n# --------------------------------------------------------------------------\n# Load: general surface traction, global +X, uniform 210 MPa, non-follower\n# --------------------------------------------------------------------------\nmodel.SurfaceTraction(name='TractionRight', createStepName='Step-1',\n                      region=right_set, magnitude=210.0,\n                      directionVector=((0.0, 0.0, 0.0), (1.0, 0.0, 0.0)),\n                      traction=GENERAL, distributionType=UNIFORM, follow=OFF)\n\n# --------------------------------------------------------------------------\n# Field output: U, S, RF\n# --------------------------------------------------------------------------\nif 'F-Output-1' in model.fieldOutputRequests:\n    del model.fieldOutputRequests['F-Output-1']\nmodel.FieldOutputRequest(name='F-Output-1', createStepName='Step-1',\n                         variables=('U', 'S', 'RF'))\n\n# --------------------------------------------------------------------------\n# Job definition and artifacts (no submission here)\n# --------------------------------------------------------------------------\nmdb.Job(name='plate_tension', model=model_name,\n        description='2D plane stress tension, 100x20 mm, t=1 mm')\nmdb.saveAs(pathName='plate_tension.cae')\nmdb.jobs['plate_tension'].writeInput()\nprint('BUILD OK')",
+        "runtime_error.txt": "Abaqus License Manager checked out the following license:\n\"cae\" from Flexnet server localhost\n<9998 out of 9999 licenses remain available>.\nTypeError: 必需的参数未全部指定; 应当提供 10, 已获得 0\nFile \"build_model.py\", line 85, in <module>\n    model.SurfaceTraction(name='TractionRight', createStepName='Step-1',\n\n",
+        "original_task.json": "{\n  \"goal\": \"当前工作区提供了一份已经在 Abaqus 2024 中完成物理验收的 100 mm × 20 mm、厚度 1 mm\\n二维平面应力板脚本。请修改已有 build_model.py，把右边界的 U1=0.1 mm 规定位移删除，改为在同一个\\nStatic, General 分析步中对整个 x=100 mm 右边界施加全局 +X 方向、均匀 210 MPa 的 general surface\\ntraction。traction 必须是非 follower，并按当前面积均匀施加。\\n\\n保留完整板几何、mm-N-MPa、E=210000 MPa、泊松比 0.3、厚度 1 mm、Abaqus/Standard、唯一\\nStatic, General、NLGEOM=OFF、CPS4R 20×4 结构化网格、左边界 U1=0、左下角 U2=0，以及 U、S、RF\\n输出。除了目标右边界 traction 外不得增加其他机械载荷。右边界不得再有任何规定位移。\\n\\nextract_results.py 的公开结果合同没有变化，不要修改该文件；它仍应生成包含 right_mean_u1、mean_s11、\\nleft_sum_rf1 的 results.json。保持 build_model.py → CAE/INP、独立 Solver → ODB、原\\nextract_results.py → results.json 的三阶段边界，不在 CAE 脚本中提交 Job。\\n\\n所有物理输入已经给全，不要请求澄清。只有载荷控制模式确实改变、原合同保持、三阶段产物和结果齐全后\\n才请求验证。\",\n  \"clarifications\": []\n}"
+      },
+      "source_run": "plate-model-change-suite-go-flash-20260825-v2-load-corrected/plate-load-52625afe33",
+      "provenance": {
+        "history_path": "D:\\abaqus-runs\\plate-model-change-suite-go-flash-20260825-v2-load-corrected\\plate-load-52625afe33\\state\\history.json",
+        "history_sha256": "b9f26fed1bcfe6383671c226e008cc80a1e686f49fcaf536559911bb9cc8f070",
+        "error_path": "D:\\abaqus-runs\\plate-model-change-suite-go-flash-20260825-v2-load-corrected\\plate-load-52625afe33\\state\\executions\\cae_nogui-1fdc5d88e5214a5db3b527d66733bc17\\stderr.bin",
+        "error_sha256": "c36392e73730b4c33ffbbc7a2e607bd53365cba03be2303d904df86f3f154b5a",
+        "message_index": 8,
+        "runtime_tool_call_id": "call_ed60556eb371432499d83db0",
+        "script_path": "build_model.py",
+        "script_sha256": "90c7a496b5bfc56f65737a5d2726c9defa8a1988aad088100153cf3c7991226e",
+        "last_file_tool_hash": "90c7a496b5bf",
+        "error_encoding": "cp936",
+        "reconstruction": "Successful write_file/edit_file only; each tool-return hash checked. Runtime stderr matched full normalized text. Not a whole filesystem replay or runtime input-byte attestation.",
+        "request_sha256": "d56e076cdd42bfc330b25f9f20ac5f70dc11592f0ac571c63b3984c6ef38e7de",
+        "outcome_sha256": null,
+        "events_sha256": "4c7f3a14c45f1e58ed11cc4b80c3cc581dd65afd83a3625b61a1f5c8e3629f60"
+      },
+      "expected": [],
+      "expected_groups": [
+        [
+          "Model.SurfaceTraction"
+        ],
+        [
+          "Assembly.Surface"
+        ]
+      ],
+      "availability": {
+        "Model.SurfaceTraction": "found",
+        "Assembly.Surface": "found"
+      },
+      "review": "从实际断面检查follow/follower和Set/Surface；directionVector原本已为两点形式，不能机械地把它当错；提出方案而非执行。",
+      "scope": "historical_failure_feedback_development",
+      "alternatives": "Groups are declared reference routes, not exhaustive correctness rules. Other evidenced valid solutions may pass manual review."
+    }
+  ],
+  "builder_sha256": "d902a6235902c13a09cc337b2ba24c198210034f462c15432ee7f95e792a6936",
+  "extractor_sha256": "0cea397408f56cd6bce2771b413af74e622d971bdffbdc9ec94ea949673bdcb8"
+}

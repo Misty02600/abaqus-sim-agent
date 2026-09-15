@@ -1,0 +1,27 @@
+{
+  "scope": "Development smoke, manually authored before first ranking. One acceptable API per intent; no held-out or task-success claim.",
+  "critical_checks": {"families": ["section", "element_type", "write_input"], "language": "zh", "rule": "At least one baseline retrieves the expected API in Top-5; full card, source and docstring remain readable. Not multi-step knowledge sufficiency."},
+  "families": [
+    {"id": "create_model", "expected": ["Mdb.Model"], "zh": "怎样在模型数据库中新建一个模型？", "en": "Create a new model in the model database", "mixed": "在 mdb 中新建 model"},
+    {"id": "sketch", "expected": ["Model.ConstrainedSketch"], "zh": "如何在模型中创建二维草图？", "en": "Create a two dimensional sketch in a model", "mixed": "在 Model 中创建二维 sketch"},
+    {"id": "extrude", "expected": ["Part.BaseSolidExtrude"], "zh": "将闭合草图沿深度拉伸成零件的第一个实体特征", "en": "Extrude a closed sketch by a depth to create the first solid feature of a part", "mixed": "Part 中把闭合 sketch 沿 depth 拉伸为实体"},
+    {"id": "elastic", "expected": ["Material.Elastic"], "zh": "给材料定义线弹性各向同性的杨氏模量与泊松比", "en": "Define isotropic linear elastic material using Young modulus and Poisson ratio", "mixed": "Material 的线弹性 Young modulus 和 Poisson ratio 怎么指定"},
+    {"id": "section", "expected": ["Part.SectionAssignment"], "zh": "给零件选定区域赋予已经创建的截面属性", "en": "Assign an existing section to selected regions of a part", "mixed": "把已有 section 赋给 Part 的 regions"},
+    {"id": "instance", "expected": ["Assembly.Instance"], "zh": "把已经创建的零件作为实例加入根装配", "en": "Add an instance of an existing part to the root assembly", "mixed": "在 rootAssembly 中为已有 Part 创建实例"},
+    {"id": "select_face", "expected": ["FaceArray.findAt"], "zh": "按给定空间坐标从零件的几何面序列中找到面", "en": "Find geometric faces in a face array at given spatial coordinates", "mixed": "在 Part.faces 里用 coordinates 选择几何面"},
+    {"id": "element_type", "expected": ["Part.setElementType"], "zh": "将指定有限元单元类型赋给零件中的几何区域", "en": "Assign finite element types to geometric regions of a part", "mixed": "给 Part 的 regions 指定 element types"},
+    {"id": "edge_seed", "expected": ["Part.seedEdgeByNumber"], "zh": "在零件的选定几何边上按指定单元数量布置网格种子", "en": "Seed selected part edges with a specified number of elements", "mixed": "给 Part 的 edges 按 number 布置网格种子"},
+    {"id": "static_step", "expected": ["Model.StaticStep"], "zh": "创建通用静力分析步", "en": "Create a general static analysis step", "mixed": "在 Model 中创建 Static General 分析步"},
+    {"id": "displacement", "expected": ["Model.DisplacementBC"], "zh": "创建指定区域的位移和转动边界条件", "en": "Create displacement and rotation boundary conditions on a region", "mixed": "Model 中对 region 施加 displacement 边界条件"},
+    {"id": "write_input", "expected": ["ModelJob.writeInput"], "zh": "从模型作业写出输入文件但不提交求解", "en": "Write the input file for a model job without submitting analysis", "mixed": "从 ModelJob 导出 inp 但不 submit"}
+  ],
+  "exact_checks": {
+    "Part.setElementType": "found",
+    "Model.DisplacementBC": "found",
+    "Part.faces": "found",
+    "Model.Elastic": "not_found",
+    "Job.writeInput": "not_found",
+    "writeInput": "ambiguous"
+  },
+  "negative_observations": ["自动替我判断尚未给出的材料杨氏模量", "为计算结果制作一个生日蛋糕"]
+}

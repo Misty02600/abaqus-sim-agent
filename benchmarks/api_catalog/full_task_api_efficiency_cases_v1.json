@@ -1,0 +1,83 @@
+{
+  "schema_version": "full-task-api-efficiency-cases-v1",
+  "purpose": "Measure how often a realistic Abaqus task actually needs Catalog help, without requiring Catalog lookup for every API usage point.",
+  "stages": [
+    "geometry",
+    "material_section",
+    "assembly_region",
+    "load_bc",
+    "mesh",
+    "postprocess"
+  ],
+  "cases": [
+    {
+      "case_id": "plate_tension_missing_thickness",
+      "evaluator": "abaqus_sim_agent.evaluation.plate_tension",
+      "prompt_version": "plate-tension-v4",
+      "expected_stages": [
+        "geometry",
+        "material_section",
+        "assembly_region",
+        "load_bc",
+        "mesh",
+        "postprocess"
+      ],
+      "reason": "From-scratch 2D modeling chain with one real physical clarification before the full authoring/solver/postprocess path."
+    },
+    {
+      "case_id": "beam_tension_fully_specified",
+      "evaluator": "abaqus_sim_agent.evaluation.beam_tension",
+      "prompt_version": "beam-tension-b31-v1",
+      "expected_stages": [
+        "geometry",
+        "material_section",
+        "assembly_region",
+        "load_bc",
+        "mesh",
+        "postprocess"
+      ],
+      "reason": "From-scratch beam task that naturally exercises section/orientation, sets, meshing and ODB extraction."
+    },
+    {
+      "case_id": "verified_plate_add_center_hole",
+      "evaluator": "abaqus_sim_agent.evaluation.plate_change",
+      "prompt_version": "plate-hole-change-v2",
+      "expected_stages": [
+        "geometry",
+        "mesh"
+      ],
+      "reason": "Existing-model geometry/topology change where a planar-hole API hypothesis and remeshing are both realistic uncertainty points."
+    },
+    {
+      "case_id": "verified_plate_split_two_materials",
+      "evaluator": "abaqus_sim_agent.evaluation.material_change",
+      "prompt_version": "plate-dual-material-change-v1",
+      "expected_stages": [
+        "geometry",
+        "material_section",
+        "assembly_region"
+      ],
+      "reason": "Existing-model partition/material/section assignment path, covering region ownership without adding a special API-search task."
+    },
+    {
+      "case_id": "verified_plate_displacement_to_traction",
+      "evaluator": "abaqus_sim_agent.evaluation.load_change",
+      "prompt_version": "plate-load-mode-change-v1",
+      "expected_stages": [
+        "assembly_region",
+        "load_bc"
+      ],
+      "reason": "Existing-model load/BC change with a surface-traction path that previously exposed API binding uncertainty."
+    },
+    {
+      "case_id": "verified_b31_tip_load_y",
+      "evaluator": "abaqus_sim_agent.evaluation.beam_bending_change",
+      "prompt_version": "beam-bending-change-v2",
+      "expected_stages": [
+        "load_bc",
+        "postprocess"
+      ],
+      "reason": "Existing-model beam load change plus declared ODB extraction contract, so authoring and read-side APIs are both represented."
+    }
+  ]
+}

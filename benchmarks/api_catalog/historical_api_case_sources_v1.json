@@ -1,0 +1,12 @@
+{
+  "cases":[
+    {"id":"box","run":"bar3d-concept-ablation-20260824-v2/automatic-plus-concept-preflight/bar3d-9e159ae7e5d3","execution":"cae_nogui-9b13370e7d914316938e6f5199afb26b"},
+    {"id":"global_seed","run":"bar3d-concept-ablation-20260824-v1/automatic-plus-concept/bar3d-4a5642732e18","execution":"cae_nogui-0a210e2700984ec7b8c99a5cbed5a77b"},
+    {"id":"beam_section","run":"beam-b31-final15-runtime-allowlist-v1-20260829/beam-fb15ba29f6a5","execution":"cae_nogui-2fc00f19558c45fc8810b1b705ea3438"},
+    {"id":"planar_hole","run":"plate-hole-change-go-flash-20260825-v2/plate-hole-6e073b8264","execution":"cae_nogui-c0c9a16c09c24f28807c2bc8d3e6a674"},
+    {"id":"instance_set","run":"bar3d-concept-ablation-20260824-v2/automatic-plus-concept-preflight/bar3d-9e159ae7e5d3","execution":"cae_nogui-471727e650844d9680d039475c8947f9"},
+    {"id":"mesh_node_select","run":"beam-b31-final15-auto-convergence-v1-20260828/beam-a13ad8f53298","execution":"cae_nogui-6ef89d6ea8a44fff896aae2973d9367e"},
+    {"id":"beam_orientation","run":"beam-b31-final15-auto-convergence-v1-20260828/beam-a13ad8f53298","execution":"cae_nogui-8b0fa8bfd19047b9b3d783ac0b929710"},
+    {"id":"surface_traction","run":"plate-model-change-suite-go-flash-20260825-v2-load-corrected/plate-load-52625afe33","execution":"cae_nogui-1fdc5d88e5214a5db3b527d66733bc17"}
+  ]
+}

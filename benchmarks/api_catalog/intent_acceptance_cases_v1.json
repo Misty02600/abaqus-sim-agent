@@ -1,0 +1,26 @@
+{
+  "version": "intent-acceptance-development-disjoint-v1",
+  "scope": "Twenty new query-disjoint acceptance cases, not API-family/source-page-disjoint held-out. Questions and allowed targets fixed before model generation or ranking. No Abaqus execution.",
+  "cases": [
+    {"id":"new_material_container","question":"先在模型里新建一个有名字的材料对象，暂时不定义弹性或塑性属性。应查什么操作？","action":"search","expected":["Model.Material"],"review":"新建材料容器，不变成定义Elastic，不猜材料参数。"},
+    {"id":"new_solid_section","question":"材料对象已经存在，需要创建引用该材料的均质实体截面，暂时不要把截面分配到区域。","action":"search","expected":["Model.HomogeneousSolidSection"],"review":"创建均质实体截面并引用已有材料；不能转为SectionAssignment。"},
+    {"id":"new_planar_shell","question":"已有闭合草图，想把它做成零件的第一个平面壳面特征，不进行实体拉伸。","action":"search","expected":["Part.BaseShell"],"review":"已有闭合草图、首个平面壳特征，不能改为实体或添加厚度数值。"},
+    {"id":"new_solid_revolve","question":"已有包含闭合轮廓和一条旋转轴构造线的草图，要按给定角度旋转形成零件的第一个实体特征。","action":"search","expected":["Part.BaseSolidRevolve"],"review":"旋转而不是拉伸或扫掠；不假定角度360度。"},
+    {"id":"new_circle_sketch","question":"在已有草图里，用已给定的圆心和圆周上的一个点画圆，不新建草图。","action":"search","expected":["ConstrainedSketchGeometryModel.CircleByCenterPerimeter"],"review":"已有草图、圆心和圆周点，不变成半径输入或新建草图。"},
+    {"id":"new_face_partition","question":"在零件现有的平面面上使用已有草图分区，保留原几何，不是从草图再生成一个新零件。","action":"search","expected":["Part.PartitionFaceBySketch"],"review":"partition现有平面面，不是创建基础特征或新零件。"},
+    {"id":"new_global_seed","question":"对整个已有零件按给定的全局目标单元尺寸布种，不是按每条边指定单元数量。","action":"search","expected":["Part.seedPart"],"review":"全局size播种，不变成seedEdgeByNumber或实际网格生成。"},
+    {"id":"new_mesh_controls","question":"需要为零件的指定几何区域设置结构化网格技术，暂时不要生成网格，也不要更改单元类型。","action":"search","expected":["Part.setMeshControls"],"review":"mesh technique/controls，不是元素类型赋值或generateMesh。"},
+    {"id":"new_instance_translate","question":"把装配中已存在的实例按给定平移向量移动，不创建副本，也不修改零件本体。","action":"search","expected":["Assembly.translate"],"review":"平移已有实例，不是复制、新建实例或几何变更。"},
+    {"id":"new_instance_rotate","question":"绕已给定的空间轴线把装配中的已有实例旋转给定角度，不能把这当作平移。","action":"search","expected":["Assembly.rotate"],"review":"旋转已有实例，轴和角度仅为已给定，不新增具体值。"},
+    {"id":"new_part_set","question":"从零件本体上已选好的几何面创建一个命名集合，集合归属零件，不属于装配或ODB。","action":"search","expected":["Part.Set"],"review":"Part-owned named Set，不能换Assembly.Set或surface。"},
+    {"id":"new_assembly_surface","question":"在根装配中把已选中的实例面定义成用于载荷的命名表面，并指定这些面的side1侧；不是创建集合。","action":"search","expected":["Assembly.Surface"],"review":"assembly surface、instance faces、side1，不改成Set/Part.Surface或推断载荷值。"},
+    {"id":"new_pressure_load","question":"表面和压力大小已经由用户给定，接下来在已有分析步创建均匀压力载荷，不使用集中力或规定位移。","action":"search","expected":["Model.Pressure"],"review":"uniform pressure到表面，步已有；不能添加方向/数值或换CLOAD/BC。"},
+    {"id":"new_field_output","question":"在已有分析步新建一个场输出请求，输出变量列表已给定；不是修改旧请求，也不是历史输出请求。","action":"search","expected":["Model.FieldOutputRequest"],"review":"创建field output request，不变成history或setValues。"},
+    {"id":"new_save_database","question":"将当前模型数据库另存为用户指定位置的CAE文件，不导出INP，也不提交求解。","action":"search","expected":["Mdb.saveAs"],"review":"另存Mdb为CAE，不变成writeInput或创建Job。"},
+    {"id":"new_job_from_input","question":"已有用户提供的INP文件，需要基于这个文件创建一个新的分析作业对象，暂不提交；不是从模型生成INP。","action":"search","expected":["Mdb.JobFromInputFile"],"review":"从已有INP创建job，方向不能写反为writeInput，不submit。"},
+    {"id":"new_missing_thickness","question":"准备建立二维平面应力板模型，长度、宽度和材料已给定，但厚度没有给。现在必须确认真实厚度，不能按默认1mm继续。","action":"clarify","expected":[],"review":"询问真实厚度及必要单位，不检索常见厚度或采用1mm。"},
+    {"id":"new_conflicting_modulus","question":"用户消息给定杨氏模量为2.1MPa，已有输入文件却写210000MPa。应先确认哪一个是有效值，不能凭钢材经验替用户选择。","action":"clarify","expected":[],"review":"明确冲突及两个值并询问，不修正/猜测数量级。"},
+    {"id":"new_missing_force","question":"用户只说在右端施加集中载荷，没有给出大小和方向。必须先索取这些输入，不能假定沿X轴或使用单位力。","action":"clarify","expected":[],"review":"询问载荷大小/方向和必要单位，不采用X或单位力，不查文档替值。"},
+    {"id":"new_ambiguous_support","question":"用户要求约束左端，但还没有说明是完全固支还是只限制轴向移动。两者会改变物理模型，应该先确认，不能默认全部固定。","action":"clarify","expected":[],"review":"询问约束方式/受限自由度，不擅自选Encastre或仅轴向约束。"}
+  ]
+}

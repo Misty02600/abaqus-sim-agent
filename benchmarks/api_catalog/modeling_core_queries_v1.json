@@ -1,0 +1,28 @@
+{
+  "scope": "Abaqus 2024 plate/bar linear static CAE authoring through CAE/INP export; dependency coverage, not a closed API allowlist",
+  "scope_sources": [
+    "tests/fixtures/abaqus2024/build_model.py",
+    "tests/fixtures/abaqus2024/api_region_consumer_probe.py",
+    "benchmarks/coding/bar_tension_3d_request.json"
+  ],
+  "member_owners": ["Part", "PartInstance", "Assembly", "Model", "Mdb"],
+  "method_groups": {
+    "geometry": ["Mdb.Model", "Model.ConstrainedSketch", "ConstrainedSketch.rectangle", "Model.Part", "Part.BaseShell", "Part.BaseSolidExtrude"],
+    "material_section": ["Model.Material", "Material.Elastic", "Model.HomogeneousSolidSection", "Part.SectionAssignment"],
+    "assembly_regions": ["Part.Set", "Assembly.DatumCsysByDefault", "Assembly.Instance", "Assembly.Set", "FaceArray.findAt", "EdgeArray.findAt", "VertexArray.findAt"],
+    "mesh": ["Part.seedEdgeByNumber", "Part.setMeshControls", "Part.setElementType", "ElemType.__init__", "Part.generateMesh"],
+    "step_output": ["Model.StaticStep", "Model.DisplacementBC", "Model.FieldOutputRequest", "FieldOutputRequest.setValues"],
+    "export": ["Mdb.Job", "ModelJob.writeInput", "Mdb.saveAs"]
+  },
+  "members": [
+    "Mdb.models", "Mdb.jobs",
+    "Model.parts", "Model.sketches", "Model.materials", "Model.sections", "Model.rootAssembly", "Model.steps", "Model.boundaryConditions", "Model.fieldOutputRequests",
+    "Part.faces", "Part.cells", "Part.edges", "Part.vertices", "Part.nodes", "Part.elements", "Part.sets",
+    "PartInstance.faces", "PartInstance.cells", "PartInstance.edges", "PartInstance.vertices", "PartInstance.nodes", "PartInstance.elements",
+    "Assembly.instances", "Assembly.sets"
+  ],
+  "known_member_types": {"Part.faces": "FaceArray", "Part.cells": "CellArray", "Part.elements": "MeshElementArray", "Model.rootAssembly": "Assembly"},
+  "factory_returns": {"Mdb.Model": "Model object", "Material.Elastic": "Elastic object", "Mdb.Job": "ModelJob object"},
+  "negative_queries": {"Job.writeInput": "not_found", "Model.Elastic": "not_found", "Model.setElementType": "not_found", "writeInput": "ambiguous"},
+  "notes": "Job.writeInput is not made into a fabricated alias. The Mdb.Job factory returns ModelJob; query ModelJob.writeInput. Member annotations are stub declarations, not runtime proof."
+}
