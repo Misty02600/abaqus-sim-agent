@@ -63,6 +63,11 @@ adaptation limits; `beamExample.py` retains the original code. Reference reading
 is optional and does not authorize the tutorial's embedded job submission.
 The packaged [reading note](references/official-beam-example.md) is the source of
 that short explanation; the vendor script is acquired separately from local docs.
+Keep acquired source examples intact, including GUI/session operations. Adapt the
+current workspace script to the requested runtime: omit display-only code when it
+does not serve the deliverable, and never carry an example's `submit()` or
+`waitForCompletion()` into a CAE authoring script. Solver execution belongs to
+`run_solver_job` so its budget and evidence remain visible to the host.
 
 ## Completion report
 
