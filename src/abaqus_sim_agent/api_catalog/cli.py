@@ -56,6 +56,38 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--benchmark", required=True, type=Path)
     evaluate.add_argument("--output", type=Path)
     evaluate.set_defaults(handler=_evaluate)
+
+    index = commands.add_parser("index", help="Build an offline API discovery index")
+    index.add_argument("--catalog-dir", type=Path, required=True)
+    index.add_argument("--index-dir", type=Path, required=True)
+    index.add_argument("--encoder-dir", type=Path)
+    index.add_argument(
+        "--projection",
+        choices=("api-discovery-view-v1", "api-discovery-view-v2"),
+        default="api-discovery-view-v1",
+    )
+    index.set_defaults(handler=_index)
+    discover = commands.add_parser(
+        "discover", help="Discover API candidates from an operation description"
+    )
+    discover.add_argument("--catalog-dir", type=Path, required=True)
+    discover.add_argument("--index-dir", type=Path, required=True)
+    discover.add_argument("--encoder-dir", type=Path)
+    discover.add_argument("--strategy", choices=("bm25", "dense"), default="bm25")
+    discover.add_argument("--limit", type=int, default=5)
+    discover.add_argument("question", nargs="?")
+    discover.add_argument("--intent-file", type=Path)
+    discover.add_argument(
+        "--lexical-profile", choices=("legacy", "english-snowball-v1"), default="legacy"
+    )
+    discover.set_defaults(handler=_discover)
+    read = commands.add_parser(
+        "read", help="Read a discovery reference from its bound catalog"
+    )
+    read.add_argument("--catalog-dir", type=Path, required=True)
+    read.add_argument("--index-dir", type=Path, required=True)
+    read.add_argument("reference")
+    read.set_defaults(handler=_read)
     return parser
 
 
@@ -137,6 +169,63 @@ def _build(args: argparse.Namespace) -> int:
     )
     manifest = catalog.write(args.output_dir, source_digests=source_digests)
     print(manifest.model_dump_json(indent=2))
+    return 0
+
+
+def _index(args: argparse.Namespace) -> int:
+    from .discovery import CatalogDiscovery
+    from .e5 import E5Encoder
+
+    catalog = ApiCatalog.open(args.catalog_dir)
+    index = CatalogDiscovery.build(
+        catalog,
+        args.index_dir,
+        projection=args.projection,
+        encoder=E5Encoder(args.encoder_dir) if args.encoder_dir else None,
+    )
+    print(index.manifest.model_dump_json(indent=2))
+    return 0
+
+
+def _discover(args: argparse.Namespace) -> int:
+    import json
+
+    from .discovery import CatalogDiscovery
+    from .e5 import E5Encoder
+    from .intent import DiscoveryIntent
+
+    if (args.question is None) == (args.intent_file is None):
+        raise ValueError("provide exactly one question or --intent-file")
+    index = CatalogDiscovery.open(
+        ApiCatalog.open(args.catalog_dir),
+        args.index_dir,
+        lexical_profile=args.lexical_profile,
+    )
+    encoder = (
+        E5Encoder(args.encoder_dir)
+        if args.strategy == "dense" and args.encoder_dir
+        else None
+    )
+    if args.intent_file is not None:
+        result = index.search_intent(
+            DiscoveryIntent.model_validate_json(args.intent_file.read_bytes()),
+            strategy=args.strategy,
+            limit=args.limit,
+            encoder=encoder,
+        )
+    else:
+        result = index.search(
+            args.question, strategy=args.strategy, limit=args.limit, encoder=encoder
+        )
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0
+
+
+def _read(args: argparse.Namespace) -> int:
+    from .discovery import CatalogDiscovery
+
+    index = CatalogDiscovery.open(ApiCatalog.open(args.catalog_dir), args.index_dir)
+    print(index.read(args.reference).model_dump_json(indent=2))
     return 0
 
 

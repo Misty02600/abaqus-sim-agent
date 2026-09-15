@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import hashlib
 import re
 from collections.abc import Iterator
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 
 import lxml.etree as etree
 
 from .models import ApiEntityKind, ApiParameter, ApiSourceRef, OfficialApiRecord
+from .reference_text import page_description, reference_text
 
 SCRIPTING_GUIDE_ID = "SIMACAEKERRefMap"
 
@@ -50,7 +53,8 @@ class AbaqusScriptingReferenceLoader:
 
     def _load_page(self, path: Path) -> list[OfficialApiRecord]:
         try:
-            tree = etree.parse(str(path), self._parser)
+            source_bytes = path.read_bytes()
+            tree = etree.parse(BytesIO(source_bytes), self._parser)
         except (OSError, etree.XMLSyntaxError) as exc:
             raise AbaqusScriptingReferenceError(
                 f"failed to parse Abaqus Scripting XHTML: {path}"
@@ -64,10 +68,32 @@ class AbaqusScriptingReferenceLoader:
                 f"Abaqus Scripting page lacks a stable identifier/title contract: {path}"
             )
 
+        if tree.xpath(
+            f".//*[{_CLASS_TOKEN_XPATH.format(token='cppaccess')}]"
+        ) and not tree.xpath(f".//*[{_CLASS_TOKEN_XPATH.format(token='pyaccess')}]"):
+            return []
         owner_name = re.sub(r"\s+object$", "", title, flags=re.IGNORECASE).strip()
         access = _page_access(tree)
         relative_path = path.relative_to(self.language_root).as_posix()
         page_url = f"{self.docs_base_url}/{relative_path}"
+        source_hash = hashlib.sha256(source_bytes).hexdigest()
+        description_node = page_description(tree)
+        description = (
+            reference_text(
+                description_node,
+                kind="object_description",
+                source_sha256=source_hash,
+                source=ApiSourceRef(
+                    kind="official",
+                    release=self.release,
+                    source_path=relative_path,
+                    source_url=page_url,
+                    document_id=document_id,
+                ),
+            )
+            if description_node is not None
+            else None
+        )
         records: list[OfficialApiRecord] = []
         selectors: dict[str, ApiEntityKind] = {
             "pymethodsect": "method",
@@ -78,6 +104,12 @@ class AbaqusScriptingReferenceLoader:
             expression = f".//article[{_CLASS_TOKEN_XPATH.format(token=class_token)}]"
             for article in tree.xpath(expression):
                 if not isinstance(article, etree._Element):
+                    continue
+                # C++ reference pages reuse pyconstructsect/pymethodsect markup.
+                if any(
+                    article.xpath(f".//*[{_CLASS_TOKEN_XPATH.format(token=token)}]")
+                    for token in ("cpppath", "cppproto")
+                ):
                     continue
                 article_id = str(article.get("id", "")).strip()
                 callable_name = _callable_name(article)
@@ -104,6 +136,31 @@ class AbaqusScriptingReferenceLoader:
                     )
                     else ()
                 )
+                context = [description] if description is not None else []
+                for section in article.iter():
+                    if "pytabledata" not in (section.get("class") or "").split():
+                        continue
+                    nearest = next(
+                        (a for a in section.iterancestors() if a.tag == "article"), None
+                    )
+                    if nearest is not article:
+                        continue
+                    section_id = section.get("id") or article_id
+                    table = reference_text(
+                        section,
+                        kind="table_data",
+                        source_sha256=source_hash,
+                        source=ApiSourceRef(
+                            kind="official",
+                            release=self.release,
+                            source_path=relative_path,
+                            source_url=f"{page_url}#{section_id}",
+                            document_id=document_id,
+                            section_id=section_id,
+                        ),
+                    )
+                    if table is not None:
+                        context.append(table)
                 records.append(
                     OfficialApiRecord(
                         record_id=(
@@ -116,6 +173,7 @@ class AbaqusScriptingReferenceLoader:
                         public_names=public_names,
                         aliases=aliases,
                         summary=_article_summary(article),
+                        context=tuple(context),
                         access=access,
                         paths=paths,
                         required_parameters=_article_parameters(
@@ -232,9 +290,10 @@ def _article_paths(article: etree._Element) -> tuple[str, ...]:
     for section in sections:
         path_nodes = section.xpath('./p | ./pre | .//*[contains(@class, "codeblock")]')
         for path_node in path_nodes:
-            text = _normalized_text(" ".join(path_node.itertext()))
-            if text:
-                values.append(text)
+            for line in "".join(path_node.itertext()).splitlines():
+                text = _normalized_text(line)
+                if text:
+                    values.append(text)
     return _unique(values)
 
 
@@ -309,15 +368,20 @@ def _derived_public_names(
     entity_kind: str,
 ) -> tuple[str, ...]:
     names: list[str] = []
+    receivers = {
+        "mdb": "Mdb",
+        "mdb.models[]": "Model",
+        "mdb.models[].parts[]": "Part",
+        "mdb.models[].materials[]": "Material",
+        "mdb.models[].rootAssembly": "Assembly",
+        "mdb.models[].rootAssembly.instances[]": "PartInstance",
+        "session": "Session",
+    }
     for path in paths:
-        if ".rootAssembly." in path:
-            names.append(f"Assembly.{callable_name}")
-        elif re.search(r"\bmdb\.models\[[^]]+\]\.parts\[", path):
-            names.append(f"Part.{callable_name}")
-        elif re.search(r"\bmdb\.models\[[^]]+\]\.", path):
-            names.append(f"Model.{callable_name}")
-        elif path.startswith("session."):
-            names.append(f"Session.{callable_name}")
+        normalized = re.sub(r"\s+", "", re.sub(r"\[[^]]+\]", "[]", path))
+        receiver, separator, method = normalized.rpartition(".")
+        if separator and method == callable_name and receiver in receivers:
+            names.append(f"{receivers[receiver]}.{callable_name}")
         elif entity_kind == "command" and "." not in path:
             names.append(callable_name)
     if not names and entity_kind == "command":

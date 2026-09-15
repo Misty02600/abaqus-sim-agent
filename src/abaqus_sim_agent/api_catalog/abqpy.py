@@ -19,6 +19,8 @@ from abaqus_sim_agent.api_catalog.models import (
     ApiSourceRef,
 )
 
+from .docstrings import extract_docstring
+
 _MAX_SOURCE_BYTES = 8 * 1024 * 1024
 
 
@@ -106,6 +108,7 @@ def iter_abqpy_records(
     normalized_version = _required_text(version, field_name="version")
     normalized_release = _required_text(release, field_name="release")
     source_files = _read_source_files(Path(source_root))
+    source_hashes = {source.source_path: source.sha256 for source in source_files}
     distribution = _parse_distribution(source_files)
     class_nodes, children = _build_class_graph(distribution.classes)
 
@@ -144,6 +147,12 @@ def iter_abqpy_records(
                         _signature(function.node, bound_method=True)
                         for function in functions
                     ),
+                    documentation=tuple(
+                        extract_docstring(
+                            function.node, source_hashes[function.source_path]
+                        )
+                        for function in functions
+                    ),
                     bases=declaring_node.bases,
                     class_graph=receiver_nodes,
                     source=_source_ref(
@@ -169,6 +178,12 @@ def iter_abqpy_records(
                 public_names=(qualified_name,),
                 signatures=tuple(
                     _signature(function.node, bound_method=False)
+                    for function in functions
+                ),
+                documentation=tuple(
+                    extract_docstring(
+                        function.node, source_hashes[function.source_path]
+                    )
                     for function in functions
                 ),
                 source=_source_ref(

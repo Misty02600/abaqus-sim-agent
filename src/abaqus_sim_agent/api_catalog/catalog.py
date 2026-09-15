@@ -205,6 +205,18 @@ class ApiCatalog:
             raise ValueError("API lookup name must not be empty")
         if limit < 2:
             raise ValueError("API lookup limit must be at least 2")
+        if query.endswith(".__doc__"):
+            base = query.removesuffix(".__doc__")
+            if base.endswith(".__doc__"):
+                raise ValueError("nested documentation queries are unsupported")
+            result = self.lookup(base, limit=limit)
+            if result.members or result.parameter_name is not None:
+                raise ValueError(
+                    "documentation queries require a method, not a member or parameter"
+                )
+            return result.model_copy(
+                update={"query": query, "documentation_requested": True}
+            )
         cards = self._method_cards(query)
         members = self._member_index.get(query, ())
         if cards or members:
@@ -269,6 +281,65 @@ class ApiCatalog:
                     )
                 }
             )[:limit]
+        )
+
+    def browse_methods(
+        self,
+        receiver: str,
+        *,
+        query: str | None = None,
+        limit: int = 20,
+    ) -> tuple[tuple[str, str], ...]:
+        """按公共接收对象列出可调用方法的紧凑目录。
+
+        Args:
+            receiver: 模型实际持有或推断出的公共对象/类名，如 ``Part``。
+            query: 可选的方法名片段，只用于确定性的名称过滤和排序。
+            limit: 最多返回的候选数量。
+
+        Returns:
+            ``(public_name, card_id)`` 元组。这里只返回目录项，不返回 Card 正文。
+
+        Note:
+            目录依据 Card 的公共名称，因此声明在 mixin 上的方法仍可通过其公共
+            receiver 被发现。Abaqus 文档把 ``Assembly.Set`` 这类对象工厂标成
+            ``constructor``，但它们仍是 receiver 上的可调用入口，所以目录保留；
+            仅排除真正的 ``__init__``，成员属性仍由独立 member 索引负责。
+        """
+        owner = receiver.strip()
+        if not owner:
+            raise ValueError("API receiver must not be empty")
+        if limit < 1 or limit > 100:
+            raise ValueError("API method directory limit must be between 1 and 100")
+        folded_query = query.strip().casefold() if query is not None else ""
+
+        candidates: list[tuple[int, str, str, str]] = []
+        for card in self._cards:
+            if card.method_name == "__init__":
+                continue
+            public_name = _card_name_for_owner(card, owner)
+            if public_name is None:
+                continue
+            method_folded = card.method_name.casefold()
+            if folded_query:
+                if method_folded == folded_query:
+                    rank = 0
+                elif method_folded.startswith(folded_query):
+                    rank = 1
+                elif folded_query in method_folded:
+                    rank = 2
+                else:
+                    continue
+            else:
+                rank = 0
+            candidates.append(
+                (rank, method_folded, public_name, card.card_id)
+            )
+
+        candidates.sort()
+        return tuple(
+            (public_name, card_id)
+            for _rank, _method, public_name, card_id in candidates[:limit]
         )
 
     def repair_alternatives(self, name: str, *, limit: int = 3) -> tuple[str, ...]:

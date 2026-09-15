@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,108 @@ FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "api_catalog" / "official"
 ABQPY_FIXTURE_ROOT = (
     Path(__file__).parent / "fixtures" / "api_catalog" / "abqpy" / "source"
 )
+
+
+def test_factory_receiver_and_multiline_paths_preserve_actual_owner(tmp_path):
+    root = tmp_path / "official"
+    shutil.copytree(FIXTURE_ROOT, root)
+    guide = root / "English" / "SIMACAEKERRefMap"
+    for owner, call, paths in (
+        ("Model", "Model", "mdb.Model"),
+        ("ModelJob", "Job", "mdb.Job"),
+        (
+            "Elastic",
+            "Elastic",
+            "mdb.models[name].materials[name].Elastic\nsession.odbs[name].materials[name].Elastic",
+        ),
+    ):
+        ident = f"test-{owner}"
+        (guide / f"{ident}.htm").write_text(
+            f"""<html><head>
+<meta name="DC.identifier" content="{ident}"/><title>{owner} object</title></head>
+<body id="{ident}"><article class="pyconstructsect" id="ctor-{owner}">
+<h2><span class="pyctor">{call}(...)</span></h2><p class="abstract">Creates {owner}.</p>
+<div class="pypath"><pre class="codeblock">{paths}</pre></div></article></body></html>""",
+            encoding="utf-8",
+        )
+    records = AbaqusScriptingReferenceLoader(root).load()
+    by_id = {r.source.document_id: r for r in records}
+    assert by_id["test-Model"].canonical_name == "Mdb.Model"
+    assert by_id["test-ModelJob"].canonical_name == "Mdb.Job"
+    elastic = by_id["test-Elastic"]
+    assert elastic.canonical_name == "Material.Elastic"
+    assert "Model.Elastic" not in elastic.public_names
+    assert "Session.Elastic" not in elastic.public_names
+    assert elastic.paths == (
+        "mdb.models[name].materials[name].Elastic",
+        "session.odbs[name].materials[name].Elastic",
+    )
+    stub_source = ApiSourceRef(
+        kind="abqpy", release="2024", version="2024.test", source_path="factory.py"
+    )
+    stub_records = tuple(
+        AbqpyApiRecord(
+            record_id=f"stub:{name}",
+            entity_kind="method",
+            declaring_name=name,
+            class_name=name.rpartition(".")[0],
+            method_name=name.rpartition(".")[2],
+            public_names=(name,),
+            signatures=(ApiSignature(text=name + "()"),),
+            source=stub_source,
+        )
+        for name in ("Mdb.Model", "Mdb.Job", "Material.Elastic")
+    )
+    catalog = ApiCatalog.build(
+        runtime_release="2024", official_records=records, abqpy_records=stub_records
+    )
+    for name in ("Mdb.Model", "Mdb.Job", "Material.Elastic"):
+        result = catalog.lookup(name)
+        assert result.status == "found"
+        assert result.cards[0].official_records
+        assert result.cards[0].abqpy_records
+    assert catalog.lookup("Model.Elastic").status == "not_found"
+
+
+def test_nested_receiver_does_not_become_parent_method(tmp_path):
+    root = tmp_path / "official"
+    shutil.copytree(FIXTURE_ROOT, root)
+    guide = root / "English" / "SIMACAEKERRefMap"
+    (guide / "test-nested.htm").write_text(
+        """<html><head>
+<meta name="DC.identifier" content="test-nested"/><title>FaceArray object</title></head>
+<body id="test-nested"><article class="pymethodsect" id="nested-call">
+<h2><span class="pymethod">findAt(...)</span></h2>
+<div class="pypath"><pre class="codeblock">mdb.models[name].parts[name].faces.findAt</pre></div>
+</article></body></html>""",
+        encoding="utf-8",
+    )
+    record = next(
+        r
+        for r in AbaqusScriptingReferenceLoader(root).load()
+        if r.source.document_id == "test-nested"
+    )
+    assert record.public_names == ("FaceArray.findAt",)
+
+
+def test_cpp_reference_article_is_not_a_python_constructor(tmp_path):
+    root = tmp_path / "official"
+    shutil.copytree(FIXTURE_ROOT, root)
+    guide = root / "English" / "SIMACAEKERRefMap"
+    (guide / "test-cpp.htm").write_text(
+        """<html><head>
+<meta name="DC.identifier" content="test-cpp"/><title>Elastic object</title></head>
+<body id="test-cpp"><div class="cppaccess"><pre>#include &lt;odb_API.h&gt;</pre></div>
+<article class="pyconstructsect" id="cpp-ctor"><h2><span class="pyctor">Elastic(...)</span></h2>
+<p class="abstract">C++ constructor.</p><div class="cpppath"><pre>odb_Elastic</pre></div>
+<div class="cppproto"><pre>odb_Elastic&amp; Elastic(...)</pre></div></article>
+<article class="pymethodsect" id="cpp-set"><h2><span class="pymethod">setValues(...)</span></h2>
+<p class="abstract">A C++ method without its own Path section.</p></article></body></html>""",
+        encoding="utf-8",
+    )
+    records = AbaqusScriptingReferenceLoader(root).load()
+    assert len(records) == len(AbaqusScriptingReferenceLoader(FIXTURE_ROOT).load())
+    assert all(r.source.document_id != "test-cpp" for r in records)
 
 
 def test_loader_emits_atomic_method_constructor_and_command_records() -> None:

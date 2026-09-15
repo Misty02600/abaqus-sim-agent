@@ -20,6 +20,7 @@ dependencies = [
   "pydantic>=2.12,<3",
   "pydantic-ai-harness[skills]==0.24.0",
   "pydantic-ai-slim[openai]==2.33.0",
+  "snowballstemmer==3.0.1",
 ]
 
 [project.optional-dependencies]

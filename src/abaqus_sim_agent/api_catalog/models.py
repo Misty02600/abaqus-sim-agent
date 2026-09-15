@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import re
 from datetime import datetime
 from typing import Literal
@@ -55,6 +56,15 @@ class ApiClassNode(_StrictModel):
     public_names: tuple[str, ...] = ()
 
 
+class ApiReferenceText(_StrictModel):
+    kind: Literal["object_description", "table_data"]
+    text: str = Field(min_length=1)
+    raw_xhtml: str = Field(min_length=1)
+    source: ApiSourceRef
+    source_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    text_warnings: tuple[str, ...] = ()
+
+
 class OfficialApiRecord(_StrictModel):
     record_id: str = Field(min_length=1)
     entity_kind: ApiEntityKind
@@ -71,6 +81,37 @@ class OfficialApiRecord(_StrictModel):
     return_description: str = ""
     exceptions: tuple[str, ...] = ()
     source: ApiSourceRef
+    context: tuple[ApiReferenceText, ...] | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
+
+
+class ApiDocstring(_StrictModel):
+    raw: str | None
+    summary: str = ""
+    parameters: dict[str, str] = Field(default_factory=dict)
+    parse_status: Literal["absent", "summary_only", "parameters_parsed", "partial"]
+    source_line: int = Field(ge=1)
+    source_end_line: int = Field(ge=1)
+    source_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    docstring_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+
+    @model_validator(mode="after")
+    def check_content(self):
+        if self.source_end_line < self.source_line:
+            raise ValueError("docstring source range reversed")
+        expected = (
+            hashlib.sha256(self.raw.encode("utf-8")).hexdigest()
+            if self.raw is not None
+            else None
+        )
+        if expected != self.docstring_sha256:
+            raise ValueError("docstring checksum mismatch")
+        if (self.raw is None) != (self.parse_status == "absent"):
+            raise ValueError("absent docstring state mismatch")
+        if self.raw is None and (self.summary or self.parameters):
+            raise ValueError("absent docstring cannot contain parsed text")
+        return self
 
 
 class AbqpyApiRecord(_StrictModel):
@@ -85,6 +126,17 @@ class AbqpyApiRecord(_StrictModel):
     bases: tuple[str, ...] = ()
     class_graph: tuple[ApiClassNode, ...] = ()
     source: ApiSourceRef
+    documentation: tuple[ApiDocstring, ...] | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
+
+    @model_validator(mode="after")
+    def documentation_matches_signatures(self):
+        if self.documentation is not None and len(self.documentation) != len(
+            self.signatures
+        ):
+            raise ValueError("documentation must align one-to-one with signatures")
+        return self
 
 
 class ApiSourceConflict(_StrictModel):
@@ -190,6 +242,9 @@ class ApiLookupResult(_StrictModel):
     members: tuple[ApiMemberCard, ...] = ()
     parameter_name: str | None = Field(default=None, min_length=1)
     suggestions: tuple[str, ...] = ()
+    documentation_requested: bool = Field(
+        default=False, exclude_if=lambda value: not value
+    )
 
     @model_validator(mode="after")
     def check_status_payload(self) -> "ApiLookupResult":
