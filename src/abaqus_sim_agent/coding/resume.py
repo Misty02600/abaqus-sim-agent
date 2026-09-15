@@ -22,7 +22,11 @@ from abaqus_sim_agent.coding.amendments import (
     resolve_effective_run,
 )
 from abaqus_sim_agent.coding.contracts import (
+    API_DISCOVERY_JOURNAL_NAME,
+    API_LOOKUP_JOURNAL_NAME,
     DIAGNOSTIC_RETRIEVAL_JOURNAL_NAME,
+    ApiDiscoveryTrace,
+    ApiLookupTrace,
     ClarificationEvent,
     CodingRunRequest,
     ConceptLookupTrace,
@@ -144,6 +148,7 @@ class DependencyResumeState(_StrictModel):
     concept_lookup_calls: int = Field(default=0, ge=0)
     diagnostic_retrieval_calls: int = Field(default=0, ge=0)
     api_lookup_queries: tuple[str, ...] = ()
+    api_discovery_queries: tuple[str, ...] = ()
     concept_lookup_queries: tuple[ConceptLookupKeySnapshot, ...] = ()
     diagnostic_retrieval_keys: tuple[str, ...] = ()
     returned_api_card_ids: tuple[str, ...] = ()
@@ -188,6 +193,7 @@ class DependencyResumeState(_StrictModel):
             concept_lookup_calls=dependencies.concept_lookup_calls,
             diagnostic_retrieval_calls=dependencies.diagnostic_retrieval_calls,
             api_lookup_queries=tuple(sorted(dependencies.api_lookup_queries)),
+            api_discovery_queries=tuple(sorted(dependencies.api_discovery_queries)),
             concept_lookup_queries=tuple(
                 ConceptLookupKeySnapshot(
                     query=query,
@@ -238,6 +244,8 @@ class DependencyResumeState(_StrictModel):
         dependencies: CodingAgentDependencies,
         *,
         journaled_executions: tuple[AbaqusExecutionResult, ...] = (),
+        journaled_api_lookups: tuple[ApiLookupTrace, ...] = (),
+        journaled_api_discoveries: tuple[ApiDiscoveryTrace, ...] = (),
         journaled_diagnostic_retrievals: tuple[DiagnosticRetrievalTrace, ...] = (),
         journaled_document_lookups: tuple[ConceptLookupTrace, ...] = (),
     ) -> None:
@@ -247,6 +255,8 @@ class DependencyResumeState(_StrictModel):
             dependencies: 当前进程刚完成 composition 的依赖对象。
             journaled_executions: 工具完成时立即追加的执行结果，用于补上宿主
                 在下一节点快照前崩溃造成的间隙。
+            journaled_api_lookups: 精确 API 查证的已落盘预算、去重和交付证据。
+            journaled_api_discoveries: API 方法目录发现的已落盘预算与去重证据。
             journaled_diagnostic_retrievals: 自动诊断检索的已落盘计数与去重证据。
             journaled_document_lookups: 主动文档查询的已落盘计数与去重证据。
 
@@ -262,7 +272,11 @@ class DependencyResumeState(_StrictModel):
             raise CodingRunResumeError(
                 "resume requires a freshly composed CodingAgentDependencies object"
             )
-        dependencies.api_lookup_calls = self.api_lookup_calls
+        dependencies.api_lookup_calls = max(
+            self.api_lookup_calls,
+            sum(trace.counted for trace in journaled_api_lookups)
+            + sum(trace.counted for trace in journaled_api_discoveries),
+        )
         dependencies.concept_lookup_calls = max(
             self.concept_lookup_calls,
             sum(trace.counted for trace in journaled_document_lookups),
@@ -271,7 +285,18 @@ class DependencyResumeState(_StrictModel):
             self.diagnostic_retrieval_calls,
             sum(trace.counted for trace in journaled_diagnostic_retrievals),
         )
-        dependencies.api_lookup_queries = set(self.api_lookup_queries)
+        dependencies.api_lookup_queries = {
+            *self.api_lookup_queries,
+            *(trace.query for trace in journaled_api_lookups if trace.query),
+        }
+        dependencies.api_discovery_queries = {
+            *self.api_discovery_queries,
+            *(
+                _api_discovery_dedupe_key(trace)
+                for trace in journaled_api_discoveries
+                if trace.receiver is not None
+            ),
+        }
         dependencies.concept_lookup_queries = {
             (item.query, item.exact_terms, item.products)
             for item in self.concept_lookup_queries
@@ -289,11 +314,23 @@ class DependencyResumeState(_StrictModel):
                 if trace.counted
             ),
         }
-        dependencies.returned_api_card_ids = set(self.returned_api_card_ids)
+        dependencies.returned_api_card_ids = {
+            *self.returned_api_card_ids,
+            *(
+                card_id
+                for trace in journaled_api_lookups
+                for card_id in trace.delivered_card_ids
+            ),
+        }
         dependencies.returned_api_parameter_keys = {
             (item.card_id, item.parameter_name)
             for item in self.returned_api_parameter_keys
         }
+        dependencies.returned_api_parameter_keys.update(
+            (item.card_id, item.parameter_name)
+            for trace in journaled_api_lookups
+            for item in trace.delivered_parameters
+        )
         merged_executions = _merge_executions(
             self.executions,
             journaled_executions,
@@ -521,6 +558,44 @@ def load_execution_results(state_dir: Path) -> tuple[AbaqusExecutionResult, ...]
     return tuple(results)
 
 
+def load_api_lookup_traces(state_dir: Path) -> tuple[ApiLookupTrace, ...]:
+    path = state_dir / API_LOOKUP_JOURNAL_NAME
+    if not path.is_file():
+        return ()
+    traces: list[ApiLookupTrace] = []
+    for line_number, line in enumerate(
+        path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        if not line.strip():
+            continue
+        try:
+            traces.append(ApiLookupTrace.model_validate_json(line))
+        except ValueError as exc:
+            raise CodingRunResumeError(
+                f"invalid API lookup journal record at line {line_number}: {exc}"
+            ) from exc
+    return tuple(traces)
+
+
+def load_api_discovery_traces(state_dir: Path) -> tuple[ApiDiscoveryTrace, ...]:
+    path = state_dir / API_DISCOVERY_JOURNAL_NAME
+    if not path.is_file():
+        return ()
+    traces: list[ApiDiscoveryTrace] = []
+    for line_number, line in enumerate(
+        path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        if not line.strip():
+            continue
+        try:
+            traces.append(ApiDiscoveryTrace.model_validate_json(line))
+        except ValueError as exc:
+            raise CodingRunResumeError(
+                f"invalid API discovery journal record at line {line_number}: {exc}"
+            ) from exc
+    return tuple(traces)
+
+
 def load_diagnostic_retrieval_traces(
     state_dir: Path,
 ) -> tuple[DiagnosticRetrievalTrace, ...]:
@@ -721,6 +796,7 @@ def _dependencies_have_runtime_state(
             dependencies.concept_lookup_calls,
             dependencies.diagnostic_retrieval_calls,
             dependencies.api_lookup_queries,
+            dependencies.api_discovery_queries,
             dependencies.concept_lookup_queries,
             dependencies.diagnostic_retrieval_keys,
             dependencies.returned_api_card_ids,
@@ -732,6 +808,17 @@ def _dependencies_have_runtime_state(
             dependencies.static_preflight_reports,
             dependencies.acknowledged_static_preflights,
             dependencies.probe_protocol is not None,
+        )
+    )
+
+
+def _api_discovery_dedupe_key(trace: ApiDiscoveryTrace) -> str:
+    assert trace.receiver is not None
+    return "\0".join(
+        (
+            trace.receiver.casefold(),
+            (trace.query or "").casefold(),
+            str(trace.limit),
         )
     )
 

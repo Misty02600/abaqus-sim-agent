@@ -634,6 +634,10 @@ def test_cli_catalog_mode_defaults_and_validates_catalog_presence() -> None:
     assert _resolve_api_catalog_mode(None, None) == "off"
     assert _resolve_api_catalog_mode(None, catalog) == "full"
     assert (
+        _resolve_api_catalog_mode("full_with_discovery", catalog)
+        == "full_with_discovery"
+    )
+    assert (
         _resolve_api_catalog_mode("automatic_verified_only", catalog)
         == "automatic_verified_only"
     )
@@ -645,6 +649,8 @@ def test_cli_catalog_mode_defaults_and_validates_catalog_presence() -> None:
         _resolve_api_catalog_mode("automatic_verified_only", None)
     with pytest.raises(ValueError, match="requires"):
         _resolve_api_catalog_mode("automatic_exact_signature", None)
+    with pytest.raises(ValueError, match="requires"):
+        _resolve_api_catalog_mode("full_with_discovery", None)
     with pytest.raises(ValueError, match="must not receive"):
         _resolve_api_catalog_mode("off", catalog)
 

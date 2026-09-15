@@ -21,6 +21,7 @@ def build_instructions(
     request: CodingRunRequest,
     *,
     api_catalog_enabled: bool,
+    api_discovery_enabled: bool = False,
     concept_retrieval_enabled: bool = False,
     diagnostic_retrieval_enabled: bool = False,
     probe_protocol_enabled: bool = False,
@@ -52,7 +53,8 @@ def build_instructions(
     runtime_script_policy_instructions = _runtime_script_policy_instructions(request)
     static_preflight_instructions = _static_preflight_instructions(request)
     catalog_instructions = (
-        """
+        (
+            """
 An exact Abaqus API catalog is available through `lookup_abaqus_api`. Do not
 query it preemptively while drafting code from familiar APIs. Use it only
 when you are genuinely uncertain and the latest runtime result did not already
@@ -64,6 +66,20 @@ error excerpt when applicable, and do not repeat the same query. Runtime-note
 evidence references are provenance only; do not try to read them from the Agent
 workspace. The catalog cannot supply or override user physics inputs.
 """.strip()
+            + (
+                "\n\n"
+                + """
+When you know the likely receiver object but not the exact method name, you may
+use `discover_abaqus_api(receiver, query)` to inspect its bounded callable
+directory. Discovery returns candidate names and Card IDs only. It is navigation,
+not evidence: select a candidate, then call `lookup_abaqus_api` before relying on
+its signature, arguments, documentation, or applicability. Do not cite discovery
+candidate IDs as if their Cards had been read.
+""".strip()
+                if api_discovery_enabled
+                else ""
+            )
+        )
         if api_catalog_enabled
         else ""
     )

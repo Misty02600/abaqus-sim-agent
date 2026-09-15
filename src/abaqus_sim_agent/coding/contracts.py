@@ -10,6 +10,8 @@ from .document_policy_binding import DocumentPolicyBinding
 from .edit_scope import ReferenceEditScope
 
 CLARIFICATION_POLICY_VERSION = "physics-materiality-clarification-v1"
+API_LOOKUP_JOURNAL_NAME = "api_lookups.jsonl"
+API_DISCOVERY_JOURNAL_NAME = "api_discoveries.jsonl"
 DIAGNOSTIC_RETRIEVAL_JOURNAL_NAME = "diagnostic_retrievals.jsonl"
 VerificationScope = Literal["execution_evidence", "task_oracle"]
 
@@ -174,12 +176,30 @@ class StaticPreflightBinding(_StrictModel):
         return self
 
 
+class ApiDeliveredParameter(_StrictModel):
+    card_id: str = Field(min_length=1)
+    parameter_name: str = Field(min_length=1)
+
+
 class ApiLookupTrace(_StrictModel):
     source: Literal["active", "automatic"]
     query: str
     status: str = Field(min_length=1)
     card_ids: tuple[str, ...] = ()
+    delivered_card_ids: tuple[str, ...] = ()
+    delivered_parameters: tuple[ApiDeliveredParameter, ...] = ()
     delivered_note_ids: tuple[str, ...] = ()
+    counted: bool
+    payload_bytes: int = Field(ge=0)
+
+
+class ApiDiscoveryTrace(_StrictModel):
+    receiver: str | None = None
+    query: str | None = None
+    limit: int = Field(ge=1, le=100)
+    status: str = Field(min_length=1)
+    candidate_card_ids: tuple[str, ...] = ()
+    candidate_names: tuple[str, ...] = ()
     counted: bool
     payload_bytes: int = Field(ge=0)
 

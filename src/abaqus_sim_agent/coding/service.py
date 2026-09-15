@@ -52,6 +52,8 @@ from abaqus_sim_agent.coding.resume import (
     ResumeStatus,
     create_step_store,
     ensure_new_run_state_available,
+    load_api_discovery_traces,
+    load_api_lookup_traces,
     load_diagnostic_retrieval_traces,
     load_document_lookup_traces,
     load_effective_run_for_resume,
@@ -697,6 +699,10 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
         persisted.dependencies.restore_into(
             self.dependencies,
             journaled_executions=load_execution_results(self.request.state_dir),
+            journaled_api_lookups=load_api_lookup_traces(self.request.state_dir),
+            journaled_api_discoveries=load_api_discovery_traces(
+                self.request.state_dir
+            ),
             journaled_diagnostic_retrievals=load_diagnostic_retrieval_traces(
                 self.request.state_dir
             ),

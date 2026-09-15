@@ -17,6 +17,9 @@ from abaqus_sim_agent.coding.api_lookup import (
     ApiCatalogMode as _ApiCatalogMode,
 )
 from abaqus_sim_agent.coding.api_lookup import (
+    register_api_discovery_tool as _register_api_discovery_tool,
+)
+from abaqus_sim_agent.coding.api_lookup import (
     register_api_lookup_tool as _register_api_lookup_tool,
 )
 from abaqus_sim_agent.coding.api_lookup import (
@@ -294,7 +297,9 @@ def create_abaqus_coding_agent(
         output_type=outputs,
         instructions=_build_instructions(
             request,
-            api_catalog_enabled=resolved_api_catalog_mode == "full",
+            api_catalog_enabled=resolved_api_catalog_mode
+            in {"full", "full_with_discovery"},
+            api_discovery_enabled=resolved_api_catalog_mode == "full_with_discovery",
             concept_retrieval_enabled=concept_retrieval_mode == "tool"
             and not bounded_documents,
             diagnostic_retrieval_enabled=(
@@ -336,8 +341,10 @@ def create_abaqus_coding_agent(
             api_catalog_mode=resolved_api_catalog_mode,
             diagnostic_retrieval_mode=diagnostic_retrieval_mode,
         )
-    if resolved_api_catalog_mode == "full":
+    if resolved_api_catalog_mode in {"full", "full_with_discovery"}:
         _register_api_lookup_tool(agent)
+    if resolved_api_catalog_mode == "full_with_discovery":
+        _register_api_discovery_tool(agent)
     if concept_retrieval_mode == "tool":
         if bounded_documents:
             register_document_policy_tools(agent)

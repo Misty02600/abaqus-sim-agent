@@ -31,6 +31,7 @@ from abaqus_sim_agent.coding.api_lookup import (
     runtime_api_hint as _runtime_api_hint,
 )
 from abaqus_sim_agent.coding.contracts import (
+    ApiDiscoveryTrace,
     ApiLookupTrace,
     CodingRunBudget,
     CodingRunRequest,
@@ -1563,7 +1564,9 @@ def test_agent_can_lookup_optional_exact_api_catalog(tmp_path: Path) -> None:
         nonlocal call_count
         call_count += 1
         if call_count == 1:
-            assert "lookup_abaqus_api" in {tool.name for tool in info.function_tools}
+            tool_names = {tool.name for tool in info.function_tools}
+            assert "lookup_abaqus_api" in tool_names
+            assert "discover_abaqus_api" not in tool_names
             assert info.instructions is not None
             assert "lookup_abaqus_api" in info.instructions
             assert "Do not\nquery it preemptively" in info.instructions
@@ -1649,6 +1652,110 @@ def test_agent_can_lookup_optional_exact_api_catalog(tmp_path: Path) -> None:
     assert traces[1].status == "duplicate"
     assert traces[1].counted is False
     assert dependencies.returned_api_card_ids == {"api:2024:MeshPart.seedEdgeByNumber"}
+
+
+def test_explicit_api_discovery_requires_exact_lookup_for_evidence(tmp_path: Path) -> None:
+    request = _request(tmp_path)
+    card = ApiMethodCard(
+        card_id="api:2024:MeshPart.seedPart",
+        entity_kind="method",
+        canonical_name="MeshPart.seedPart",
+        declaring_name="MeshPart.seedPart",
+        class_name="MeshPart",
+        method_name="seedPart",
+        public_names=("Part.seedPart",),
+        signatures=(ApiSignature(text="seedPart(size)"),),
+    )
+    catalog = ApiCatalog([card], runtime_release="2024")
+    call_count = 0
+    observed_messages: list[ModelMessage] = []
+
+    def model_function(
+        messages: list[ModelMessage],
+        info: AgentInfo,
+    ) -> ModelResponse:
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            tool_names = {tool.name for tool in info.function_tools}
+            assert {"lookup_abaqus_api", "discover_abaqus_api"}.issubset(tool_names)
+            assert info.instructions is not None
+            assert "Discovery returns candidate names and Card IDs only" in info.instructions
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "discover_abaqus_api",
+                        {"receiver": "Part", "query": "seed", "limit": 5},
+                        tool_call_id="discover-api",
+                    )
+                ]
+            )
+        if call_count == 2:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "lookup_abaqus_api",
+                        {"name": "Part.seedPart"},
+                        tool_call_id="lookup-api",
+                    )
+                ]
+            )
+        observed_messages.extend(messages)
+        output_tool = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output_tool.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "test",
+                        "summary": "Candidate was verified with an exact Card lookup.",
+                    },
+                )
+            ]
+        )
+
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+        api_catalog=catalog,
+    )
+    agent = create_abaqus_coding_agent(
+        FunctionModel(model_function),
+        request,
+        api_catalog_mode="full_with_discovery",
+    )
+
+    result = asyncio.run(agent.run(request.goal, deps=dependencies))
+
+    assert isinstance(result.output, FailedDecision)
+    tool_returns = [
+        part
+        for message in observed_messages
+        if isinstance(message, ModelRequest)
+        for part in message.parts
+        if isinstance(part, ToolReturnPart) and part.tool_name == "discover_abaqus_api"
+    ]
+    assert len(tool_returns) == 1
+    assert tool_returns[0].content["candidates"] == [
+        {"name": "Part.seedPart", "card_id": card.card_id}
+    ]
+    assert dependencies.api_lookup_calls == 2
+    assert dependencies.returned_api_card_ids == {card.card_id}
+    discovery_trace = ApiDiscoveryTrace.model_validate_json(
+        (request.state_dir / "api_discoveries.jsonl").read_text(encoding="utf-8")
+    )
+    assert discovery_trace.candidate_card_ids == (card.card_id,)
+    assert discovery_trace.candidate_names == ("Part.seedPart",)
+    assert discovery_trace.counted is True
+    lookup_trace = ApiLookupTrace.model_validate_json(
+        (request.state_dir / "api_lookups.jsonl").read_text(encoding="utf-8")
+    )
+    assert lookup_trace.card_ids == (card.card_id,)
+    assert lookup_trace.delivered_card_ids == (card.card_id,)
+    assert lookup_trace.counted is True
 
 
 def test_agent_parameter_lookup_is_scoped_and_independent_of_method_card(

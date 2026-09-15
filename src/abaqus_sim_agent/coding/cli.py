@@ -188,6 +188,7 @@ def build_parser() -> argparse.ArgumentParser:
         choices=(
             "off",
             "full",
+            "full_with_discovery",
             "automatic_verified_only",
             "automatic_exact_signature",
         ),

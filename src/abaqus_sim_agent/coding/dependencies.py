@@ -56,6 +56,7 @@ class CodingAgentDependencies:
     concept_lookup_calls: int = 0
     diagnostic_retrieval_calls: int = 0
     api_lookup_queries: set[str] = field(default_factory=set)
+    api_discovery_queries: set[str] = field(default_factory=set)
     concept_lookup_queries: set[tuple[str, tuple[str, ...], tuple[str, ...]]] = field(
         default_factory=set
     )
@@ -185,6 +186,12 @@ class CodingAgentDependencies:
         if query in self.api_lookup_queries:
             return False
         self.api_lookup_queries.add(query)
+        return True
+
+    def register_api_discovery_query(self, query: str) -> bool:
+        if query in self.api_discovery_queries:
+            return False
+        self.api_discovery_queries.add(query)
         return True
 
     def all_api_cards_returned(self, card_ids: tuple[str, ...]) -> bool:

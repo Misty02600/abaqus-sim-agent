@@ -10,7 +10,13 @@ from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai_harness.step_persistence import RunRecord
 
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
-from abaqus_sim_agent.coding.contracts import CodingRunRequest, RuntimeProfile
+from abaqus_sim_agent.coding.contracts import (
+    ApiDeliveredParameter,
+    ApiDiscoveryTrace,
+    ApiLookupTrace,
+    CodingRunRequest,
+    RuntimeProfile,
+)
 from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
 from abaqus_sim_agent.coding.resume import (
     CodingRunResumeError,
@@ -20,6 +26,8 @@ from abaqus_sim_agent.coding.resume import (
     append_execution_result,
     create_step_store,
     ensure_new_run_state_available,
+    load_api_discovery_traces,
+    load_api_lookup_traces,
     load_execution_results,
     select_resume_history,
 )
@@ -185,6 +193,91 @@ def test_execution_journal_restores_provenance_and_budget(tmp_path: Path) -> Non
     assert restored.concept_trigger_outcome == "success"
     assert restored.concept_trigger_reference == "execution:0"
     assert restored.concept_trigger_evidence_sha256 is not None
+
+
+def test_api_journals_restore_budget_dedupe_without_promoting_candidates(
+    tmp_path: Path,
+) -> None:
+    request = _request(tmp_path)
+    old_lookup = {
+        "source": "active",
+        "query": "Part.oldMethod",
+        "status": "found",
+        "card_ids": ["old-card"],
+        "delivered_note_ids": [],
+        "counted": True,
+        "payload_bytes": 10,
+    }
+    delivered_lookup = ApiLookupTrace(
+        source="active",
+        query="Part.seedPart",
+        status="found",
+        card_ids=("seed-card",),
+        delivered_card_ids=("seed-card",),
+        counted=True,
+        payload_bytes=11,
+    )
+    parameter_lookup = ApiLookupTrace(
+        source="active",
+        query="Part.seedPart.size",
+        status="found",
+        card_ids=("seed-card",),
+        delivered_parameters=(
+            ApiDeliveredParameter(card_id="seed-card", parameter_name="size"),
+        ),
+        counted=True,
+        payload_bytes=12,
+    )
+    discovery = ApiDiscoveryTrace(
+        receiver="Part",
+        query="seed",
+        limit=20,
+        status="candidates",
+        candidate_card_ids=("candidate-only",),
+        candidate_names=("Part.seedPart",),
+        counted=True,
+        payload_bytes=13,
+    )
+    (request.state_dir / "api_lookups.jsonl").write_text(
+        "\n".join(
+            (
+                __import__("json").dumps(old_lookup),
+                delivered_lookup.model_dump_json(),
+                parameter_lookup.model_dump_json(),
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (request.state_dir / "api_discoveries.jsonl").write_text(
+        discovery.model_dump_json() + "\n",
+        encoding="utf-8",
+    )
+
+    lookups = load_api_lookup_traces(request.state_dir)
+    discoveries = load_api_discovery_traces(request.state_dir)
+    assert lookups[0].delivered_card_ids == ()
+    restored = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(request.workspace, request.state_dir),
+    )
+    DependencyResumeState().restore_into(
+        restored,
+        journaled_api_lookups=lookups,
+        journaled_api_discoveries=discoveries,
+    )
+
+    assert restored.api_lookup_calls == 4
+    assert restored.api_lookup_queries == {
+        "Part.oldMethod",
+        "Part.seedPart",
+        "Part.seedPart.size",
+    }
+    assert restored.register_api_discovery_query("part\0seed\0" + "20") is False
+    assert restored.returned_api_card_ids == {"seed-card"}
+    assert "old-card" not in restored.returned_api_card_ids
+    assert "candidate-only" not in restored.returned_api_card_ids
+    assert restored.returned_api_parameter_keys == {("seed-card", "size")}
 
 
 def test_concept_lookup_trigger_context_survives_resume(tmp_path: Path) -> None:

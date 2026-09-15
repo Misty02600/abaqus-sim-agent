@@ -18,7 +18,13 @@ from abaqus_sim_agent.coding.api_traceback import (
     resolve_odb_runtime_behavior_query,
     resolve_traceback_api_context,
 )
-from abaqus_sim_agent.coding.contracts import ApiLookupTrace
+from abaqus_sim_agent.coding.contracts import (
+    API_DISCOVERY_JOURNAL_NAME,
+    API_LOOKUP_JOURNAL_NAME,
+    ApiDeliveredParameter,
+    ApiDiscoveryTrace,
+    ApiLookupTrace,
+)
 from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
 from abaqus_sim_agent.execution.abaqus2024 import (
     AbaqusExecutionResult,
@@ -28,12 +34,14 @@ from abaqus_sim_agent.execution.abaqus2024 import (
 ApiCatalogMode = Literal[
     "off",
     "full",
+    "full_with_discovery",
     "automatic_verified_only",
     "automatic_exact_signature",
 ]
 
 __all__ = [
     "ApiCatalogMode",
+    "register_api_discovery_tool",
     "register_api_lookup_tool",
     "resolve_api_catalog_mode",
     "runtime_api_hint",
@@ -67,6 +75,7 @@ def register_api_lookup_tool[AgentOutputT](
         possible. This catalog combines official reference semantics,
         abqpy AST signatures, and verified runtime notes. It never supplies
         missing physical values.
+        Append .__doc__ to a method name to read its retained abqpy docstrings.
         """
         query = name.strip()
         if not query:
@@ -117,6 +126,8 @@ def register_api_lookup_tool[AgentOutputT](
             return payload
         result = catalog.lookup(query)
         card_ids = tuple(card.card_id for card in (*result.cards, *result.members))
+        delivered_card_ids: tuple[str, ...] = ()
+        delivered_parameters: tuple[ApiDeliveredParameter, ...] = ()
         if result.status == "found":
             parameter_name = result.parameter_name
             if parameter_name is not None and ctx.deps.api_parameter_returned(
@@ -137,7 +148,11 @@ def register_api_lookup_tool[AgentOutputT](
                     counted=False,
                 )
                 return payload
-            if parameter_name is None and ctx.deps.all_api_cards_returned(card_ids):
+            if (
+                parameter_name is None
+                and not result.documentation_requested
+                and ctx.deps.all_api_cards_returned(card_ids)
+            ):
                 payload = _duplicate_api_cards_payload(query, card_ids)
                 _record_api_lookup(
                     ctx.deps,
@@ -164,12 +179,19 @@ def register_api_lookup_tool[AgentOutputT](
                     counted=False,
                 )
                 return payload
-            if parameter_name is None:
+            if parameter_name is None and not result.documentation_requested:
                 ctx.deps.register_returned_api_cards(card_ids)
-            else:
+                delivered_card_ids = card_ids
+            elif parameter_name is not None:
                 ctx.deps.register_returned_api_parameter(
                     card_ids[0],
                     parameter_name,
+                )
+                delivered_parameters = (
+                    ApiDeliveredParameter(
+                        card_id=card_ids[0],
+                        parameter_name=parameter_name,
+                    ),
                 )
         payload = _api_lookup_payload(result, error_excerpt=error_excerpt)
         _record_api_lookup(
@@ -178,7 +200,131 @@ def register_api_lookup_tool[AgentOutputT](
             query=query,
             payload=payload,
             card_ids=card_ids,
+            delivered_card_ids=delivered_card_ids,
+            delivered_parameters=delivered_parameters,
             counted=result.status == "found",
+        )
+        return payload
+
+
+def register_api_discovery_tool[AgentOutputT](
+    agent: Agent[CodingAgentDependencies, AgentOutputT],
+) -> None:
+    @agent.tool
+    async def discover_abaqus_api(
+        ctx: RunContext[CodingAgentDependencies],
+        receiver: str,
+        query: str | None = None,
+        limit: int = 20,
+    ) -> dict[str, object]:
+        """List callable API candidates exposed by a known Abaqus receiver.
+
+        Use this when the engineering operation and receiver are known but the
+        exact method name is uncertain. Returned candidates are directory hints,
+        not API evidence; read a selected name with ``lookup_abaqus_api`` before
+        relying on its signature or documented behavior.
+        """
+        normalized_receiver = receiver.strip()
+        normalized_query = query.strip() if query is not None else None
+        if normalized_query == "":
+            normalized_query = None
+        if not normalized_receiver or limit < 1 or limit > 100:
+            payload: dict[str, object] = {
+                "status": "invalid",
+                "receiver": receiver,
+                "query": query,
+                "error": "Use a nonblank receiver and a limit between 1 and 100",
+            }
+            _record_api_discovery(
+                ctx.deps,
+                receiver=normalized_receiver or None,
+                query=normalized_query,
+                limit=max(1, min(limit, 100)),
+                payload=payload,
+                counted=False,
+            )
+            return payload
+
+        dedupe_key = "\0".join(
+            (normalized_receiver.casefold(), (normalized_query or "").casefold(), str(limit))
+        )
+        if not ctx.deps.register_api_discovery_query(dedupe_key):
+            payload = {
+                "status": "duplicate",
+                "receiver": normalized_receiver,
+                "query": normalized_query,
+                "error": "This receiver method-directory query was already attempted",
+            }
+            _record_api_discovery(
+                ctx.deps,
+                receiver=normalized_receiver,
+                query=normalized_query,
+                limit=limit,
+                payload=payload,
+                counted=False,
+            )
+            return payload
+
+        catalog = ctx.deps.api_catalog
+        if catalog is None:
+            payload = {
+                "status": "unavailable",
+                "receiver": normalized_receiver,
+                "query": normalized_query,
+                "error": "Abaqus API catalog is not configured",
+            }
+            _record_api_discovery(
+                ctx.deps,
+                receiver=normalized_receiver,
+                query=normalized_query,
+                limit=limit,
+                payload=payload,
+                counted=False,
+            )
+            return payload
+
+        exhausted = ctx.deps.reserve_api_lookup()
+        if exhausted:
+            payload = {
+                "status": "unavailable",
+                "receiver": normalized_receiver,
+                "query": normalized_query,
+                "error": exhausted,
+            }
+            _record_api_discovery(
+                ctx.deps,
+                receiver=normalized_receiver,
+                query=normalized_query,
+                limit=limit,
+                payload=payload,
+                counted=False,
+            )
+            return payload
+
+        candidates = catalog.browse_methods(
+            normalized_receiver,
+            query=normalized_query,
+            limit=limit,
+        )
+        payload = {
+            "status": "candidates" if candidates else "no_candidates",
+            "receiver": normalized_receiver,
+            "query": normalized_query,
+            "candidates": [
+                {"name": name, "card_id": card_id} for name, card_id in candidates
+            ],
+            "notice": (
+                "Candidates are names only. Read the selected API with "
+                "lookup_abaqus_api before treating it as evidence."
+            ),
+        }
+        _record_api_discovery(
+            ctx.deps,
+            receiver=normalized_receiver,
+            query=normalized_query,
+            limit=limit,
+            payload=payload,
+            counted=True,
         )
         return payload
 
@@ -320,6 +466,7 @@ def runtime_api_hint(
         query=query,
         payload=payload,
         card_ids=card_ids,
+        delivered_card_ids=card_ids,
         counted=True,
     )
     return payload
@@ -332,6 +479,17 @@ def _api_lookup_payload(
     verified_notes_only: bool = False,
     relevant_parameters: frozenset[str] | None = None,
 ) -> dict[str, object]:
+    if result.documentation_requested:
+        return {
+            "status": result.status,
+            "query": result.query,
+            "documentation": [
+                doc
+                for card in result.cards
+                for doc in _abqpy_documentation(card, raw=True)
+            ],
+            "notice": "Raw versioned stub documentation; absence may mean an old catalog did not collect it. Not runtime validation.",
+        }
     if result.parameter_name is not None:
         return {
             "status": result.status,
@@ -455,6 +613,16 @@ def _api_parameter_payload(
             record.source.model_dump(mode="json") for record in card.abqpy_records
         ],
         "official_descriptions": official_descriptions,
+        **(
+            {"table_data": _official_context(card, "table_data")}
+            if parameter_name == "table" and _official_context(card, "table_data")
+            else {}
+        ),
+        **(
+            {"abqpy_descriptions": _abqpy_documentation(card, parameter=parameter_name)}
+            if any(record.documentation is not None for record in card.abqpy_records)
+            else {}
+        ),
         "runtime_notes": [_runtime_note_payload(note) for note in matching_notes],
         "imports": _api_card_imports(card),
         "release_alignment": card.release_alignment,
@@ -487,6 +655,19 @@ def _api_card_payload(
             record.source.model_dump(mode="json") for record in card.abqpy_records
         ],
         "summary": official.summary if official is not None else "",
+        **(
+            {"object_descriptions": _official_context(card, "object_description")}
+            if _official_context(card, "object_description")
+            else {}
+        ),
+        **(
+            {
+                "abqpy_documentation": _abqpy_documentation(card),
+                "docstring_query": card.canonical_name + ".__doc__",
+            }
+            if any(record.documentation is not None for record in card.abqpy_records)
+            else {}
+        ),
         "required_arguments": (
             [parameter.name for parameter in official.required_parameters]
             if official is not None
@@ -529,6 +710,47 @@ def _api_card_payload(
         "release_alignment": card.release_alignment,
         "conflicts": [conflict.message for conflict in card.conflicts],
     }
+
+
+def _official_context(card: ApiMethodCard, kind: str) -> list[dict[str, object]]:
+    return [
+        {
+            "record_id": record.record_id,
+            **context.model_dump(mode="json", exclude={"raw_xhtml"}),
+        }
+        for record in card.official_records
+        for context in record.context or ()
+        if context.kind == kind
+    ]
+
+
+def _abqpy_documentation(
+    card: ApiMethodCard, *, parameter: str | None = None, raw: bool = False
+) -> list[dict[str, object]]:
+    items: list[dict[str, object]] = []
+    for record in card.abqpy_records:
+        for index, doc in enumerate(record.documentation or ()):
+            if parameter is not None and parameter not in doc.parameters:
+                continue
+            item: dict[str, object] = {
+                "record_id": record.record_id,
+                "signature_index": index,
+                "source": record.source.model_dump(mode="json"),
+                "source_line": doc.source_line,
+                "source_end_line": doc.source_end_line,
+                "source_sha256": doc.source_sha256,
+                "docstring_sha256": doc.docstring_sha256,
+                "parse_status": doc.parse_status,
+            }
+            if raw:
+                item["raw"] = doc.raw
+            elif parameter is not None:
+                item["description"] = doc.parameters[parameter]
+            else:
+                item["summary"] = doc.summary
+                item["documented_parameters"] = list(doc.parameters)
+            items.append(item)
+    return items
 
 
 def _matching_runtime_notes(
@@ -768,6 +990,8 @@ def _record_api_lookup(
     query: str,
     payload: dict[str, object],
     card_ids: tuple[str, ...],
+    delivered_card_ids: tuple[str, ...] = (),
+    delivered_parameters: tuple[ApiDeliveredParameter, ...] = (),
     counted: bool,
 ) -> None:
     payload_bytes = len(
@@ -784,12 +1008,62 @@ def _record_api_lookup(
             "query": query,
             "status": str(payload.get("status", "unknown")),
             "card_ids": card_ids,
+            "delivered_card_ids": delivered_card_ids,
+            "delivered_parameters": delivered_parameters,
             "delivered_note_ids": _delivered_note_ids(payload),
             "counted": counted,
             "payload_bytes": payload_bytes,
         }
     )
-    trace_path = dependencies.request.state_dir / "api_lookups.jsonl"
+    trace_path = dependencies.request.state_dir / API_LOOKUP_JOURNAL_NAME
+    trace_path.parent.mkdir(parents=True, exist_ok=True)
+    with trace_path.open("a", encoding="utf-8", newline="\n") as stream:
+        stream.write(trace.model_dump_json())
+        stream.write("\n")
+
+
+def _record_api_discovery(
+    dependencies: CodingAgentDependencies,
+    *,
+    receiver: str | None,
+    query: str | None,
+    limit: int,
+    payload: dict[str, object],
+    counted: bool,
+) -> None:
+    raw_candidates = payload.get("candidates")
+    candidates = raw_candidates if isinstance(raw_candidates, list) else []
+    candidate_card_ids = tuple(
+        card_id
+        for candidate in candidates
+        if isinstance(candidate, dict)
+        if isinstance(card_id := candidate.get("card_id"), str)
+    )
+    candidate_names = tuple(
+        name
+        for candidate in candidates
+        if isinstance(candidate, dict)
+        if isinstance(name := candidate.get("name"), str)
+    )
+    payload_bytes = len(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    )
+    trace = ApiDiscoveryTrace(
+        receiver=receiver,
+        query=query,
+        limit=limit,
+        status=str(payload.get("status", "unknown")),
+        candidate_card_ids=candidate_card_ids,
+        candidate_names=candidate_names,
+        counted=counted,
+        payload_bytes=payload_bytes,
+    )
+    trace_path = dependencies.request.state_dir / API_DISCOVERY_JOURNAL_NAME
     trace_path.parent.mkdir(parents=True, exist_ok=True)
     with trace_path.open("a", encoding="utf-8", newline="\n") as stream:
         stream.write(trace.model_dump_json())
