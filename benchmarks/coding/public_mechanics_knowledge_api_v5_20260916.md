@@ -50,4 +50,11 @@ plate 保存的 received usage 为1 request、6940 input、543 output、2 tool c
 
 两题工作区最终仍为空，知识资料、API discovery、exact Card、Abaqus 和 Solver 调用均为0，也没有遗留 Abaqus/Standard 进程。plate 的成功中间响应证明 `CodingRunService` 能从持久状态恢复同一会话并继续 tool loop；历史、累计 usage、active wall 和工具计数均未清零。实验同时表明本次 OpenCode 长上下文服务不稳定：短 doctor 可成功，但长请求多次在180秒超时或返回500。它仍不能用于判断知识包、Catalog 或工程任务能力。
 
-冻结快照的派生报告只把 `ModelAPIError` 归为 `provider_interrupted`，所以 solid 的 `ModelHTTPError` 行显示为较宽泛的 `interrupted`。原始 attempt 和 resume state 明确记录 HTTP 500；当前源码已把两种 Provider 错误统一归类，冻结快照和本批证据不回填。按用户授权只做这一次额外恢复，不再创建第4次 attempt。
+冻结快照的派生报告只把 `ModelAPIError` 归为 `provider_interrupted`，所以 solid 的 `ModelHTTPError` 行显示为较宽泛的 `interrupted`。原始 attempt 和 resume state 明确记录 HTTP 500；当前源码已把两种 Provider 错误统一归类，冻结快照和本批证据不回填。该次授权执行一次后结束，当时没有创建第4次 attempt。
+
+用户之后再次明确授权继续重试，因此在同一状态上各增加一次 `004` resume attempt；这是第二次事后恢复授权，不改变正式批次和第一次事后恢复的记录。续跑前 doctor 再次成功，manifest、seal、合同和预算仍未修改。
+
+- `plate-with-hole-tension`：本次首个请求在180秒超时，retry 约144.78秒后返回 HTTP 500，没有新增完整模型响应。累计 received usage 保持2 requests、4 tool calls；active wall 增至约1681.61秒。
+- `solid-cantilever-directional-bending`：恢复后的首个请求约11.55秒成功，模型加载 `abaqus-2024-coding` 并检查空工作区；下一请求及 retry 均在180秒超时。累计新增1个完整模型响应、2个 tool calls、7086 input、780 output、6912 cache-read tokens；active wall 增至约1359.38秒。
+
+两题仍没有工作区文件、知识读取、API 查询或 Abaqus/Solver 调用，也没有遗留运行进程。第二次观察再次证明同一 run 可以从持久状态继续并累计 usage，但单个成功响应之后的下一轮仍可能中断；当前主要限制仍是 OpenCode 长请求可用性，未进入足以评价 Agent、知识包或 API Catalog 的行为阶段。
