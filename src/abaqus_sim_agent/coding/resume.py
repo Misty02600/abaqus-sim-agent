@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -34,6 +35,7 @@ from abaqus_sim_agent.coding.contracts import (
     ConceptTriggerSource,
     DiagnosticRetrievalTrace,
 )
+from abaqus_sim_agent.coding.deferred_runtime import DEFERRED_TOOL_FRONTIER_NAME
 from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
 from abaqus_sim_agent.coding.document_policy_contracts import PolicyCheckpoint
 from abaqus_sim_agent.coding.persistence import write_text_atomic
@@ -54,6 +56,7 @@ _OWNED_RUN_STATE_FILES = (
     "request.json",
     "initial_snapshot.json",
     "resume_state.json",
+    DEFERRED_TOOL_FRONTIER_NAME,
     "user_questions.json",
     "document_policy.jsonl",
     "document_policy.head.json",
@@ -67,6 +70,7 @@ _OWNED_RUN_STATE_DIRECTORIES = (
 
 ResumeStatus = Literal[
     "waiting_for_user",
+    "waiting_for_tool_execution",
     "running",
     "interrupted",
     "needs_reconcile",
@@ -390,6 +394,9 @@ class CodingRunResumeState(_StrictModel):
     turn: int = Field(ge=0)
     amendment_sequence: int = Field(default=0, ge=0)
     task_revision: int = Field(default=0, ge=0)
+    continuation_id: str | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     revision_workspace_snapshot: WorkspaceSnapshot
     revision_execution_start_index: int = Field(default=0, ge=0)
     active_wall_time_seconds: float = Field(ge=0)
@@ -651,6 +658,8 @@ def load_history_fallback(state_dir: Path) -> tuple[ModelMessage, ...]:
 async def select_resume_history(
     store: StepStore,
     request: CodingRunRequest,
+    *,
+    deferred_tool_effect: tuple[str, str] | None = None,
 ) -> ResumeHistory:
     runs = await store.list_runs(conversation_id=request.run_id)
     fallback = load_history_fallback(request.state_dir)
@@ -666,12 +675,41 @@ async def select_resume_history(
         raise CodingRunResumeError(
             "invalid tool-effect ledger; runtime state cannot be proven safe"
         ) from exc
+
+    def is_deferred_effect(effect: ToolEffectRecord) -> bool:
+        return deferred_tool_effect == (effect.tool_name, effect.tool_call_id)
+
+    unresolved_for_resume = tuple(
+        effect for effect in unresolved if not is_deferred_effect(effect)
+    )
     runtime_effects = tuple(
-        effect for effect in unresolved if effect.tool_name in RUNTIME_TOOL_NAMES
+        effect
+        for effect in unresolved_for_resume
+        if effect.tool_name in RUNTIME_TOOL_NAMES
     )
     if runtime_effects:
         raise CodingRunReconciliationRequired(runtime_effects)
-    unresolved_names = tuple(sorted({effect.tool_name for effect in unresolved}))
+    unresolved_names = tuple(
+        sorted({effect.tool_name for effect in unresolved_for_resume})
+    )
+
+    state_path = request.state_dir / "resume_state.json"
+    if (
+        fallback
+        and state_path.is_file()
+        and load_resume_state(request.state_dir).last_error_type == "UserStoppedError"
+    ):
+        # Reconcile effects first. Keep the native interrupted response for context;
+        # Pydantic AI closes out its unexecuted tool calls when the next prompt arrives.
+        if isinstance(fallback[-1], ModelResponse):
+            fallback = (*fallback[:-1], replace(fallback[-1], state="interrupted"))
+        return ResumeHistory(
+            messages=fallback,
+            prompt="The user explicitly resumed after stopping a model response. Preserve the partial reply as context; do not assume any unexecuted tool call completed.",
+            source="history_fallback",
+            prior_step_run_id=latest_run.run_id,
+            unresolved_non_runtime_tools=unresolved_names,
+        )
 
     for include_interrupted in (False, True):
         try:
@@ -706,6 +744,7 @@ def new_resume_state(
     turn: int,
     amendment_sequence: int,
     task_revision: int,
+    continuation_id: str | None,
     revision_workspace_snapshot: WorkspaceSnapshot,
     revision_execution_start_index: int,
     active_wall_time_seconds: float,
@@ -728,6 +767,7 @@ def new_resume_state(
         turn=turn,
         amendment_sequence=amendment_sequence,
         task_revision=task_revision,
+        continuation_id=continuation_id,
         revision_workspace_snapshot=revision_workspace_snapshot,
         revision_execution_start_index=revision_execution_start_index,
         active_wall_time_seconds=active_wall_time_seconds,

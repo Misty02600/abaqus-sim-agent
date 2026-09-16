@@ -662,6 +662,18 @@ class ReadyForVerificationDecision(_StrictModel):
         return self
 
 
+class ResponseDecision(_StrictModel):
+    status: Literal["response"] = "response"
+    summary: str = Field(min_length=1)
+
+    @field_validator("summary")
+    @classmethod
+    def nonblank_response(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("response must not be blank")
+        return value
+
+
 class FailedDecision(_StrictModel):
     status: Literal["failed"] = "failed"
     failure_stage: str = Field(min_length=1)
@@ -758,10 +770,21 @@ class CodingRunOutcome(_StrictModel):
     artifacts: tuple[ArtifactRef, ...] = ()
     clarifications: tuple[ClarificationEvent, ...] = ()
     verification_scope: VerificationScope | None = None
+    completion_kind: Literal["deliverables", "response"] = Field(
+        default="deliverables", exclude_if=lambda v: v == "deliverables"
+    )
     failure_stage: str | None = None
 
     @model_validator(mode="after")
     def check_failure_stage(self) -> "CodingRunOutcome":
+        if self.completion_kind == "response" and (
+            self.status is not CodingRunStatus.COMPLETED
+            or self.verification_scope is not None
+            or self.artifacts
+        ):
+            raise ValueError(
+                "a response completion has no artifacts or verification scope"
+            )
         if self.status is CodingRunStatus.FAILED and not self.failure_stage:
             raise ValueError("failure_stage is required for a failed outcome")
         if self.status is CodingRunStatus.COMPLETED and self.failure_stage is not None:

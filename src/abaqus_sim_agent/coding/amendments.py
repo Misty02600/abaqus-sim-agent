@@ -80,9 +80,19 @@ class CodingRunAmendment(_StrictModel):
     revision_workspace_snapshot: WorkspaceSnapshot | None = None
     revision_execution_start_index: int | None = Field(default=None, ge=0)
     created_at: datetime
+    message_id: str | None = Field(
+        default=None, pattern=r"^[0-9a-f]{32}$", exclude_if=lambda v: v is None
+    )
+    submitted_after_turn: int | None = Field(
+        default=None, ge=0, exclude_if=lambda v: v is None
+    )
 
     @model_validator(mode="after")
     def check_kind_payload(self) -> "CodingRunAmendment":
+        if (self.message_id is None) != (self.submitted_after_turn is None):
+            raise ValueError("conversation metadata must include id and turn")
+        if self.message_id is not None and self.kind != "task_revision":
+            raise ValueError("conversation messages require a task revision")
         if self.kind == "operational":
             if self.config is None or self.goal is not None:
                 raise ValueError("operational amendment requires only config")
@@ -103,12 +113,21 @@ class CodingRunAmendment(_StrictModel):
 
 
 class CodingRunAmendmentLedger(_StrictModel):
-    schema_version: Literal["coding-run-amendments-v1"] = AMENDMENT_SCHEMA_VERSION
+    schema_version: Literal["coding-run-amendments-v1", "coding-run-amendments-v2"] = (
+        AMENDMENT_SCHEMA_VERSION
+    )
     run_id: str
     amendments: tuple[CodingRunAmendment, ...] = ()
 
     @model_validator(mode="after")
     def check_sequence_and_revision(self) -> "CodingRunAmendmentLedger":
+        ids = [
+            item.message_id for item in self.amendments if item.message_id is not None
+        ]
+        if len(ids) != len(set(ids)):
+            raise ValueError("conversation message ids must be unique")
+        if ids and self.schema_version != "coding-run-amendments-v2":
+            raise ValueError("conversation metadata requires amendments v2")
         expected_sequence = 1
         expected_revision = 0
         for amendment in self.amendments:
@@ -271,6 +290,7 @@ def _append_amendment_locked(
     config: CodingRunConfigPatch | None = None,
     goal: str | None = None,
     resolving_question: bool = False,
+    message_id: str | None = None,
 ) -> CodingRunAmendment:
     """在调用方持有锁时追加修订；仅答复事务可跳过待答检查。"""
     lock.assert_held(resolved)
@@ -324,8 +344,13 @@ def _append_amendment_locked(
         revision_workspace_snapshot=workspace_snapshot,
         revision_execution_start_index=execution_start_index,
         created_at=datetime.now(UTC),
+        message_id=message_id,
+        submitted_after_turn=persisted.turn if message_id is not None else None,
     )
     updated = CodingRunAmendmentLedger(
+        schema_version="coding-run-amendments-v2"
+        if message_id is not None
+        else ledger.schema_version,
         run_id=request.run_id,
         amendments=(*ledger.amendments, amendment),
     )

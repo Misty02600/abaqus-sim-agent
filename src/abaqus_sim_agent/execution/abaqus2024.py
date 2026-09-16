@@ -132,6 +132,7 @@ class ProcessStrategy(Protocol):
 
 
 TreeTerminator = Callable[[int], Awaitable[None]]
+ProcessStartedCallback = Callable[[int], None]
 
 
 class WindowsProcessStrategy:
@@ -146,6 +147,36 @@ class WindowsProcessStrategy:
         *,
         cwd: Path,
         timeout_seconds: float,
+    ) -> ProcessOutput:
+        return await self._run_process(
+            command,
+            cwd=cwd,
+            timeout_seconds=timeout_seconds,
+            process_started=None,
+        )
+
+    async def run_with_start_callback(
+        self,
+        command: Sequence[str],
+        *,
+        cwd: Path,
+        timeout_seconds: float,
+        process_started: ProcessStartedCallback,
+    ) -> ProcessOutput:
+        return await self._run_process(
+            command,
+            cwd=cwd,
+            timeout_seconds=timeout_seconds,
+            process_started=process_started,
+        )
+
+    async def _run_process(
+        self,
+        command: Sequence[str],
+        *,
+        cwd: Path,
+        timeout_seconds: float,
+        process_started: ProcessStartedCallback | None,
     ) -> ProcessOutput:
         if timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be greater than zero")
@@ -166,6 +197,18 @@ class WindowsProcessStrategy:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
+
+        if process_started is not None:
+            try:
+                process_started(process.pid)
+            except Exception:
+                try:
+                    await self._tree_terminator(process.pid)
+                except Exception:
+                    if process.returncode is None:
+                        process.kill()
+                await process.wait()
+                raise
 
         communicate_task = asyncio.create_task(process.communicate())
         timed_out = False
@@ -222,6 +265,13 @@ class Abaqus2024Runner:
         self.state_dir = _resolve_state_dir(state_dir, self.workspace)
         self.launcher = Path(launcher)
         self._process_strategy = process_strategy or WindowsProcessStrategy()
+        self._solver_process_started: ProcessStartedCallback | None = None
+
+    def set_solver_process_started_callback(
+        self, callback: ProcessStartedCallback | None
+    ) -> None:
+        """设置宿主侧 Solver PID 发布钩子；不改变模型可见工具合同。"""
+        self._solver_process_started = callback
 
     async def run_cae_script(
         self,
@@ -351,11 +401,23 @@ class Abaqus2024Runner:
                 f"{exc.args[0]}"
             ) from exc
         started_at = perf_counter()
-        process_output = await self._process_strategy.run(
-            tuple(command),
-            cwd=self.workspace,
-            timeout_seconds=timeout_seconds,
-        )
+        if (
+            invocation is AbaqusInvocation.SOLVER_JOB
+            and self._solver_process_started is not None
+            and isinstance(self._process_strategy, WindowsProcessStrategy)
+        ):
+            process_output = await self._process_strategy.run_with_start_callback(
+                tuple(command),
+                cwd=self.workspace,
+                timeout_seconds=timeout_seconds,
+                process_started=self._solver_process_started,
+            )
+        else:
+            process_output = await self._process_strategy.run(
+                tuple(command),
+                cwd=self.workspace,
+                timeout_seconds=timeout_seconds,
+            )
         duration = perf_counter() - started_at
         after = await asyncio.to_thread(_snapshot_workspace, self.workspace)
 

@@ -23,6 +23,7 @@ from abaqus_sim_agent.coding.document_policy import (
 from abaqus_sim_agent.coding.document_search_port import DocumentSearchPort
 from abaqus_sim_agent.coding.edit_scope import ReferenceEditGate
 from abaqus_sim_agent.coding.probe import ProbeProtocolState
+from abaqus_sim_agent.coding.progress import ProgressObserver
 from abaqus_sim_agent.coding.static_preflight import (
     AbqpyBasedPyrightPreflight,
     StaticPreflightReport,
@@ -46,6 +47,7 @@ class CodingAgentDependencies:
     request: CodingRunRequest
     runner: Abaqus2024Runner
     step_store: StepStore | None = None
+    observer: ProgressObserver | None = None
     api_catalog: ApiCatalog | None = None
     concept_index: AbaqusDocumentIndex | None = None
     document_port: DocumentSearchPort | None = None

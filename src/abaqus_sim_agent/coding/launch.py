@@ -24,6 +24,7 @@ class LaunchManifest(BaseModel):
         "coding-run-launch-v2",
         "coding-run-launch-v3",
         "coding-run-launch-v4",
+        "coding-run-launch-v5",
     ] = "coding-run-launch-v1"
     question_protocol: Literal["ask_user_v1"] | None = Field(
         default=None, exclude_if=lambda v: v is None
@@ -56,7 +57,7 @@ class LaunchManifest(BaseModel):
 
     @model_validator(mode="after")
     def valid_version(self):
-        if self.schema_version == "coding-run-launch-v4":
+        if self.schema_version in ("coding-run-launch-v4", "coding-run-launch-v5"):
             if self.question_protocol != "ask_user_v1":
                 raise ValueError("launch v4 requires ask_user_v1")
         elif "question_protocol" in self.model_fields_set:
@@ -74,7 +75,11 @@ class LaunchManifest(BaseModel):
             "planning_enabled",
             "interaction_policy",
         }
-        if self.schema_version in ("coding-run-launch-v3", "coding-run-launch-v4"):
+        if self.schema_version in (
+            "coding-run-launch-v3",
+            "coding-run-launch-v4",
+            "coding-run-launch-v5",
+        ):
             if any(getattr(self, field) is None for field in fields):
                 raise ValueError(
                     "launch v3 requires complete effective execution settings"
@@ -89,6 +94,7 @@ class LaunchManifest(BaseModel):
         legacy = self.schema_version not in (
             "coding-run-launch-v3",
             "coding-run-launch-v4",
+            "coding-run-launch-v5",
         )
         if legacy:
             return ModelExecutionConfig(

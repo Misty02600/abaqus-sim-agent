@@ -17,6 +17,7 @@ from pydantic_ai.models import Model
 from pydantic_ai.models.function import FunctionModel
 
 from abaqus_sim_agent.coding.contracts import CodingRunRequest, RuntimeProfile
+from abaqus_sim_agent.coding.deferred_runtime import WaitingForToolExecution
 from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
 from abaqus_sim_agent.coding.execution_verifier import ExecutionEvidenceVerifier
 from abaqus_sim_agent.coding.launch import LaunchManifest
@@ -618,6 +619,10 @@ async def _execute_service(
             )
             service.resume = True
             result = await service.run_step()
+        if isinstance(result, WaitingForToolExecution):
+            raise CodingRunInfrastructureError(
+                "deferred Solver execution requires the Web controller"
+            )
     except asyncio.CancelledError as exc:
         observation = _collect(
             context,

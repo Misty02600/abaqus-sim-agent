@@ -11,7 +11,6 @@ from uuid import uuid4
 from pydantic import SecretStr
 
 from abaqus_sim_agent.api_catalog import ApiCatalog
-from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.amendments import (
     CodingRunAmendmentLedger,
     CodingRunBudgetPatch,
@@ -24,6 +23,7 @@ from abaqus_sim_agent.coding.clarification import (
     ConsoleClarificationProvider,
     ScriptedClarificationProvider,
 )
+from abaqus_sim_agent.coding.composition import open_coding_run
 from abaqus_sim_agent.coding.concept_lookup import (
     ConceptRetrievalMode,
     concept_index_binding,
@@ -38,7 +38,7 @@ from abaqus_sim_agent.coding.contracts import (
     RuntimeProfile,
     RuntimeScriptPolicy,
 )
-from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
+from abaqus_sim_agent.coding.deferred_runtime import WaitingForToolExecution
 from abaqus_sim_agent.coding.diagnostic_retrieval import DiagnosticRetrievalMode
 from abaqus_sim_agent.coding.document_policy_binding import (
     DocumentPolicyBinding,
@@ -58,12 +58,9 @@ from abaqus_sim_agent.coding.model import (
     take_gateway_api_key_from_environment,
 )
 from abaqus_sim_agent.coding.resume import (
-    create_step_store,
     load_effective_run_for_resume,
 )
-from abaqus_sim_agent.coding.service import CodingRunService
 from abaqus_sim_agent.coding.static_preflight import (
-    AbqpyBasedPyrightPreflight,
     PreparedAbqpySource,
     prepare_abqpy_source,
 )
@@ -562,7 +559,7 @@ def _run_cli_once(
                 or static_binding
             )
             launch = _LaunchManifest(
-                schema_version="coding-run-launch-v4"
+                schema_version="coding-run-launch-v5"
                 if use_questions
                 else "coding-run-launch-v3",
                 **({"question_protocol": "ask_user_v1"} if use_questions else {}),
@@ -604,10 +601,6 @@ def _run_cli_once(
         execution_config = launch.effective_execution(
             pure_edit=request.edit_scope is not None
         )
-        launch_manifest_json: str | None = None
-        if not resuming:
-            assert launch is not None
-            launch_manifest_json = launch.model_dump_json(indent=2)
         clarification_provider = (
             ScriptedClarificationProvider(_load_answers(args.answers))
             if args.answers is not None
@@ -619,22 +612,6 @@ def _run_cli_once(
             model_provider
         )
         verifier = _product_verifier()
-        runner = Abaqus2024Runner(
-            resolved.workspace,
-            resolved.state_dir,
-            launcher=request.runtime.launcher_path,
-        )
-        model, client = create_deepseek_chat_model(
-            gateway=model_provider,
-            model_name=model_name,
-            api_key=api_key,
-            http_retries=http_retries,
-            timeout_seconds=execution_config.http_timeout_seconds,
-            execution_config=execution_config,
-            conversation_id=request.run_id
-            if model_provider is DeepSeekGateway.OPENCODE_GO
-            else None,
-        )
         print(
             f"Model: {model_provider.value}/{model_name} "
             f"(http_retries={http_retries}, "
@@ -642,78 +619,35 @@ def _run_cli_once(
             f"reasoning_policy={execution_config.reasoning_policy})"
         )
         print(f"Question protocol: {launch.question_protocol or 'legacy_decision'}")
-        try:
-            step_store = create_step_store(request.state_dir)
-            agent = create_abaqus_coding_agent(
-                model,
-                request,
-                skill_library=skill_library,
-                api_catalog_mode=api_catalog_mode,
-                concept_retrieval_mode=concept_retrieval_mode,
-                diagnostic_retrieval_mode=diagnostic_retrieval_mode,
-                step_store=step_store,
-                execution_config=execution_config,
-                question_protocol=launch.question_protocol or "legacy_decision",
-            )
-            dependencies = CodingAgentDependencies(
-                request=request,
-                runner=runner,
-                api_catalog=api_catalog,
-                concept_index=concept_index,
-                static_preflight=(
-                    AbqpyBasedPyrightPreflight(
-                        static_preflight_source,
-                        request.state_dir,
-                        mode=cast(
-                            Literal["advisory", "enforced_verified"],
-                            static_preflight_mode,
-                        ),
-                    )
-                    if static_preflight_source is not None
-                    else None
-                ),
-            )
-            if request.document_policy is not None:
-                from abaqus_sim_agent.evaluation.document_policy_adapter import (
-                    compose_document_backend,
-                )
-
-                dependencies.document_port, dependencies.document_validator = (
-                    compose_document_backend(
-                        request.document_policy,
-                        state_dir=request.state_dir,
-                        workspace=request.workspace,
-                    )
-                )
-            service = CodingRunService(
-                agent=agent,
-                request=request,
-                dependencies=dependencies,
-                clarification_provider=clarification_provider,
-                verifier=verifier,
-                initial_snapshot=initial_snapshot,
-                progress_sink=lambda message: print(f"[run] {message}"),
-                resume=resuming,
-                step_store=step_store,
-                launch_manifest_json=launch_manifest_json,
-                expected_amendment_sequence=expected_amendment_sequence,
-                question_protocol=launch.question_protocol or "legacy_decision",
-            )
-        except Exception:
-            asyncio.run(client.close())
-            raise
 
         async def execute() -> int | _ConsoleQuestion:
-            try:
+            async with open_coding_run(
+                request,
+                initial_snapshot,
+                launch,
+                api_key=api_key,
+                verifier=verifier,
+                clarification_provider=clarification_provider,
+                resume=resuming,
+                expected_amendment_sequence=expected_amendment_sequence,
+                api_catalog=api_catalog,
+                concept_index=concept_index,
+                static_source=static_preflight_source,
+                progress_sink=lambda message: print(f"[run] {message}"),
+                model_factory=create_deepseek_chat_model,
+                runner_factory=Abaqus2024Runner,
+            ) as service:
                 result = (
                     await service.run_step()
                     if launch.question_protocol
                     else await service.run()
                 )
-            finally:
-                await client.close()
             if isinstance(result, WaitingForUser):
                 return _ConsoleQuestion(request.state_dir, result.question, api_key)
+            if isinstance(result, WaitingForToolExecution):
+                raise RuntimeError(
+                    "deferred Solver execution requires the Web controller"
+                )
             print(result.outcome.model_dump_json(indent=2))
             return 0 if result.outcome.status is CodingRunStatus.COMPLETED else 1
 

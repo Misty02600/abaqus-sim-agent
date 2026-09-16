@@ -36,6 +36,7 @@ from abaqus_sim_agent.coding.contracts import (
     FailedDecision,
     NeedsInputDecision,
     ReadyForVerificationDecision,
+    ResponseDecision,
 )
 from abaqus_sim_agent.coding.dependencies import (
     CodingAgentDependencies as _CodingAgentDependencies,
@@ -155,6 +156,7 @@ def create_abaqus_coding_agent(
     question_protocol: QuestionProtocol = "legacy_decision",
     foundation_skill_profile: Literal["off", "linear_structural_fea_v1"] = "off",
     knowledge_resources_dir: Path | None = None,
+    response_enabled: bool = False,
 ) -> Agent[_CodingAgentDependencies, CodingAgentOutput]:
     """组装只在指定工作区活动的 Abaqus 2024 Coding Agent。
 
@@ -190,6 +192,7 @@ def create_abaqus_coding_agent(
             暴露五个线性结构基础 deferred Skills；默认 ``off``，保持产品现状。
         knowledge_resources_dir: 显式评测的只读资料目录；调用者负责冻结内容。
             仅新增读取工具，不执行资料；尚无普通 CLI/launch/resume 绑定。
+        response_enabled: 新普通会话是否允许无文件的文字答复完成；固定任务及旧会话默认关闭。
 
     Returns:
         配置完成、但尚未运行的单 Agent 实例。
@@ -315,6 +318,19 @@ def create_abaqus_coding_agent(
     elif question_protocol != "legacy_decision":
         raise ValueError("unknown question protocol")
 
+    if response_enabled:
+        if question_protocol != "ask_user_v1" or task_instructions is not None:
+            raise ValueError(
+                "response completion is only available to open ask_user tasks"
+            )
+        outputs.append(
+            ToolOutput(
+                ResponseDecision,
+                name="final_result_ResponseDecision",
+                description="Deliver the complete text answer to a question or explanation request. No file or Abaqus execution is required. Do not use this to claim completion of requested file changes or execution.",
+            )
+        )
+
     agent = Agent[_CodingAgentDependencies, CodingAgentOutput](
         model,
         toolsets=(
@@ -347,6 +363,7 @@ def create_abaqus_coding_agent(
             probe_target_scripts=probe_target_scripts,
             task_instructions=task_instructions,
             question_protocol=question_protocol,
+            response_enabled=response_enabled,
             interaction_policy=execution_config.interaction_policy
             if execution_config
             else "legacy",

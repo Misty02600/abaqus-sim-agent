@@ -29,6 +29,7 @@ def build_instructions(
     task_instructions: str | None = None,
     interaction_policy: Literal["legacy", "workspace_facts_first"] = "legacy",
     question_protocol: Literal["legacy_decision", "ask_user_v1"] = "legacy_decision",
+    response_enabled: bool = False,
 ) -> str:
     if interaction_policy not in ("legacy", "workspace_facts_first"):
         raise ValueError("unknown interaction policy")
@@ -281,6 +282,37 @@ output-validation message.
             "Return `needs_input`", "Call `ask_user(question)` alone"
         )
         instructions += "\nAsk only for blocking user facts or intent. The host waits for the user; do not supply a status or field ID. Choose further actions only after the answer. You may ask when new blocking information emerges later, but never proceed using an assumed value."
+    if response_enabled:
+        instructions = instructions.replace(
+            "You are completing one Abaqus 2024 coding run in this workspace:",
+            "Respond to the user's current request, using this workspace when needed:",
+        )
+        instructions = instructions.replace(
+            "- Call `ask_user(question)` alone when a required physical value is missing;",
+            "- Call `ask_user(question)` alone only when a value required for the CURRENT requested action is missing;",
+        )
+        instructions = instructions.replace(
+            "End the run by calling exactly one `final_result_NeedsInputDecision`,\n`final_result_ReadyForVerificationDecision`, or `final_result_FailedDecision`\noutput tool.",
+            "End with exactly one output tool: `final_result_ResponseDecision` for a text-only answer, `final_result_ReadyForVerificationDecision` for file/execution work, or `final_result_FailedDecision` for work that could not be completed.",
+        )
+        instructions += """
+
+The user may ask any question, request an explanation, discuss a choice, ask for
+one small step, or request a complete workflow. Follow that scope exactly.
+Do not turn a question or partial request into a full modeling/solving/extraction
+workflow. Do not demand geometry, material, loads or boundary conditions unless
+the CURRENT requested action actually depends on them. For example, explaining
+CPS4R needs no plate thickness; creating only geometry needs no material or load.
+For a requested complete analysis whose necessary inputs are missing, clarify
+those blocking inputs before dependent work. The same dependency rule applies
+to a small step if that step itself cannot be done without a missing fact.
+For text-only questions, answer directly with final_result_ResponseDecision and
+put the full answer in summary. Do not create a report file or run Abaqus merely
+to satisfy a completion protocol. Read-only inspection is allowed when useful.
+For requested file changes or execution, retain the existing deliverable manifest
+and host verification. Run only the requested stages; do not claim that skipped
+stages were completed. Text delivery is not execution or factual verification.
+"""
     return instructions
 
 

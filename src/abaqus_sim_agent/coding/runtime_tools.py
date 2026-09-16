@@ -5,7 +5,7 @@ from collections.abc import Awaitable
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Literal
 
-from pydantic_ai import Agent, RunContext
+from pydantic_ai import Agent, CallDeferred, RunContext
 from pydantic_ai_harness.step_persistence import annotate_tool_effect
 
 from abaqus_sim_agent.coding.api_lookup import ApiCatalogMode, runtime_api_hint
@@ -14,6 +14,7 @@ from abaqus_sim_agent.coding.contracts import (
     ProbeConclusionStatus,
     ProbeResultInput,
 )
+from abaqus_sim_agent.coding.deferred_runtime import DeferredSolverRunner
 from abaqus_sim_agent.coding.dependencies import (
     CodingAgentDependencies,
     RuntimeBudgetExceeded,
@@ -24,17 +25,22 @@ from abaqus_sim_agent.coding.diagnostic_retrieval import (
 )
 from abaqus_sim_agent.coding.document_policy_tools import document_runtime_denial
 from abaqus_sim_agent.coding.probe import ProbeProtocolMode, ProbeProtocolState
-from abaqus_sim_agent.coding.resume import append_execution_result
+from abaqus_sim_agent.coding.progress import CodingProgress, notify
+from abaqus_sim_agent.coding.resume import (
+    append_execution_result,
+    load_execution_results,
+)
 from abaqus_sim_agent.coding.static_preflight import (
     StaticPreflightReport,
     static_preflight_payload,
 )
+from abaqus_sim_agent.coding.workspace import WorkspaceResolver
 from abaqus_sim_agent.execution.abaqus2024 import (
     AbaqusExecutionResult,
     AbaqusInvocation,
 )
 
-__all__ = ["register_runtime_tools"]
+__all__ = ["finalize_runtime_result", "register_runtime_tools"]
 
 
 def register_runtime_tools[AgentOutputT](
@@ -132,7 +138,7 @@ def register_runtime_tools[AgentOutputT](
                 job_name=job_name,
             )
             return await _run_solver_tool(
-                ctx.deps,
+                ctx,
                 job_name,
                 input_file,
                 probe_protocol_enabled=True,
@@ -199,7 +205,7 @@ def register_runtime_tools[AgentOutputT](
                 job_name=job_name,
             )
             return await _run_solver_tool(
-                ctx.deps,
+                ctx,
                 job_name,
                 input_file,
                 probe_protocol_enabled=False,
@@ -311,6 +317,15 @@ async def _run_cae_tool(
         exhausted = dependencies.reserve_runtime_call(solver=False)
         if exhausted:
             raise RuntimeBudgetExceeded(exhausted)
+        notify(
+            dependencies.observer,
+            CodingProgress(
+                "runtime_started",
+                "cae",
+                dependencies.current_turn,
+                dependencies.current_task_revision,
+            ),
+        )
         payload = await _runtime_tool_result(
             dependencies,
             dependencies.runner.run_cae_script(
@@ -379,6 +394,15 @@ async def _run_abaqus_python_tool(
         exhausted = dependencies.reserve_runtime_call(solver=False)
         if exhausted:
             raise RuntimeBudgetExceeded(exhausted)
+        notify(
+            dependencies.observer,
+            CodingProgress(
+                "runtime_started",
+                "extract",
+                dependencies.current_turn,
+                dependencies.current_task_revision,
+            ),
+        )
         payload = await _runtime_tool_result(
             dependencies,
             dependencies.runner.run_abaqus_python(
@@ -398,7 +422,7 @@ async def _run_abaqus_python_tool(
 
 
 async def _run_solver_tool(
-    dependencies: CodingAgentDependencies,
+    ctx: RunContext[CodingAgentDependencies],
     job_name: str,
     input_file: str,
     *,
@@ -408,6 +432,7 @@ async def _run_solver_tool(
     api_catalog_mode: ApiCatalogMode,
     diagnostic_retrieval_mode: DiagnosticRetrievalMode,
 ) -> dict[str, object]:
+    dependencies = ctx.deps
     denied = dependencies.runtime_script_policy_denial(
         kind="solver_input",
         path=input_file,
@@ -436,6 +461,42 @@ async def _run_solver_tool(
         exhausted = dependencies.reserve_runtime_call(solver=True)
         if exhausted:
             raise RuntimeBudgetExceeded(exhausted)
+        notify(
+            dependencies.observer,
+            CodingProgress(
+                "runtime_started",
+                "solver",
+                dependencies.current_turn,
+                dependencies.current_task_revision,
+            ),
+        )
+        if isinstance(dependencies.runner, DeferredSolverRunner):
+            if ctx.tool_call_id is None:
+                raise ValueError("deferred Solver requires a tool call id")
+            pre_solver_snapshot = WorkspaceResolver(
+                captured_cwd=dependencies.request.workspace
+            ).snapshot(dependencies.request.workspace)
+            execution_journal_count_before = len(
+                load_execution_results(dependencies.request.state_dir)
+            )
+            execution_id = dependencies.runner.start_deferred_solver_job(
+                tool_call_id=ctx.tool_call_id,
+                job_name=job_name,
+                input_file=input_file,
+                timeout_seconds=300.0,
+            )
+            metadata: dict[str, object] = {
+                "kind": "solver_job",
+                "execution_id": execution_id,
+                "execution_count_before": len(dependencies.executions),
+                "execution_journal_count_before": execution_journal_count_before,
+                "workspace_snapshot": pre_solver_snapshot.model_dump(mode="python"),
+                "api_catalog_mode": api_catalog_mode,
+                "diagnostic_retrieval_mode": diagnostic_retrieval_mode,
+            }
+            if recorded is not None:
+                metadata["recorded_probe_result"] = recorded["probe"]
+            raise CallDeferred(metadata=metadata)
         payload = await _runtime_tool_result(
             dependencies,
             dependencies.runner.run_solver_job(
@@ -709,13 +770,55 @@ async def _runtime_tool_result(
     try:
         result = await execution
     except (OSError, ValueError) as exc:
+        notify(
+            dependencies.observer,
+            CodingProgress(
+                "runtime_finished",
+                "model",
+                dependencies.current_turn,
+                dependencies.current_task_revision,
+            ),
+        )
         return {
             "succeeded": False,
             "error_type": type(exc).__name__,
             "error": str(exc),
         }
-    append_execution_result(dependencies.request.state_dir, result)
-    dependencies.record_runtime_execution(result)
+    return await finalize_runtime_result(
+        dependencies,
+        result,
+        api_catalog_mode=api_catalog_mode,
+        probe_protocol=probe_protocol,
+        purpose=purpose,
+        script_path=script_path,
+        diagnostic_retrieval_mode=diagnostic_retrieval_mode,
+    )
+
+
+async def finalize_runtime_result(
+    dependencies: CodingAgentDependencies,
+    result: AbaqusExecutionResult,
+    *,
+    api_catalog_mode: ApiCatalogMode = "full",
+    probe_protocol: ProbeProtocolState | None = None,
+    purpose: ExecutionPurpose = "production",
+    script_path: str | None = None,
+    diagnostic_retrieval_mode: DiagnosticRetrievalMode = "off",
+    record_execution: bool = True,
+) -> dict[str, object]:
+    """把一个已完成的 Abaqus 结果接回原有证据、诊断和工具返回语义。"""
+    if record_execution:
+        append_execution_result(dependencies.request.state_dir, result)
+        dependencies.record_runtime_execution(result)
+    notify(
+        dependencies.observer,
+        CodingProgress(
+            "runtime_finished",
+            "model",
+            dependencies.current_turn,
+            dependencies.current_task_revision,
+        ),
+    )
     payload = _tool_payload(result)
     if payload["stage_succeeded"] is False and api_catalog_mode != "off":
         hint = runtime_api_hint(

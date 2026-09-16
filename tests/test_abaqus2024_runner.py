@@ -528,6 +528,48 @@ async def test_windows_strategy_terminates_the_exact_spawned_process_tree(
 
 
 @pytest.mark.asyncio
+async def test_windows_strategy_reports_spawned_process_id_before_waiting(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    observed_pids: list[int] = []
+
+    class ImmediateProcess:
+        pid = 24680
+        returncode = 0
+
+        async def communicate(self) -> tuple[bytes, bytes]:
+            return b"ok", b""
+
+        async def wait(self) -> int:
+            return 0
+
+        def kill(self) -> None:
+            self.returncode = 1
+
+    async def fake_spawn(*_command: str, **_kwargs: object) -> ImmediateProcess:
+        return ImmediateProcess()
+
+    monkeypatch.setattr(runner_module, "os", SimpleNamespace(name="nt"))
+    monkeypatch.setattr(
+        runner_module.asyncio,
+        "create_subprocess_exec",
+        fake_spawn,
+    )
+    strategy = WindowsProcessStrategy()
+
+    result = await strategy.run_with_start_callback(
+        ("abq2024.bat", "job=demo"),
+        cwd=tmp_path,
+        timeout_seconds=60.0,
+        process_started=observed_pids.append,
+    )
+
+    assert observed_pids == [24680]
+    assert result.exit_code == 0
+
+
+@pytest.mark.asyncio
 async def test_windows_strategy_terminates_process_tree_when_cancelled(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

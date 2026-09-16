@@ -277,7 +277,17 @@ def test_actual_cli_and_baseline_http_configuration_parity_with_sdk_retry(
         assert body["reasoning_effort"] == "high"
         assert "max_tokens" not in body
         assert "max_completion_tokens" not in body
-    assert bodies[1]["tools"] == bodies[3]["tools"]
+    # New ordinary launch v5 can answer without artifacts; the frozen evaluator
+    # retains its artifact contract. Every shared tool schema must still match.
+    response_name = "final_result_ResponseDecision"
+    response_outputs = [
+        t for t in bodies[1]["tools"] if t["function"]["name"] == response_name
+    ]
+    assert len(response_outputs) == 1
+    assert not any(t["function"]["name"] == response_name for t in bodies[3]["tools"])
+    assert [
+        t for t in bodies[1]["tools"] if t["function"]["name"] != response_name
+    ] == bodies[3]["tools"]
     tool_names = {t["function"]["name"] for t in bodies[3]["tools"]}
     assert "write_plan" in tool_names
     assert not tool_names & {"run_command", "search_abaqus_docs", "lookup_abaqus_api"}

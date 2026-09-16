@@ -20,13 +20,13 @@ from pydantic_ai import (
 from pydantic_ai.capabilities import AbstractCapability
 from pydantic_ai.messages import ModelMessage, ToolCallPart
 
-from .contracts import CodingRunDecision, CodingRunUsage
+from .contracts import CodingRunDecision, CodingRunUsage, ResponseDecision
 from .dependencies import CodingAgentDependencies
 from .persistence import write_bytes_atomic, write_text_atomic
 from .run_lock import CodingRunFileLock
 
 QuestionProtocol = Literal["legacy_decision", "ask_user_v1"]
-CodingAgentOutput = CodingRunDecision | DeferredToolRequests
+CodingAgentOutput = CodingRunDecision | ResponseDecision | DeferredToolRequests
 QUESTION_FILE = "user_questions.json"
 
 
@@ -47,7 +47,7 @@ class UserQuestion(_Strict):
     workspace_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     asked_at: AwareDatetime
     answer: str | None = None
-    source: Literal["console", "file", "scripted"] | None = None
+    source: Literal["console", "file", "scripted", "web"] | None = None
     resolved_at: AwareDatetime | None = None
     cancelled: bool = False
     answer_revision: int | None = Field(default=None, ge=0)
@@ -401,7 +401,8 @@ async def submit_answer(
     state_dir: Path,
     answer: UserAnswerInput,
     *,
-    source: Literal["console", "file", "scripted"] = "file",
+    source: Literal["console", "file", "scripted", "web"] = "file",
+    expected_task_revision: int | None = None,
 ) -> UserQuestion:
     """在同一state锁内保存答复，必要时完成幂等的验收revision切换。
 
@@ -419,6 +420,11 @@ async def submit_answer(
     with CodingRunFileLock(state_dir) as lock:
         effective = load_effective_run_for_resume(state_dir)
         state = load_resume_state(state_dir)
+        if (
+            expected_task_revision is not None
+            and effective.task_revision != expected_task_revision
+        ):
+            raise ValueError("task revision changed before the answer was saved")
         if (
             state.question_protocol != "ask_user_v1"
             or state.status == "needs_reconcile"

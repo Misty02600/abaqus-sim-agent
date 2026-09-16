@@ -7,22 +7,26 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from time import monotonic, perf_counter
+from typing import Literal, cast
 
 from pydantic import BaseModel, ConfigDict
 from pydantic_ai import (
     Agent,
+    AgentRun,
     DeferredToolRequests,
     DeferredToolResults,
     ModelMessagesTypeAdapter,
+    ModelRequestNode,
     RunUsage,
     UsageLimitExceeded,
     UsageLimits,
 )
-from pydantic_ai.exceptions import ToolFailed
-from pydantic_ai.messages import ModelMessage, ToolReturnPart
+from pydantic_ai.exceptions import RunCancelled, ToolFailed
+from pydantic_ai.messages import ModelMessage, ModelResponse, ToolReturnPart
 from pydantic_ai_harness.step_persistence import StepStore
 
 from abaqus_sim_agent.coding.amendments import amendment_prompt
+from abaqus_sim_agent.coding.api_lookup import ApiCatalogMode
 from abaqus_sim_agent.coding.clarification import ClarificationProvider
 from abaqus_sim_agent.coding.contracts import (
     ClarificationEvent,
@@ -33,11 +37,20 @@ from abaqus_sim_agent.coding.contracts import (
     FailedDecision,
     NeedsInputDecision,
     ReadyForVerificationDecision,
+    ResponseDecision,
+)
+from abaqus_sim_agent.coding.deferred_runtime import (
+    DeferredSolverRunner,
+    DeferredToolFrontier,
+    WaitingForToolExecution,
+    load_deferred_tool_frontier,
+    write_deferred_tool_frontier,
 )
 from abaqus_sim_agent.coding.dependencies import (
     CodingAgentDependencies,
     RuntimeBudgetExceeded,
 )
+from abaqus_sim_agent.coding.diagnostic_retrieval import DiagnosticRetrievalMode
 from abaqus_sim_agent.coding.document_policy import DocumentPolicy
 from abaqus_sim_agent.coding.document_policy_contracts import (
     PolicyCheckpoint,
@@ -45,11 +58,20 @@ from abaqus_sim_agent.coding.document_policy_contracts import (
 )
 from abaqus_sim_agent.coding.document_policy_state import DocumentPolicyDenied
 from abaqus_sim_agent.coding.persistence import write_bytes_atomic, write_text_atomic
+from abaqus_sim_agent.coding.response_stream import (
+    MAX_PREVIEW,
+    LiveReply,
+    ModelResponseControl,
+    StoppedReply,
+    UserStoppedError,
+    public_response_text,
+)
 from abaqus_sim_agent.coding.resume import (
     CodingRunReconciliationRequired,
     CodingRunResumeError,
     CodingRunWorkspaceChanged,
     ResumeStatus,
+    append_execution_result,
     create_step_store,
     ensure_new_run_state_available,
     load_api_discovery_traces,
@@ -65,6 +87,7 @@ from abaqus_sim_agent.coding.resume import (
     write_resume_state,
 )
 from abaqus_sim_agent.coding.run_lock import CodingRunFileLock
+from abaqus_sim_agent.coding.runtime_tools import finalize_runtime_result
 from abaqus_sim_agent.coding.user_questions import (
     CodingAgentOutput,
     QuestionProtocol,
@@ -83,6 +106,9 @@ from abaqus_sim_agent.coding.workspace import (
     WorkspaceSnapshot,
     artifact_evidence_from_snapshots,
 )
+from abaqus_sim_agent.execution import AbaqusExecutionResult, ArtifactChangeKind
+
+from .progress import CodingProgress, ProgressObserver, notify
 
 ProgressSink = Callable[[str], None]
 
@@ -120,19 +146,36 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
     verifier: CodingRunVerifier[VerificationAttemptT]
     initial_snapshot: WorkspaceSnapshot
     progress_sink: ProgressSink | None = None
+    observer: ProgressObserver | None = None
+    stream_model: bool = False
+    response_control: ModelResponseControl | None = None
+    _view_stopped: bytes | None = field(default=None, init=False, repr=False)
+    _response_id: str = field(default="", init=False)
+    _response_number: int = field(default=0, init=False)
+    _public_text: str = field(default="", init=False)
+    _view_history: bytes | None = field(default=None, init=False, repr=False)
+    _view_outcome: bytes | None = field(default=None, init=False, repr=False)
+    _view_verification: bytes | None = field(default=None, init=False, repr=False)
     verify_on_budget_exhaustion: bool = False
     resume: bool = False
     step_store: StepStore | None = None
     launch_manifest_json: str | None = None
     expected_amendment_sequence: int | None = None
+    continuation_id: str | None = None
+    continuation_prompt: str | None = None
     question_protocol: QuestionProtocol = "legacy_decision"
+    response_enabled: bool = False
     _pending_question: UserQuestion | None = field(default=None, init=False, repr=False)
+    _pending_tool_frontier: DeferredToolFrontier | None = field(
+        default=None, init=False, repr=False
+    )
     _deferred_input: DeferredToolResults | None = field(
         default=None, init=False, repr=False
     )
     _current_turn: int = field(default=0, init=False, repr=False)
     _current_amendment_sequence: int = field(default=0, init=False, repr=False)
     _current_task_revision: int = field(default=0, init=False, repr=False)
+    _current_continuation_id: str | None = field(default=None, init=False, repr=False)
     _revision_workspace_snapshot: WorkspaceSnapshot | None = field(
         default=None,
         init=False,
@@ -153,7 +196,11 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
         assert isinstance(result, CodingRunResult)
         return result
 
-    async def run_step(self) -> CodingRunResult[VerificationAttemptT] | WaitingForUser:
+    async def run_step(
+        self,
+    ) -> (
+        CodingRunResult[VerificationAttemptT] | WaitingForUser | WaitingForToolExecution
+    ):
         """执行一个主动工作段；待答时返回并释放锁，由调用方接收答复。
 
         Note:
@@ -166,7 +213,9 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
 
     async def _run_exclusive(
         self,
-    ) -> CodingRunResult[VerificationAttemptT] | WaitingForUser:
+    ) -> (
+        CodingRunResult[VerificationAttemptT] | WaitingForUser | WaitingForToolExecution
+    ):
         start = await self._prepare_start()
         started = start.started
         shared_usage = start.usage
@@ -175,6 +224,11 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
         prompt = start.prompt
         verification: VerificationAttemptT | None = None
         turn = start.turn
+        if (
+            self._pending_tool_frontier is not None
+            and self._pending_tool_frontier.state == "waiting"
+        ):
+            return self._tool_waiting_result(self._pending_tool_frontier)
         if self._pending_question is not None and self._pending_question.pending:
             return self._waiting(shared_usage, clarifications, started)
         self.dependencies.document_deadline = (
@@ -230,6 +284,11 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                                         clarifications,
                                         started,
                                     )
+                                if (
+                                    self.stream_model
+                                    or self.response_control is not None
+                                ) and Agent.is_model_request_node(_node):
+                                    await self._request_with_display(_node, agent_run)
                                 previous_node_completed = True
                         finally:
                             history = self._persist_history_json(
@@ -244,13 +303,33 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                     result = agent_run.result
                     assert result is not None, "The agent graph did not finish properly"
                     decision = result.output
+                    if (
+                        self._pending_tool_frontier is not None
+                        and self._pending_tool_frontier.state == "resuming"
+                    ):
+                        self._pending_tool_frontier = write_deferred_tool_frontier(
+                            self.request.state_dir,
+                            self._pending_tool_frontier.model_copy(
+                                update={"state": "resolved"}
+                            ),
+                        )
                     if isinstance(decision, DeferredToolRequests):
                         if (
                             self.question_protocol != "ask_user_v1"
                             or decision.approvals
                             or len(decision.calls) != 1
-                            or decision.calls[0].tool_name != "ask_user"
                         ):
+                            raise ValueError("unsupported deferred tool request")
+                        call = decision.calls[0]
+                        if call.tool_name == "run_solver_job":
+                            return self._defer_solver_tool(
+                                decision,
+                                result.all_messages_json(),
+                                shared_usage,
+                                clarifications,
+                                started,
+                            )
+                        if call.tool_name != "ask_user":
                             raise ValueError("unsupported deferred tool request")
                         ledger = load_questions(
                             self.request.state_dir, self.request.run_id
@@ -266,7 +345,6 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                                 clarifications,
                                 started,
                             )
-                        call = decision.calls[0]
                         history_bytes = result.all_messages_json()
                         question = UserQuestion(
                             question_id=call.tool_call_id,
@@ -384,6 +462,40 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                             clarifications,
                             started,
                         )
+                    if isinstance(decision, ResponseDecision):
+                        current = WorkspaceResolver().snapshot(self.request.workspace)
+                        if (
+                            not self.response_enabled
+                            or self._verification_executions()
+                            or current != self._verification_snapshot()
+                            or self.dependencies.unresolved_probe_feedback() is not None
+                        ):
+                            return self._failed(
+                                "response_scope",
+                                "Text-only completion cannot replace verification of file changes or execution.",
+                                shared_usage,
+                                clarifications,
+                                started,
+                            )
+                        outcome = CodingRunOutcome(
+                            run_id=self.request.run_id,
+                            task_revision=self._current_task_revision,
+                            amendment_sequence=self._current_amendment_sequence,
+                            status=CodingRunStatus.COMPLETED,
+                            completion_kind="response",
+                            summary=decision.summary,
+                            usage=_usage(shared_usage, self.dependencies, started),
+                            clarifications=tuple(clarifications),
+                        )
+                        self._view_verification = None
+                        self._write_outcome(outcome)
+                        self._save_resume_state(
+                            "completed", shared_usage, clarifications, started
+                        )
+                        self._progress(
+                            "Response delivered; no execution verification claimed"
+                        )
+                        return CodingRunResult(outcome=outcome)
                     if not isinstance(decision, ReadyForVerificationDecision):
                         return self._failed(
                             "agent_output",
@@ -439,6 +551,15 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                             "running", shared_usage, clarifications, started
                         )
                         continue
+                    notify(
+                        self.observer,
+                        CodingProgress(
+                            "verification",
+                            "verification",
+                            turn,
+                            self._current_task_revision,
+                        ),
+                    )
                     verification = await self.verifier.verify(
                         self.request,
                         self.dependencies.runner,
@@ -450,6 +571,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                         "verification",
                         verification.model_dump(mode="json"),
                     )
+                    self._view_verification = verification.model_dump_json().encode()
                     if verification.passed:
                         outcome = CodingRunOutcome(
                             run_id=self.request.run_id,
@@ -509,6 +631,28 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                         clarifications,
                         started,
                     )
+        except (RunCancelled, UserStoppedError) as exc:
+            if self.response_control is None or not self.response_control.requested:
+                self._save_resume_state(
+                    "interrupted", shared_usage, clarifications, started, error=exc
+                )
+                raise CodingRunInfrastructureError(str(exc)) from exc
+            stopped = StoppedReply(
+                request_id=self._response_id,
+                text=self._public_text,
+                turn=turn,
+                response_number=self._response_number,
+                task_revision=self._current_task_revision,
+            )
+            self._append_event(
+                "model_response_stopped", stopped.model_dump(mode="json")
+            )
+            self._view_stopped = stopped.model_dump_json().encode()
+            error = UserStoppedError("用户已停止当前模型回复；已有文件和用量保留。")
+            self._save_resume_state(
+                "interrupted", shared_usage, clarifications, started, error=error
+            )
+            raise error from exc
         except TimeoutError:
             return self._failed(
                 "timeout",
@@ -562,6 +706,92 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                 error=exc,
             )
             raise CodingRunInfrastructureError(f"{type(exc).__name__}: {exc}") from exc
+
+    async def _request_with_display(
+        self,
+        node: ModelRequestNode[CodingAgentDependencies, CodingAgentOutput],
+        agent_run: AgentRun[CodingAgentDependencies, CodingAgentOutput],
+    ) -> None:
+        from uuid import uuid4
+
+        self._response_id = (
+            self.response_control.begin(agent_run.cancel)
+            if self.response_control
+            else uuid4().hex
+        )
+        self._response_number = 1 + sum(
+            isinstance(m, ModelResponse)
+            and m.run_id == f"{self.request.run_id}-turn-{self._current_turn}"
+            for m in agent_run.all_messages()
+        )
+        self._public_text = ""
+        last_emit = 0.0
+        pending_emit: asyncio.TimerHandle | None = None
+
+        def emit(
+            kind: Literal["model_started", "model_delta", "model_finished"],
+        ) -> None:
+            notify(
+                self.observer,
+                CodingProgress(
+                    kind,
+                    "model" if kind != "model_finished" else "running",
+                    self._current_turn,
+                    self._current_task_revision,
+                    reply_json=LiveReply(
+                        request_id=self._response_id,
+                        text=self._public_text[:MAX_PREVIEW]
+                        + (
+                            "\n…（流式预览已截断，完成后显示全文）"
+                            if len(self._public_text) > MAX_PREVIEW
+                            else ""
+                        ),
+                    )
+                    .model_dump_json()
+                    .encode(),
+                ),
+            )
+
+        def capture(response: ModelResponse) -> None:
+            text = public_response_text(response, partial=True)
+            if text and not (
+                len(text) < len(self._public_text)
+                and self._public_text.startswith(text)
+            ):
+                self._public_text = text
+
+        emit("model_started")
+        try:
+            if self.stream_model:
+                async with node.stream(agent_run.ctx) as stream:
+                    try:
+
+                        def publish() -> None:
+                            nonlocal last_emit, pending_emit
+                            pending_emit = None
+                            last_emit = monotonic()
+                            emit("model_delta")
+
+                        async for _event in stream:
+                            capture(stream.response)
+                            delay = max(0.0, 0.05 - (monotonic() - last_emit))
+                            if pending_emit is None:
+                                pending_emit = asyncio.get_running_loop().call_later(
+                                    delay, publish
+                                )
+                    finally:
+                        if pending_emit is not None:
+                            pending_emit.cancel()
+                        capture(stream.response)
+                        emit("model_delta")
+            else:
+                await agent_run.next(node)
+        finally:
+            if self.response_control:
+                self.response_control.end()
+            emit("model_finished")
+        if self.response_control and self.response_control.requested:
+            raise UserStoppedError("User stopped before tool dispatch")
 
     async def _prepare_start(self) -> _RunStartState:
         from .launch import LaunchManifest
@@ -681,21 +911,35 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
         has_pending_amendment = (
             effective.amendment_sequence > persisted.amendment_sequence
         )
-        if persisted.status in {"completed", "failed"} and not has_pending_amendment:
+        new_continuation = (
+            self.continuation_id is not None
+            and self.continuation_id != persisted.continuation_id
+        )
+        if (
+            persisted.status in {"completed", "failed"}
+            and not has_pending_amendment
+            and not new_continuation
+        ):
             raise CodingRunResumeError(
-                f"CodingRun is terminal and has no new amendment: {persisted.status}"
+                f"CodingRun is terminal and has no new amendment or continuation: {persisted.status}"
             )
         if effective.task_revision < persisted.task_revision:
             raise CodingRunResumeError("task revision moved backwards")
         task_revision_changed = effective.task_revision > persisted.task_revision
+        if task_revision_changed and self.continuation_id is not None:
+            raise CodingRunResumeError(
+                "a host continuation cannot be combined with a new task revision"
+            )
         self._current_amendment_sequence = effective.amendment_sequence
         self._current_task_revision = effective.task_revision
         self.dependencies.current_amendment_sequence = effective.amendment_sequence
         self.dependencies.current_task_revision = effective.task_revision
-        self._revision_workspace_snapshot = effective.revision_workspace_snapshot
-        self._revision_execution_start_index = effective.revision_execution_start_index
         usage = persisted.usage.restore()
-        clarifications = [] if task_revision_changed else list(persisted.clarifications)
+        clarifications = (
+            []
+            if task_revision_changed or new_continuation
+            else list(persisted.clarifications)
+        )
         persisted.dependencies.restore_into(
             self.dependencies,
             journaled_executions=load_execution_results(self.request.state_dir),
@@ -711,11 +955,26 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             ),
         )
         if task_revision_changed:
+            self._current_continuation_id = None
+            self._revision_workspace_snapshot = effective.revision_workspace_snapshot
+            self._revision_execution_start_index = (
+                effective.revision_execution_start_index
+            )
             self.dependencies.set_concept_lookup_trigger(
                 "task_revision",
                 "feedback",
                 reference=f"task_revision:{effective.task_revision}",
                 evidence=effective.request.goal,
+            )
+        elif new_continuation:
+            self._current_continuation_id = self.continuation_id
+            self._revision_workspace_snapshot = persisted.workspace_snapshot
+            self._revision_execution_start_index = len(self.dependencies.executions)
+        else:
+            self._current_continuation_id = persisted.continuation_id
+            self._revision_workspace_snapshot = persisted.revision_workspace_snapshot
+            self._revision_execution_start_index = (
+                persisted.revision_execution_start_index
             )
         if self._revision_execution_start_index > len(self.dependencies.executions):
             raise CodingRunResumeError(
@@ -723,11 +982,168 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             )
         self._current_turn = persisted.turn
         started = perf_counter() - persisted.active_wall_time_seconds
+        deferred_frontier = load_deferred_tool_frontier(self.request.state_dir)
+        if (
+            deferred_frontier is not None
+            and deferred_frontier.run_id != self.request.run_id
+        ):
+            raise CodingRunResumeError("deferred tool frontier belongs to another run")
+        if persisted.status == "waiting_for_tool_execution":
+            if deferred_frontier is None or deferred_frontier.state == "resolved":
+                raise CodingRunResumeError(
+                    "waiting Solver state is missing its deferred tool frontier"
+                )
+            if task_revision_changed or new_continuation:
+                raise CodingRunResumeError(
+                    "cannot change task revision or continuation while Solver is pending"
+                )
+            history_at_deferral = _frontier_history(deferred_frontier)
+            runner = self.dependencies.runner
+            if not isinstance(runner, DeferredSolverRunner):
+                raise CodingRunResumeError(
+                    "saved deferred Solver requires a host deferred runner"
+                )
+            resolution = runner.resolve_deferred_solver_job(
+                deferred_frontier.execution_id
+            )
+            if resolution.status in {"starting", "running"}:
+                self._pending_tool_frontier = deferred_frontier
+                self._prepare_document_policy(
+                    restoring=True, clarifications=clarifications
+                )
+                return _RunStartState(
+                    started=started,
+                    usage=usage,
+                    clarifications=clarifications,
+                    history=history_at_deferral,
+                    prompt=None,
+                    turn=persisted.turn,
+                    remaining_wall_time_seconds=max(
+                        0.0,
+                        self.request.budget.wall_time_seconds
+                        - persisted.active_wall_time_seconds,
+                    ),
+                )
+            if resolution.status == "needs_reconcile":
+                error = CodingRunResumeError(
+                    resolution.error or "deferred Solver requires reconciliation"
+                )
+                self._save_resume_state(
+                    "needs_reconcile",
+                    usage,
+                    clarifications,
+                    started,
+                    error=error,
+                )
+                raise error
+            current_snapshot = WorkspaceResolver(
+                captured_cwd=self.request.workspace
+            ).snapshot(self.request.workspace)
+            if resolution.status == "cancelled":
+                if current_snapshot != deferred_frontier.workspace_snapshot:
+                    error = CodingRunWorkspaceChanged(
+                        "cancelled Solver changed workspace without terminal artifact evidence"
+                    )
+                    self._save_resume_state(
+                        "needs_reconcile",
+                        usage,
+                        clarifications,
+                        started,
+                        error=error,
+                    )
+                    raise error
+                if deferred_frontier.state == "waiting":
+                    deferred_frontier = write_deferred_tool_frontier(
+                        self.request.state_dir,
+                        deferred_frontier.model_copy(
+                            update={
+                                "state": "resuming",
+                                "tool_failure": resolution.error
+                                or "Solver execution was cancelled.",
+                            }
+                        ),
+                    )
+                if not deferred_frontier.tool_failure:
+                    error = CodingRunResumeError(
+                        "deferred Solver resume is incomplete after cancellation"
+                    )
+                    self._save_resume_state(
+                        "needs_reconcile",
+                        usage,
+                        clarifications,
+                        started,
+                        error=error,
+                    )
+                    raise error
+                self._deferred_input = DeferredToolResults(
+                    calls={
+                        deferred_frontier.tool_call_id: ToolFailed(
+                            deferred_frontier.tool_failure
+                        )
+                    }
+                )
+            else:
+                result = resolution.result
+                if result is None:
+                    error = CodingRunResumeError(
+                        "terminal deferred Solver is missing its execution result"
+                    )
+                    self._save_resume_state(
+                        "needs_reconcile",
+                        usage,
+                        clarifications,
+                        started,
+                        error=error,
+                    )
+                    raise error
+                _validate_deferred_workspace(
+                    deferred_frontier.workspace_snapshot,
+                    current_snapshot,
+                    result,
+                )
+                if deferred_frontier.state == "waiting":
+                    deferred_frontier = write_deferred_tool_frontier(
+                        self.request.state_dir,
+                        deferred_frontier.model_copy(update={"state": "resuming"}),
+                    )
+                    payload = await self._finalize_deferred_solver_result(
+                        deferred_frontier,
+                        result,
+                    )
+                    deferred_frontier = write_deferred_tool_frontier(
+                        self.request.state_dir,
+                        deferred_frontier.model_copy(
+                            update={"tool_result_payload": payload}
+                        ),
+                    )
+                elif deferred_frontier.tool_result_payload is None:
+                    error = CodingRunResumeError(
+                        "deferred Solver resume stopped during result finalization"
+                    )
+                    self._save_resume_state(
+                        "needs_reconcile",
+                        usage,
+                        clarifications,
+                        started,
+                        error=error,
+                    )
+                    raise error
+                self._deferred_input = DeferredToolResults(
+                    calls={
+                        deferred_frontier.tool_call_id: deferred_frontier.tool_result_payload
+                    }
+                )
+            self._pending_tool_frontier = deferred_frontier
         assert self.step_store is not None
         try:
             continuation = await select_resume_history(
                 self.step_store,
                 self.request,
+                deferred_tool_effect=(
+                    (deferred_frontier.tool_name, deferred_frontier.tool_call_id)
+                    if deferred_frontier is not None
+                    else None
+                ),
             )
         except CodingRunReconciliationRequired as exc:
             self._append_event(
@@ -757,28 +1173,33 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
         current_snapshot = WorkspaceResolver(
             captured_cwd=self.request.workspace
         ).snapshot(self.request.workspace)
-        expected_snapshot = (
-            effective.revision_workspace_snapshot
-            if task_revision_changed
-            else persisted.workspace_snapshot
-        )
-        if current_snapshot != expected_snapshot:
-            changed_paths = _changed_snapshot_paths(
-                expected_snapshot,
-                current_snapshot,
+        if self._deferred_input is None:
+            expected_snapshot = (
+                effective.revision_workspace_snapshot
+                if task_revision_changed
+                else persisted.workspace_snapshot
             )
-            self._append_event(
-                "resume_workspace_changed",
-                {"changed_paths": list(changed_paths)},
-            )
-            detail = ", ".join(changed_paths[:10]) or "unknown workspace change"
-            raise CodingRunWorkspaceChanged(
-                "workspace changed after the last persisted CodingRun boundary: "
-                + detail
-            )
+            if current_snapshot != expected_snapshot:
+                changed_paths = _changed_snapshot_paths(
+                    expected_snapshot,
+                    current_snapshot,
+                )
+                self._append_event(
+                    "resume_workspace_changed",
+                    {"changed_paths": list(changed_paths)},
+                )
+                detail = ", ".join(changed_paths[:10]) or "unknown workspace change"
+                raise CodingRunWorkspaceChanged(
+                    "workspace changed after the last persisted CodingRun boundary: "
+                    + detail
+                )
 
-        resume_messages = list(continuation.messages)
-        if self.question_protocol == "ask_user_v1":
+        resume_messages = (
+            list(_frontier_history(deferred_frontier))
+            if self._deferred_input is not None and deferred_frontier is not None
+            else list(continuation.messages)
+        )
+        if self.question_protocol == "ask_user_v1" and self._deferred_input is None:
             ledger = load_questions(self.request.state_dir, self.request.run_id)
             if persisted.pending_question_id and not any(
                 q.question_id == persisted.pending_question_id for q in ledger.questions
@@ -848,6 +1269,8 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                 "to_amendment_sequence": effective.amendment_sequence,
                 "from_task_revision": persisted.task_revision,
                 "to_task_revision": effective.task_revision,
+                "from_continuation_id": persisted.continuation_id,
+                "to_continuation_id": self._current_continuation_id,
                 "history_source": continuation.source,
                 "prior_step_run_id": continuation.prior_step_run_id,
                 "unresolved_non_runtime_tools": list(
@@ -863,12 +1286,14 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             history=resume_messages,
             prompt=None
             if self._deferred_input is not None and not task_revision_changed
-            else _merge_continuation_prompt(
+            else _compose_resume_prompt(
                 continuation.prompt,
                 amendment_prompt(
                     effective.ledger,
                     after_sequence=persisted.amendment_sequence,
                 ),
+                user_prompt=self.continuation_prompt,
+                new_continuation=new_continuation,
             ),
             turn=persisted.turn,
             remaining_wall_time_seconds=max(
@@ -1018,6 +1443,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
 
     def _persist_history_json(self, history_json: bytes) -> list[ModelMessage]:
         write_bytes_atomic(self.request.state_dir / "history.json", history_json)
+        self._view_history = history_json
         return ModelMessagesTypeAdapter.validate_json(history_json)
 
     def _append_event(self, event: str, data: object) -> None:
@@ -1056,6 +1482,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
         )
         write_text_atomic(archive, value)
         self._write_text("outcome.json", value)
+        self._view_outcome = outcome.model_dump_json().encode()
 
     def _verification_snapshot(self) -> WorkspaceSnapshot:
         return self._revision_workspace_snapshot or self.initial_snapshot
@@ -1076,6 +1503,167 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             ).wait_seconds,
         )
 
+    def _defer_solver_tool(
+        self,
+        decision: DeferredToolRequests,
+        history_json: bytes,
+        usage: RunUsage,
+        clarifications: list[ClarificationEvent],
+        started: float,
+    ) -> WaitingForToolExecution:
+        if decision.approvals or len(decision.calls) != 1:
+            raise CodingRunResumeError(
+                "deferred Solver requires exactly one tool call and no approvals"
+            )
+        call = decision.calls[0]
+        if call.tool_name != "run_solver_job":
+            raise CodingRunResumeError(f"unsupported deferred tool: {call.tool_name}")
+        metadata = decision.metadata.get(call.tool_call_id)
+        if not isinstance(metadata, dict) or metadata.get("kind") != "solver_job":
+            raise CodingRunResumeError("deferred Solver metadata is missing or invalid")
+
+        execution_id = metadata.get("execution_id")
+        execution_count_before = metadata.get("execution_count_before")
+        journal_count_before = metadata.get("execution_journal_count_before")
+        snapshot_value = metadata.get("workspace_snapshot")
+        if not isinstance(execution_id, str):
+            raise CodingRunResumeError("deferred Solver execution id is missing")
+        if not isinstance(execution_count_before, int) or isinstance(
+            execution_count_before, bool
+        ):
+            raise CodingRunResumeError("deferred Solver execution baseline is invalid")
+        if not isinstance(journal_count_before, int) or isinstance(
+            journal_count_before, bool
+        ):
+            raise CodingRunResumeError("deferred Solver journal baseline is invalid")
+        if isinstance(snapshot_value, dict) and isinstance(
+            snapshot_value.get("files"), list
+        ):
+            snapshot_value = {
+                **snapshot_value,
+                "files": tuple(snapshot_value["files"]),
+            }
+        try:
+            workspace_snapshot = WorkspaceSnapshot.model_validate(snapshot_value)
+        except ValueError as exc:
+            raise CodingRunResumeError(
+                "deferred Solver workspace baseline is invalid"
+            ) from exc
+
+        if execution_count_before != len(self.dependencies.executions):
+            raise CodingRunResumeError(
+                "dependency executions changed while deferring Solver"
+            )
+        if journal_count_before != len(load_execution_results(self.request.state_dir)):
+            raise CodingRunResumeError(
+                "execution journal changed while deferring Solver"
+            )
+
+        try:
+            history_text = history_json.decode("utf-8")
+            ModelMessagesTypeAdapter.validate_json(history_json)
+        except (UnicodeError, ValueError) as exc:
+            raise CodingRunResumeError("deferred Solver history is invalid") from exc
+
+        now = datetime.now(UTC)
+        frontier = DeferredToolFrontier(
+            run_id=self.request.run_id,
+            tool_call_id=call.tool_call_id,
+            execution_id=execution_id,
+            metadata=dict(metadata),
+            turn=self._current_turn,
+            amendment_sequence=self._current_amendment_sequence,
+            task_revision=self._current_task_revision,
+            continuation_id=self._current_continuation_id,
+            history_json=history_text,
+            history_sha256=hashlib.sha256(history_json).hexdigest(),
+            workspace_snapshot=workspace_snapshot,
+            execution_count_before=execution_count_before,
+            execution_journal_count_before=journal_count_before,
+            created_at=now,
+            updated_at=now,
+        )
+        frontier = write_deferred_tool_frontier(self.request.state_dir, frontier)
+        self._pending_tool_frontier = frontier
+        self._save_resume_state(
+            "waiting_for_tool_execution",
+            usage,
+            clarifications,
+            started,
+        )
+        return self._tool_waiting_result(frontier)
+
+    def _tool_waiting_result(
+        self, frontier: DeferredToolFrontier
+    ) -> WaitingForToolExecution:
+        return WaitingForToolExecution(
+            run_id=frontier.run_id,
+            tool_call_id=frontier.tool_call_id,
+            execution_id=frontier.execution_id,
+        )
+
+    async def _finalize_deferred_solver_result(
+        self,
+        frontier: DeferredToolFrontier,
+        result: AbaqusExecutionResult,
+    ) -> dict[str, object]:
+        journal = load_execution_results(self.request.state_dir)
+        if len(journal) < frontier.execution_journal_count_before:
+            raise CodingRunResumeError("execution journal moved behind Solver baseline")
+        journal_tail = journal[frontier.execution_journal_count_before :]
+        if len(journal_tail) > 1:
+            raise CodingRunResumeError(
+                "multiple execution records appeared while Solver was deferred"
+            )
+        if journal_tail and journal_tail[0] != result:
+            raise CodingRunResumeError(
+                "execution journal result does not match deferred Solver result"
+            )
+
+        execution_count = len(self.dependencies.executions)
+        if journal_tail:
+            if execution_count != frontier.execution_count_before + 1:
+                raise CodingRunResumeError(
+                    "dependency execution count does not match recovered Solver result"
+                )
+            if self.dependencies.executions[frontier.execution_count_before] != result:
+                raise CodingRunResumeError(
+                    "dependency execution does not match recovered Solver result"
+                )
+        else:
+            if execution_count != frontier.execution_count_before:
+                raise CodingRunResumeError(
+                    "dependency executions changed before Solver finalization"
+                )
+            append_execution_result(self.request.state_dir, result)
+            self.dependencies.record_runtime_execution(result)
+
+        api_mode = frontier.metadata.get("api_catalog_mode")
+        if api_mode not in {
+            "off",
+            "full",
+            "automatic_verified_only",
+            "automatic_exact_signature",
+        }:
+            raise CodingRunResumeError("deferred Solver API catalog mode is invalid")
+        diagnostic_mode = frontier.metadata.get("diagnostic_retrieval_mode")
+        if diagnostic_mode not in {"off", "advisory"}:
+            raise CodingRunResumeError(
+                "deferred Solver diagnostic retrieval mode is invalid"
+            )
+        payload = await finalize_runtime_result(
+            self.dependencies,
+            result,
+            api_catalog_mode=cast(ApiCatalogMode, api_mode),
+            diagnostic_retrieval_mode=cast(DiagnosticRetrievalMode, diagnostic_mode),
+            record_execution=False,
+        )
+        if "recorded_probe_result" in frontier.metadata:
+            payload["recorded_probe_result"] = frontier.metadata[
+                "recorded_probe_result"
+            ]
+        return payload
+
     def _verification_executions(self):
         return self.dependencies.executions[self._revision_execution_start_index :]
 
@@ -1094,6 +1682,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             turn=self._current_turn,
             amendment_sequence=self._current_amendment_sequence,
             task_revision=self._current_task_revision,
+            continuation_id=self._current_continuation_id,
             revision_workspace_snapshot=self._verification_snapshot(),
             revision_execution_start_index=self._revision_execution_start_index,
             active_wall_time_seconds=max(0.0, perf_counter() - started),
@@ -1133,6 +1722,23 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                 }
             )
         write_resume_state(self.request.state_dir, state)
+        notify(
+            self.observer,
+            CodingProgress(
+                "checkpoint",
+                status,
+                self._current_turn,
+                self._current_task_revision,
+                checkpoint_json=state.model_dump_json().encode(),
+                history_json=self._view_history,
+                question_json=self._pending_question.model_dump_json().encode()
+                if self._pending_question
+                else None,
+                outcome_json=self._view_outcome,
+                verification_json=self._view_verification,
+                stopped_reply_json=self._view_stopped,
+            ),
+        )
 
     def _prepare_document_policy(
         self, *, restoring: bool, clarifications: list[ClarificationEvent]
@@ -1270,6 +1876,98 @@ def _changed_snapshot_paths(
     )
 
 
+def _frontier_history(frontier: DeferredToolFrontier) -> list[ModelMessage]:
+    try:
+        raw = frontier.history_json.encode("utf-8")
+    except UnicodeError as exc:
+        raise CodingRunResumeError("deferred Solver history is not UTF-8") from exc
+    if hashlib.sha256(raw).hexdigest() != frontier.history_sha256:
+        raise CodingRunResumeError("deferred Solver history checksum mismatch")
+    try:
+        return ModelMessagesTypeAdapter.validate_json(raw)
+    except ValueError as exc:
+        raise CodingRunResumeError(
+            "deferred Solver history cannot be restored"
+        ) from exc
+
+
+def _validate_deferred_workspace(
+    before: WorkspaceSnapshot,
+    current: WorkspaceSnapshot,
+    result: AbaqusExecutionResult,
+) -> None:
+    changed_paths = set(_changed_snapshot_paths(before, current))
+    before_by_path = before.by_path()
+    current_by_path = current.by_path()
+    evidence_paths: set[str] = set()
+
+    for change in result.artifact_changes:
+        if change.path in evidence_paths:
+            raise CodingRunWorkspaceChanged(
+                f"deferred Solver reported duplicate artifact evidence: {change.path}"
+            )
+        evidence_paths.add(change.path)
+        old = before_by_path.get(change.path)
+        new = current_by_path.get(change.path)
+
+        if change.before is not None and change.before.path != change.path:
+            raise CodingRunWorkspaceChanged(
+                f"deferred Solver before fingerprint path mismatch: {change.path}"
+            )
+        if change.after is not None and change.after.path != change.path:
+            raise CodingRunWorkspaceChanged(
+                f"deferred Solver after fingerprint path mismatch: {change.path}"
+            )
+
+        if change.kind is ArtifactChangeKind.CREATED:
+            valid = (
+                old is None
+                and new is not None
+                and change.before is None
+                and change.after is not None
+                and change.after.size_bytes == new.size_bytes
+                and change.after.sha256 == new.sha256
+            )
+        elif change.kind is ArtifactChangeKind.MODIFIED:
+            valid = (
+                old is not None
+                and new is not None
+                and change.before is not None
+                and change.after is not None
+                and change.before.size_bytes == old.size_bytes
+                and change.before.sha256 == old.sha256
+                and change.after.size_bytes == new.size_bytes
+                and change.after.sha256 == new.sha256
+            )
+        elif change.kind is ArtifactChangeKind.DELETED:
+            valid = (
+                old is not None
+                and new is None
+                and change.before is not None
+                and change.after is None
+                and change.before.size_bytes == old.size_bytes
+                and change.before.sha256 == old.sha256
+            )
+        else:
+            valid = False
+        if not valid:
+            raise CodingRunWorkspaceChanged(
+                f"deferred Solver artifact evidence does not match workspace: {change.path}"
+            )
+
+    if changed_paths != evidence_paths:
+        unexplained = sorted(changed_paths - evidence_paths)
+        stale = sorted(evidence_paths - changed_paths)
+        detail = []
+        if unexplained:
+            detail.append("unexplained=" + ", ".join(unexplained[:10]))
+        if stale:
+            detail.append("stale=" + ", ".join(stale[:10]))
+        raise CodingRunWorkspaceChanged(
+            "deferred Solver workspace evidence mismatch: " + "; ".join(detail)
+        )
+
+
 def _merge_continuation_prompt(
     continuation_prompt: str,
     pending_amendment_prompt: str | None,
@@ -1277,6 +1975,24 @@ def _merge_continuation_prompt(
     if pending_amendment_prompt is None:
         return continuation_prompt
     return f"{continuation_prompt}\n\n{pending_amendment_prompt}"
+
+
+def _compose_resume_prompt(
+    continuation_prompt: str,
+    pending_amendment_prompt: str | None,
+    *,
+    user_prompt: str | None,
+    new_continuation: bool,
+) -> str:
+    if user_prompt is None:
+        base = continuation_prompt
+    elif new_continuation:
+        base = user_prompt
+    else:
+        base = (
+            f"{continuation_prompt}\n\nThe active user request is still:\n{user_prompt}"
+        )
+    return _merge_continuation_prompt(base, pending_amendment_prompt)
 
 
 def _usage(

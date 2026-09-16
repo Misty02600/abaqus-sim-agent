@@ -22,12 +22,18 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+web = [
+  "fastapi==0.116.1",
+  "uvicorn==0.52.4",
+  "pillow>=11,<13",
+]
 static-preflight = [
   "basedpyright>=1.39.0,<2.0.0",
 ]
 
 [project.scripts]
 abaqus-sim-agent = "abaqus_sim_agent.coding.cli:main"
+abaqus-sim-agent-web = "abaqus_sim_agent.web.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/Misty02600/abaqus-sim-agent"
