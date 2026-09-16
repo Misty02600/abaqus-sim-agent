@@ -11,7 +11,6 @@ dependencies = [
     { name = "chromadb" },
     { name = "langchain-chroma" },
     { name = "langchain-core" },
-    { name = "langchain-openai" },
     { name = "langchain-text-splitters" },
     { name = "lxml" },
     { name = "pydantic" },
@@ -56,7 +55,6 @@ requires-dist = [
     { name = "chromadb", specifier = ">=1.5,<2" },
     { name = "langchain-chroma", specifier = ">=1.1,<2" },
     { name = "langchain-core", specifier = ">=1.2,<2" },
-    { name = "langchain-openai", specifier = ">=1.5,<2" },
     { name = "langchain-text-splitters", specifier = ">=1.1,<2" },
     { name = "lxml", specifier = ">=6.0,<7" },
     { name = "pydantic", specifier = ">=2.12,<3" },
@@ -863,21 +861,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/27/b9/893806b89f77e1271fe6e10ce41682ff5fe43d071564e1d8e39dbb5d4d6d/langchain_core-1.5.6.tar.gz", hash = "sha256:b5f73bd9688c457b31ec73657a0ad56948f889fae27acee79286e9c285632ee6", size = 984873, upload-time = "2026-08-17T21:26:35.921Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5d/0a/890504397885c9d1ae45f2e06c3000dd9f4445439602b6a990a88b32c0ac/langchain_core-1.5.6-py3-none-any.whl", hash = "sha256:d6cf37bf695ecc22cddeb8461a684e353190b2ce430d99eb22bc11c0c7c00ea5", size = 567016, upload-time = "2026-08-17T21:26:34.595Z" },
-]
-
-[[package]]
-name = "langchain-openai"
-version = "1.5.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "certifi" },
-    { name = "langchain-core" },
-    { name = "openai" },
-    { name = "tiktoken" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/40/f8/4b3d87b64d5ae2ae85a9bee4e943ad04d2ce25c790cadd87ba67f03c6596/langchain_openai-1.5.2.tar.gz", hash = "sha256:94b83536d943ff661bb74cf607534ff6e7c7d1c3b2235e33a1e09e3af1d77bfc", size = 3289190, upload-time = "2026-08-18T17:37:53.191Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/35/61/6aa67be92298b40d51427cd4d6834aed4914bd322676422543bea33fe527/langchain_openai-1.5.2-py3-none-any.whl", hash = "sha256:ace745b422eecce5cec3f4a1802c95853de91a8283adbfcea4f2ac457f2a8181", size = 124547, upload-time = "2026-08-18T17:37:51.913Z" },
 ]
 
 [[package]]
