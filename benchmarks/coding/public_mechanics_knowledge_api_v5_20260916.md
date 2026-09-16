@@ -23,3 +23,18 @@
 ## 解释边界
 
 本批同时改变 Catalog 模式、可见资料、Skill 快照、源码/依赖时间点和并发方式，不能与旧 `full` 批次作严格 A/B，也不能把通过或调用下降单因果归给知识库、discovery 或并发。旧失败可用于说明选题动机，不能作为新 profile 的 control 分母。若需要净收益结论，后续再用同一新 seal 增加不带资料/discovery的配对 control。
+
+## 实际结果
+
+批次目录：`D:/abaqus-runs/public-mechanics-knowledge-api-v5-20260916`；seal SHA-256 为 `90a6f4fb3c027e7817d055a3d991f4dd1e91c26dc30e09413e208880489e140d`。工厂预检确认 Foundation 六项 capability、`full_with_discovery`、exact lookup、两个只读知识工具和三个 runtime 工具同时可见，0 模型/0 Abaqus。一次小型 Provider doctor 成功。
+
+两题随后并发启动，各使用一次新 run attempt 和冻结合同允许的唯一一次显式 resume；没有额外补跑、提高预算或新建替换批次。最终均为 `provider_interrupted`：
+
+| Case | 完整模型响应 | HTTP attempts / completed / failed | API / Abaqus / Solver | 可见行为 |
+|---|---:|---:|---:|---|
+| plate-with-hole-tension | 1 | 5 / 1 / 4 | 0 / 0 / 0 | 加载基础 `abaqus-2024-coding` Skill，并列出空工作区；第二请求及 resume 均在 retry 后超时 |
+| solid-cantilever-directional-bending | 0 | 4 / 0 / 4 | 0 / 0 / 0 | 初始请求和 resume 均在 retry 后超时 |
+
+plate 保存的 received usage 为1 request、6940 input、543 output、2 tool calls；实体梁没有完整响应，记录 usage 为0只能解释为“无收到的完整响应”，不是服务端零生成或零费用。两题累计 active wall 分别约729.23秒与723.97秒，runtime queue wait 都为0，因为没有进入 Abaqus。
+
+并发基础设施达到预声明行为：两个独立 task/conversation 同时开始，单批并发上限2，失败证据、HTTP attempt、resume和报告分别保留；没有 runtime 并发可供观察。知识文件、API discovery 和 exact Card 全部未调用，因此本批对它们的任务采用与收益没有行为资格；也没有最终脚本可作 script review。该结论不回填旧批次，不把 Provider 阻断记成工程任务失败或知识系统失败。
