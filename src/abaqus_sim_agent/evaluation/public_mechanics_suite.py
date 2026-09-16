@@ -10,6 +10,7 @@ import sys
 from datetime import UTC, datetime
 from importlib.metadata import distribution, distributions
 from pathlib import Path
+from typing import Literal
 from uuid import uuid4
 
 import httpx
@@ -18,6 +19,7 @@ from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.clarification import ScriptedClarificationProvider
 from abaqus_sim_agent.coding.contracts import (
+    CodingRunBudget,
     CodingRunRequest,
     RuntimeProfile,
     RuntimeScriptPolicy,
@@ -47,14 +49,19 @@ from abaqus_sim_agent.evaluation.public_mechanics_control import (
     save_json,
 )
 from abaqus_sim_agent.evaluation.public_mechanics_runner import PublicMechanicsRunner
-from abaqus_sim_agent.execution import DEFAULT_ABAQUS_2024_LAUNCHER, Abaqus2024Runner
+from abaqus_sim_agent.evaluation.serial_runtime import SerialRuntime
+from abaqus_sim_agent.execution import (
+    DEFAULT_ABAQUS_2024_LAUNCHER,
+    Abaqus2024Runner,
+    WindowsProcessStrategy,
+)
 from abaqus_sim_agent.skills import skill_library_path
 from abaqus_sim_agent.verification.public_mechanics_run import (
     PublicMechanicsRunVerifier,
 )
 
 ROOT = Path(__file__).parents[3]
-VERSION = "public-mechanics-e2e-v4-results-first"
+VERSION = "public-mechanics-e2e-v5-knowledge-discovery"
 
 
 def _write(path, value):
@@ -76,6 +83,10 @@ def prepare(
     case_ids: list[str],
     foundation: bool,
     *,
+    api_catalog_mode: Literal["full", "full_with_discovery"] = "full",
+    knowledge_resources: Path | None = None,
+    max_task_concurrency: int = 1,
+    max_runtime_concurrency: int = 1,
     http_timeout_seconds: float = 180.0,
     http_retries: int = 1,
 ):
@@ -85,6 +96,12 @@ def prepare(
     if len({c.case_id for c in cases}) != len(cases):
         raise ValueError("duplicate case")
     ApiCatalog.open(catalog)
+    if max_task_concurrency not in (1, 2):
+        raise ValueError("max_task_concurrency must be 1 or 2")
+    if max_runtime_concurrency not in (1, 2):
+        raise ValueError("max_runtime_concurrency must be 1 or 2")
+    if max_runtime_concurrency > max_task_concurrency:
+        raise ValueError("runtime concurrency cannot exceed task concurrency")
     root.mkdir(parents=True)
     snap = root / "snapshot"
     snap.mkdir()
@@ -98,6 +115,22 @@ def prepare(
     shutil.copytree(
         catalog, root / "catalog", ignore=shutil.ignore_patterns("__pycache__")
     )
+    knowledge_binding = None
+    if knowledge_resources is not None:
+        source = knowledge_resources.resolve(strict=True)
+        if not source.is_dir():
+            raise ValueError("knowledge resources must be a directory")
+        target = root / "knowledge-resources"
+        shutil.copytree(
+            source,
+            target,
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+        )
+        knowledge_binding = {
+            "path": "knowledge-resources",
+            "source_path": str(source),
+            "files": _files(target),
+        }
     _write(root / "cases.json", [c.model_dump(mode="json") for c in cases])
     _write(root / "goals.json", {c.case_id: c.goal() for c in cases})
     config = new_run_execution_config(
@@ -116,7 +149,8 @@ def prepare(
             "case_ids": case_ids,
             "foundation": foundation,
             "execution_config": config.model_dump(mode="json"),
-            "catalog_mode": "full",
+            "catalog_mode": api_catalog_mode,
+            "knowledge_resources": knowledge_binding,
             "docs_mode": "off",
             "question_protocol": "legacy_decision",
             "repetitions": 1,
@@ -124,7 +158,14 @@ def prepare(
             "provider_failure_policy": "stop_batch",
             "verification_policy": "results_first_v1",
             "script_review": "separate_reviewer_record",
-            "purpose": "case qualification, not Foundation A/B benefit",
+            "purpose": (
+                "knowledge_and_api_profile_qualification"
+                if knowledge_binding is not None
+                or api_catalog_mode == "full_with_discovery"
+                else "case qualification, not Foundation A/B benefit"
+            ),
+            "max_task_concurrency": max_task_concurrency,
+            "max_runtime_concurrency": max_runtime_concurrency,
             "budgets": {
                 c.case_id: c.run_budget().model_dump(mode="json") for c in cases
             },
@@ -197,6 +238,19 @@ def verify_binding(root):
         raise ValueError("verification policy is not the frozen results-first policy")
     if manifest["version"] != VERSION:
         raise ValueError("use the original worker for historical versions")
+    if manifest.get("catalog_mode") not in {"full", "full_with_discovery"}:
+        raise ValueError("unsupported catalog mode")
+    if manifest.get("max_task_concurrency") not in (1, 2):
+        raise ValueError("invalid task concurrency")
+    if manifest.get("max_runtime_concurrency") not in (1, 2):
+        raise ValueError("invalid runtime concurrency")
+    if manifest["max_runtime_concurrency"] > manifest["max_task_concurrency"]:
+        raise ValueError("runtime concurrency exceeds task concurrency")
+    knowledge = manifest.get("knowledge_resources")
+    if knowledge is not None:
+        directory = root / knowledge["path"]
+        if not directory.is_dir() or _files(directory) != knowledge["files"]:
+            raise ValueError("knowledge resource binding changed")
     if read_json(root / "goals.json") != {
         name: get_case(name).goal() for name in manifest["case_ids"]
     }:
@@ -263,12 +317,15 @@ async def preflight(root: Path):
         FunctionModel(fake),
         req,
         skill_library=skill_library_path(),
-        api_catalog_mode="full",
+        api_catalog_mode=manifest["catalog_mode"],
         planning_enabled=True,
         execution_config=config,
         foundation_skill_profile="linear_structural_fea_v1"
         if manifest["foundation"]
         else "off",
+        knowledge_resources_dir=(root / manifest["knowledge_resources"]["path"])
+        if manifest.get("knowledge_resources")
+        else None,
     )
     await agent.run(
         req.goal,
@@ -282,6 +339,13 @@ async def preflight(root: Path):
         or any("shell" in t.lower() for t in observed["tools"])
     ):
         raise ValueError("unexpected tools")
+    expected_discovery = manifest["catalog_mode"] == "full_with_discovery"
+    if ("discover_abaqus_api" in observed["tools"]) != expected_discovery:
+        raise ValueError("API discovery exposure mismatch")
+    expected_knowledge = manifest.get("knowledge_resources") is not None
+    knowledge_tools = {"knowledge_list_directory", "knowledge_read_file"}
+    if knowledge_tools.issubset(observed["tools"]) != expected_knowledge:
+        raise ValueError("knowledge tool exposure mismatch")
     if not {"run_cae_script", "run_solver_job", "run_abaqus_python"} <= set(
         observed["tools"]
     ):
@@ -406,7 +470,7 @@ def _request(root, name, catalog):
     s = root / name / "state"
     manifest = read_json(root / "manifest.json")
     return CodingRunRequest(
-        run_id="pme2e-v4-" + manifest["batch_id"] + "-" + name,
+        run_id="pme2e-v5-" + manifest["batch_id"] + "-" + name,
         goal=read_json(root / "goals.json")[name],
         workspace=w,
         state_dir=s,
@@ -419,7 +483,7 @@ def _request(root, name, catalog):
             else ("model.inp",),
         ),
         api_catalog=_eval_api_catalog_binding(catalog),
-        budget=c.run_budget(),
+        budget=CodingRunBudget.model_validate(manifest["budgets"][name]),
     )
 
 
@@ -469,7 +533,7 @@ def selected_cases(root, action, case_ids):
     return case_ids
 
 
-async def _run_case(root, name, *, resume, key, catalog):
+async def _run_case(root, name, *, resume, key, catalog, runtime_gate=None):
     manifest = read_json(root / "manifest.json")
     config = _config(root)
     w, s = root / name / "workspace", root / name / "state"
@@ -485,6 +549,15 @@ async def _run_case(root, name, *, resume, key, catalog):
         "error_type": None,
     }
     save_json(attempt_path, attempt)
+    runner = PublicMechanicsRunner(
+        w,
+        s,
+        process_strategy=(
+            SerialRuntime(runtime_gate, WindowsProcessStrategy())
+            if runtime_gate is not None
+            else None
+        ),
+    )
     client = None
     http_client = None
     try:
@@ -502,20 +575,23 @@ async def _run_case(root, name, *, resume, key, catalog):
             conversation_id=req.run_id,
             http_client=http_client,
         )
-        deps = CodingAgentDependencies(
-            request=req, runner=PublicMechanicsRunner(w, s), api_catalog=catalog
-        )
+        deps = CodingAgentDependencies(request=req, runner=runner, api_catalog=catalog)
         agent = create_abaqus_coding_agent(
             model,
             req,
             skill_library=skill_library_path(),
-            api_catalog_mode="full",
+            api_catalog_mode=manifest["catalog_mode"],
             planning_enabled=True,
             execution_config=config,
             foundation_skill_profile="linear_structural_fea_v1"
             if manifest["foundation"]
             else "off",
-            task_instructions="Complete the actual simulation and artifacts under the stated physical contract. Do not submit jobs inside the CAE script. Use API lookup when needed. No physical input is missing. Preserve the declared model/units/QoI and use the independent verifier feedback for in-scope repair.",
+            knowledge_resources_dir=(
+                root / manifest["knowledge_resources"]["path"]
+                if manifest.get("knowledge_resources")
+                else None
+            ),
+            task_instructions="Complete the actual simulation and artifacts under the stated physical contract. Do not submit jobs inside the CAE script. Use API discovery, exact lookup, or optional reference material only when they resolve a real implementation uncertainty. No physical input is missing. Preserve the declared model/units/QoI and use the independent verifier feedback for in-scope repair.",
         )
         service = CodingRunService(
             agent=agent,
@@ -551,6 +627,9 @@ async def _run_case(root, name, *, resume, key, catalog):
                 attempt["transport_close_error_type"] = type(exc).__name__
         attempt["resume_state_snapshot"] = read_json(s / "resume_state.json")
         attempt["outcome_snapshot"] = read_json(s / "outcome.json")
+        process_strategy = getattr(runner, "_process_strategy", None)
+        if runtime_gate is not None and isinstance(process_strategy, SerialRuntime):
+            attempt["runtime_queue_wait_seconds"] = process_strategy.wait_seconds
         attempt["finished_at"] = datetime.now(UTC).isoformat()
         save_json(attempt_path, attempt)
 
@@ -558,12 +637,15 @@ async def _run_case(root, name, *, resume, key, catalog):
 async def run(root: Path, action="run", case_ids=None):
     _checked_preflight(root)
     with CodingRunFileLock(root / "control"):
+        manifest = read_json(root / "manifest.json")
         names = selected_cases(root, action, case_ids)
         _ensure_health(root)
         key = take_gateway_api_key_from_environment(DeepSeekGateway.OPENCODE_GO)
         if not key.get_secret_value():
             raise ValueError("provider credential unavailable")
         catalog = ApiCatalog.open(root / "catalog")
+        task_concurrency = manifest["max_task_concurrency"]
+        runtime_gate = asyncio.Semaphore(manifest["max_runtime_concurrency"])
         if action == "run":
             _write(
                 root / "started.json",
@@ -586,18 +668,40 @@ async def run(root: Path, action="run", case_ids=None):
         )
         try:
             build_report(root, bindings_unchanged=True)
-            for name in names:
+            for offset in range(0, len(names), task_concurrency):
                 if (root / "pause.json").exists():
                     break
                 verify_binding(root)
-                print("START " + name, flush=True)
-                await _run_case(
-                    root, name, resume=action == "resume", key=key, catalog=catalog
+                wave = names[offset : offset + task_concurrency]
+                for name in wave:
+                    print("START " + name, flush=True)
+                await asyncio.gather(
+                    *(
+                        _run_case(
+                            root,
+                            name,
+                            resume=action == "resume",
+                            key=key,
+                            catalog=catalog,
+                            runtime_gate=runtime_gate,
+                        )
+                        for name in wave
+                    )
                 )
                 report = build_report(root, bindings_unchanged=True)
-                row = next(r for r in report["trials"] if r["case_id"] == name)
-                print("END " + name + " " + row["classification"], flush=True)
-                if row["classification"] not in {"formal_pass", "task_failed"}:
+                rows = [
+                    next(r for r in report["trials"] if r["case_id"] == name)
+                    for name in wave
+                ]
+                for row in rows:
+                    print(
+                        "END " + row["case_id"] + " " + row["classification"],
+                        flush=True,
+                    )
+                if any(
+                    row["classification"] not in {"formal_pass", "task_failed"}
+                    for row in rows
+                ):
                     save_json(
                         root / "health.json",
                         {
@@ -693,6 +797,16 @@ def main():
     parser.add_argument("--catalog", type=Path)
     parser.add_argument("--case", action="append", dest="cases")
     parser.add_argument("--control", action="store_true")
+    parser.add_argument(
+        "--api-catalog-mode",
+        choices=("full", "full_with_discovery"),
+        default="full",
+    )
+    parser.add_argument("--knowledge-resources", type=Path)
+    parser.add_argument("--max-task-concurrency", type=int, choices=(1, 2), default=1)
+    parser.add_argument(
+        "--max-runtime-concurrency", type=int, choices=(1, 2), default=1
+    )
     parser.add_argument("--http-timeout-seconds", type=float)
     parser.add_argument("--http-retries", type=int)
     parser.add_argument(
@@ -704,6 +818,10 @@ def main():
         args.http_timeout_seconds is not None
         or args.http_retries is not None
         or args.control
+        or args.api_catalog_mode != "full"
+        or args.knowledge_resources is not None
+        or args.max_task_concurrency != 1
+        or args.max_runtime_concurrency != 1
     ):
         parser.error(
             "execution configuration is frozen; these options are prepare-only"
@@ -716,6 +834,12 @@ def main():
             args.catalog.resolve(),
             args.cases or [c.case_id for c in mechanics_cases()],
             not args.control,
+            api_catalog_mode=args.api_catalog_mode,
+            knowledge_resources=args.knowledge_resources.resolve()
+            if args.knowledge_resources is not None
+            else None,
+            max_task_concurrency=args.max_task_concurrency,
+            max_runtime_concurrency=args.max_runtime_concurrency,
             http_timeout_seconds=args.http_timeout_seconds
             if args.http_timeout_seconds is not None
             else 180.0,

@@ -42,9 +42,17 @@ def root_fixture(tmp_path):
             "case_ids": names,
             "batch_id": "test",
             "foundation": True,
+            "catalog_mode": "full",
+            "knowledge_resources": None,
+            "max_task_concurrency": 1,
+            "max_runtime_concurrency": 1,
             "verification_policy": "results_first_v1",
             "max_explicit_resumes": 1,
             "execution_config": config.model_dump(mode="json"),
+            "budgets": {
+                name: get_case(name).run_budget().model_dump(mode="json")
+                for name in names
+            },
         },
     )
     save_json(tmp_path / "seal.json", {})
@@ -351,6 +359,73 @@ def test_suite_same_run_resume_retains_usage_and_file_work(tmp_path, monkeypatch
         == 1
     )
     assert read_json(state / "outcome.json")["status"] == "failed"
+
+
+def test_knowledge_discovery_profile_copies_and_binds_resources(tmp_path, monkeypatch):
+    root = tmp_path / "run"
+    catalog = tmp_path / "catalog"
+    knowledge = tmp_path / "knowledge"
+    catalog.mkdir()
+    knowledge.mkdir()
+    (knowledge / "README.md").write_text("bounded reference", encoding="utf-8")
+    monkeypatch.setattr(suite.ApiCatalog, "open", lambda path: object())
+    suite.prepare(
+        root,
+        catalog,
+        ["plate-with-hole-tension", "solid-cantilever-directional-bending"],
+        True,
+        api_catalog_mode="full_with_discovery",
+        knowledge_resources=knowledge,
+        max_task_concurrency=2,
+        max_runtime_concurrency=2,
+    )
+    manifest = read_json(root / "manifest.json")
+    assert manifest["catalog_mode"] == "full_with_discovery"
+    assert manifest["max_task_concurrency"] == 2
+    assert manifest["max_runtime_concurrency"] == 2
+    assert manifest["knowledge_resources"]["files"] == {
+        "README.md": suite.file_digest(root / "knowledge-resources/README.md")
+    }
+    assert (root / "knowledge-resources/README.md").read_text() == ("bounded reference")
+
+
+def test_concurrent_wave_starts_both_cases_and_bounds_runtime(tmp_path, monkeypatch):
+    root_fixture(tmp_path)
+    manifest = read_json(tmp_path / "manifest.json")
+    manifest.update(max_task_concurrency=2, max_runtime_concurrency=2)
+    save_json(tmp_path / "manifest.json", manifest)
+    monkeypatch.setattr(suite, "_checked_preflight", lambda root: None)
+    monkeypatch.setattr(suite, "verify_binding", lambda root: None)
+    monkeypatch.setattr(suite, "_ensure_health", lambda root: None)
+    monkeypatch.setattr(
+        suite,
+        "take_gateway_api_key_from_environment",
+        lambda gateway: SecretStr("fixture"),
+    )
+    monkeypatch.setattr(suite.ApiCatalog, "open", lambda root: None)
+    active = 0
+    peak = 0
+
+    async def complete(root, name, **kwargs):
+        nonlocal active, peak
+        assert kwargs["runtime_gate"]._value == 2
+        active += 1
+        peak = max(peak, active)
+        await asyncio.sleep(0.01)
+        state = root / name / "state"
+        state.mkdir(parents=True)
+        save_json(
+            state / "outcome.json",
+            {"status": "failed", "failure_stage": "fixture", "summary": "done"},
+        )
+        active -= 1
+
+    monkeypatch.setattr(suite, "_run_case", complete)
+    asyncio.run(suite.run(tmp_path))
+    assert peak == 2
+    assert [
+        row["classification"] for row in read_json(tmp_path / "report.json")["trials"]
+    ] == ["task_failed", "task_failed"]
 
 
 def test_report_keeps_corrupt_evidence_visible(tmp_path):

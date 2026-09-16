@@ -211,8 +211,15 @@ def build_report(root: Path, *, bindings_unchanged: bool):
                 }
             )
     report = {
-        "schema_version": "public-mechanics-report-v4",
+        "schema_version": "public-mechanics-report-v5",
         "verification_policy": manifest.get("verification_policy"),
+        "profile": {
+            "foundation": manifest.get("foundation"),
+            "catalog_mode": manifest.get("catalog_mode"),
+            "knowledge_resources": manifest.get("knowledge_resources"),
+            "max_task_concurrency": manifest.get("max_task_concurrency", 1),
+            "max_runtime_concurrency": manifest.get("max_runtime_concurrency", 1),
+        },
         "script_review_status": "not_recorded_by_automatic_report",
         "at": datetime.now(UTC).isoformat(),
         "trials": rows,
