@@ -149,7 +149,7 @@ def summarize_case(root: Path, name: str):
             "interrupted": "interrupted",
             "needs_reconcile": "needs_reconcile",
         }.get(resume["status"], resume["status"])
-        if resume.get("last_error_type") == "ModelAPIError":
+        if resume.get("last_error_type") in {"ModelAPIError", "ModelHTTPError"}:
             classification = "provider_interrupted"
     elif last.get("error_type"):
         classification = "setup_error"

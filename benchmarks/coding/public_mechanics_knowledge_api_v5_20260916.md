@@ -38,3 +38,16 @@
 plate 保存的 received usage 为1 request、6940 input、543 output、2 tool calls；实体梁没有完整响应，记录 usage 为0只能解释为“无收到的完整响应”，不是服务端零生成或零费用。两题累计 active wall 分别约729.23秒与723.97秒，runtime queue wait 都为0，因为没有进入 Abaqus。
 
 并发基础设施达到预声明行为：两个独立 task/conversation 同时开始，单批并发上限2，失败证据、HTTP attempt、resume和报告分别保留；没有 runtime 并发可供观察。知识文件、API discovery 和 exact Card 全部未调用，因此本批对它们的任务采用与收益没有行为资格；也没有最终脚本可作 script review。该结论不回填旧批次，不把 Provider 阻断记成工程任务失败或知识系统失败。
+
+## 用户授权的事后恢复观察
+
+用户随后明确要求验证中断恢复。该操作不改变上面的正式批次结果：它绕过冻结合同中“每题最多一次显式 resume”的评测上限，在原 run、原 workspace、原 state 和原累计预算上各增加一次 `003` resume attempt。没有修改 manifest、seal、任务、预算、模型配置或输入资料；控制记录位于批次目录 `control/posthoc-resume-003.json`。续跑前的同一冻结环境 doctor 再次成功。
+
+| Case | 本次 HTTP attempts / completed / failed | 恢复后行为 | 累计状态 |
+|---|---:|---|---|
+| plate-with-hole-tension | 4 / 1 / 3 | 第一个请求首试超时、retry 在约83.64秒后成功；模型保持原会话并再次检查空工作区。下一请求及其 retry 均超时 | 2个完整模型响应、4个工具调用、16447 input、783 output、9472 cache-read tokens；active wall 约1355.38秒 |
+| solid-cantilever-directional-bending | 2 / 1 / 1 | 首试超时，retry 在约81.35秒后返回 HTTP 500；没有完整模型响应 | received usage 仍为0，含义仅是未收到完整响应；active wall 约986.49秒 |
+
+两题工作区最终仍为空，知识资料、API discovery、exact Card、Abaqus 和 Solver 调用均为0，也没有遗留 Abaqus/Standard 进程。plate 的成功中间响应证明 `CodingRunService` 能从持久状态恢复同一会话并继续 tool loop；历史、累计 usage、active wall 和工具计数均未清零。实验同时表明本次 OpenCode 长上下文服务不稳定：短 doctor 可成功，但长请求多次在180秒超时或返回500。它仍不能用于判断知识包、Catalog 或工程任务能力。
+
+冻结快照的派生报告只把 `ModelAPIError` 归为 `provider_interrupted`，所以 solid 的 `ModelHTTPError` 行显示为较宽泛的 `interrupted`。原始 attempt 和 resume state 明确记录 HTTP 500；当前源码已把两种 Provider 错误统一归类，冻结快照和本批证据不回填。按用户授权只做这一次额外恢复，不再创建第4次 attempt。

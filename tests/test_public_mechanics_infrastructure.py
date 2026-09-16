@@ -208,6 +208,24 @@ def test_report_rebuild_preserves_unknown_and_does_not_write_outcome(tmp_path):
     assert (tmp_path / "report.md").exists()
 
 
+@pytest.mark.parametrize("error_type", ["ModelAPIError", "ModelHTTPError"])
+def test_report_classifies_model_provider_errors(tmp_path, error_type):
+    names = root_fixture(tmp_path)
+    state = tmp_path / names[0] / "state"
+    save_json(
+        state / "resume_state.json",
+        {
+            "status": "interrupted",
+            "usage": {"requests": 0},
+            "dependencies": {},
+            "active_wall_time_seconds": 10.0,
+            "last_error_type": error_type,
+        },
+    )
+    report = build_report(tmp_path, bindings_unchanged=True)
+    assert report["trials"][0]["classification"] == "provider_interrupted"
+
+
 def test_health_stale_or_failed_prevents_run(tmp_path):
     root_fixture(tmp_path)
     with pytest.raises(ValueError, match="doctor"):
@@ -303,7 +321,7 @@ def test_suite_same_run_resume_retains_usage_and_file_work(tmp_path, monkeypatch
                 ]
             )
         if calls == 2:
-            raise ModelAPIError("injected outage")
+            raise ModelAPIError("fixture", "injected outage")
         assert "retained" in str(messages)
         tool = next(
             t.name for t in info.output_tools if t.name.endswith("FailedDecision")
