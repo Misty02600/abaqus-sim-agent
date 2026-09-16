@@ -3,7 +3,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from langchain_core.documents import Document
+from abaqus_sim_agent.retrieval.types import Document
 
 DOCUMENT_DELIVERY_VERSION = "indexed-passage-body-budget-v1"
 DOCUMENT_BODY_BUDGET = 12_000

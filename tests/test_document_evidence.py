@@ -1,5 +1,4 @@
 import pytest
-from langchain_core.documents import Document
 from pydantic import ValidationError
 
 from abaqus_sim_agent.coding.concept_lookup import _evidence_payloads as active_evidence
@@ -13,6 +12,7 @@ from abaqus_sim_agent.coding.document_evidence import (
     render_document_bodies,
 )
 from abaqus_sim_agent.retrieval import RetrievalHit
+from abaqus_sim_agent.retrieval.types import Document
 
 
 def passage(text: str, *, path: bool = True) -> Document:

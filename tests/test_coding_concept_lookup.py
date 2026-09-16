@@ -7,8 +7,6 @@ import sqlite3
 from pathlib import Path
 
 import pytest
-from langchain_core.documents import Document
-from langchain_core.embeddings import Embeddings
 from pydantic_ai.messages import (
     ModelMessage,
     ModelRequest,
@@ -58,6 +56,7 @@ from abaqus_sim_agent.retrieval import (
     AbaqusDocumentLoader,
     RetrievalHit,
 )
+from abaqus_sim_agent.retrieval.types import Document, Embeddings
 
 _FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "abaqus_docs"
 _VOCABULARY = ("static", "stress", "element", "plane", "output")

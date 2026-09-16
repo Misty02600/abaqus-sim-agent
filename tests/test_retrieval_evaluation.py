@@ -2,8 +2,6 @@ import math
 import re
 from pathlib import Path
 
-from langchain_core.embeddings import Embeddings
-
 from abaqus_sim_agent.retrieval import (
     AbaqusDocumentIndex,
     AbaqusDocumentLoader,
@@ -13,6 +11,7 @@ from abaqus_sim_agent.retrieval.evaluation import (
     evaluate_retrieval,
     load_cases,
 )
+from abaqus_sim_agent.retrieval.types import Embeddings
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "abaqus_docs"
 BENCHMARK_PATH = (

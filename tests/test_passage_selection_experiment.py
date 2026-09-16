@@ -1,10 +1,10 @@
 import pytest
-from langchain_core.documents import Document
 
 from abaqus_sim_agent.evaluation.passage_selection import (
     body_first_excerpt,
     fuse_passage_candidates,
 )
+from abaqus_sim_agent.retrieval.types import Document
 
 
 def doc(key: str, page: str = "shared") -> Document:

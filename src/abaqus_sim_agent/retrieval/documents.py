@@ -2,18 +2,14 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterator, Sequence
-from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import lxml.etree as etree
-from langchain_core.document_loaders import BaseLoader
-from langchain_core.documents import Document
-from langchain_text_splitters import (
-    HTMLHeaderTextSplitter,
-    RecursiveCharacterTextSplitter,
-)
+
+from .splitters import split_documents_by_length, split_html_sections
+from .types import Document
 
 DEFAULT_GUIDES: dict[str, str] = {
     "SIMACAEMODRefMap": "Modeling",
@@ -46,8 +42,8 @@ class LoaderStats:
     documents_emitted: int = 0
 
 
-class AbaqusDocumentLoader(BaseLoader):
-    """把本地 Abaqus XHTML 转为带稳定来源信息的 LangChain Document。"""
+class AbaqusDocumentLoader:
+    """把本地 Abaqus XHTML 转为带稳定来源信息的检索文档。"""
 
     def __init__(
         self,
@@ -69,13 +65,6 @@ class AbaqusDocumentLoader(BaseLoader):
             resolve_entities=False,
             no_network=True,
             recover=False,
-        )
-        self._section_splitter = HTMLHeaderTextSplitter(
-            headers_to_split_on=[("h1", "h1"), ("h2", "h2"), ("h3", "h3")],
-        )
-        self._length_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=max_chunk_size,
-            chunk_overlap=min(100, max_chunk_size // 10),
         )
         unknown_guides = set(self.guide_ids).difference(DEFAULT_GUIDES)
         if unknown_guides:
@@ -102,6 +91,9 @@ class AbaqusDocumentLoader(BaseLoader):
                 self.stats.files_loaded += 1
                 self.stats.documents_emitted += len(documents)
                 yield from documents
+
+    def load(self) -> list[Document]:
+        return list(self.lazy_load())
 
     def _load_page(self, path: Path, guide_id: str) -> list[Document]:
         try:
@@ -182,8 +174,12 @@ class AbaqusDocumentLoader(BaseLoader):
         chunk_number = 0
         for content_root in content_roots:
             html = _html_with_complete_headings(content_root)
-            sections = self._section_splitter.split_text(html)
-            for chunk in self._length_splitter.split_documents(sections):
+            sections = split_html_sections(html)
+            for chunk in split_documents_by_length(
+                sections,
+                chunk_size=self.max_chunk_size,
+                chunk_overlap=min(100, self.max_chunk_size // 10),
+            ):
                 content = chunk.page_content.strip()
                 if not content:
                     continue
@@ -358,19 +354,12 @@ def _resolve_language_root(path: Path) -> Path:
 
 
 def _html_with_complete_headings(root: etree._Element) -> str:
-    """在副本中展平标题的内嵌标签，避免 splitter 丢掉 span 等标签内的文字。
+    """序列化内容根；本地 splitter 使用 itertext 保留标题内嵌文字。
 
     Note:
-        仅改传给切分器的副本；原始树、锚点和后续原子reference解析不受影响。
-        正文和代码块保留原结构，不把标题修复扩展为通用HTML改写。
+        原始树、锚点和后续原子 reference 解析不受影响。
     """
-    copied = deepcopy(root)
-    for heading in copied.xpath("self::h1|self::h2|self::h3|.//h1|.//h2|.//h3"):
-        text = _normalized_text("".join(heading.itertext()))
-        for child in list(heading):
-            heading.remove(child)
-        heading.text = text
-    return etree.tostring(copied, encoding="unicode", method="html")
+    return etree.tostring(root, encoding="unicode", method="html")
 
 
 def _heading_path(page_title: str, headings: Sequence[str]) -> list[str]:

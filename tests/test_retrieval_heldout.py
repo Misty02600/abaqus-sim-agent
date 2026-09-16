@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import cast
 
 import pytest
-from langchain_core.documents import Document
 from pydantic import ValidationError
 
 from abaqus_sim_agent.retrieval import AbaqusDocumentIndex, RetrievalHit
@@ -30,6 +29,7 @@ from abaqus_sim_agent.retrieval.heldout import (
     load_heldout_labels,
     load_heldout_queries,
 )
+from abaqus_sim_agent.retrieval.types import Document
 
 BENCHMARK_ROOT = Path(__file__).parent.parent / "benchmarks" / "rag"
 

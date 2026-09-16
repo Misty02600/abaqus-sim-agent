@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import sqlite3
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
 
+import numpy as np
 import pytest
 
 from abaqus_sim_agent.retrieval.heldout import HeldoutEvaluation
@@ -25,91 +25,34 @@ from abaqus_sim_agent.retrieval.reproduction import (
 BENCHMARK_ROOT = Path(__file__).parent.parent / "benchmarks" / "rag"
 
 
-def _write_chroma_fixture(root: Path) -> tuple[str, str]:
+def test_dense_vector_snapshot_binds_flat_documents_and_vectors(tmp_path: Path) -> None:
+    root = tmp_path / "flat"
     root.mkdir()
-    target_collection = "target-collection-id"
-    other_collection = "other-collection-id"
-    target_segment = "target-segment-id"
-    other_segment = "other-segment-id"
-    with sqlite3.connect(root / "chroma.sqlite3") as connection:
-        connection.executescript(
-            """
-            CREATE TABLE collections (
-                id TEXT PRIMARY KEY,
-                name TEXT NOT NULL,
-                dimension INTEGER,
-                config_json_str TEXT,
-                schema_str TEXT
-            );
-            CREATE TABLE segments (
-                id TEXT PRIMARY KEY,
-                type TEXT NOT NULL,
-                scope TEXT NOT NULL,
-                collection TEXT NOT NULL
-            );
-            """
-        )
-        connection.executemany(
-            "INSERT INTO collections VALUES (?, ?, ?, ?, ?)",
-            (
-                (target_collection, "target", 384, '{"space":"l2"}', "schema-a"),
-                (other_collection, "other", 128, '{"space":"cosine"}', "schema-b"),
-            ),
-        )
-        connection.executemany(
-            "INSERT INTO segments VALUES (?, ?, ?, ?)",
-            (
-                (
-                    target_segment,
-                    "urn:chroma:segment/vector/hnsw-local-persisted",
-                    "VECTOR",
-                    target_collection,
-                ),
-                (
-                    other_segment,
-                    "urn:chroma:segment/vector/hnsw-local-persisted",
-                    "VECTOR",
-                    other_collection,
-                ),
-            ),
-        )
-    for segment, marker in ((target_segment, b"target"), (other_segment, b"other!")):
-        directory = root / segment
-        directory.mkdir()
-        (directory / "data_level0.bin").write_bytes(marker)
-        (directory / "header.bin").write_bytes(b"header")
-    return target_segment, other_segment
-
-
-def test_dense_vector_snapshot_selects_only_the_target_collection(
-    tmp_path: Path,
-) -> None:
-    target_segment, other_segment = _write_chroma_fixture(tmp_path / "index")
-
-    first = dense_vector_storage_snapshot(tmp_path / "index", collection_name="target")
-    second = dense_vector_storage_snapshot(tmp_path / "index", collection_name="target")
-    (tmp_path / "index" / other_segment / "data_level0.bin").write_bytes(b"unused")
-    after_other_change = dense_vector_storage_snapshot(
-        tmp_path / "index",
-        collection_name="target",
-    )
-    (tmp_path / "index" / target_segment / "data_level0.bin").write_bytes(b"change")
-    after_target_change = dense_vector_storage_snapshot(
-        tmp_path / "index",
-        collection_name="target",
+    (root / "documents.sqlite3").write_bytes(b"documents")
+    with (root / "vectors.npy").open("wb") as stream:
+        np.save(stream, np.asarray([[1.0, 0.0]], dtype=np.float32))
+    (root / "manifest.json").write_text(
+        '{"schema_version":"2","collection_name":"flat","vector_dimensions":2}',
+        encoding="utf-8",
     )
 
-    assert first == second == after_other_change
-    assert first.sha256 != after_target_change.sha256
-    assert first.segment_ids == (target_segment,)
-    assert all(item.path.startswith(f"{target_segment}/") for item in first.files)
-    with pytest.raises(ValueError, match="exactly one Chroma collection"):
-        dense_vector_storage_snapshot(tmp_path / "index", collection_name="missing")
+    before = dense_vector_storage_snapshot(root, collection_name="flat")
+    with (root / "vectors.npy").open("ab") as stream:
+        stream.write(b"drift")
+    after = dense_vector_storage_snapshot(root, collection_name="flat")
+
+    assert before.algorithm == "numpy-flat-cosine-files-v1"
+    assert before.segment_ids == ("numpy-flat",)
+    assert [item.path for item in before.files] == [
+        "documents.sqlite3",
+        "vectors.npy",
+    ]
+    assert before.sha256 != after.sha256
 
 
 def test_reproduction_seal_requires_complete_runtime_and_sorted_encoder_files() -> None:
     snapshot = DenseVectorStorageSnapshot(
-        algorithm="chroma-target-hnsw-segment-bytes-v1",
+        algorithm="numpy-flat-cosine-files-v1",
         collection_name="target",
         collection_id="collection",
         dimension=384,
@@ -119,14 +62,14 @@ def test_reproduction_seal_requires_complete_runtime_and_sorted_encoder_files() 
         sha256="0" * 64,
         files=(
             DenseVectorFile(
-                path="segment/data_level0.bin",
+                path="vectors.npy",
                 size_bytes=1,
                 sha256="0" * 64,
             ),
         ),
     )
     base: dict[str, Any] = {
-        "schema_version": "1",
+        "schema_version": "2",
         "dataset_id": "heldout-v3",
         "purpose": "identical_reproduction",
         "status": "sealed",
@@ -144,27 +87,15 @@ def test_reproduction_seal_requires_complete_runtime_and_sorted_encoder_files() 
         "uv_lock": {"path": "uv.lock", "sha256": "0" * 64},
         "python_version": "3.12.0",
         "runtime_versions": {
-            "chromadb": "1",
-            "langchain-chroma": "1",
-            "langchain-core": "1",
             "numpy": "1",
             "onnxruntime": "1",
             "tokenizers": "1",
-            "tqdm": "1",
         },
-        "query_encoder_type": ("chromadb.DefaultEmbeddingFunction/all-MiniLM-L6-v2"),
+        "query_encoder_type": "sentence-transformers/all-MiniLM-L6-v2",
         "query_encoder_root": str(Path.cwd().resolve()),
         "query_encoder_files": [
             {"path": path, "size_bytes": 1, "sha256": "0" * 64}
-            for path in (
-                "onnx.tar.gz",
-                "onnx/config.json",
-                "onnx/model.onnx",
-                "onnx/special_tokens_map.json",
-                "onnx/tokenizer.json",
-                "onnx/tokenizer_config.json",
-                "onnx/vocab.txt",
-            )
+            for path in ("model.onnx", "tokenizer.json")
         ],
         "onnx_providers": ["CPUExecutionProvider"],
         "dense_vector_storage": snapshot.model_dump(mode="json"),
@@ -175,12 +106,12 @@ def test_reproduction_seal_requires_complete_runtime_and_sorted_encoder_files() 
 
     assert seal.purpose == "identical_reproduction"
     missing_runtime = dict(base)
-    missing_runtime["runtime_versions"] = {"chromadb": "1"}
+    missing_runtime["runtime_versions"] = {"numpy": "1"}
     with pytest.raises(ValueError, match="runtime package set is incomplete"):
         HeldoutReproductionSeal.model_validate(missing_runtime)
     unsorted = dict(base)
     unsorted["query_encoder_files"] = list(reversed(base["query_encoder_files"]))
-    with pytest.raises(ValueError, match="exact Chroma MiniLM file set"):
+    with pytest.raises(ValueError, match="exact MiniLM runtime set"):
         HeldoutReproductionSeal.model_validate(unsorted)
     duplicate_providers = dict(base)
     duplicate_providers["onnx_providers"] = [
@@ -191,19 +122,8 @@ def test_reproduction_seal_requires_complete_runtime_and_sorted_encoder_files() 
         HeldoutReproductionSeal.model_validate(duplicate_providers)
 
     custom_index = SimpleNamespace(embeddings=object())
-    with pytest.raises(ValueError, match="default embedding function"):
+    with pytest.raises(ValueError, match="bound MiniLM encoder"):
         _verify_query_encoder(cast(Any, custom_index), seal)
-    wrong_collection_embedding = SimpleNamespace(
-        embeddings=None,
-        read_manifest=lambda: SimpleNamespace(
-            embedding="chromadb.DefaultEmbeddingFunction/all-MiniLM-L6-v2"
-        ),
-        vector_store=SimpleNamespace(
-            _collection=SimpleNamespace(_embedding_function=object())
-        ),
-    )
-    with pytest.raises(ValueError, match="not using DefaultEmbeddingFunction"):
-        _verify_query_encoder(cast(Any, wrong_collection_embedding), seal)
 
 
 def test_reproduction_outputs_are_isolated_and_create_new(tmp_path: Path) -> None:

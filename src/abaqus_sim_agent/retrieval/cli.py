@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from langchain_core.documents import Document
+from abaqus_sim_agent.retrieval.types import Document
 
 from .bm25 import BM25IndexError
 from .comparison import (
@@ -28,19 +28,24 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    build = subparsers.add_parser("build", help="Build the local Chroma index")
+    build = subparsers.add_parser("build", help="Build the local SQLite/NumPy index")
     build.add_argument("--docs-root", required=True, type=Path)
     build.add_argument("--index-dir", type=Path, default=Path("var/rag"))
     build.add_argument("--docs-base-url", default="http://localhost:4040/English")
     build.add_argument("--collection", default=DEFAULT_COLLECTION_NAME)
     build.add_argument("--max-chunk-size", type=int, default=1000)
     build.add_argument("--batch-size", type=int, default=128)
+    build.add_argument(
+        "--encoder-dir",
+        type=Path,
+        help="Bound local all-MiniLM-L6-v2 ONNX directory; defaults to the legacy cache",
+    )
     build.add_argument("--no-reset", action="store_true")
     build.set_defaults(handler=_build_index)
 
     build_bm25 = subparsers.add_parser(
         "build-bm25",
-        help="Build a persistent BM25 inverted index from semantic Chroma records",
+        help="Build a persistent BM25 inverted index from semantic dense records",
     )
     _add_index_arguments(build_bm25)
     build_bm25.set_defaults(handler=_build_bm25_index)
@@ -151,6 +156,7 @@ def _build_index(args: argparse.Namespace) -> int:
     _index, manifest = AbaqusDocumentIndex.build(
         loader,
         args.index_dir,
+        encoder_directory=args.encoder_dir,
         collection_name=args.collection,
         batch_size=args.batch_size,
         reset=not args.no_reset,

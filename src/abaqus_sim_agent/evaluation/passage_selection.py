@@ -2,9 +2,8 @@
 
 from collections.abc import Sequence
 
-from langchain_core.documents import Document
-
 from abaqus_sim_agent.retrieval import RetrievalHit
+from abaqus_sim_agent.retrieval.types import Document
 
 
 def fuse_passage_candidates(

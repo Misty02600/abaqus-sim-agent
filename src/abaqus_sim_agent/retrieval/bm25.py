@@ -15,8 +15,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
-from langchain_core.documents import Document
 from pydantic import BaseModel, ConfigDict, Field
+
+from abaqus_sim_agent.retrieval.types import Document
 
 BM25_MANIFEST_NAME = "lexical/manifest.json"
 BM25_TOKENIZER_NAME = "abaqus-lexical-v1"

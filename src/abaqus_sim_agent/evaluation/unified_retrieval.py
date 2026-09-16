@@ -6,7 +6,6 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Annotated, Literal, Protocol, runtime_checkable
 
-from langchain_core.documents import Document
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
 from abaqus_sim_agent.retrieval.evidence_blocks import (
@@ -14,6 +13,7 @@ from abaqus_sim_agent.retrieval.evidence_blocks import (
     expand_ranked_children,
     scoring_document,
 )
+from abaqus_sim_agent.retrieval.types import Document
 
 from .cross_encoder import ScoredPassage
 from .passage_selection import fuse_passage_candidates

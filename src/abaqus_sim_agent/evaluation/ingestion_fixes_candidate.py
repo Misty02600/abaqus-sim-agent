@@ -8,14 +8,14 @@ from dataclasses import asdict
 from pathlib import Path
 
 import lxml.etree as etree
-from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
-from langchain_chroma import Chroma
+import numpy as np
 
 from abaqus_sim_agent.retrieval.equation_prose import (
     PARTITION_VERSION,
     EquationContextRelation,
     build_equation_prose_units,
 )
+from abaqus_sim_agent.retrieval.flat_store import FlatDocumentStore
 
 from . import evidence_candidate as io
 from .equation_context_delivery import context_references
@@ -318,7 +318,7 @@ def build_index(old: Path, output: Path):
             ).model_dump(mode="json")
             != binding["vector"]
         ):
-            raise ValueError("old HNSW changed")
+            raise ValueError("old dense vector storage changed")
         if (
             io.sha(old / "index/manifest.json") != binding["index_manifest_sha256"]
             or io.sha(old / "index/lexical/manifest.json")
@@ -330,11 +330,9 @@ def build_index(old: Path, output: Path):
             raise ValueError("old BM25 changed")
 
     check_old()
-    prior = Chroma(
-        collection_name=io.COLLECTION,
-        embedding_function=None,
-        persist_directory=str(old / "index"),
-        create_collection_if_not_exists=False,
+    prior = FlatDocumentStore(
+        old / "index",
+        embeddings=io.encoder(),
     )
     raw = io.paged_get(prior, include=["documents", "metadatas", "embeddings"])
     old_docs = io._raw_documents(raw)
@@ -347,51 +345,26 @@ def build_index(old: Path, output: Path):
     target = output / "index"
     target.mkdir(exist_ok=False)
     started = time.perf_counter()
-    vector = Chroma(
-        collection_name=io.COLLECTION,
-        embedding_function=None,
-        persist_directory=str(target),
-        collection_configuration={
-            "hnsw": {"batch_size": 1, "sync_threshold": 1},
-            "embedding_function": DefaultEmbeddingFunction(),
-        },
+    vector = FlatDocumentStore(
+        target,
+        embeddings=io.encoder(),
+        create_if_missing=True,
     )
     reused = embedded = 0
-    for offset in range(0, len(documents), 64):
-        batch = documents[offset : offset + 64]
-        kept, embeddings, fresh = [], [], []
-        for document in batch:
-            existing = by_id.get(document.id)
-            if existing is None:
-                fresh.append(document)
-            else:
-                if document != existing[0]:
-                    raise ValueError("same ID with different text or metadata")
-                kept.append(document)
-                embeddings.append(existing[1])
-        if kept:
-            vector._collection.add(
-                ids=[d.id for d in kept],
-                documents=[d.page_content for d in kept],
-                metadatas=[d.metadata for d in kept],
-                embeddings=embeddings,
-            )
-            reused += len(kept)
-        if fresh:
-            vector.add_documents(fresh, ids=[d.id for d in fresh])
-            embedded += len(fresh)
-        if offset % 4096 == 0 or offset + 64 >= len(documents):
-            print(
-                "INDEX",
-                min(offset + 64, len(documents)),
-                "/",
-                len(documents),
-                "reused",
-                reused,
-                "new",
-                embedded,
-                flush=True,
-            )
+    fresh = [document for document in documents if document.id not in by_id]
+    fresh_vectors = iter(io.encoder().embed_documents([d.page_content for d in fresh]))
+    vectors = []
+    for document in documents:
+        existing = by_id.get(document.id)
+        if existing is None:
+            vectors.append(next(fresh_vectors))
+            embedded += 1
+        else:
+            if document != existing[0]:
+                raise ValueError("same ID with different text or metadata")
+            vectors.append(existing[1])
+            reused += 1
+    vector.replace_all_with_vectors(documents, np.asarray(vectors, dtype=np.float32))
     if reused != len(old_docs):
         raise ValueError("not every old embedding retained")
     io.write_new(
@@ -402,7 +375,8 @@ def build_index(old: Path, output: Path):
             "document_count": len(documents),
             "product_tool_compatible": False,
             "release": "2026 FD02",
-            "hnsw_persistence": {"batch_size": 1, "sync_threshold": 1},
+            "dense_algorithm": "numpy-flat-cosine-v1",
+            "vector_dimensions": int(vector.vectors().shape[1]),
         },
     )
     sparse, _ = io.BM25DocumentIndex.build(documents, target)

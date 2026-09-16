@@ -1,11 +1,11 @@
 import pytest
-from langchain_core.documents import Document
 
 from abaqus_sim_agent.evaluation.cross_encoder import (
     candidate_union,
     passage_text,
     rank_scores,
 )
+from abaqus_sim_agent.retrieval.types import Document
 
 
 def document(key: str, text: str = "body") -> Document:

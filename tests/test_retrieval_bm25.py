@@ -7,7 +7,6 @@ import sqlite3
 from pathlib import Path
 
 import pytest
-from langchain_core.documents import Document
 
 from abaqus_sim_agent.retrieval.bm25 import (
     BM25_B,
@@ -18,6 +17,7 @@ from abaqus_sim_agent.retrieval.bm25 import (
     BM25IndexManifest,
     tokenize_abaqus_lexical,
 )
+from abaqus_sim_agent.retrieval.types import Document
 
 
 def _write_dense_manifest(index_directory: Path, *, marker: str = "v1") -> Path:

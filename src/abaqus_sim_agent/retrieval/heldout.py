@@ -10,8 +10,9 @@ from pathlib import Path
 from typing import Literal
 
 import lxml.etree as etree
-from langchain_core.documents import Document
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from abaqus_sim_agent.retrieval.types import Document
 
 from .comparison import PairedMetricDelta, load_comparison_cases
 from .index import AbaqusDocumentIndex, RetrievalHit, reciprocal_rank_fusion

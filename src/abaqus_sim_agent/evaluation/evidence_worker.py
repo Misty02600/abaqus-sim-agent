@@ -111,7 +111,7 @@ def _deny_network(event, args):
 
 
 def private_index_copies(request: WorkerRequest, state: Path) -> RuntimePaths:
-    """复制已绑定的存储bytes；Chroma的读取侧记账只可写入这些短生命周期副本。
+    """复制已绑定的只读索引bytes到短生命周期私有目录。
 
     Note:
         不创建/重建collection，不改变向量或metadata内容。源库在复制前后及交付前

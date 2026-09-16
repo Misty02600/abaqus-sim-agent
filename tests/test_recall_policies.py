@@ -1,7 +1,6 @@
 from types import SimpleNamespace
 
 import pytest
-from langchain_core.documents import Document
 from tests.test_evidence_blocks import parent, tokenizer
 from tests.test_unified_retrieval import Backend, Ranker, make
 
@@ -14,6 +13,7 @@ from abaqus_sim_agent.evaluation.unified_retrieval import (
     UnifiedRetrievalCandidate,
 )
 from abaqus_sim_agent.retrieval.evidence_blocks import TokenBoundChildren
+from abaqus_sim_agent.retrieval.types import Document
 
 
 def test_question_only_uses_explicit_field_without_splitting_question():

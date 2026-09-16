@@ -47,7 +47,9 @@ discovery 与 lookup 共用 `max_api_lookup_calls`。有效、非重复且 Catal
 ## 文档和资料的使用边界
 
 - 普通 Concept 工具接收 question/observed context，宿主做已有符号和产品 metadata 路由，沿用
-  exact-symbol-augmented Dense。固定 BM25/Dense/RRF 对照是独立检索能力，不自动替换产品策略。
+  exact-symbol-augmented Dense。当前 schema v2 使用 SQLite 文档/metadata 与 NumPy exact Flat，固定
+  MiniLM encoder 文件和索引矩阵均由manifest绑定；不使用ANN。固定 BM25/Dense/RRF 对照仍是独立
+  检索能力，不自动替换产品策略。
 - `bounded_v1` 通过运行时证据服务执行查询，重新核对来源/hash/范围/公式关系；receipt 与 assessment
   进入工作区外 ledger。工程已接线，模型行为资格未通过，继续默认 off。
 - Foundation 五项 Skill 覆盖 formulation、modeling、discretization、postprocess 和 verification，
@@ -67,3 +69,4 @@ discovery 与 lookup 共用 `max_api_lookup_calls`。有效、非重复且 Catal
 - [ADR-0010](../adr/0010-budgeted-official-concept-retrieval.md)：可选、有预算的 Concept 接入。
 - [ADR-0022](../adr/0022-evaluate-bm25-dense-rrf-before-agent-adoption.md)：先独立对照再决定采用。
 - [验证证据入口](verification-evidence.md)：不同实验分别支持哪些声明。
+- [SQLite/NumPy迁移回放](../../benchmarks/rag/sqlite_numpy_flat_storage_v1_20260916.md)：存储、依赖与排名边界。

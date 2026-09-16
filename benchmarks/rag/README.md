@@ -1,5 +1,13 @@
 # Abaqus documentation retrieval benchmark
 
+## Current storage implementation
+
+The product retrieval path now uses SQLite documents/metadata plus an aligned
+NumPy exact-cosine matrix; historical Chroma indexes remain immutable evidence.
+The storage migration, dependency boundary, local scan measurement, and post-hoc
+ranking replay are recorded in
+[sqlite_numpy_flat_storage_v1_20260916.md](sqlite_numpy_flat_storage_v1_20260916.md).
+
 ## Current explicit evidence baseline
 
 The integrated `rag-evidence-baseline-v1` entry, fixed requests, quality scores, and

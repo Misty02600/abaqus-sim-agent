@@ -10,7 +10,6 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from langchain_core.documents import Document
 from pydantic import ValidationError
 
 import abaqus_sim_agent.retrieval.diagnostic as diagnostic_module
@@ -38,6 +37,7 @@ from abaqus_sim_agent.retrieval.diagnostic import (
     normalize_observed_diagnostic,
 )
 from abaqus_sim_agent.retrieval.index import AbaqusDocumentIndex, RetrievalHit
+from abaqus_sim_agent.retrieval.types import Document
 
 
 def _sha256(path: Path) -> str:

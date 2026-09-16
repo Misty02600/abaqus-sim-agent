@@ -8,9 +8,10 @@ from pathlib import Path
 from typing import Literal
 
 import lxml.etree as etree
-from langchain_core.documents import Document
 from pydantic import BaseModel, ConfigDict, model_validator
 from tokenizers import Tokenizer
+
+from abaqus_sim_agent.retrieval.types import Document
 
 
 class EvidenceBlock(BaseModel):

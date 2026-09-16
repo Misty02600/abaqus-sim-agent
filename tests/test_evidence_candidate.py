@@ -4,11 +4,11 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from langchain_chroma import Chroma
 from tests.test_evidence_blocks import tokenizer
 
 from abaqus_sim_agent.evaluation import evidence_candidate as candidate
 from abaqus_sim_agent.retrieval.evidence_blocks import TokenBoundChildren
+from abaqus_sim_agent.retrieval.flat_store import FlatDocumentStore
 
 
 def prepared(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
@@ -86,11 +86,9 @@ def test_index_roundtrip_binds_all_embeddings_and_persists_before_query(
     output = prepared(tmp_path, monkeypatch)
     candidate.build_index(output)
     binding = candidate.read(output / "index-binding.json")
-    vector = Chroma(
-        collection_name=candidate.COLLECTION,
-        embedding_function=None,
-        persist_directory=str(output / "index"),
-        create_collection_if_not_exists=False,
+    vector = FlatDocumentStore(
+        output / "index",
+        embeddings=candidate.encoder(),
     )
     # Empty collections/default-embedding configuration regressions fail this real query.
     assert vector.similarity_search_with_score("Steel elastic modulus", k=1)
@@ -104,7 +102,7 @@ def test_index_roundtrip_binds_all_embeddings_and_persists_before_query(
 
 
 def test_paged_get_uses_bounded_queries_and_keeps_every_record():
-    vector = MagicMock(spec=Chroma)
+    vector = MagicMock(spec=FlatDocumentStore)
     ids = [str(i) for i in range(7)]
 
     def page(*, include, limit, offset):
@@ -125,7 +123,7 @@ def test_paged_get_uses_bounded_queries_and_keeps_every_record():
 
 
 def test_paged_get_rejects_incomplete_fields_and_duplicate_ids():
-    vector = MagicMock(spec=Chroma)
+    vector = MagicMock(spec=FlatDocumentStore)
     vector.get.return_value = {"ids": ["a"], "embeddings": None}
     with pytest.raises(ValueError, match="incomplete paged"):
         candidate.paged_get(vector, include=["embeddings"])

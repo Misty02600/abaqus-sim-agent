@@ -1,10 +1,10 @@
 from types import SimpleNamespace
 
 import pytest
-from langchain_core.documents import Document
 
 from abaqus_sim_agent.evaluation import evidence_candidate as driver
 from abaqus_sim_agent.evaluation.unified_candidate_backend import BoundCandidateBackend
+from abaqus_sim_agent.retrieval.types import Document
 
 
 def test_dense_applies_scope_predicate_before_topk():

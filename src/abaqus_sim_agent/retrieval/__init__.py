@@ -25,6 +25,7 @@ from .index import (
     normalize_symbol,
     reciprocal_rank_fusion,
 )
+from .types import Document, Embeddings
 
 __all__ = [
     "BM25_ALGORITHM_NAME",
@@ -41,6 +42,8 @@ __all__ = [
     "BM25IndexError",
     "BM25IndexManifest",
     "BM25RetrievalHit",
+    "Document",
+    "Embeddings",
     "IndexManifest",
     "LoaderStats",
     "RetrievalHit",

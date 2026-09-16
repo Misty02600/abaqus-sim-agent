@@ -6,7 +6,8 @@ from collections.abc import Mapping, Sequence
 from typing import Literal
 
 import lxml.etree as etree
-from langchain_core.documents import Document
+
+from abaqus_sim_agent.retrieval.types import Document
 
 from .evidence_blocks import EvidenceBlock, expand_ranked_children
 

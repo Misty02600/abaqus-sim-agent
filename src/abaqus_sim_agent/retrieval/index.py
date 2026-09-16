@@ -2,16 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import time
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
 
-from langchain_chroma import Chroma
-from langchain_core.documents import Document
-from langchain_core.embeddings import Embeddings
-from langchain_core.retrievers import BaseRetriever
 from pydantic import BaseModel, ConfigDict, Field
 
 from .bm25 import (
@@ -22,6 +18,9 @@ from .bm25 import (
     semantic_corpus_sha256,
 )
 from .documents import DOCUMENT_CONTEXT_VERSION, AbaqusDocumentLoader
+from .flat_store import FlatDocumentStore
+from .minilm import MiniLMEncoder
+from .types import Document, Embeddings
 
 DEFAULT_COLLECTION_NAME = "abaqus_docs_2026_fd02"
 MANIFEST_NAME = "manifest.json"
@@ -38,7 +37,7 @@ class RetrievalHit:
 class IndexManifest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: str = "1"
+    schema_version: Literal["2"] = "2"
     document_context_version: str = "unrecorded"
     built_at: datetime
     release: str
@@ -51,6 +50,13 @@ class IndexManifest(BaseModel):
     documents_indexed: int = Field(ge=0)
     build_elapsed_seconds: float = Field(ge=0)
     embedding: str
+    encoder: dict[str, Any] | None = None
+    dense_algorithm: Literal["numpy-flat-cosine-v1"] = "numpy-flat-cosine-v1"
+    vector_dimensions: int = Field(gt=0)
+    vector_dtype: Literal["float32"] = "float32"
+    vectors_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    documents_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    source_binding: dict[str, Any] | None = None
     chunk_size_characters: int = Field(gt=0)
     chunk_overlap_characters: int = Field(ge=0)
     index_size_bytes: int = Field(ge=0)
@@ -62,6 +68,7 @@ class AbaqusDocumentIndex:
         persist_directory: str | Path,
         *,
         embeddings: Embeddings | None = None,
+        encoder_directory: str | Path | None = None,
         collection_name: str = DEFAULT_COLLECTION_NAME,
         create_if_missing: bool = False,
     ) -> None:
@@ -71,15 +78,46 @@ class AbaqusDocumentIndex:
             raise FileNotFoundError(
                 f"RAG index manifest does not exist: {self.manifest_path}"
             )
+        manifest = (
+            IndexManifest.model_validate_json(
+                self.manifest_path.read_text(encoding="utf-8")
+            )
+            if self.manifest_path.is_file()
+            else None
+        )
+        if embeddings is None:
+            if encoder_directory is not None:
+                embeddings = MiniLMEncoder(encoder_directory)
+            elif manifest is not None and manifest.encoder is not None:
+                embeddings = MiniLMEncoder.from_binding(manifest.encoder)
+            else:
+                embeddings = MiniLMEncoder(_default_minilm_directory())
         self.embeddings = embeddings
         self.collection_name = collection_name
         self._bm25_index: BM25DocumentIndex | None = None
-        self.vector_store = Chroma(
-            collection_name=collection_name,
-            embedding_function=self.embeddings,
-            persist_directory=str(self.persist_directory),
-            create_collection_if_not_exists=create_if_missing,
+        if manifest is not None and manifest.collection_name != collection_name:
+            raise ValueError("index collection name differs from the manifest")
+        self.vector_store = FlatDocumentStore(
+            self.persist_directory,
+            embeddings=self.embeddings,
+            create_if_missing=create_if_missing,
         )
+        if manifest is not None:
+            if _sha256_file(self.vector_store.vectors_path) != manifest.vectors_sha256:
+                raise ValueError("dense vector matrix hash differs from the manifest")
+            if (
+                _sha256_file(self.vector_store.database_path)
+                != manifest.documents_sha256
+            ):
+                raise ValueError(
+                    "dense document database hash differs from the manifest"
+                )
+            vectors = self.vector_store.vectors()
+            if vectors.shape != (
+                manifest.documents_indexed,
+                manifest.vector_dimensions,
+            ):
+                raise ValueError("dense vector matrix shape differs from the manifest")
 
     @classmethod
     def build(
@@ -88,6 +126,7 @@ class AbaqusDocumentIndex:
         persist_directory: str | Path,
         *,
         embeddings: Embeddings | None = None,
+        encoder_directory: str | Path | None = None,
         collection_name: str = DEFAULT_COLLECTION_NAME,
         batch_size: int = 128,
         reset: bool = True,
@@ -98,20 +137,21 @@ class AbaqusDocumentIndex:
         index = cls(
             persist_directory,
             embeddings=embeddings,
+            encoder_directory=encoder_directory,
             collection_name=collection_name,
             create_if_missing=True,
         )
-        if reset:
-            index.vector_store.reset_collection()
-
-        indexed = 0
-        for batch in _batched(loader.lazy_load(), batch_size):
-            ids = [_require_document_id(document) for document in batch]
-            index.vector_store.add_documents(documents=batch, ids=ids)
-            indexed += len(batch)
-
-        if indexed == 0:
+        if not reset and (
+            index.vector_store.database_path.exists()
+            or index.vector_store.vectors_path.exists()
+        ):
+            raise ValueError("incremental dense index builds are not supported")
+        documents = list(loader.lazy_load())
+        if not documents:
             raise ValueError("Abaqus document loader produced no documents")
+        index.vector_store.replace_all(documents, batch_size=batch_size)
+        indexed = len(documents)
+        vectors = index.vector_store.vectors()
 
         manifest = IndexManifest(
             document_context_version=DOCUMENT_CONTEXT_VERSION,
@@ -127,9 +167,17 @@ class AbaqusDocumentIndex:
             build_elapsed_seconds=time.perf_counter() - started,
             embedding=(
                 type(index.embeddings).__name__
-                if index.embeddings is not None
-                else "chromadb.DefaultEmbeddingFunction/all-MiniLM-L6-v2"
+                if not isinstance(index.embeddings, MiniLMEncoder)
+                else "sentence-transformers/all-MiniLM-L6-v2"
             ),
+            encoder=(
+                index.embeddings.manifest_binding()
+                if isinstance(index.embeddings, MiniLMEncoder)
+                else None
+            ),
+            vector_dimensions=int(vectors.shape[1]),
+            vectors_sha256=_sha256_file(index.vector_store.vectors_path),
+            documents_sha256=_sha256_file(index.vector_store.database_path),
             chunk_size_characters=loader.max_chunk_size,
             chunk_overlap_characters=min(100, loader.max_chunk_size // 10),
             index_size_bytes=_directory_size(index.persist_directory),
@@ -140,13 +188,6 @@ class AbaqusDocumentIndex:
             encoding="utf-8",
         )
         return index, manifest
-
-    def concept_retriever(self, *, top_k: int = 5) -> BaseRetriever:
-        if top_k < 1:
-            raise ValueError("top_k must be positive")
-        return self.vector_store.as_retriever(
-            search_kwargs={"k": top_k, "filter": {"retrieval_role": "semantic"}}
-        )
 
     def search_concepts(
         self,
@@ -379,7 +420,7 @@ class AbaqusDocumentIndex:
         current_corpus_sha256 = semantic_corpus_sha256(self._semantic_documents())
         if current_corpus_sha256 != sparse.manifest.semantic_corpus_sha256:
             raise BM25IndexError(
-                "current Chroma semantic corpus does not match the BM25 manifest"
+                "current dense semantic corpus does not match the BM25 manifest"
             )
         return current_corpus_sha256
 
@@ -476,20 +517,6 @@ def reciprocal_rank_fusion(
     ]
 
 
-def _batched(
-    documents: Iterable[Document],
-    batch_size: int,
-) -> Iterable[list[Document]]:
-    batch: list[Document] = []
-    for document in documents:
-        batch.append(document)
-        if len(batch) == batch_size:
-            yield batch
-            batch = []
-    if batch:
-        yield batch
-
-
 def _require_document_id(document: Document) -> str:
     if document.id is None:
         raise ValueError("document id is required for indexing")
@@ -555,3 +582,9 @@ def _sha256_file(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _default_minilm_directory() -> Path:
+    return (
+        Path.home() / ".cache" / "chroma" / "onnx_models" / "all-MiniLM-L6-v2" / "onnx"
+    )

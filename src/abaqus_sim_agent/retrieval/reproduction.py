@@ -6,7 +6,6 @@ import importlib.metadata
 import json
 import os
 import platform
-import sqlite3
 import tempfile
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -26,26 +25,18 @@ from .heldout import (
     evaluate_heldout,
 )
 from .index import DEFAULT_COLLECTION_NAME, AbaqusDocumentIndex
+from .minilm import MiniLMEncoder
 
 _REPRODUCTION_SOURCE = "src/abaqus_sim_agent/retrieval/reproduction.py"
 _RUNTIME_PACKAGES = (
-    "chromadb",
-    "langchain-chroma",
-    "langchain-core",
     "numpy",
     "onnxruntime",
     "tokenizers",
-    "tqdm",
 )
-_QUERY_ENCODER_TYPE = "chromadb.DefaultEmbeddingFunction/all-MiniLM-L6-v2"
+_QUERY_ENCODER_TYPE = "sentence-transformers/all-MiniLM-L6-v2"
 _QUERY_ENCODER_REQUIRED_FILES = (
-    "onnx.tar.gz",
-    "onnx/config.json",
-    "onnx/model.onnx",
-    "onnx/special_tokens_map.json",
-    "onnx/tokenizer.json",
-    "onnx/tokenizer_config.json",
-    "onnx/vocab.txt",
+    "model.onnx",
+    "tokenizer.json",
 )
 
 
@@ -71,7 +62,7 @@ class DenseVectorFile(_StrictModel):
 
 
 class DenseVectorStorageSnapshot(_StrictModel):
-    algorithm: Literal["chroma-target-hnsw-segment-bytes-v1"]
+    algorithm: Literal["numpy-flat-cosine-files-v1"]
     collection_name: str = Field(min_length=1)
     collection_id: str = Field(min_length=1)
     dimension: int = Field(gt=0)
@@ -92,7 +83,7 @@ class DenseVectorStorageSnapshot(_StrictModel):
 
 
 class HeldoutReproductionSeal(_StrictModel):
-    schema_version: Literal["1"] = "1"
+    schema_version: Literal["2"] = "2"
     dataset_id: str = Field(min_length=1)
     purpose: Literal["identical_reproduction"]
     status: Literal["sealed"]
@@ -104,7 +95,7 @@ class HeldoutReproductionSeal(_StrictModel):
     uv_lock: ArtifactBinding
     python_version: str = Field(min_length=1)
     runtime_versions: dict[str, str]
-    query_encoder_type: Literal["chromadb.DefaultEmbeddingFunction/all-MiniLM-L6-v2"]
+    query_encoder_type: Literal["sentence-transformers/all-MiniLM-L6-v2"]
     query_encoder_root: str = Field(min_length=1)
     query_encoder_files: tuple[ExternalFileBinding, ...] = Field(min_length=1)
     onnx_providers: tuple[str, ...] = Field(min_length=1)
@@ -118,9 +109,7 @@ class HeldoutReproductionSeal(_StrictModel):
             raise ValueError("reproduction seal runtime package set is incomplete")
         paths = [item.path for item in self.query_encoder_files]
         if tuple(paths) != _QUERY_ENCODER_REQUIRED_FILES:
-            raise ValueError(
-                "query encoder files must be the exact Chroma MiniLM file set"
-            )
+            raise ValueError("query encoder files must be the exact MiniLM runtime set")
         if not Path(self.query_encoder_root).is_absolute():
             raise ValueError("query encoder root must be absolute")
         if len(set(self.onnx_providers)) != len(self.onnx_providers):
@@ -185,159 +174,64 @@ def dense_vector_storage_snapshot(
     *,
     collection_name: str,
 ) -> DenseVectorStorageSnapshot:
-    """对目标 Chroma collection 的持久 HNSW segment 生成规范快照。
+    """对当前 NumPy Flat 文件生成规范快照。
 
     Args:
-        persist_directory: Chroma 持久目录。
+        persist_directory: Dense 索引持久目录。
         collection_name: 需要绑定的精确 collection 名称。
 
     Returns:
         collection投影、segment关联、逐文件hash和规范聚合hash。
 
     Raises:
-        FileNotFoundError: Chroma SQLite或目标segment文件不存在。
+        FileNotFoundError: 必需索引文件不存在。
         ValueError: collection/segment不唯一，路径逃逸，或扫描期间发生变化。
     """
     root = Path(persist_directory).resolve(strict=True)
-    database_path = root / "chroma.sqlite3"
-    if not database_path.is_file():
-        raise FileNotFoundError(
-            f"Chroma metadata database does not exist: {database_path}"
-        )
-    before = _collection_projection(database_path, collection_name)
-    paths = _vector_segment_files(root, before.segment_ids)
+    if (
+        not (root / "vectors.npy").is_file()
+        or not (root / "documents.sqlite3").is_file()
+    ):
+        raise FileNotFoundError(f"NumPy Flat index is incomplete: {root}")
+    return _flat_vector_storage_snapshot(root, collection_name)
 
+
+def _flat_vector_storage_snapshot(
+    root: Path, collection_name: str
+) -> DenseVectorStorageSnapshot:
+    manifest_path = root / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("collection_name") != collection_name:
+        raise ValueError("flat dense collection name does not match its manifest")
+    paths = [root / "documents.sqlite3", root / "vectors.npy"]
     aggregate = hashlib.sha256()
-    files: list[DenseVectorFile] = []
+    files = []
     for path in paths:
         relative = path.relative_to(root).as_posix()
-        initial = path.stat()
-        relative_bytes = relative.encode("utf-8")
-        aggregate.update(len(relative_bytes).to_bytes(8, "big"))
-        aggregate.update(relative_bytes)
-        aggregate.update(initial.st_size.to_bytes(8, "big"))
-        file_digest = hashlib.sha256()
-        bytes_read = 0
-        with path.open("rb") as stream:
-            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-                aggregate.update(chunk)
-                file_digest.update(chunk)
-                bytes_read += len(chunk)
-        final = path.stat()
-        if (
-            bytes_read != initial.st_size
-            or final.st_size != initial.st_size
-            or final.st_mtime_ns != initial.st_mtime_ns
-        ):
-            raise ValueError(f"Dense vector file changed while hashing: {relative}")
+        content = path.read_bytes()
+        encoded = relative.encode("utf-8")
+        aggregate.update(len(encoded).to_bytes(8, "big"))
+        aggregate.update(encoded)
+        aggregate.update(len(content).to_bytes(8, "big"))
+        aggregate.update(content)
         files.append(
             DenseVectorFile(
                 path=relative,
-                size_bytes=bytes_read,
-                sha256=file_digest.hexdigest(),
+                size_bytes=len(content),
+                sha256=hashlib.sha256(content).hexdigest(),
             )
         )
-
-    after = _collection_projection(database_path, collection_name)
-    if after != before:
-        raise ValueError("Chroma collection-to-vector-segment mapping changed")
-    final_paths = [
-        path.relative_to(root).as_posix()
-        for path in _vector_segment_files(root, before.segment_ids)
-    ]
-    if final_paths != [item.path for item in files]:
-        raise ValueError("Dense vector segment membership changed while hashing")
     return DenseVectorStorageSnapshot(
-        algorithm="chroma-target-hnsw-segment-bytes-v1",
+        algorithm="numpy-flat-cosine-files-v1",
         collection_name=collection_name,
-        collection_id=before.collection_id,
-        dimension=before.dimension,
-        collection_config_sha256=before.config_sha256,
-        collection_schema_sha256=before.schema_sha256,
-        segment_ids=before.segment_ids,
+        collection_id=collection_name,
+        dimension=int(manifest["vector_dimensions"]),
+        collection_config_sha256=_sha256_file(manifest_path),
+        collection_schema_sha256=_sha256_text(str(manifest["schema_version"])),
+        segment_ids=("numpy-flat",),
         sha256=aggregate.hexdigest(),
         files=tuple(files),
     )
-
-
-@dataclass(frozen=True)
-class _CollectionProjection:
-    collection_id: str
-    dimension: int
-    config_sha256: str
-    schema_sha256: str
-    segment_ids: tuple[str, ...]
-
-
-def _collection_projection(
-    database_path: Path,
-    collection_name: str,
-) -> _CollectionProjection:
-    connection = sqlite3.connect(f"{database_path.as_uri()}?mode=ro", uri=True)
-    try:
-        rows = list(
-            connection.execute(
-                """
-                SELECT id, dimension, config_json_str, schema_str
-                FROM collections
-                WHERE name = ?
-                """,
-                (collection_name,),
-            )
-        )
-        if len(rows) != 1:
-            raise ValueError(
-                f"expected exactly one Chroma collection named {collection_name!r}"
-            )
-        collection_id, dimension, config_json, schema = rows[0]
-        segments = tuple(
-            sorted(
-                str(row[0])
-                for row in connection.execute(
-                    """
-                    SELECT id
-                    FROM segments
-                    WHERE collection = ?
-                      AND scope = 'VECTOR'
-                      AND type = 'urn:chroma:segment/vector/hnsw-local-persisted'
-                    """,
-                    (collection_id,),
-                )
-            )
-        )
-        if not segments:
-            raise ValueError("target Chroma collection has no persisted HNSW segment")
-        if not isinstance(dimension, int) or dimension < 1:
-            raise ValueError("target Chroma collection has no valid vector dimension")
-        return _CollectionProjection(
-            collection_id=str(collection_id),
-            dimension=dimension,
-            config_sha256=_sha256_text(str(config_json or "")),
-            schema_sha256=_sha256_text(str(schema or "")),
-            segment_ids=segments,
-        )
-    finally:
-        connection.close()
-
-
-def _vector_segment_files(root: Path, segment_ids: tuple[str, ...]) -> list[Path]:
-    paths: list[Path] = []
-    for segment_id in segment_ids:
-        directory = (root / segment_id).resolve(strict=True)
-        if not directory.is_relative_to(root) or not directory.is_dir():
-            raise ValueError(f"invalid Chroma vector segment directory: {segment_id}")
-        if directory.is_symlink():
-            raise ValueError(
-                f"Chroma vector segment must not be a symlink: {segment_id}"
-            )
-        for path in directory.rglob("*"):
-            if path.is_symlink():
-                raise ValueError(f"Chroma vector file must not be a symlink: {path}")
-            if path.is_file():
-                paths.append(path)
-    if not paths:
-        raise ValueError("target Chroma vector segments contain no files")
-    return sorted(paths, key=lambda path: path.relative_to(root).as_posix())
 
 
 def audit_reproduction(
@@ -642,40 +536,16 @@ def _verify_query_encoder(
     index: AbaqusDocumentIndex,
     seal: HeldoutReproductionSeal,
 ) -> None:
-    if index.embeddings is not None:
-        raise ValueError(
-            "identical reproduction requires Chroma's default embedding function"
-        )
+    if not isinstance(index.embeddings, MiniLMEncoder):
+        raise ValueError("identical reproduction requires the bound MiniLM encoder")
     manifest = index.read_manifest()
     if manifest.embedding != _QUERY_ENCODER_TYPE:
         raise ValueError("dense manifest does not declare the sealed query encoder")
 
-    types_module = importlib.import_module("chromadb.api.types")
-    collection = getattr(index.vector_store, "_collection", None)
-    embedding_function: Any = getattr(collection, "_embedding_function", None)
-    if type(embedding_function) is not types_module.DefaultEmbeddingFunction:
-        raise ValueError("Chroma collection is not using DefaultEmbeddingFunction")
-    if embedding_function.name() != "default" or embedding_function.get_config() != {}:
-        raise ValueError("Chroma default embedding function configuration changed")
-
-    module = importlib.import_module(
-        "chromadb.utils.embedding_functions.onnx_mini_lm_l6_v2"
-    )
-    encoder_class = module.ONNXMiniLM_L6_V2
-    if encoder_class.MODEL_NAME != "all-MiniLM-L6-v2":
-        raise ValueError("Chroma default query encoder model name changed")
     root = Path(seal.query_encoder_root).resolve(strict=True)
-    implementation_root = Path(encoder_class.DOWNLOAD_PATH).resolve(strict=True)
-    if root != implementation_root:
-        raise ValueError(
-            "query encoder cache root does not match Chroma's implementation"
-        )
+    if root != index.embeddings.directory:
+        raise ValueError("query encoder root does not match the index binding")
     _verify_external_files(root, seal.query_encoder_files)
-    archive = next(
-        item for item in seal.query_encoder_files if item.path == "onnx.tar.gz"
-    )
-    if archive.sha256 != encoder_class._MODEL_SHA256:
-        raise ValueError("query encoder archive hash differs from Chroma's model hash")
 
 
 def _verify_external_files(

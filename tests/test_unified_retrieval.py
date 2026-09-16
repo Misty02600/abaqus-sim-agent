@@ -1,5 +1,4 @@
 import pytest
-from langchain_core.documents import Document
 from pydantic import ValidationError
 from tests.test_evidence_blocks import parent, tokenizer
 
@@ -13,6 +12,7 @@ from abaqus_sim_agent.evaluation.unified_retrieval import (
     UnifiedRetrievalCandidate,
 )
 from abaqus_sim_agent.retrieval.evidence_blocks import TokenBoundChildren
+from abaqus_sim_agent.retrieval.types import Document
 
 
 class Backend:

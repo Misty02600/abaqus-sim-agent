@@ -8,8 +8,9 @@ from pathlib import Path
 
 import numpy as np
 import onnxruntime as ort
-from langchain_core.documents import Document
 from tokenizers import Tokenizer
+
+from abaqus_sim_agent.retrieval.types import Document
 
 from .passage_selection import body_first_excerpt
 

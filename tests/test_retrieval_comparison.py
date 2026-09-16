@@ -5,7 +5,6 @@ import re
 from pathlib import Path
 
 import pytest
-from langchain_core.embeddings import Embeddings
 from pydantic import ValidationError
 
 from abaqus_sim_agent.retrieval import AbaqusDocumentIndex, AbaqusDocumentLoader
@@ -15,6 +14,7 @@ from abaqus_sim_agent.retrieval.comparison import (
     evaluate_comparison,
     load_comparison_cases,
 )
+from abaqus_sim_agent.retrieval.types import Embeddings
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "abaqus_docs"
 BENCHMARK_PATH = (

@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import math
 import re
+import sqlite3
 from pathlib import Path
 from typing import Literal
 
 import pytest
-from langchain_core.documents import Document
-from langchain_core.embeddings import Embeddings
 
 from abaqus_sim_agent.retrieval import (
     AbaqusDocumentIndex,
@@ -16,6 +15,7 @@ from abaqus_sim_agent.retrieval import (
     RetrievalHit,
     reciprocal_rank_fusion,
 )
+from abaqus_sim_agent.retrieval.types import Document, Embeddings
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "abaqus_docs"
 GUIDES = [
@@ -64,7 +64,7 @@ def build_fixture_index(index_dir: Path) -> AbaqusDocumentIndex:
     return index
 
 
-def test_chroma_preserves_page_provenance_and_section_heading_context(
+def test_flat_index_preserves_page_provenance_and_section_heading_context(
     tmp_path: Path,
 ) -> None:
     source = Path(__file__).parent / "fixtures/abaqus_docs_scope"
@@ -138,6 +138,38 @@ def test_index_persists_semantic_and_symbol_retrieval(tmp_path: Path) -> None:
     )
 
 
+def test_flat_index_materializes_metadata_filters_in_sqlite(tmp_path: Path) -> None:
+    index = build_fixture_index(tmp_path / "index")
+    with sqlite3.connect(index.vector_store.database_path) as connection:
+        columns = {
+            str(row[1]) for row in connection.execute("PRAGMA table_info(documents)")
+        }
+        tables = {
+            str(row[0])
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            )
+        }
+        plan = " ".join(
+            str(row[3])
+            for row in connection.execute(
+                "EXPLAIN QUERY PLAN SELECT row_no FROM documents "
+                "WHERE retrieval_role = 'semantic'"
+            )
+        )
+
+    assert {
+        "document_id",
+        "release",
+        "guide_id",
+        "retrieval_role",
+        "entity_kind",
+        "primary_symbol",
+    } <= columns
+    assert {"document_products", "document_symbols"} <= tables
+    assert "idx_documents_role" in plan
+
+
 def test_explicit_symbol_is_ranked_before_semantic_results(tmp_path: Path) -> None:
     index = build_fixture_index(tmp_path / "index")
 
@@ -187,7 +219,7 @@ def test_index_builds_bm25_from_the_same_semantic_corpus(tmp_path: Path) -> None
     assert all(hit.match_type == "hybrid" for hit in hybrid_hits)
 
 
-def test_bm25_rejects_current_chroma_semantic_corpus_drift(tmp_path: Path) -> None:
+def test_bm25_rejects_current_dense_semantic_corpus_drift(tmp_path: Path) -> None:
     index_directory = tmp_path / "index"
     index = build_fixture_index(index_directory)
     index.build_bm25()
@@ -197,20 +229,18 @@ def test_bm25_rejects_current_chroma_semantic_corpus_drift(tmp_path: Path) -> No
     )
     index.vector_store.delete(ids=[str(semantic_records["ids"][0])])
 
-    with pytest.raises(BM25IndexError, match="current Chroma semantic corpus"):
+    with pytest.raises(BM25IndexError, match="current dense semantic corpus"):
         index.search_bm25("static equilibrium")
 
-    reopened = AbaqusDocumentIndex(
-        index_directory,
-        embeddings=FixtureEmbeddings(),
-        collection_name="fixture_docs",
-    )
-
-    with pytest.raises(BM25IndexError, match="current Chroma semantic corpus"):
-        reopened.search_bm25("static equilibrium")
+    with pytest.raises(ValueError, match="document database hash"):
+        AbaqusDocumentIndex(
+            index_directory,
+            embeddings=FixtureEmbeddings(),
+            collection_name="fixture_docs",
+        )
 
 
-def test_hybrid_rechecks_chroma_after_bm25_was_cached(tmp_path: Path) -> None:
+def test_hybrid_rechecks_dense_corpus_after_bm25_was_cached(tmp_path: Path) -> None:
     index = build_fixture_index(tmp_path / "index")
     index.build_bm25()
     assert index.search_bm25("static equilibrium")
@@ -220,7 +250,7 @@ def test_hybrid_rechecks_chroma_after_bm25_was_cached(tmp_path: Path) -> None:
     )
     index.vector_store.delete(ids=[str(semantic_records["ids"][0])])
 
-    with pytest.raises(BM25IndexError, match="current Chroma semantic corpus"):
+    with pytest.raises(BM25IndexError, match="current dense semantic corpus"):
         index.search_hybrid("static equilibrium")
 
 

@@ -16,7 +16,8 @@ effective launch 为准。这里解释实际职责，不维护另一份依赖版
 | Abaqus 2024 launcher | CAE noGUI、Standard、standalone Python/odbAccess | 外部进程与许可证边界；进程 0 不等于仿真正确 |
 | 产品 verifier / 固定 oracle | 分别验证执行证据与指定任务物理合同 | 普通 CLI 不运行隐藏物理 oracle |
 | pydantic-evals / 自有 evaluator | 重复 Case、gate、usage、对照与冻结报告 | 参考脚本通过、模型通过、任务收益分别统计 |
-| Chroma / LangChain 文档适配 / SQLite BM25 | 文档加载、切块、Dense、倒排与独立 RRF 对照 | LangChain 不承担产品 Agent loop；SQLite 用于检索，不代表已有业务数据库 |
+| SQLite / NumPy Flat / ONNX MiniLM | 官方文档、metadata exact、Dense 与本地持久索引 | 3.9万条低QPS语料使用精确 cosine，不实现ANN；索引不是业务数据库 |
+| 自研 SQLite BM25 / RRF | 固定 tokenizer 的词法对照与独立融合评测 | 保留ADR-0022算法合同；不自动替换产品 Concept 路径 |
 | 官方 XHTML / abqpy AST / runtime notes | 可追溯 Catalog、精确查证与 receiver 方法目录 | 静态/跨版本来源不能替代实际运行 |
 | BasedPyright / 可选 ACI | 宿主类型检查，或显式 profile 下的 vendor 脚本预检 | API blocker 需要冻结证据，未知类型诊断不自动升级 |
 
@@ -68,7 +69,7 @@ SubAgents API 仍可能随小版本变化，因此任何采用都需要锁版本
 | 如何定义完成 | execution_evidence 与 task_oracle 分离，manifest freshness 不等于语义完整 |
 | 检索如何进入真实调用链 | receiver 目录 → exact lookup，查询/已交付证据独立持久化；命中不等于采用 |
 | 怎样避免评测自欺 | 固定 source/profile、逐 Case gate、保留失败、禁止回填旧 trial、区分 replay 与新实验 |
-| SQL 在哪里实际使用 | 本地 BM25 倒排与索引；尚无应用 Job ledger，不把依赖写成产品事务能力 |
+| SQL 在哪里实际使用 | 本地文档/metadata exact与BM25倒排；尚无应用 Job ledger，不把依赖写成产品事务能力 |
 
 ## 已采纳或条件触发的技术
 
@@ -77,5 +78,6 @@ FastAPI + assistant-ui 已被 [ADR-0025](../adr/0025-local-web-workbench-over-co
 
 LangGraph、DBOS、业务 SQLAlchemy/Alembic、PostgreSQL、Redis/Celery、远程 worker 和 Job Service
 目前未进入产品。未来即使增加专业 Agent，也优先沿上述 Pydantic AI 原生路径扩展；LangGraph 不再作为
-“多 Agent 必须配套”的默认候选。`langchain-*` 依赖继续只承担现有文档检索适配，不参与 Agent loop。
+“多 Agent 必须配套”的默认候选。当前源码与依赖不再包含 LangChain 或 Chroma；历史 Chroma
+索引只由对应旧提交、冻结源码和报告解释，不在当前运行时提供兼容 reader。
 只有真实调用、并发、状态或失败需求出现后再作取舍，不为了秋招覆盖技术名预先叠加。

@@ -4,9 +4,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 import lxml.etree as etree
-from langchain_core.documents import Document
 
 from abaqus_sim_agent.retrieval.documents import _content_roots
+from abaqus_sim_agent.retrieval.types import Document
 
 STRUCTURAL_PARSER_VERSION = "dom-block-preservation-v2"
 

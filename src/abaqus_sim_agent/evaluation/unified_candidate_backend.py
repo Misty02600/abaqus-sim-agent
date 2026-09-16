@@ -1,14 +1,14 @@
-"""复用冻结Chroma/BM25及源单元的只读候选适配器。"""
+"""复用冻结 NumPy Flat/BM25 及源单元的只读候选适配器。"""
 
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
 import lxml.etree as etree
-from langchain_chroma import Chroma
-from langchain_core.documents import Document
 
 from abaqus_sim_agent.retrieval.documents import AbaqusDocumentLoader, _product_texts
+from abaqus_sim_agent.retrieval.flat_store import FlatDocumentStore
+from abaqus_sim_agent.retrieval.types import Document
 
 from . import evidence_candidate as driver
 from .cross_encoder import OnnxPassageReranker, passage_text
@@ -37,12 +37,12 @@ class BoundCandidateBackend:
         """核对固定语料并读取官方范围；未知产品范围不猜测。
 
         Args:
-            candidate: 既有结构化父子候选库及其Chroma/BM25索引。
+            candidate: 既有结构化父子候选库及其 Flat/BM25 索引。
             symbol_index: 只读取exact卡片的旧索引；不合并其语义语料。
             scope_rules: 已审阅的章节范围声明，每项绑定源hash、唯一DOM ID和完整标题。
 
         Note:
-            Dense通过parent_id排除集在Chroma检索前过滤；BM25先计算所有匹配片段
+            Dense通过parent_id排除集在SQLite候选阶段过滤；BM25先计算所有匹配片段
             再在Top-K截取前应用相同排除集，保留原全语料IDF。没有浅Top-K后过滤。
         """
         self.candidate = candidate
@@ -145,11 +145,9 @@ class BoundCandidateBackend:
             != self.binding["index_manifest_sha256"]
         ):
             raise ValueError("candidate manifest mismatch")
-        self.vector = Chroma(
-            collection_name=driver.COLLECTION,
-            persist_directory=str(target),
-            embedding_function=None,
-            create_collection_if_not_exists=False,
+        self.vector = FlatDocumentStore(
+            target,
+            embeddings=driver.encoder(),
         )
         self.sparse = driver.BM25DocumentIndex.open(target)
         if (
@@ -185,7 +183,13 @@ class BoundCandidateBackend:
             ),
         }
 
-    def dense(self, query, *, limit, excluded_parents):
+    def dense(
+        self,
+        query: str,
+        *,
+        limit: int,
+        excluded_parents: frozenset[str],
+    ) -> list[Document]:
         if len(excluded_parents) > 20000:
             raise ValueError("scope predicate exceeds explicit adapter capacity")
         where: dict[str, Any] = {"retrieval_role": "semantic"}
@@ -245,11 +249,9 @@ class BoundCandidateBackend:
     def symbols(self, symbol, symbol_kind):
         if self.cards is None:
             manifest = driver.read(self.symbol_index / "manifest.json")
-            vector = Chroma(
-                collection_name=manifest["collection_name"],
-                persist_directory=str(self.symbol_index),
-                embedding_function=None,
-                create_collection_if_not_exists=False,
+            vector = FlatDocumentStore(
+                self.symbol_index,
+                embeddings=driver.encoder(),
             )
             self.symbol_binding = {
                 "manifest": driver.sha(self.symbol_index / "manifest.json"),

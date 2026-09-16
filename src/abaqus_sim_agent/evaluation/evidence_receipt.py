@@ -136,16 +136,10 @@ def capture_snapshot(
     )
     for record in index["vector"]["files"]:
         add(_within(candidate / "index", record["path"]), record["sha256"])
-    # Chroma's fixed verifier checks logical embeddings and segment identity in-worker.
-    # This independent before/after byte snapshot also covers exact-card SQLite content.
+    # 独立 before/after 快照绑定候选与 exact-symbol Flat 索引。
     for root in (candidate / "index", paths.symbol_index):
-        wal = root / "chroma.sqlite3-wal"
-        if wal.exists() and wal.stat().st_size:
-            raise ValueError("nonempty SQLite WAL requires a quiescent source snapshot")
-        add(root / "chroma.sqlite3")
-        for path in sorted(root.glob("*/*")):
-            if path.is_file() and path.suffix in {".bin", ".pickle"}:
-                add(path)
+        add(root / "documents.sqlite3")
+        add(root / "vectors.npy")
     package = Path(__file__).resolve().parent.parent
     for relative in (
         "retrieval/evidence_contracts.py",

@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import importlib.metadata
 import json
+import os
 import time
 from collections import Counter
 from pathlib import Path
@@ -11,10 +12,6 @@ from typing import Any
 
 import lxml.etree as etree
 import numpy as np
-from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
-from chromadb.utils.embedding_functions.onnx_mini_lm_l6_v2 import ONNXMiniLM_L6_V2
-from langchain_chroma import Chroma
-from langchain_core.documents import Document
 from tokenizers import Tokenizer
 
 from abaqus_sim_agent.coding.concept_lookup import _evidence_payloads
@@ -32,12 +29,15 @@ from abaqus_sim_agent.retrieval.evidence_units import (
     write_unit_store,
 )
 from abaqus_sim_agent.retrieval.evidence_windows import source_role
+from abaqus_sim_agent.retrieval.flat_store import FlatDocumentStore
+from abaqus_sim_agent.retrieval.minilm import MiniLMEncoder
 from abaqus_sim_agent.retrieval.reproduction import dense_vector_storage_snapshot
 from abaqus_sim_agent.retrieval.structured_projection import (
     HEADERLESS_PAIR_VERSION,
     PROJECTION_VERSION,
     project_evidence_unit,
 )
+from abaqus_sim_agent.retrieval.types import Document
 
 from .cross_encoder import OnnxPassageReranker, candidate_union
 from .structural_chunking import STRUCTURAL_PARSER_VERSION, extract_source_blocks
@@ -75,17 +75,26 @@ def write_new(path: Path, value: Any) -> None:
 
 
 def splitter() -> TokenBoundChildren:
-    token_path = (
-        ONNXMiniLM_L6_V2.DOWNLOAD_PATH
-        / ONNXMiniLM_L6_V2.EXTRACTED_FOLDER_NAME
-        / "tokenizer.json"
-    )
+    token_path = _encoder_directory() / "tokenizer.json"
     return TokenBoundChildren(Tokenizer.from_file(str(token_path)))
 
 
 def _encoder_binding() -> dict[str, str]:
-    root = ONNXMiniLM_L6_V2.DOWNLOAD_PATH / ONNXMiniLM_L6_V2.EXTRACTED_FOLDER_NAME
+    root = _encoder_directory()
     return {str(p.resolve()): sha(p) for p in sorted(root.rglob("*")) if p.is_file()}
+
+
+def encoder() -> MiniLMEncoder:
+    return MiniLMEncoder(_encoder_directory())
+
+
+def _encoder_directory() -> Path:
+    configured = os.environ.get("ABAQUS_SIM_AGENT_MINILM_DIR")
+    if configured:
+        return Path(configured).expanduser().resolve(strict=True)
+    return (
+        Path(__file__).parents[3] / "var/models/all-MiniLM-L6-v2-chroma-913d730/onnx"
+    ).resolve(strict=True)
 
 
 def _check_binding(output: Path) -> dict[str, Any]:
@@ -136,8 +145,7 @@ def prepare(
         "packages": {
             p: importlib.metadata.version(p)
             for p in (
-                "chromadb",
-                "langchain-chroma",
+                "numpy",
                 "onnxruntime",
                 "tokenizers",
                 "lxml",
@@ -328,9 +336,9 @@ def _raw_documents(raw: Any) -> list[Document]:
 
 
 def paged_get(
-    vector: Chroma, *, include: list[str], page_size: int = 256
+    vector: FlatDocumentStore, *, include: list[str], page_size: int = 256
 ) -> dict[str, Any]:
-    """分批读取，避免大语料的Chroma/SQLite IN查询超出绑定参数上限。"""
+    """分批读取，避免一次物化全部文档和向量。"""
     if page_size < 1:
         raise ValueError("page_size must be positive")
     result: dict[str, Any] = {"ids": [], **{key: [] for key in include}}
@@ -348,8 +356,8 @@ def paged_get(
     return result
 
 
-def embedding_digest(vector: Chroma) -> str:
-    """绑定所有已存储向量（包括未进HNSW的记录），而不只摘要索引文件。"""
+def embedding_digest(vector: FlatDocumentStore) -> str:
+    """按稳定ID顺序绑定全部已存储向量。"""
     raw = paged_get(vector, include=["embeddings"])
     if raw["embeddings"] is None or len(set(raw["ids"])) != len(raw["ids"]):
         raise ValueError("missing embeddings or duplicate IDs")
@@ -375,22 +383,12 @@ def build_index(output: Path) -> None:
     target = output / "index"
     target.mkdir(exist_ok=False)
     started = time.perf_counter()
-    vector = Chroma(
-        collection_name=COLLECTION,
-        embedding_function=None,
-        persist_directory=str(target),
-        collection_configuration={
-            "hnsw": {"batch_size": 1, "sync_threshold": 1},
-            "embedding_function": DefaultEmbeddingFunction(),
-        },
+    vector = FlatDocumentStore(
+        target,
+        embeddings=encoder(),
+        create_if_missing=True,
     )
-    for offset in range(0, len(documents), 64):
-        batch = documents[offset : offset + 64]
-        vector.add_documents(batch, ids=[str(d.id) for d in batch])
-        if offset % 2048 == 0 or offset + 64 >= len(documents):
-            print(
-                f"INDEX {min(offset + 64, len(documents))}/{len(documents)}", flush=True
-            )
+    vector.replace_all(documents, batch_size=64)
     write_new(
         target / "manifest.json",
         {
@@ -399,15 +397,14 @@ def build_index(output: Path) -> None:
             "document_count": len(documents),
             "product_tool_compatible": False,
             "release": "2026 FD02",
-            "hnsw_persistence": {"batch_size": 1, "sync_threshold": 1},
+            "dense_algorithm": "numpy-flat-cosine-v1",
+            "vector_dimensions": int(vector.vectors().shape[1]),
         },
     )
     sparse, _ = BM25DocumentIndex.build(documents, target)
-    reopened = Chroma(
-        collection_name=COLLECTION,
-        embedding_function=None,
-        persist_directory=str(target),
-        create_collection_if_not_exists=False,
+    reopened = FlatDocumentStore(
+        target,
+        embeddings=encoder(),
     )
     records = _raw_documents(paged_get(reopened, include=["documents", "metadatas"]))
     parents = {k: u.evidence for k, u in units.items()}
@@ -477,11 +474,9 @@ def replay(output: Path, query_manifest: Path, requirements: Path, model: Path) 
             "policy": "Previously exposed development queries; Dense20+BM2520, fixed cross-encoder, dedupe Top4 complete parents; no new query tuning or held-out claim.",
         },
     )
-    vector = Chroma(
-        collection_name=COLLECTION,
-        embedding_function=None,
-        persist_directory=str(output / "index"),
-        create_collection_if_not_exists=False,
+    vector = FlatDocumentStore(
+        output / "index",
+        embeddings=encoder(),
     )
     sparse = BM25DocumentIndex.open(output / "index")
     records = _raw_documents(paged_get(vector, include=["documents", "metadatas"]))

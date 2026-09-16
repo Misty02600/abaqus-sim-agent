@@ -9,7 +9,6 @@ from types import MappingProxyType, SimpleNamespace
 from typing import cast
 
 import pytest
-from langchain_core.documents import Document
 
 from abaqus_sim_agent.coding.contracts import (
     CodingRunBudget,
@@ -56,6 +55,7 @@ from abaqus_sim_agent.execution import (
     AbaqusInvocation,
 )
 from abaqus_sim_agent.retrieval import AbaqusDocumentIndex, RetrievalHit
+from abaqus_sim_agent.retrieval.types import Document
 from abaqus_sim_agent.verification.plate_output_warning_repair_run import (
     PlateOutputWarningRepairVerificationAttempt,
     _allowed_build_repair,
