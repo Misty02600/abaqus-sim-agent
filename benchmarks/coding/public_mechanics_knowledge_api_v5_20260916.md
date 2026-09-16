@@ -41,20 +41,27 @@ plate 保存的 received usage 为1 request、6940 input、543 output、2 tool c
 
 ## 用户授权的事后恢复观察
 
-用户随后明确要求验证中断恢复。该操作不改变上面的正式批次结果：它绕过冻结合同中“每题最多一次显式 resume”的评测上限，在原 run、原 workspace、原 state 和原累计预算上各增加一次 `003` resume attempt。没有修改 manifest、seal、任务、预算、模型配置或输入资料；控制记录位于批次目录 `control/posthoc-resume-003.json`。续跑前的同一冻结环境 doctor 再次成功。
+用户之后多次明确要求在原状态继续，不新建替换 trial。所有操作均保留原 run、conversation、workspace、history、usage、freshness baseline 和 execution journal；manifest、seal、任务与输入资料未修改。原冻结批次只允许一次显式 resume，因此下面结果全部是 `formal_batch=false` 的 post-hoc 观察，不能回填上面的正式分数。
 
-| Case | 本次 HTTP attempts / completed / failed | 恢复后行为 | 累计状态 |
-|---|---:|---|---|
-| plate-with-hole-tension | 4 / 1 / 3 | 第一个请求首试超时、retry 在约83.64秒后成功；模型保持原会话并再次检查空工作区。下一请求及其 retry 均超时 | 2个完整模型响应、4个工具调用、16447 input、783 output、9472 cache-read tokens；active wall 约1355.38秒 |
-| solid-cantilever-directional-bending | 2 / 1 / 1 | 首试超时，retry 在约81.35秒后返回 HTTP 500；没有完整模型响应 | received usage 仍为0，含义仅是未收到完整响应；active wall 约986.49秒 |
+两题先在原预算内分别累计到8次和8次 attempt，并由2700秒 wall门禁终止。随后使用产品已有的 operational amendment 继续：plate 依次把总 wall 上限调到3600秒、模型请求上限调到60；solid 依次把总 wall上限调到3600、5400、7200秒，最后同时把模型请求上限调到60。amendment 没有建立新 task revision，也没有清零消耗或重新划定 evidence scope。最终 plate 共8次 attempt，solid 共15次 attempt；逐次快照和授权控制记录保留在各题 `state/attempts/` 与批次 `control/`。
 
-两题工作区最终仍为空，知识资料、API discovery、exact Card、Abaqus 和 Solver 调用均为0，也没有遗留 Abaqus/Standard 进程。plate 的成功中间响应证明 `CodingRunService` 能从持久状态恢复同一会话并继续 tool loop；历史、累计 usage、active wall 和工具计数均未清零。实验同时表明本次 OpenCode 长上下文服务不稳定：短 doctor 可成功，但长请求多次在180秒超时或返回500。它仍不能用于判断知识包、Catalog 或工程任务能力。
+### Post-hoc 最终结果
 
-冻结快照的派生报告只把 `ModelAPIError` 归为 `provider_interrupted`，所以 solid 的 `ModelHTTPError` 行显示为较宽泛的 `interrupted`。原始 attempt 和 resume state 明确记录 HTTP 500；当前源码已把两种 Provider 错误统一归类，冻结快照和本批证据不回填。该次授权执行一次后结束，当时没有创建第4次 attempt。
+| Case | 自动结果 | Requests / tools | API / Abaqus / Solver | Active wall | 主要数值 |
+|---|---|---:|---:|---:|---|
+| plate-with-hole-tension | `formal_pass` | 51 / 60 | 7 / 16 / 4 | 3198.53 s | `hole_max_s11=317.19 Pa`，`reaction_x=-499.9999996 N`，粗细变化0.731% |
+| solid-cantilever-directional-bending | `formal_pass` | 59 / 68 | 8 / 16 / 3 | 6156.26 s | `U1=2.997642e-5 in`、`U2=0.107916 in`、`U3=0.430986 in`，对应反力均约-1 lbf，粗细变化0.00%–0.27% |
 
-用户之后再次明确授权继续重试，因此在同一状态上各增加一次 `004` resume attempt；这是第二次事后恢复授权，不改变正式批次和第一次事后恢复的记录。续跑前 doctor 再次成功，manifest、seal、合同和预算仍未修改。
+两题均生成 fresh CAE、粗细INP/ODB、独立提取脚本、结果JSON和报告，并由 results-first 宿主 verifier 接受。plate 累计收到3,609,944 input、68,827 output tokens；solid 累计收到5,285,278 input、97,010 output tokens。失败调用可能还有服务端消耗，客户端无法计费重建。如此高的累计开销说明恢复路径有效，但当前配置下并不高效或稳定。
 
-- `plate-with-hole-tension`：本次首个请求在180秒超时，retry 约144.78秒后返回 HTTP 500，没有新增完整模型响应。累计 received usage 保持2 requests、4 tool calls；active wall 增至约1681.61秒。
-- `solid-cantilever-directional-bending`：恢复后的首个请求约11.55秒成功，模型加载 `abaqus-2024-coding` 并检查空工作区；下一请求及 retry 均在180秒超时。累计新增1个完整模型响应、2个 tool calls、7086 input、780 output、6912 cache-read tokens；active wall 增至约1359.38秒。
+Catalog 最终被实际采用，但只有 exact lookup：plate 和 solid 分别计入7次和8次 API lookup；两题都没有调用 `discover_abaqus_api`，也没有读取随批次绑定的官方知识资料。因此本实验支持“Exact Card 与 runtime feedback 可进入完整修复闭环”，不支持 discovery 或脚本知识包带来任务收益的结论。
 
-两题仍没有工作区文件、知识读取、API 查询或 Abaqus/Solver 调用，也没有遗留运行进程。第二次观察再次证明同一 run 可以从持久状态继续并累计 usage，但单个成功响应之后的下一轮仍可能中断；当前主要限制仍是 OpenCode 长请求可用性，未进入足以评价 Agent、知识包或 API Catalog 的行为阶段。
+### 180秒超时诊断
+
+solid 在一个固定模型轮次反复出现 ReadTimeout。同期短 doctor 和 plate 请求能够成功，solid 当时的 history 约75 KB，明显小于 plate 后期约966 KB，不能归因于全局服务不可用或上下文规模过大。增加仅记录安全形状信息的 post-hoc transport 后，待发送请求为42,300 bytes、14条messages、21个tools、非流式；相同 body SHA 在180秒配置下反复超时。
+
+诊断性地保持同一 run/session/history，将单次 timeout 临时改为600秒并关闭 SDK retry。相同请求在287.42秒收到HTTP 200，完整响应59,509 bytes，随后 Agent 继续完成建模、API查证、CAE修复、两次求解、ODB提取和验收。由此可以确认：180秒阈值会取消仍可能成功的长生成；现有客户端证据不能继续区分模型推理耗时与服务端排队。该 timeout override 没有写入产品默认配置，也不是当前 operational amendment schema 支持的字段。
+
+### 声明边界
+
+post-hoc 派生报告当前两题均为 `formal_pass`，含义是自动 results-first verifier 接受了最终产物和独立数值证据。最终脚本尚未完成独立 script review，不能把 Agent 报告中的全部实现解释直接视为已审事实。正式冻结批次的 Provider 中断结论、原尝试、原 seal 和原报告时点继续保留；post-hoc 成功证明同一 CodingRun 可恢复并完成，不证明原 profile 的一次成功率或知识/discovery净收益。
