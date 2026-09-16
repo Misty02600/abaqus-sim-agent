@@ -43,12 +43,12 @@ LangGraph 可以显式表达父图、子图、条件循环、checkpoint 和 inte
 
 ## 替代关系
 
-- 被替代：[ADR-0008：首轮采用 Pydantic AI Harness 单 Coder 的原生 Abaqus CodingRun](0008-pydantic-ai-harness-abaqus-coding-run.md)。
+- 被替代：[ADR-0008：首轮采用 Pydantic AI Harness 单 Coder 的原生 Abaqus CodingRun](../0008-pydantic-ai-harness-abaqus-coding-run.md)。
 - 本 ADR 保留为 LangGraph-first 与分层多 Agent 首轮路线的历史记录；未来重新采用多 Agent 或 LangGraph
   需要以 CodingRun 评测证据形成新决定。
 
 ## 相关文档
 
-- [项目架构](../architecture/overview.md)
-- [Agent 与首个完整实现范围](../architecture/agent-implementation-scope.md)
-- [一次仿真 Run 的工作流](../architecture/flows/simulation-run.md)
+- [项目架构](../../architecture/overview.md)
+- [Agent 与首个完整实现范围](../../architecture/agent-implementation-scope.md)
+- [一次仿真 Run 的工作流](../../architecture/flows/simulation-run.md)

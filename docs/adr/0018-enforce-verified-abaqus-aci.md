@@ -10,7 +10,7 @@
 
 ## 当时遇到了什么
 
-[ADR-0016](0016-advisory-abqpy-static-preflight.md) 接入了固定 abqpy/BasedPyright preflight，但刻意保留
+[ADR-0016](history/0016-advisory-abqpy-static-preflight.md) 接入了固定 abqpy/BasedPyright preflight，但刻意保留
 “同一脚本 hash 原样重试即可运行”的模型逃生口。真实 B31 v1 轨迹随后证明这个接口不是有效控制：模型对
 5 份高置信报告都先原样重试，Abaqus 2024 又逐项确认同类错误，复杂 pass 最终仍使用 9 次 Abaqus。
 Prompt 已经说明应先修复，但模型可以通过接口忽略它，因此正确行为没有成为系统不变量。
@@ -134,7 +134,7 @@ abqpy 的错误容器类型写成产品真值。
 
 ## 替代关系
 
-- 替代：[ADR-0016：以固定 abqpy 与 BasedPyright 提供可回退的静态预检](0016-advisory-abqpy-static-preflight.md)
+- 替代：[ADR-0016：以固定 abqpy 与 BasedPyright 提供可回退的静态预检](history/0016-advisory-abqpy-static-preflight.md)
 
 ## 相关文档
 

@@ -32,6 +32,9 @@ interactive
 
 runner 使用参数序列而不是拼接用户 shell 字符串；`cwd` 固定为 canonical workspace。
 
+这里描述的是经 `run_solver_job` 的宿主路径。CAE 脚本内部直接 submit 仍可能绕过它；当前是协议禁止，
+确定性脚本检查尚未实施，见 [PLAN-0011](../../plans/todo/0011-block-solver-submit-inside-cae-script.md)。
+
 ## 分层成功语义
 
 `AbaqusExecutionResult.succeeded` 只表示没有 timeout 且进程 exit code 为 0。它不等于分析成功。真实本机

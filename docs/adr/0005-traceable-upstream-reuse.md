@@ -74,7 +74,7 @@ MIT License；仓库中的案例语料还可能包含第三方 Abaqus benchmark 
 - 实施情况：已更新仓库本地指令、架构说明和源码分析；本次只形成复用边界，没有复制上游代码、
   提示词、案例数据或索引。
 - 上游基线：`LIRAM-LIN/AbaqusAgent@f5462b3eaf34d21a958f495b80e40df45b3f39db`。
-- 替代关系：本 ADR 替代 [ADR-0001](0001-independent-from-upstream.md)；ADR-0001 保留为历史记录。
+- 替代关系：本 ADR 替代 [ADR-0001](history/0001-independent-from-upstream.md)；ADR-0001 保留为历史记录。
 
 ## 相关文档
 

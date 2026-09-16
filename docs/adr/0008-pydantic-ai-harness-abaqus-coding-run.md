@@ -6,6 +6,9 @@
 
 后续：[ADR-0024](0024-host-owned-user-question-waiting.md)局部替代新默认提问交接形式；本文的单Coder、运行权限与宿主验收边界继续有效，旧profile仍遵守原协议。
 
+后续验收范围由 [ADR-0019](0019-separate-product-execution-evidence-from-evaluation-oracles.md)区分开放产品与固定评测；
+会话续跑由 [ADR-0020](0020-resume-coding-runs-with-harness-step-persistence.md)补充。以下保留首轮决定当时的背景与范围。
+
 ## 日期
 
 2026-08-22
@@ -103,10 +106,10 @@ output、依赖注入、工具循环、usage 与重试语义。直接使用它�
 
 ## 替代关系
 
-- 替代：[ADR-0002](0002-langgraph-hierarchical-multi-agent.md)、
-  [ADR-0003](0003-durable-control-plane-and-execution-boundary.md)、
-  [ADR-0006](0006-modular-monolith-control-plane.md)、
-  [ADR-0007](0007-structured-model-port.md) 的首轮实现决定。
+- 替代：[ADR-0002](history/0002-langgraph-hierarchical-multi-agent.md)、
+  [ADR-0003](history/0003-durable-control-plane-and-execution-boundary.md)、
+  [ADR-0006](history/0006-modular-monolith-control-plane.md)、
+  [ADR-0007](history/0007-structured-model-port.md) 的首轮实现决定。
 - 同时替代旧架构文档和仓库指令中的首轮 `DeckDraft/ChangeSet` + renderer/publisher 约束。
 
 ## 相关文档

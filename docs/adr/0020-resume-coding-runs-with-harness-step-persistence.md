@@ -125,7 +125,7 @@ runtime 边界。这样可以直接解决已复现的网关中断，同时保持
 
 - 补充 [ADR-0008](0008-pydantic-ai-harness-abaqus-coding-run.md) 的单 Coder 调用链，不替代其 Agent、工具
   权限、verifier 或评测决定。
-- 只重新处理 [ADR-0003](0003-durable-control-plane-and-execution-boundary.md) 中“会话恢复”这一窄问题；
+- 只重新处理 [ADR-0003](history/0003-durable-control-plane-and-execution-boundary.md) 中“会话恢复”这一窄问题；
   ADR-0003 的 LangGraph 控制面、Job ledger 和 Artifact Store 路线仍保持被替代。
 
 ## 相关文档

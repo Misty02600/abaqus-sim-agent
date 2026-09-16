@@ -145,7 +145,7 @@ Go的DeepSeek适配沿用Pydantic AI原生profile，将已保存的thinking内�
 
 | 能力 | 启用方式与边界 |
 |---|---|
-| Exact API Catalog | `--api-catalog-dir <目录>` 配合 `--api-catalog-mode full`、`automatic_verified_only` 或 `automatic_exact_signature`；只传目录时默认为full。分别提供主动精确查询、错误触发verified note或唯一匹配的紧凑签名。 |
+| Exact API Catalog | `--api-catalog-dir <目录>` 配合 `--api-catalog-mode full`、`full_with_discovery`、`automatic_verified_only` 或 `automatic_exact_signature`；只传目录时默认 full。分别提供主动精确查证、额外的 receiver 方法目录、错误触发 verified note 或紧凑签名。 |
 | 官方文档工具 | `--concept-index-dir <索引> --concept-retrieval-mode tool`；`search_abaqus_docs` 按需查询，也允许零查询，默认最多2次。 |
 | Solver diagnostic advisory | `--diagnostic-retrieval-mode advisory --concept-index-dir <含BM25的索引>`；仅为符合条件的Solver诊断附加RRF证据，不替换原runtime状态。 |
 | 分级静态检查 | `--static-preflight-mode advisory` 或 `enforced_verified`；后者要求固定abqpy wheel、外部cache与task-owned生产脚本allowlist，拒绝发生在Abaqus预算前。 |
@@ -153,6 +153,10 @@ Go的DeepSeek适配沿用Pydantic AI原生profile，将已保存的thinking内�
 | 纯引用编辑 | `--edit-scope-file <trusted-scope.json>`；调用方冻结原文/hash和一个Python表达式区间，仅允许引用替换，不暴露Abaqus运行工具。 |
 
 新CLI单独启用Catalog时支持ask_user_v1，查询预算与去重随问答恢复累计，旧保存run按原launch协议恢复。
+`full_with_discovery` 已接入产品 CLI 和恢复：`discover_abaqus_api` 按已知 receiver 列出方法名称与 Card ID，
+模型应继续 `lookup_abaqus_api` 读取证据；候选不会记为已读卡片。两工具共用 API 预算，journal 保留查询、
+计数与实际交付内容。该目录工具不是下面的 BM25/E5 自然语言发现实验，详见
+[知识接入与恢复边界](docs/architecture/knowledge-access.md)。
 没有Python异常类型的CAE错误，只有在宿主确认非超时失败、frame指向本次执行hash匹配的工作区脚本，
 且调用可以唯一定位时才进入API提示；歧义或源码变化时不推断修复。Catalog仍需显式启用。
 
@@ -217,7 +221,7 @@ uv run python -m abaqus_sim_agent.api_catalog lookup `
 
 新建Catalog会保留abqpy方法docstring；已有lookup可用`Part.setElementType.__doc__`按需读取原文，
 参数查询仍使用`Part.setElementType.regions`。旧目录保持可读，不自动补写说明。
-离线自然语言发现已实现，但首轮中文关键操作仅2/3命中，尚未接入Coder：
+独立 BM25/E5 自然语言发现支持以下离线命令；它尚未成为普通 CLI 的模型工具，与产品 receiver 目录不同：
 
 ```powershell
 uv run --no-sync python -m abaqus_sim_agent.api_catalog discover `
@@ -231,27 +235,20 @@ uv run --no-sync python -m abaqus_sim_agent.api_catalog discover `
 这些命令需要本地构建资产，不自动下载模型。候选不证明适用性或物理正确性。
 复核命令、固定模型文件绑定和失败分析见[1B/2A报告](benchmarks/api_catalog/docstrings_discovery_v1_20260914.md)。
 
-后续v2已补官方对象用途与方法Table data，并支持`index --projection api-discovery-view-v2`显式构建；
-旧v1仍可读取。独立候选为`var/api-catalog/abaqus-2024-reference-context-v2`，索引为
-`var/api-catalog/discovery-reference-context-v2-e5`。v2 BM25/E5为17/36、19/36，但中文关键操作仍2/3，
-E5有原命中退化，仍不接入Coder。说明读取、兼容与逐题结果见[v2报告](benchmarks/api_catalog/reference_context_discovery_v2_20260914.md)。
+v2 保留官方对象用途与方法 Table data，支持 `index --projection api-discovery-view-v2` 显式构建，
+旧 v1 仍可读取。内容补齐与原题开发回放见 [v2 报告](benchmarks/api_catalog/reference_context_discovery_v2_20260914.md)，
+不把局部命中改善当作中文范围可用或真实任务收益。
 
 离线发现还可显式使用`discover --intent-file <JSON>`，JSON包含宿主保留的`original_request`和用于排名的
 `operation`。`--lexical-profile english-snowball-v1`启用英文停用词/词干处理，仅作用于BM25；默认legacy和Exact定位不变。
-原需求会完整回传供采用前核对，不代表自动验证了约束。一次开发验证有局部改善，但仍有保真和复杂查询失败，
-尚未成为Coder工具或默认策略，见[操作意图与词法处理报告](benchmarks/api_catalog/operation_intent_lexical_v1_20260914.md)。
+原需求会完整回传供采用前核对，不代表自动验证约束。该意图搜索仍是独立能力，见
+[操作意图与词法处理报告](benchmarks/api_catalog/operation_intent_lexical_v1_20260914.md)。
 
-后续已扩为一题一会话：15条旧回归、20条新验收题及8次预声明重复，共43次查询准备运行。
-新题16条检索的合格Hit@5为旧BM25/Snowball/E5的11/16、11/16、12/16；4条缺参/冲突分流正确。
-存在保真和稳定性边界，不代表完整建模能力；数据、运行脚本和评分修正见[扩展测评报告](benchmarks/api_catalog/intent_suite_expansion_20260914.md)。
-
-后续小闭环评测允许模型提出API假说并在同一会话核实：5个方案场景的主入口均选对且有实际读卡，
-1个缺厚度场景发出原生ask_user；其中1次真实语义发现后继续Exact查证。仍有解释和引用格式问题，
-发现入口仅在评测组装中注册，未接入普通CLI或恢复协议，见[API查证小闭环](benchmarks/api_catalog/api_discovery_loop_v1_20260915.md)。
-
-后续增加8个真实历史失败断点，已从成功文件工具记录重建上下文并独立运行一次：5份API方案交付、
-3次ModelAPIError中断，全部0次Abaqus；解释/引用仍有问题，不能称仿真通过。
-来源、题包、局限及运行入口见[历史失败API查证](benchmarks/api_catalog/historical_api_feedback_v1_20260915.md)。
+API 意图准备、评测专用语义发现和历史失败反馈各有独立实验，详细分数、解释错误与 Provider 中断保留在
+[扩展测评](benchmarks/api_catalog/intent_suite_expansion_20260914.md)、
+[API 方案小闭环](benchmarks/api_catalog/api_discovery_loop_v1_20260915.md)及
+[历史失败查证](benchmarks/api_catalog/historical_api_feedback_v1_20260915.md)。这些零 Abaqus 观察不能称仿真通过。
+产品当前接线以 [知识接入](docs/architecture/knowledge-access.md)为准，实验历史不替代当前接口说明。
 
 检索评测、当前证据基线和已知缺口统一见[RAG索引](benchmarks/rag/README.md)；
 独立服务参数可通过 `uv run python -m abaqus_sim_agent.evaluation.runtime_evidence_service --help` 查看；

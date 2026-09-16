@@ -73,16 +73,16 @@ usage 和相同超时行为。
 
 ## 替代关系
 
-- 被替代：[ADR-0008：首轮采用 Pydantic AI Harness 单 Coder 的原生 Abaqus CodingRun](0008-pydantic-ai-harness-abaqus-coding-run.md)。
+- 被替代：[ADR-0008：首轮采用 Pydantic AI Harness 单 Coder 的原生 Abaqus CodingRun](../0008-pydantic-ai-harness-abaqus-coding-run.md)。
 - `StructuredModelPort` 和 LangChain adapter 保留为已测试的研究资产；首轮 Coder 直接使用 Pydantic AI
   model/provider，不经过该端口。
 
 ## 相关文档
 
-- [项目架构](../architecture/overview.md)
-- [完整系统框架](../architecture/system-framework.md)
-- [技术栈与工程讲解点](../architecture/technology-stack.md)
-- [Agent 与首个完整实现范围](../architecture/agent-implementation-scope.md)
-- [一次仿真 Run 的工作流](../architecture/flows/simulation-run.md)
+- [项目架构](../../architecture/overview.md)
+- [完整系统框架](../../architecture/system-framework.md)
+- [技术栈与工程讲解点](../../architecture/technology-stack.md)
+- [Agent 与首个完整实现范围](../../architecture/agent-implementation-scope.md)
+- [一次仿真 Run 的工作流](../../architecture/flows/simulation-run.md)
 - [ADR-0002：使用 LangGraph 构建分层多 Agent 系统](0002-langgraph-hierarchical-multi-agent.md)
 - [ADR-0006：使用模块化单体和端口适配器组织控制平面](0006-modular-monolith-control-plane.md)

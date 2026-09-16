@@ -4,7 +4,7 @@
 
 已替代
 
-由 [ADR-0005](0005-traceable-upstream-reuse.md) 替代。
+由 [ADR-0005](../0005-traceable-upstream-reuse.md) 替代。
 
 ## 日期
 
@@ -40,5 +40,5 @@
 
 ## 相关文档
 
-- [项目架构](../architecture/overview.md)
-- [ADR-0005：有来源地吸收与重构 AbaqusAgent](0005-traceable-upstream-reuse.md)
+- [项目架构](../../architecture/overview.md)
+- [ADR-0005：有来源地吸收与重构 AbaqusAgent](../0005-traceable-upstream-reuse.md)

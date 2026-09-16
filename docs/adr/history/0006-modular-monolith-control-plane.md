@@ -66,14 +66,14 @@ PostgreSQL。因此 SQLite 首版若让 API 与独立 worker 并发写，会与�
 
 ## 替代关系
 
-- 被替代：[ADR-0008：首轮采用 Pydantic AI Harness 单 Coder 的原生 Abaqus CodingRun](0008-pydantic-ai-harness-abaqus-coding-run.md)。
+- 被替代：[ADR-0008：首轮采用 Pydantic AI Harness 单 Coder 的原生 Abaqus CodingRun](../0008-pydantic-ai-harness-abaqus-coding-run.md)。
 - 模块化单体、FastAPI 和 SQL 控制面的设计保留为历史候选，不再构成首轮或后续默认承诺；引入时需由
   真实消费者、并发、查询或恢复需求重新决策。
 
 ## 相关文档
 
-- [完整系统框架](../architecture/system-framework.md)
-- [一次仿真 Run 的工作流](../architecture/flows/simulation-run.md)
-- [Abaqus Job 生命周期](../architecture/flows/job-lifecycle.md)
+- [完整系统框架](../../architecture/system-framework.md)
+- [一次仿真 Run 的工作流](../../architecture/flows/simulation-run.md)
+- [Abaqus Job 生命周期](../../architecture/flows/job-lifecycle.md)
 - [ADR-0002：使用 LangGraph 构建分层多 Agent 系统](0002-langgraph-hierarchical-multi-agent.md)
 - [ADR-0003：分离可恢复控制平面与 Abaqus 执行边界](0003-durable-control-plane-and-execution-boundary.md)

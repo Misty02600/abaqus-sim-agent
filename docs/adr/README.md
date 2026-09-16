@@ -1,38 +1,57 @@
 # 架构决定
 
-## 当前有效
+先用 [架构总览](../architecture/overview.md)了解当前事实，再用本索引查原始取舍。根目录保留当前仍约束
+维护的已采纳决定；六份已替代记录见 [历史索引](history/README.md)。编号是稳定身份，不表示实现顺序。
 
-- [ADR-0025：在 CodingRun 宿主之上增加本地 Web 工作台](0025-local-web-workbench-over-coding-run.md) — 已采纳，产品未实施；FastAPI + assistant-ui、REST + 轻量 SSE，由PLAN-0008/0009/0010实施与验收。
+**已采纳不等于已实施。** ADR 的当时背景、后果和实验记录保留原意；当前入口、兼容组合、实施状态与
+支持结论由 architecture 和 [验证证据](../architecture/verification-evidence.md)维护。
+不因一次接口接线、普通修复或实验结束就新增 ADR，也不把后来状态回填到旧决定。
 
-- [ADR-0024：ask_user与宿主待答](0024-host-owned-user-question-waiting.md) — 已采纳；局部替代ADR-0008/0020的新默认交接，旧profile保持原协议。
+## 产品、组件与权限
 
-- [ADR-0004：以证据和物理验证定义任务成功](0004-evidence-first-physics-verification.md) — 已采纳
-- [ADR-0005：有来源地吸收与重构 AbaqusAgent](0005-traceable-upstream-reuse.md) — 已采纳
-- [ADR-0008：首轮采用 Pydantic AI Harness 单 Coder 的原生 Abaqus CodingRun](0008-pydantic-ai-harness-abaqus-coding-run.md) — 已采纳
-- [ADR-0009：使用官方文档、abqpy AST 与运行证据构建精确 Abaqus API Catalog](0009-exact-abaqus-api-catalog.md) — 已采纳
-- [ADR-0010：以显式受预算工具接入官方建模概念检索](0010-budgeted-official-concept-retrieval.md) — 已采纳
-- [ADR-0011：以已验证 CodingRun 作为现有模型变更的种子](0011-verified-seed-model-change.md) — 已采纳
-- [ADR-0012：用逐 Case gate 的正交变更套件扩展 L1](0012-per-case-model-change-suite.md) — 已采纳
-- [ADR-0013：模型变更新指标由宿主 oracle 验收](0013-host-owned-model-change-acceptance.md) — 已采纳
-- [ADR-0014：用 typed probe 协议约束诊断结论和 production 收敛](0014-typed-probe-convergence-protocol.md) — 已采纳
-- [ADR-0015：产品 Coder 不暴露通用 Shell](0015-disable-general-shell-for-product-coder.md) — 已采纳
-- [ADR-0017：以扁平组件图组织 CodingRun 产品包](0017-package-by-component-coding-run.md) — 已采纳
-- [ADR-0018：以分级 ACI 强制生产脚本语法和已验证 API 合同](0018-enforce-verified-abaqus-aci.md) — 已采纳为显式 profile
-- [ADR-0019：分离产品执行证据与测评物理 oracle](0019-separate-product-execution-evidence-from-evaluation-oracles.md) — 已采纳
-- [ADR-0020：使用 Harness StepPersistence 续跑中断的 CodingRun](0020-resume-coding-runs-with-harness-step-persistence.md) — 已采纳
-- [ADR-0021：用 Amendment 和 Task Revision 延续 CodingRun](0021-use-amendments-and-task-revisions-for-continuation.md) — 已采纳；部分替代 ADR-0020 的不可修改/terminal 限制
-- [ADR-0022：先独立评测 BM25、Dense 与 RRF，再决定是否接入 Agent](0022-evaluate-bm25-dense-rrf-before-agent-adoption.md) — 已采纳；不进入默认Concept路径，仅有默认关闭的Solver diagnostic advisory实验profile
-- [ADR-0023：在纯编辑模式写入前执行调用方声明的范围合同](0023-constrain-explicit-reference-edits-before-writing.md) — 已采纳为默认关闭的单表达式引用编辑 profile
+| 决定 | 状态与作用域 |
+|---|---|
+| [0008：Pydantic AI Harness 单 Coder](0008-pydantic-ai-harness-abaqus-coding-run.md) | 已采纳；替代旧 LangGraph、多角色及首轮控制面路线，后续 scope/恢复/问答按下列决定扩展 |
+| [0017：按活动组件组织产品包](0017-package-by-component-coding-run.md) | 已采纳；组件职责与消费方端口 |
+| [0015：产品 Coder 不暴露通用 Shell](0015-disable-general-shell-for-product-coder.md) | 已采纳；工具装配 fail-closed，不构成 OS 沙箱 |
+| [0018：分级 ACI 与已验证 API 合同](0018-enforce-verified-abaqus-aci.md) | 已采纳为显式 profile；替代 0016，不代表默认启用或已证明收益 |
+| [0023：调用方声明的纯编辑范围](0023-constrain-explicit-reference-edits-before-writing.md) | 已采纳为默认关闭的单表达式编辑 profile |
+| [0025：CodingRun 上的本地 Web 工作台](0025-local-web-workbench-over-coding-run.md) | 已采纳；FastAPI + assistant-ui。接线资格已有证据，产品 API/UI 尚未完成，实施由已有 PLAN-0009/0010 验收 |
 
-## 已替代
+## 验收、恢复与人机交接
 
-- [ADR-0001：与上游 AbaqusAgent 保持独立实现](0001-independent-from-upstream.md) — 由 ADR-0005 替代
-- [ADR-0002：使用 LangGraph 构建分层多 Agent 系统](0002-langgraph-hierarchical-multi-agent.md) — 由 ADR-0008 替代
-- [ADR-0003：分离可恢复控制平面与 Abaqus 执行边界](0003-durable-control-plane-and-execution-boundary.md) — 由 ADR-0008 替代
-- [ADR-0006：使用模块化单体和端口适配器组织控制平面](0006-modular-monolith-control-plane.md) — 由 ADR-0008 替代
-- [ADR-0007：通过 StructuredModelPort 隔离模型提供方](0007-structured-model-port.md) — 由 ADR-0008 替代
-- [ADR-0016：以固定 abqpy 与 BasedPyright 提供可回退的静态预检](0016-advisory-abqpy-static-preflight.md) — 由 ADR-0018 替代
+| 决定 | 状态与作用域 |
+|---|---|
+| [0004：用证据和物理验证定义成功](0004-evidence-first-physics-verification.md) | 已采纳；证据与能力声明的共同原则 |
+| [0019：产品执行证据与测评物理 oracle 分离](0019-separate-product-execution-evidence-from-evaluation-oracles.md) | 已采纳；开放产品完成不等于物理正确 |
+| [0020：Harness StepPersistence 会话续跑](0020-resume-coding-runs-with-harness-step-persistence.md) | 已采纳；未决外部副作用停在 needs_reconcile，不等于 Job 恢复 |
+| [0021：Amendment 与 Task Revision](0021-use-amendments-and-task-revisions-for-continuation.md) | 已采纳；部分替代 0020 的禁止修改配置/重开 terminal 限制 |
+| [0024：ask_user 与宿主持久待答](0024-host-owned-user-question-waiting.md) | 已采纳；局部替代 0008/0020 的新默认交接，旧 profile 保持原协议 |
 
-被替代 ADR 保留当时问题、取舍和未完成路线，不能用来描述当前首轮产品调用链。当前首轮边界以
-ADR-0008 和架构文档为准；ADR-0020/0021 提供文件后端的中断续跑和显式会话修订，不恢复旧 LangGraph、
-多 Agent 或持久 Job Service 路线。其余方向仍需要新的任务证据和新的 ADR。
+## 知识来源与检索
+
+| 决定 | 状态与作用域 |
+|---|---|
+| [0005：可追溯地吸收与重构上游](0005-traceable-upstream-reuse.md) | 已采纳；替代 0001，保留独立仓库与许可证/来源义务 |
+| [0009：精确 Abaqus API Catalog](0009-exact-abaqus-api-catalog.md) | 已采纳；官方语义、静态声明与运行证据分开；最新 discovery 接线见知识接入 |
+| [0010：显式受预算的官方概念检索](0010-budgeted-official-concept-retrieval.md) | 已采纳；可选证据，不补物理输入 |
+| [0022：独立比较 BM25、Dense、RRF 后再采用](0022-evaluate-bm25-dense-rrf-before-agent-adoption.md) | 已采纳；保留算法对照与采用门槛，不代表 RRF 已替换默认 Concept 路径 |
+
+## 固定模型变更与诊断合同
+
+| 决定 | 状态与作用域 |
+|---|---|
+| [0011：使用已验证 CodingRun 种子](0011-verified-seed-model-change.md) | 已采纳；源任务和 artifact 先验后用 |
+| [0012：共享执行证据、逐 Case gate](0012-per-case-model-change-suite.md) | 已采纳；物理 verifier 保持独立；中心孔指标边界由 0013 局部替代 |
+| [0013：新指标由宿主 oracle 验收](0013-host-owned-model-change-acceptance.md) | 已采纳；部分替代 0012 对中心孔 extractor 的要求，沿用 0011 的可信种子边界 |
+| [0014：typed probe 与 production adoption](0014-typed-probe-convergence-protocol.md) | 已采纳为显式模式；诊断、目标和采用证据归宿主 |
+
+## 如何维护
+
+- 改变原架构取舍时新建 ADR，说明接受依据、替代范围和双向关系；普通实现演进进入当前文档和测试。
+- 不删改既有 Accepted/Rejected 决定的背景、决定与后果。归档保持编号和原状态，只修链接、路径及关系。
+- 现有较长 ADR 中的历史实验和当时实施步骤不作为今天的工作队列；不再向其中追加批次流水账。
+- 只在获得相应文档治理授权后归档。部分被替代但仍约束当前系统的 ADR 继续保留在当前索引。
+
+当前接口与知识组合见 [知识接入](../architecture/knowledge-access.md)，计划状态见
+[计划索引](../plans/todo/README.md)，不在本页复制实验分数或计划进度。

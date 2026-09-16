@@ -2,7 +2,7 @@
 
 ## 状态
 
-已替代；由 [ADR-0018](0018-enforce-verified-abaqus-aci.md) 引入不可由模型绕过的分级 ACI
+已替代；由 [ADR-0018](../0018-enforce-verified-abaqus-aci.md) 引入不可由模型绕过的分级 ACI
 
 ## 日期
 
@@ -66,7 +66,7 @@ Product treatment 支持时才扩展 policy；不因单条模型轨迹自动写�
 - 离线 v2 policy：21 份正例 0 次误暂停、5 份已由 licensed Abaqus 2024 复现的坏脚本 5/5 命中；134 条
   raw 正例诊断被过滤。单脚本平均约 1.18 秒。缺少 `assignBeamSectionOrientation(method, n1)` 的诊断又由
   B31 v1 真实 runtime 在同一行确认。见
-  [`abqpy_static_preflight_policy_v2_20260829.json`](../../benchmarks/coding/abqpy_static_preflight_policy_v2_20260829.json)。
+  [`abqpy_static_preflight_policy_v2_20260829.json`](../../../benchmarks/coding/abqpy_static_preflight_policy_v2_20260829.json)。
 - Product v1：同一 B31 请求、Go/Flash、final15 automatic、allowlist、预算和 verifier 下为 2/3；一条为
   pre-file transport timeout，两个 task-started attempt 均通过 oracle。复杂通过样本在运行前发现
   `createStepName`、`orientation`、`seedPartByNumber` 和 `Model.writeInput`，但 Agent 对每个 hash 都先原样
@@ -74,7 +74,7 @@ Product treatment 支持时才扩展 policy；不因单条模型轨迹自动写�
   节省或 gate 收益。
 - Product v2：三条都在生产文件、静态预检和 Abaqus 前因 OpenCode Go `Request timed out` 结束；该批对
   v2 adoption 无效，不能把 0/3 归因静态策略。完整冻结结果见
-  [`beam_tension_b31_abqpy_preflight_evaluation_20260829.json`](../../benchmarks/coding/beam_tension_b31_abqpy_preflight_evaluation_20260829.json)。
+  [`beam_tension_b31_abqpy_preflight_evaluation_20260829.json`](../../../benchmarks/coding/beam_tension_b31_abqpy_preflight_evaluation_20260829.json)。
 
 因此当前推荐 B31 profile 仍是未启用 preflight 的 v7。v2 只能描述为已实现、离线门槛通过、Product 行为
 待重测的 opt-in candidate。
@@ -99,11 +99,11 @@ Product treatment 支持时才扩展 policy；不因单条模型轨迹自动写�
 
 ## 相关文档
 
-- [ADR-0008：首轮采用 Pydantic AI Harness 单 Coder](0008-pydantic-ai-harness-abaqus-coding-run.md)
-- [ADR-0009：构建精确 Abaqus API Catalog](0009-exact-abaqus-api-catalog.md)
-- [当前运行流程](../architecture/flows/simulation-run.md)
-- [技术栈与工程讲解点](../architecture/technology-stack.md)
+- [ADR-0008：首轮采用 Pydantic AI Harness 单 Coder](../0008-pydantic-ai-harness-abaqus-coding-run.md)
+- [ADR-0009：构建精确 Abaqus API Catalog](../0009-exact-abaqus-api-catalog.md)
+- [当前运行流程](../../architecture/flows/simulation-run.md)
+- [技术栈与工程讲解点](../../architecture/technology-stack.md)
 
 ## 替代关系
 
-- 被替代：[ADR-0018：以分级 ACI 强制生产脚本语法和已验证 API 合同](0018-enforce-verified-abaqus-aci.md)
+- 被替代：[ADR-0018：以分级 ACI 强制生产脚本语法和已验证 API 合同](../0018-enforce-verified-abaqus-aci.md)

@@ -61,13 +61,13 @@ SQLite 和本地 Artifact Store 足以证明单机纵向闭环，又保留明确
 
 ## 替代关系
 
-- 被替代：[ADR-0008：首轮采用 Pydantic AI Harness 单 Coder 的原生 Abaqus CodingRun](0008-pydantic-ai-harness-abaqus-coding-run.md)。
+- 被替代：[ADR-0008：首轮采用 Pydantic AI Harness 单 Coder 的原生 Abaqus CodingRun](../0008-pydantic-ai-harness-abaqus-coding-run.md)。
 - 外部 Job 的幂等、取消、对账和恢复仍是有效问题，但不再是首轮 CodingRun 的已采纳实现前提；当前同步
   runner 不能被描述成具备这些 durable 语义。
 
 ## 相关文档
 
-- [项目架构](../architecture/overview.md)
-- [完整系统框架](../architecture/system-framework.md)
-- [一次仿真 Run 的工作流](../architecture/flows/simulation-run.md)
-- [Abaqus Job 生命周期](../architecture/flows/job-lifecycle.md)
+- [项目架构](../../architecture/overview.md)
+- [完整系统框架](../../architecture/system-framework.md)
+- [一次仿真 Run 的工作流](../../architecture/flows/simulation-run.md)
+- [Abaqus Job 生命周期](../../architecture/flows/job-lifecycle.md)
