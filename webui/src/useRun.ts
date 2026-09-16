@@ -1,0 +1,75 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { request, runPath, errorText, type Snapshot } from "./api/client";
+
+export function useRun(id: string | null) {
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [error, setError] = useState("");
+  const [connected, setConnected] = useState(false);
+  const generation = useRef(0);
+  const sequence = useRef(0);
+  const selected = useRef(id);
+  selected.current = id;
+  const refresh = useCallback(async () => {
+    if (!id) return;
+    const epoch = generation.current,
+      order = ++sequence.current;
+    try {
+      const next = await request<Snapshot>(runPath(id));
+      if (
+        id === selected.current &&
+        epoch === generation.current &&
+        order === sequence.current
+      ) {
+        setSnapshot(next);
+        setError("");
+      }
+    } catch (error) {
+      if (
+        id === selected.current &&
+        epoch === generation.current &&
+        order === sequence.current
+      )
+        setError(errorText(error));
+    }
+  }, [id]);
+  useEffect(() => {
+    ++generation.current;
+    setSnapshot(null);
+    setError("");
+    setConnected(false);
+    if (!id) return;
+    const events = new EventSource(`/api/v1${runPath(id)}/events`);
+    const sync = () => {
+      setConnected(true);
+      void refresh();
+    };
+    events.addEventListener("sync", sync);
+    events.addEventListener("run.changed", sync);
+    events.onopen = () => setConnected(true);
+    events.onerror = () => setConnected(false);
+    void refresh();
+    const visible = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    document.addEventListener("visibilitychange", visible);
+    return () => {
+      ++generation.current;
+      events.close();
+      document.removeEventListener("visibilitychange", visible);
+    };
+  }, [id, refresh]);
+  const toolRunning =
+    snapshot?.tool_execution?.status === "starting" ||
+    snapshot?.tool_execution?.status === "running";
+  useEffect(() => {
+    if (!id || !toolRunning) return;
+    const timer = window.setInterval(() => void refresh(), 1000);
+    return () => window.clearInterval(timer);
+  }, [id, toolRunning, refresh]);
+  return {
+    snapshot: snapshot?.view.run_id === id ? snapshot : null,
+    error,
+    connected,
+    refresh,
+  };
+}

@@ -237,3 +237,13 @@ runs/
 *.prt
 *.sim
 *.lck
+*.rpy
+
+# Built web assets and frontend dependencies (source and lockfiles are tracked).
+/webui/node_modules/
+/webui/dist/
+/src/abaqus_sim_agent/web_static/
+
+# Local browser verification (may include ephemeral session URLs).
+/.playwright-cli/
+/output/playwright/

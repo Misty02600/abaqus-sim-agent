@@ -1,0 +1,26 @@
+{
+  "name": "abaqus-sim-agent-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build",
+    "generate:api": "openapi-typescript openapi.json -o src/api/schema.ts"
+  },
+  "dependencies": {
+    "@assistant-ui/react": "0.15.19",
+    "@assistant-ui/react-markdown": "0.14.15",
+    "online-3d-viewer": "^0.18.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.3",
+    "openapi-typescript": "7.10.1",
+    "typescript": "5.8.3",
+    "vite": "7.3.6"
+  }
+}

@@ -65,7 +65,7 @@ jobs:
 
 
       - name: Install type-check dependencies
-        run: uv sync --locked --no-dev --group type --group eval
+        run: uv sync --locked --no-dev --group type --group eval --extra web
 
       - name: BasedPyright
         run: uv run --no-sync basedpyright
@@ -95,7 +95,28 @@ jobs:
 
 
       - name: Install test dependencies
-        run: uv sync --locked --no-dev --group test --group eval
+        run: uv sync --locked --no-dev --group test --group eval --extra web
 
       - name: pytest
         run: uv run --no-sync pytest
+
+  web:
+    name: Web build and package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          version: "0.11.29"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: webui/package-lock.json
+      - run: uv sync --locked --no-dev --extra web
+      - run: uv run --no-sync python scripts/build_web.py
+      - name: Check generated API is current
+        run: git diff --exit-code -- webui/openapi.json webui/src/api/schema.ts
+      - run: uv build --wheel
