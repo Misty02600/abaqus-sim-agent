@@ -1212,7 +1212,7 @@ PI 给本项目最大的启发不是某个组件或配色，而是：**不同交
 - [ADR-0025：在 CodingRun 宿主之上增加本地 Web 工作台](../adr/0025-local-web-workbench-over-coding-run.md)
 - [PLAN-0007：用户问题工具](../plans/done/0007-user-question-tool.md)
 - [PLAN-0008：assistant-ui / 官方 UI / AG-UI 接线资格](../plans/done/0008-assistant-ui-integration-qualification.md)
-- [PLAN-0009：共享 CodingRun 入口与 FastAPI 任务接口](../plans/todo/0009-coding-run-web-api.md)
+- [PLAN-0009：共享 CodingRun 入口与 FastAPI 任务接口](../plans/done/0009-coding-run-web-api.md)
 - [PLAN-0010：本地仿真工作台集成与验收](../plans/todo/0010-local-web-workbench.md)
 - [Agent 前端生态与复用完整性审查](agent-ui-reuse-audit-20260913.md)
 - [官方 UI、ExternalStore 与 AG-UI 的同组接线比较](ui-three-way-comparison-20260913.md)

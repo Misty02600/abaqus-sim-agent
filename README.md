@@ -1,7 +1,8 @@
 # Abaqus Sim Agent
 
 面向 Abaqus 2024 的本地 Coding Agent。单一 `abaqus_2024_coder` 使用 Pydantic AI Harness 在独立工作区编写
-普通 Abaqus Python，通过受控工具完成 CAE 建模、Standard 求解和 ODB 提取，再由宿主验收交付物。
+普通 Abaqus Python，按请求范围通过受控工具完成 CAE 建模、Standard 求解或 ODB 提取，再由宿主验收交付物。
+也可以直接提问、讨论或请求一个局部步骤；纯文字回答不要求生成文件或执行仿真。
 
 项目服务于 AI Agent / LLM 应用工程方向的秋招准备，重点是可验证的代码路径、类型合同、工具权限、
 外部进程副作用和评测；不把依赖、设计稿或单次实验包装成通用 CAE 产品能力。
@@ -16,7 +17,7 @@
 - 工作区必须是已解析的 ASCII 路径，state/evidence 位于工作区之外。宿主约束路径、Job 名、调用预算、
   超时进程树和 artifact freshness，并保留原始 stdout/stderr bytes 与执行记录。
 - 缺少会改变物理问题的输入时必须澄清，不能从模板或检索结果补造材料、尺寸、载荷等参数。
-- 新默认会话通过 `ask_user(question)`交接用户输入，最终返回typed `ready_for_verification`或`failed`；
+- 新普通会话通过 `ask_user(question)`交接必要输入；launch v5可直接交付typed文字答复，文件/执行请求仍返回`ready_for_verification`或`failed`；
   新CLI可显式组合API Catalog；旧run、Gold及其他未迁移profile保留`needs_input`协议。普通 CLI 的
   `execution_evidence` 验收 fresh 交付物、Python 3.10 语法和最后一次已使用的 runtime stage，
   **不证明物理正确，也不覆盖全部自然语言语义**。固定 evaluator 才使用独立 INP/ODB `task_oracle`。
@@ -46,6 +47,54 @@ uv run --no-sync abaqus-sim-agent --help
 Windows 的 Just recipes 需要 PowerShell 7.4+（`pwsh`）；直接运行上述 uv 命令没有该要求。
 持证集成测试需要先显式设置 `ABAQUS_LICENSED_TESTS=1`，再选择 `pytest -m abaqus`；这会使用本机许可证。
 不要把普通离线回归通过当作真实 Abaqus 闭环通过。
+
+## 本地 Web 工作台
+
+已接入 FastAPI、React/TypeScript 和 assistant-ui ExternalStore。页面接受任意问题、解释请求、局部步骤或完整任务，支持文字答复、必要澄清、显式继续、
+工具记录、宿主验收与用量，以及文本、已有 PNG、当前CAE工具产生的fresh OBJ几何预览和下载。CLI 与 Web 共用同一个 CodingRunService，
+不增加 Agent、运行工具或物理成功判定。当前工程验收使用确定性模型；两条新真实 Web 仿真主线仍待独立执行。
+
+源码运行需要 Node.js 22+ 构建一次；构建后的 wheel 自带页面，运行它无需 Node：
+
+```powershell
+uv sync --locked --all-groups --extra web
+uv run --no-sync python scripts/build_web.py
+uv run --no-sync abaqus-sim-agent-web --root D:\abaqus-web --model-provider opencode-go
+```
+
+启动前在宿主环境配置 `OPENCODE_API_KEY`；默认官方网关使用 `DEEPSEEK_API_KEY`。打开终端打印的完整
+本地会话链接。根目录必须是 ASCII 路径，下面分开保存 `workspaces/`、`states/`、`registry/` 和临时缓存；
+每个任务从空工作区开始。默认每题30个模型请求、9次 Abaqus（含最多3次 Solver）、2次提问和2700秒活动时间。
+模型配置由启动参数决定，页面只读；Go/Flash使用现有 enabled/high、Planning、HTTP60秒和10次额外SDK重试。
+
+页面已支持基础多轮对话：首次点击“发送”直接开始，回复后可在同一会话继续追问或追加要求；
+Enter发送、Shift+Enter换行，草稿按会话保存在当前浏览器会话中。历史从宿主恢复，追加消息沿用原工作区和
+累计预算。当前处理期间可编辑草稿，处理结束后发送。回复支持流式逐步显示和复制，会话可重命名；“停止回复”只在模型请求阶段可用，
+停止后保留已收到的内容，可继续或发送新消息。`run_solver_job` 在 Web 中会离开模型工作段并作为独立
+`ToolExecution` 运行；状态栏显示 Job、已用时间和当前状态，运行详情保留 PID、退出码与错误。当前宿主仍持有
+进程控制句柄时可以取消这一次 Solver；求解期间不接受新的 Agent 消息，也不提供消息插队。
+消息和澄清答复先由宿主持久化，再调度执行；若已保存但未启动，页面提示显式继续。普通Web追加消息保存到
+`thread.json`并作为同一CodingRun history上的continuation执行，不推进task revision；每条新消息仍以提交前的
+workspace/execution状态划定本段fresh evidence。显式修改任务合同的CLI `--goal` amendment继续建立task revision。
+
+界面采用Pi启发的深色紧凑布局：会话与文件位于左栏，对话保持窄正文宽度，运行详情按需打开；工具调用先显示
+目标、阶段、耗时、超时、警告和文件变更摘要，完整输入/返回折叠保留。底栏直接显示宿主阶段、连接、模型、
+推理配置、累计用量、wall time及当前允许操作。会话标题可搜索；`Ctrl/Cmd+K`打开命令面板，输入框外可用
+`N`新建、`R`刷新。视觉组件和文件图标的Pi/Catppuccin来源见[复用记录](webui/THIRD_PARTY_REUSE.md)。
+
+新普通CLI/Web会话可仅回答问题，不要求生成文件或调用Abaqus；页面显示“已回答”，不赋予执行验收范围。
+只做一个环节时，不要求其他环节的材料、载荷或边界条件；只在当前请求确实依赖缺失事实时澄清。
+旧launch v1–v4与固定Gold保持原协议。见[请求范围与文字交付](docs/adr/0026-scope-requests-and-text-responses.md)。
+
+当前只接受本机单用户访问，每个服务只有一个主动工作段，忙时拒绝第二个执行。浏览器断开不停止任务；
+正常关闭服务会等待当前模型工作段；页面的停止按钮会关闭当前模型请求并保存中断状态。长时 Solver 不占用
+模型工作段，结束后自动把结果交回原 invocation 和原 tool call，不创建用户 continuation，也不重复提交。
+服务在 Solver 运行中关闭时会终止本机控制句柄并转为 `needs_reconcile`；重启后不按 PID/Job 重新附着，
+也不会自动重跑。本版没有文件上传。文本预览上限256 KiB，
+网页下载上限200 MiB；更大文件从本地工作区读取。HTML/SVG仅作为附件下载。
+
+接口与状态职责见[架构总览](docs/architecture/overview.md)和[系统框架](docs/architecture/system-framework.md)。
+前端开发与第三方来源见 [webui/README.md](webui/README.md)。`/third-party-notices` 提供构建随附的依赖声明。
 
 ## 运行 CodingRun
 
@@ -88,7 +137,7 @@ uv run --no-sync abaqus-sim-agent --resume <STATE_DIR> --cancel-question <QUESTI
 
 答复ID必须匹配该run当前问题；同ID同答复幂等，不同答复不覆盖。待答期间修改goal/配置须先显式撤销问题。
 已执行Abaqus后收到新工程答复，会形成新task revision，旧产物不能验收新要求；未决runtime reconcile优先。
-新CLI普通会话使用launch v4/resume v5，旧`--answers`、旧Gold及显式可选profile保留旧协议。
+新CLI普通会话使用launch v5/resume v5，旧`--answers`、旧Gold及显式可选profile保留旧协议。
 这证明问答交接可运行，不保证模型一定识别缺参，也不构成外部Job恢复；见[ADR-0024](docs/adr/0024-host-owned-user-question-waiting.md)。
 
 `--launcher` 可覆盖默认 `D:\SIMULIA\Commands\abq2024.bat`；`--state-dir` 可指定工作区外的证据目录，

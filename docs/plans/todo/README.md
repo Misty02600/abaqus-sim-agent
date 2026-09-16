@@ -6,8 +6,7 @@
 |---:|---|---|---|---|---|
 | 1 | 高 | [PLAN-0006：轻量程序检查与人工审查](0006-domain-task-evaluation-baseline.md) | 进行中 | 新评测改为人工确认答复；一次真实补答后续写但预算耗尽、脚本有region错误；旧失败保留，T1仍待人工审查。 | 用户指定收敛当前任务范围，原有计划相对顺序不变 |
 | 2 | 高 | [PLAN-0011：禁止 CAE 脚本内部提交 Solver Job](0011-block-solver-submit-inside-cae-script.md) | 讨论中 | 把 Solver 只能经 `run_solver_job` 启动从 Agent 协议补成确定性代码边界。 | 影响执行预算、provenance 与阶段边界完整性（Codex 初定） |
-| 3 | 高 | [PLAN-0009：CodingRun 任务 API](0009-coding-run-web-api.md) | 讨论中（方案已确认） | 提取共享宿主入口，实现FastAPI命令、只读视图、SSE和单项执行管理。 | PLAN-0008已完成；独立验收后端并保护CLI兼容 |
-| 4 | 高 | [PLAN-0010：本地工作台集成](0010-local-web-workbench.md) | 讨论中（方案已确认） | 接入assistant-ui页面和领域卡片，验证浏览器行为并完成两条新真实主线。 | 组件资格已通过，仍依赖PLAN-0009；真实结果与PLAN-0006分开保留 |
+| 3 | 高 | [PLAN-0010：本地工作台集成](0010-local-web-workbench.md) | 进行中 | 工作台、模型预览与 Web Solver 长任务边界已完成工程验收并整理提交；两条新真实主线仍未运行。 | PLAN-0009已完成；真实结果与PLAN-0006分开保留 |
 
 新UI计划的方案见[ADR-0025](../../adr/0025-local-web-workbench-over-coding-run.md)。以上顺序为当前安排，
 PLAN-0006不构成UI离线接线/API工作的硬依赖；本次未更改其优先级、状态或既有范围。

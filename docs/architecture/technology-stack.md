@@ -12,6 +12,9 @@ effective launch 为准。这里解释实际职责，不维护另一份依赖版
 | Pydantic AI 2.33.0 | 模型/provider、原生 tool loop、typed output、deferred tools、usage | 当前只有一个产品 Coder；以后可在同一生态内做 typed handoff 或 agent delegation |
 | Harness 0.24.0 | workspace coding、Skills、StepPersistence；可选 SubAgents | 当前显式 `subagents=()`；产品装配移除 Shell，精确版本补丁与合同测试保护 Windows 文件行为 |
 | CodingRunService / asyncio | 问答、累计预算、修订、恢复、verifier 反馈 | 本地文件后端宿主，不是 durable scheduler |
+| FastAPI / Uvicorn / REST + SSE | 本地 Web 命令、只读快照和变更通知 | 只监听回环地址；SSE 不传递运行真值或逐 token 恢复日志 |
+| React / TypeScript / assistant-ui | Thread、消息、工具、产物与验证展示 | ExternalStore 消费宿主投影，不运行 Agent 或拥有产品状态 |
+| Online 3D Viewer | 展示当前 CAE 工具卡声明的 fresh OBJ | 不读取 CAE/ODB，不等于结果云图或任意 Abaqus 对象支持 |
 | JSON/JSONL、文件指纹、OS lock | 会话与执行证据、freshness、同 state 独占 | 无跨文件数据库事务、跨 run workspace 锁或外部 Job 对账 |
 | Abaqus 2024 launcher | CAE noGUI、Standard、standalone Python/odbAccess | 外部进程与许可证边界；进程 0 不等于仿真正确 |
 | 产品 verifier / 固定 oracle | 分别验证执行证据与指定任务物理合同 | 普通 CLI 不运行隐藏物理 oracle |
@@ -55,6 +58,7 @@ SubAgents API 仍可能随小版本变化，因此任何采用都需要锁版本
 - pytest / pytest-asyncio：strict contract、工具、问答、恢复、runner、verifier 与检索的离线回归。
 - opt-in `abaqus` tests：需要本机 runtime 和许可证，验证 reference/runner/oracle；并不自动调用真实模型。
 - Ruff / BasedPyright：宿主源码质量和类型检查，不能替代持证仿真。
+- TypeScript / Vite：前端类型检查、生产构建和 Python wheel 静态资源输入；Node 不进入运行时。
 - GitHub Actions、Prek、Commitizen、git-cliff、Copier、Renovate：工程交付和仓库维护设施。
 
 运行命令见 [项目 README](../../README.md)，支持结论见 [验证证据](verification-evidence.md)。
@@ -65,6 +69,7 @@ SubAgents API 仍可能随小版本变化，因此任何采用都需要锁版本
 |---|---|
 | 怎样区分 Agent 决策与宿主权限 | ready 只申请验收，oracle 不向模型注册；Shell fail-closed 移除 |
 | 如何处理人机交接 | ask_user 的持久待答、按 ID 答复幂等、锁外等待与混发拒绝 |
+| 如何区分聊天与任务合同 | Web Thread message 使用 continuation；显式 amendment/task revision 保留任务合同语义 |
 | 如何管理外部副作用 | 三个 vendor 工具、输入 hash、预算、raw logs、未决 effect 停止恢复 |
 | 如何定义完成 | execution_evidence 与 task_oracle 分离，manifest freshness 不等于语义完整 |
 | 检索如何进入真实调用链 | receiver 目录 → exact lookup，查询/已交付证据独立持久化；命中不等于采用 |
@@ -74,7 +79,8 @@ SubAgents API 仍可能随小版本变化，因此任何采用都需要锁版本
 ## 已采纳或条件触发的技术
 
 FastAPI + assistant-ui 已被 [ADR-0025](../adr/0025-local-web-workbench-over-coding-run.md)采纳用于本地
-工作台；组件接线实验通过，产品 API/UI 尚未完成。不能再写成“尚未选定”，也不能写成产品已部署。
+工作台；本地 API/UI、Thread continuation、模型预览和 deferred Solver 已完成工程实现。它仍是本机单用户
+文件后端，PLAN-0010 的真实 Web 主线尚未执行，不能写成远程部署或已证明稳定建模收益。
 
 LangGraph、DBOS、业务 SQLAlchemy/Alembic、PostgreSQL、Redis/Celery、远程 worker 和 Job Service
 目前未进入产品。未来即使增加专业 Agent，也优先沿上述 Pydantic AI 原生路径扩展；LangGraph 不再作为

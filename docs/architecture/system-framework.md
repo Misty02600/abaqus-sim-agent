@@ -2,22 +2,25 @@
 
 ## 两个解释器和一个外部运行边界
 
-宿主 Python 3.12 运行 CLI、Pydantic AI/Harness、CodingRunService 和评测；Abaqus 2024 的 Python 3.10
+宿主 Python 3.12 运行 CLI/Web、Pydantic AI/Harness、CodingRunService 和评测；Abaqus 2024 的 Python 3.10
 运行 CAE/odbAccess 脚本。宿主依赖不能直接当 vendor Python 依赖，宿主也不直接导入 Abaqus API。
 两边通过工作区文件、固定 launcher 参数和 execution result 协作。
 
-产品入口是本地 Windows CLI。普通 CLI 装配通用执行 verifier，固定 evaluator 装配对应物理 verifier。
-宿主调用一个 Coder，Coder 使用文件工具和三个 typed runtime tools；组件图见 [总览](overview.md)。
+产品入口是本地 Windows CLI 和只监听回环地址的 Web 工作台。二者通过共享 application/composition 装配
+通用执行 verifier，固定 evaluator 装配对应物理 verifier。宿主调用一个 Coder，Coder 使用文件工具和三个
+typed runtime tools；组件图见 [总览](overview.md)。
 
 ## 谁拥有哪些状态
 
 | 状态或资源 | 初始化 / 持续维护者 | 其他组件如何使用 |
 |---|---|---|
 | workspace 与 initial snapshot | workspace resolver、宿主首次启动；新 task revision 建立新的验收基线 | Coder 读写文件，runner/verifier 核对输入和变化 |
-| immutable request / base launch | CLI 或 evaluator composition | 恢复核对原合同，amendment 形成 effective overlay，不改写原实验请求 |
+| immutable request / base launch | CLI、Web 或 evaluator composition | 恢复核对原合同，amendment 形成 effective overlay，不改写原实验请求 |
 | turn、revision、usage、active wall | CodingRunService | 模型只接收允许的上下文，不能重置预算或直接写 outcome |
 | 模型 history、settled snapshot、tool effect | Pydantic AI/Harness 与宿主持久化适配 | resume 选择可继续边界，未决 vendor effect 触发 `needs_reconcile` |
 | 问题、history 关联、用户答复 | 宿主问答组件 | Console 在执行锁外取答；锁内按 ID 持久化和消费 |
+| Web Thread、invocation 与命令回执 | Web registry/controller | 记录用户消息、执行关联与传输幂等；不拥有预算、verification 或 outcome |
+| Web Solver `ToolExecution` | Web controller 与独立 Solver 事件循环 | 记录原 tool call、进程观察、取消和终态结果；CodingRun 只在核对 frontier 后消费 |
 | 子进程与原始执行观察 | Abaqus runner | 工具保存 execution journal，模型收到诊断，verifier 独立判断 scope |
 | 查询、计数、实际已交付证据 | run-scoped dependencies 与查询 journal | resume 合并记录；候选、读卡和参数分别恢复 |
 | outcome 与 verification | Service 聚合宿主 verifier 结果 | 当前 outcome 是投影，历史 revision 结果保留；Agent 不能宣告成功 |
@@ -39,6 +42,10 @@
   `api_discoveries.jsonl`、`concept_lookups.jsonl`，以及显式策略的额外 journal。
 - 验收：当前 `outcome.json`、verification 和历史 `outcomes/task-*/`；评测另保存 oracle 和 diff/provenance。
 
+**Web management root** 是启动时显式选择的 ASCII 根目录，分开保存 `workspaces/`、`states/`、`registry/`、
+`cache/` 和 `control/`。`registry/<run_id>/thread.json`、invocation、命令回执和 `ToolExecution` 是 Web 管理
+记录；对应 `states/<run_id>` 仍由 CodingRun 合同拥有。两类文件的顺序由恢复协议协调，不是数据库事务。
+
 Catalog 与文档索引是显式选择的外部知识数据，和 run state 分开；可恢复产品入口核对 request/launch 中的
 内容绑定。显式工厂的只读参考资料尚无同等 launch 快照保证，见 [知识接入](knowledge-access.md)。
 
@@ -46,6 +53,11 @@ Catalog 与文档索引是显式选择的外部知识数据，和 run state 分�
 
 - 一个 state 目录只允许一个持有 OS 非阻塞文件锁的活动工作段。锁 handle 不传给子进程；锁文件存在不表示持锁。
 - 待答释放执行锁，答复写入和继续执行重新取锁。锁按 state 隔离，不保证不同 run 共用 workspace 的事务隔离。
+- Web 实例另持有 management root 单实例锁，并只允许一个主动模型工作段；SSE 断开不取消工作段。
+- 普通 Web 消息先保存 Thread，再以 `continuation_id` 调用同一 CodingRun；消息与 terminal execution link 间的
+  短双写窗口通过显式 continue 补链，不重新调用模型。
+- Web Solver 释放 CodingRun state 锁后由 `ToolExecution` 运行；终态结果必须与 deferred frontier、execution
+  journal 和 workspace delta 一致才恢复 Agent。宿主重启把未完成记录转为 `needs_reconcile`。
 - atomic JSON、append journal 与 Harness snapshot 分别保存宿主状态和步骤证据；它们不是一个数据库事务。
 - 恢复要求当前 workspace 指纹匹配持久边界。损坏 tool-effect ledger 失败关闭，不通过 event log 猜造副作用状态。
 - 未决 Abaqus effect 先进入 `needs_reconcile`。当前不会查询原 PID、重新附着、自动重提或通过人工对账解锁。
@@ -54,24 +66,30 @@ Catalog 与文档索引是显式选择的外部知识数据，和 run state 分�
 
 ## 依赖和装配
 
-`coding` 是产品宿主，`execution` 是 vendor 副作用边界，`verification` 是可信验收，`api_catalog` 和
-`retrieval` 提供知识，`evaluation` 定义外层证据系统。这是活动组件图，不额外套统一技术分层。
+`coding` 是产品宿主，`web` 是本地传输、Thread 与展示管理层，`execution` 是 vendor 副作用边界，
+`verification` 是可信验收，`api_catalog` 和 `retrieval` 提供知识，`evaluation` 定义外层证据系统。
+这是活动组件图，不额外套统一技术分层；`coding` 不导入 FastAPI 或前端协议。
 
 `coding.verification_port` 由消费方拥有，具体 verifier 从外侧实现。`coding.service` 不直接依赖
-物理 verifier；CLI/evaluator 分别装配对应 scope。部分可选检索服务仍复用 evaluation 内实现，
+物理 verifier；CLI/Web/evaluator 分别装配对应 scope。部分可选检索服务仍复用 evaluation 内实现，
 清理或拆分必须先核对调用关系，不能把期望的分层当现状。
 
 实现入口：[workspace](../../src/abaqus_sim_agent/coding/workspace.py)、
 [service](../../src/abaqus_sim_agent/coding/service.py)、[verifier port](../../src/abaqus_sim_agent/coding/verification_port.py)、
-[run lock](../../src/abaqus_sim_agent/coding/run_lock.py)、[runner](../../src/abaqus_sim_agent/execution/abaqus2024.py)。
+[run lock](../../src/abaqus_sim_agent/coding/run_lock.py)、[runner](../../src/abaqus_sim_agent/execution/abaqus2024.py)、
+[Web controller](../../src/abaqus_sim_agent/web/controller.py)、[Web storage](../../src/abaqus_sim_agent/web/storage.py)。
 
-## 已决定但尚未成为产品的拓展
+## 已实施 Web 与未采用拓展
 
 [ADR-0025](../adr/0025-local-web-workbench-over-coding-run.md)已选择 FastAPI + assistant-ui 的本地工作台。
-三路 UI 接线比较不等于产品 API/UI 完成，具体实施仍在 [计划索引](../plans/todo/README.md)。
+API、页面、Thread continuation、模型预览和 deferred Solver 已完成离线工程实现；两条真实 Web 主线仍在
+[PLAN-0010](../plans/todo/0010-local-web-workbench.md)，不能由工程接线外推为真实建模或物理收益。
 数据库 Job ledger、durable scheduler、多 worker 和远程执行没有因该 Web 决定自动获选。
 
 架构依据：[ADR-0017](../adr/0017-package-by-component-coding-run.md)、
 [ADR-0019](../adr/0019-separate-product-execution-evidence-from-evaluation-oracles.md)、
 [ADR-0020](../adr/0020-resume-coding-runs-with-harness-step-persistence.md)、
-[ADR-0021](../adr/0021-use-amendments-and-task-revisions-for-continuation.md)。
+[ADR-0021](../adr/0021-use-amendments-and-task-revisions-for-continuation.md)、
+[ADR-0025](../adr/0025-local-web-workbench-over-coding-run.md)、
+[ADR-0026](../adr/0026-scope-requests-and-text-responses.md)、
+[ADR-0027](../adr/0027-decouple-web-thread-messages-from-task-revisions.md)。

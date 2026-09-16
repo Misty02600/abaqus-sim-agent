@@ -2,15 +2,15 @@
 
 | 状态 | 最后更新 |
 |---|---|
-| 讨论中：方案已确认，组件资格已通过并补充实际读写风险；实施尚未开始 | 2026-09-14 |
+| 已完成：共享入口、任务API与生命周期离线验收通过 | 2026-09-14 |
 
 ## 背景与依赖
 
-实现 [ADR-0025](../../adr/0025-local-web-workbench-over-coding-run.md) 的后端能力，让 CLI 和 Web 使用同一宿主规则，并提供可独立测试的任务接口。[PLAN-0008](../done/0008-assistant-ui-integration-qualification.md) 接线资格已通过，本计划尚未实施。独立交付物是任务 API、单项执行管理和只读 SSE，不依赖正式页面才能验收。
+实现 [ADR-0025](../../adr/0025-local-web-workbench-over-coding-run.md) 的后端能力，让 CLI 和 Web 使用同一宿主规则，并提供可独立测试的任务接口。[PLAN-0008](../done/0008-assistant-ui-integration-qualification.md) 接线资格已通过，本计划已完成后端工程验收。独立交付物是任务 API、单项执行管理和只读 SSE，不依赖正式页面才能验收。
 
 ## 当前设计与缺口
 
-当前安装入口只有 `coding.cli:main`；`coding/cli.py::_run_cli_once` 混合参数解析、配置/绑定、模型/client/runner/Agent 装配和运行。当前该文件约1016行；行数仅提示阅读范围，不用于推导修改量。已有 tests/test_coding_cli.py、test_api_catalog_members.py、test_document_policy_integration.py、test_edit_scope.py 导入 CLI 私有 helper，提取装配需要核对这些调用者。
+实施前安装入口只有 `coding.cli:main`；`coding/cli.py::_run_cli_once` 混合参数解析、配置/绑定、模型/client/runner/Agent 装配和运行。实施前该文件约1016行；行数仅提示阅读范围，不用于推导修改量。已有 tests/test_coding_cli.py、test_api_catalog_members.py、test_document_policy_integration.py、test_edit_scope.py 导入 CLI 私有 helper，提取装配需要核对这些调用者。
 
 `CodingRunService.run_step` 拿 state OS 锁执行主动工作段；`submit_answer` 已负责幂等、快照检查和晚答 revision，`inspect_question` 会修复/写入状态，不能挂到 GET。`coding.resume`/`amendments` 拥有持久恢复边界。现有 `ProgressSink` 仅是文本回调，不能解析它来形成 HTTP 状态或成功判定。
 
@@ -22,7 +22,7 @@ PLAN-0008新增实际证据：[三路比较](../../research/ui-three-way-compari
 
 ## 技术路线
 
-### 所有权与实现位置
+### 所有权与实现位置（原拟定与落地）
 
 | 位置 | 拟定变化 |
 |---|---|
@@ -32,7 +32,7 @@ PLAN-0008新增实际证据：[三路比较](../../research/ui-three-way-compari
 | 新 `web/dispatch.py`、`registry.py` | 单实例、一个专用执行线程、命令容量占位、持久回执与托管目录映射。 |
 | 新 `web/events.py`、`artifacts.py` | SSE 失效通知和受控文件访问；不触发模型、runner 或 verifier。 |
 
-这些新路径是实施定位，不是已存在文件。按 ADR-0017 保持组件依赖；不引入新的全局 services/repositories 分层，不整理与本次无关的 RAG/evaluation 债务。
+实际落地将routes合并到web/app.py，将dispatch/registry分别命名为controller/storage；未增加空转分层。按 ADR-0017 保持组件依赖；不引入新的全局 services/repositories 分层，不整理与本次无关的 RAG/evaluation 债务。
 
 ### 请求、锁与生命周期
 
@@ -76,10 +76,29 @@ PLAN-0008新增实际证据：[三路比较](../../research/ui-three-way-compari
 | 文件和网络入口 | traversal/UNC/ADS/junction/文件替换、超限/伪PNG、跨源请求和凭据泄露保护有负例。拟新增 tests/test_web_artifacts.py 与对应HTTP测试。 |
 | 交付 | 默认CLI安装无web依赖仍可用；web extra的安装/API启动/OpenAPI可复现，Ruff/改动范围类型检查通过；完成相关回归，再运行全仓非持证测试，不冒充全源码原有类型问题已消失。 |
 
-现有回归可用 `uv run --no-sync pytest -m "not abaqus"` 选择上述文件，新增文件在实现后加入命令。当前仅核对文件存在和调用职责，没有重跑上述测试。
+现有回归可用 `uv run --no-sync pytest -m "not abaqus"` 选择上述文件，新增文件在实现后加入命令。已完成全仓非持证回归：1080通过、20项因本工作树缺少固定abqpy/持证派生夹具跳过、27项持证未运行；Ruff检查/格式检查、BasedPyright均通过。
 
 ## 关联
 
-- 后继：[PLAN-0010：工作台集成](0010-local-web-workbench.md)。
+- 后继：[PLAN-0010：工作台集成](../todo/0010-local-web-workbench.md)。
 - 既有工程基础：[PLAN-0007](../done/0007-user-question-tool.md)、[ADR-0024](../../adr/0024-host-owned-user-question-waiting.md)。
 - 本计划不包含任何真实Provider/Abaqus批次，不消费其他任务已有运行授权。
+
+## 完成记录
+
+实施工作树为`D:/Projects/abaqus-agent/abaqus-sim-agent-web`，分支`codex/web-workbench`，基线为
+`54cfd51c87b9d40b65dce1b93b2b3ddc5fba4378`。原工作区保持独立。另定向带入原工作区已验证的Go推理
+回传修复及其测试，未复制其其他未提交改动。
+
+`tests/test_web_workbench.py`、`test_web_boundaries.py`、`test_web_lifecycle.py`共21项覆盖任务命令、
+重复/冲突、已存答复后Provider失败、同根单实例/单槽、GET前后hash、损坏记录隔离、分页版本、PNG/链接/
+HTML边界、观察失败、终态缺证据、模型无效工具参数，以及真实HTTP子进程下的SSE断开与正常退出drain。
+旧CLI/问答/配置/恢复相关回归保留。Web的expected revision还会传入宿主，在保存答案的同一state锁内检查。
+
+干净wheel环境确认普通CLI无FastAPI仍能运行，安装web依赖后由wheel独立提供HTML、哈希资源、API、
+OpenAPI和依赖声明，不引用研究目录或源码checkout。前端构建/生成类型检查加入CI，但没有冒称远程CI已运行。
+本机uv安装器两次发生Windows PE资源更新错误，干净环境最终使用同一uv导出锁定依赖经pip安装；失败日志保留。
+
+证据在`var/audits/web-implementation/`：`full-tests-release.txt/xml`、`types-release.txt`、
+`frontend-build-release.txt`和`wheel-smoke/`。这些是本机工程记录，0真实Provider、0Abaqus。
+不将本计划完成解释为PLAN-0010真实主线完成或新增物理能力。

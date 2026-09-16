@@ -2,9 +2,9 @@
 
 ## 状态与证据
 
-已采纳（Accepted），2026-09-13。接受依据：用户在明确方案后回复“可以。计入计划，评估”。采用 FastAPI + React/TypeScript + assistant-ui，通信为 REST + 轻量 SSE 变更通知；产品尚未实施。实施与验收分别由[PLAN-0008：组件接线资格](../plans/done/0008-assistant-ui-integration-qualification.md)、[PLAN-0009：任务API](../plans/todo/0009-coding-run-web-api.md)、[PLAN-0010：工作台集成](../plans/todo/0010-local-web-workbench.md)拥有。本次只记录计划和评估，没有新增产品源码、依赖安装或模型/Abaqus调用。
+已采纳（Accepted），2026-09-13。接受依据：用户在明确方案后回复“可以。计入计划，评估”。采用 FastAPI + React/TypeScript + assistant-ui，通信为 REST + 轻量 SSE 变更通知；采纳时产品尚未实施。实施与验收分别由[PLAN-0008：组件接线资格](../plans/done/0008-assistant-ui-integration-qualification.md)、[PLAN-0009：任务API](../plans/done/0009-coding-run-web-api.md)、[PLAN-0010：工作台集成](../plans/todo/0010-local-web-workbench.md)拥有。本节保留当时接受依据，后续落实见文末。
 
-落实更新：用户随后授权三路隔离比较，PLAN-0008已完成；下面的未验证描述保留为采纳时依据，最新证据见末尾“落实与确认”。生产API/UI仍未实施。
+落实更新：用户随后授权三路隔离比较，PLAN-0008已完成；下面的未验证描述保留为采纳时依据，最新证据见末尾“落实与确认”。
 
 现状依据为当前工作树源码及 ADR-0015、0017、0019、0020、0021、0024。工作树包含大量先前改动，本次不修改它们。既有实测使用 Pydantic AI 2.33.0、Harness 0.24.0、官方 ai-chat-ui 2.1.0；完整[兼容验证报告](../research/official-ui-compatibility-20260913.md)继续保留原始结果。assistant-ui 目前只有官方接口文档核查，尚无本项目运行证据，不把官方 UI 实验成绩迁移给新前端。新增依赖的具体兼容版本在首个接线验证前锁定，不改变本方案的职责边界。
 
@@ -237,3 +237,9 @@ Python 的 FastAPI/Uvicorn Web 依赖放可选 `web` extra；前端使用 React/
 2026-09-13，用户授权实际比较并纳入官方UI。官方最小定制、assistant-ui ExternalStore、AG-UI三条最终均通过有界接线场景，共12个真宿主/假模型任务、36次FunctionModel、0真实Provider/0Abaqus；原始开发失败保留。见[同组比较](../research/ui-three-way-comparison-20260913.md)。
 
 结论保持当前ExternalStore主线，未更改本ADR决定。官方UI被证明可以定制到满足这些场景，不因其调试定位判为不可用；选择组件库路线属于当前维护边界取舍，不宣称总成本更低。AG-UI也已跑通，但仍保留共用宿主快照同步，未观察到省去此部分的证据。后继产品工作仍由PLAN-0009/0010验收。
+
+2026-09-14，PLAN-0009后端工程验收完成，PLAN-0010页面/安装/浏览器工程验收通过而真实主线未执行。职责和限制已同步到architecture/overview，未修改本ADR原选型；不将确定性模型结果当作真实仿真证据。
+
+2026-09-15，用户授权在既有artifact边界内增加会话内模型预览。PNG与OBJ独立展示，OBJ使用Online 3D Viewer读取本轮CAE工具卡的fresh artifact；真实Abaqus2024Runner链路已覆盖简单实体、基础装配、壳面和梁中心线。该扩展没有引入Pi session/runtime、上传、CAE/ODB浏览器直读或结果云图，具体资格见[模型预览调研](../research/session-model-preview-reuse-20260915.md)。
+
+2026-09-16，用户确认长时Solver应与普通模型工作段分离。Web新增宿主持久`ToolExecution`和Pydantic AI deferred tool恢复：以原tool call运行、查询或取消当前宿主控制的Solver，终态证据匹配后恢复同一AgentInvocation；活动任务跨进程仍转`needs_reconcile`，不重附着、不自动重跑。该实现扩展了采纳时“首版无作业取消”的范围，但保持本ADR的单Coder、宿主状态所有权、REST命令和轻量SSE取舍；当前事实以architecture为准，PLAN-0010仍等待两条真实主线。

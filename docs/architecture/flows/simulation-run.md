@@ -2,12 +2,13 @@
 
 ## 这条流程保证什么
 
-宿主拥有任务、预算与终态；Agent 提出代码、问题和验收请求。新普通 CLI 使用 `ask_user_v1`，
-旧 run/Gold/未迁移 profile 按保存的 legacy 协议执行。以下状态是宿主语义，不是 LangGraph 节点。
+宿主拥有请求、预算与终态；Agent 提出代码、问题、文字答复和验收请求。新普通 CLI/Web 使用 launch v5
+与 `ask_user_v1`，旧 run/Gold/未迁移 profile 按保存的 legacy 协议执行。以下状态是宿主语义，不是
+LangGraph 节点。
 
 ## 首次执行与用户待答
 
-1. CLI 解析 workspace/state、模型、runtime、预算与可选知识绑定，取得同 state 的 OS 独占锁。
+1. CLI 或 Web 共享应用入口解析 workspace/state、模型、runtime、预算与可选知识绑定，取得同 state 的 OS 独占锁。
 2. 保存基础 request/launch 与 initial snapshot，组装 Coder、工具和对应 scope 的 verifier。
 3. Agent 可先读工作区事实；物理输入不足时提出 `ask_user(question)`。问题与其他工具/final 混发，
    宿主在副作用前整轮拒绝，不能只靠顺序执行屏障。
@@ -18,7 +19,15 @@
 
 `CodingRunService.run_step` 可返回 `WaitingForUser`；旧 `run` 保留 settled-result 契约。
 legacy `needs_input` 继续使用原 `field_id`、answers 与预先澄清条件，不被新协议静默转换。
-新建会话的具体组合选择以 [CLI](../../../src/abaqus_sim_agent/coding/cli.py)为准。
+新建会话的具体组合选择由 [共享装配](../../../src/abaqus_sim_agent/coding/composition.py)拥有，CLI 和 Web
+只负责各自的传输、输入与展示。
+
+## 当前请求范围与文字答复
+
+launch v5 的 `ResponseDecision` 可以直接交付问题、讨论或局部步骤的完整文字答案；该路径保存
+`completion_kind=response`，不运行 verifier，也不声称文件、执行或物理验收通过。当前请求若需要文件或
+Abaqus 执行，仍须返回非空 manifest 并经过对应执行验收；当前 revision 已记录 runtime 或终态工作区变化时，
+宿主拒绝用文字答复绕过验收。澄清只围绕当前请求实际依赖的缺失事实，不要求补齐无关阶段参数。
 
 ## 编码、运行与修复
 
@@ -32,6 +41,17 @@ legacy `needs_input` 继续使用原 `field_id`、answers 与预先澄清条件�
 建模 → Solver → ODB 提取是阶段合同。当前路径 policy 不能静态阻断 CAE 脚本内直接 submit，
 该缺口见 [PLAN-0011](../../plans/todo/0011-block-solver-submit-inside-cae-script.md)。
 Solver 超时、进程 0 和 stage success 的区别见 [Job 生命周期](job-lifecycle.md)。
+
+## Web Solver 的 deferred 交接
+
+Web 中的 `run_solver_job` 以原 Pydantic AI `tool_call_id` 保存 deferred frontier，随后释放模型工作段与 state
+锁；宿主 `ToolExecution` 在独立事件循环运行 Solver，页面只读显示 Job、状态、耗时、PID 和当前宿主是否仍可
+取消。求解期间不能发送新的 Agent 消息。
+
+Solver 到达终态后，宿主核对 invocation、tool call、execution journal 和 workspace artifact delta，再用
+`DeferredToolResults` 恢复同一 Agent invocation。这个过程不创建用户消息、task revision 或第二次 Solver
+调用。服务重启只自动消费完整持久化的终态结果；仍在运行、结果缺失或证据不一致均进入
+`needs_reconcile`，不会从文件重新附着外部进程。
 
 ## 中断与继续
 
@@ -54,6 +74,9 @@ API lookup/discovery journal 与 snapshot 合并恢复计数、去重和实际�
 - 新 goal 形成 task revision，保存旧 outcome，捕获新 freshness 基线和 execution offset。旧产物或旧阶段
   记录不能直接验收新任务。
 - 已经发生 Abaqus 执行后的新工程答复同样建立 task revision；问题 ID 关联用于避免恢复时重复修订。
+- Web 普通追加消息先进入 `thread.json`，再以消息 ID 作为 `continuation_id` 恢复同一 CodingRun history；
+  不写 amendment 或推进 task revision。每个 continuation 单独捕获提交前 workspace snapshot 与 execution
+  offset，旧文件和旧调用只能作为上下文，不能充当本段 fresh evidence。
 - terminal 任务的继续遵循显式 amendment/revision 合同，不把 `--resume` 当作无条件重新运行。
 
 ## 完成的含义
@@ -66,7 +89,7 @@ Gold 从空工作区开始；verified-seed change 先核对 source 和 hash，�
 文件修改范围和 gate 保持冻结，不能由产品默认演进替换。
 
 失败、预算耗尽和 Provider 中断分别留证；显式 evaluator 的预算耗尽验收仍须完整通过其 verifier。
-当前缺少 PID/Job 重新附着、人工 reconcile 解锁、异步 Job 管理和完整 durable workflow。
+当前缺少 PID/Job 跨进程重新附着、人工 reconcile 解锁、多 worker 异步 Job 管理和完整 durable workflow。
 
 ## 决定与实现
 
@@ -74,6 +97,10 @@ Gold 从空工作区开始；verified-seed change 先核对 source 和 hash，�
 - [ADR-0020](../../adr/0020-resume-coding-runs-with-harness-step-persistence.md)、
   [ADR-0021](../../adr/0021-use-amendments-and-task-revisions-for-continuation.md)：恢复与修订。
 - [ADR-0024](../../adr/0024-host-owned-user-question-waiting.md)：新问答协议。
+- [ADR-0025](../../adr/0025-local-web-workbench-over-coding-run.md)、
+  [ADR-0026](../../adr/0026-scope-requests-and-text-responses.md)、
+  [ADR-0027](../../adr/0027-decouple-web-thread-messages-from-task-revisions.md)：Web、文字答复与 continuation。
 - [Service](../../../src/abaqus_sim_agent/coding/service.py)、[问答](../../../src/abaqus_sim_agent/coding/user_questions.py)、
-  [恢复](../../../src/abaqus_sim_agent/coding/resume.py)、[修订](../../../src/abaqus_sim_agent/coding/amendments.py)。
+  [恢复](../../../src/abaqus_sim_agent/coding/resume.py)、[修订](../../../src/abaqus_sim_agent/coding/amendments.py)、
+  [Web controller](../../../src/abaqus_sim_agent/web/controller.py)。
 - [验证证据入口](../verification-evidence.md)：实现与真实任务验证分别有什么证据。

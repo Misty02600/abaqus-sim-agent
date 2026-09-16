@@ -16,7 +16,8 @@
 | [0015：产品 Coder 不暴露通用 Shell](0015-disable-general-shell-for-product-coder.md) | 已采纳；工具装配 fail-closed，不构成 OS 沙箱 |
 | [0018：分级 ACI 与已验证 API 合同](0018-enforce-verified-abaqus-aci.md) | 已采纳为显式 profile；替代 0016，不代表默认启用或已证明收益 |
 | [0023：调用方声明的纯编辑范围](0023-constrain-explicit-reference-edits-before-writing.md) | 已采纳为默认关闭的单表达式编辑 profile |
-| [0025：CodingRun 上的本地 Web 工作台](0025-local-web-workbench-over-coding-run.md) | 已采纳；FastAPI + assistant-ui。接线资格已有证据，产品 API/UI 尚未完成，实施由已有 PLAN-0009/0010 验收 |
+| [0025：CodingRun 上的本地 Web 工作台](0025-local-web-workbench-over-coding-run.md) | 已采纳；FastAPI + assistant-ui 的工程实现已完成，真实 Web 主线仍由 PLAN-0010 验收 |
+| [0026：按请求范围支持文字回答与局部执行](0026-scope-requests-and-text-responses.md) | 已采纳；新普通会话 launch v5 允许无文件文字交付，文件/执行验收边界保持不变 |
 
 ## 验收、恢复与人机交接
 
@@ -27,6 +28,7 @@
 | [0020：Harness StepPersistence 会话续跑](0020-resume-coding-runs-with-harness-step-persistence.md) | 已采纳；未决外部副作用停在 needs_reconcile，不等于 Job 恢复 |
 | [0021：Amendment 与 Task Revision](0021-use-amendments-and-task-revisions-for-continuation.md) | 已采纳；部分替代 0020 的禁止修改配置/重开 terminal 限制 |
 | [0024：ask_user 与宿主持久待答](0024-host-owned-user-question-waiting.md) | 已采纳；局部替代 0008/0020 的新默认交接，旧 profile 保持原协议 |
+| [0027：Web Thread 消息与 task revision 解耦](0027-decouple-web-thread-messages-from-task-revisions.md) | 已采纳；普通消息使用 continuation 与独立 evidence baseline，显式 task revision 合同保留 |
 
 ## 知识来源与检索
 

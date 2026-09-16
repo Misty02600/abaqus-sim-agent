@@ -42,5 +42,5 @@
 - 官方版保留较多富文本功能，assistant-ui夹具未实现同等富文本，不做性能/bundle/整体视觉成熟度排名。
 - AG-UI仍使用共用GET/SSE刷新宿主状态；本次未证明它减少此类代码。其pending history使用0.0.59的metadata约定，升级要回归。
 - Windows普通读取可与原子replace冲突，FILE_SHARE_DELETE尝试也未解决本机复现；最终活动段缓存避免直接读取。正式API必须独立验证观察者不干扰写入。
-- 下一步是[PLAN-0009：任务API](../todo/0009-coding-run-web-api.md)，之后[PLAN-0010：工作台集成](../todo/0010-local-web-workbench.md)。两项未实施，9–15工程日仍是未校准粗估。
+- 下一步是[PLAN-0009：任务API](0009-coding-run-web-api.md)，之后[PLAN-0010：工作台集成](../todo/0010-local-web-workbench.md)。两项未实施，9–15工程日仍是未校准粗估。
 - [PLAN-0006](../todo/0006-domain-task-evaluation-baseline.md)及其真实运行授权/历史保持独立，本次没有消费它的授权或重跑模型/Abaqus。
