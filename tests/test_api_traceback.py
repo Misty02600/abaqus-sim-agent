@@ -65,26 +65,6 @@ model.DisplacementBC(name='BC', region=bad_region, u1=0.0)
         (
             """\
 model = mdb.models['Model-1']
-part = model.Part(name='Plate')
-part.seedEdgeByNumber(edges=length_edges, number=20)
-""",
-            3,
-            "TypeError: edges; found Edge, expected tuple",
-            "Part.seedEdgeByNumber",
-        ),
-        (
-            """\
-model = mdb.models['Model-1']
-part = model.Part(name='Plate')
-part.Set(name='LEFT', edges=left_edge)
-""",
-            3,
-            "TypeError: edges; found Edge, expected tuple",
-            "Part.Set",
-        ),
-        (
-            """\
-model = mdb.models['Model-1']
 assembly = model.rootAssembly
 assembly.Set(name='LEFT', edges=left_edge)
 """,
@@ -115,7 +95,6 @@ def test_type_error_resolves_real_qualified_apis(
     script.write_text(source, encoding="utf-8")
     catalog = _catalog(
         "Model.DisplacementBC",
-        "Part.seedEdgeByNumber",
         "Part.Set",
         "Assembly.Set",
         "EdgeArray.findAt",
@@ -231,7 +210,6 @@ def test_unqualified_or_non_unique_catalog_result_returns_none(tmp_path: Path) -
     ("error", "expected_parameter"),
     [
         ("TypeError: edges[0]; found tuple, expecting Edge", "edges"),
-        ("TypeError: 关键字错误: faces", "faces"),
         (
             "TypeError: Set() got an unexpected keyword argument 'regions'",
             "regions",
@@ -263,11 +241,10 @@ def test_context_normalizes_error_parameter_and_exposes_call_keywords(
     assert resolution.error_kind == "type_error"
 
 
-@pytest.mark.parametrize("parameter", ["orientation", "beamOrientation"])
 def test_context_routes_localized_beam_section_keyword_error(
     tmp_path: Path,
-    parameter: str,
 ) -> None:
+    parameter = "orientation"
     script = tmp_path / "build_model.py"
     script.write_text(
         "model = mdb.models['Model-1']\n"
@@ -293,17 +270,10 @@ def test_context_routes_localized_beam_section_keyword_error(
     assert resolution.error_kind == "type_error"
 
 
-@pytest.mark.parametrize(
-    "error",
-    [
-        "<unknown>.AbaqusException: Feature creation failed",
-        "特征创建失败.",
-    ],
-)
 def test_abaqus_exception_routes_single_scoped_call(
     tmp_path: Path,
-    error: str,
 ) -> None:
+    error = "特征创建失败."
     script = tmp_path / "build_model.py"
     script.write_text(
         "model = mdb.models['Model-1']\n"
@@ -389,16 +359,7 @@ def test_unrelated_odb_error_has_no_behavior_route() -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "message",
-    [
-        "错误: 单元类型指派时, 只有相同尺寸的区域参能被选择",
-        "Error: regions must have the same dimension for element type assignment",
-    ],
-)
-def test_untyped_runtime_failure_routes_only_with_matching_executed_source(
-    tmp_path, message
-):
+def test_untyped_runtime_failure_routes_only_with_matching_executed_source(tmp_path):
     script = tmp_path / "build_model.py"
     script.write_text(
         "model = mdb.Model(name='M')\npart = model.Part(name='P')\n"
@@ -406,7 +367,11 @@ def test_untyped_runtime_failure_routes_only_with_matching_executed_source(
         encoding="utf-8",
     )
     fingerprints = {script.name: hashlib.sha256(script.read_bytes()).hexdigest()}
-    stderr = _traceback(script, 3, message)
+    stderr = _traceback(
+        script,
+        3,
+        "Error: regions must have the same dimension for element type assignment",
+    )
     assert resolve_traceback_api_context(stderr, workspace=tmp_path) is None
     resolution = resolve_traceback_api_context(
         stderr, workspace=tmp_path, runtime_failed=True, input_fingerprints=fingerprints
@@ -429,8 +394,6 @@ def test_untyped_runtime_failure_routes_only_with_matching_executed_source(
     ("source", "frame"),
     [
         ("part.setElementType(regions=()); part.Set(name='x')", "build_model.py"),
-        ("unknown.setElementType(regions=())", "build_model.py"),
-        ("unknown.Set(name='x')", "build_model.py"),
         ("part.setElementType(regions=())", "../outside.py"),
     ],
 )

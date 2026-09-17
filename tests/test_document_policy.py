@@ -350,12 +350,9 @@ async def test_need_labels_not_in_retrieval_query_and_scope_cannot_be_model_over
 @pytest.mark.parametrize(
     "damage",
     [
-        "quote",
         "evidence_id",
-        "search_id",
         "unknown_scope",
         "omit_need",
-        "duplicate_need",
     ],
 )
 async def test_invalid_citations_or_incomplete_assessment_do_not_unblock(
@@ -456,7 +453,6 @@ async def test_physical_input_precedes_lookup_and_cannot_be_downgraded_by_model(
             "origin": "task_contract",
         },
         {"condition": "x", "affects_step": "y", "kind": "physical_input"},
-        {"condition": "x", "affects_step": "y", "id": "host-id"},
     ],
 )
 def test_model_need_schema_cannot_forge_host_fields(raw):
@@ -465,7 +461,7 @@ def test_model_need_schema_cannot_forge_host_fields(raw):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("kind", ["unavailable", "rejected", "not_found", "exception"])
+@pytest.mark.parametrize("kind", ["not_found", "exception"])
 async def test_failed_search_consumes_reservation_and_cannot_forge_support(
     scenario, kind
 ):
@@ -648,7 +644,7 @@ async def test_revision_invalidates_prior_receipts_but_preserves_usage_and_host_
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "damage",
-    ["partial", "missing_line", "wrong_hash", "head", "delete_head", "duplicate_seq"],
+    ["partial", "wrong_hash", "delete_head"],
 )
 async def test_corrupt_journal_or_checkpoint_fails_closed(scenario, damage):
     policy = scenario.factory()

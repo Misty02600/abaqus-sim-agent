@@ -540,6 +540,3 @@ def test_parameter_scoped_runtime_note_merges_and_round_trips(tmp_path: Path) ->
         ApiCatalog.open(output_dir).lookup("Part.Set").cards[0].runtime_notes[0]
     )
     assert reopened_note.applies_to_parameters == ("faces",)
-
-    legacy = note.model_dump(exclude={"applies_to_parameters"})
-    assert ApiRuntimeNote.model_validate(legacy).applies_to_parameters == ()

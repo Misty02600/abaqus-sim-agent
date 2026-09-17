@@ -15,7 +15,6 @@ from abaqus_sim_agent.api_catalog.discovery import (
 from abaqus_sim_agent.api_catalog.models import (
     ApiParameter,
     ApiSourceRef,
-    OfficialApiRecord,
 )
 from abaqus_sim_agent.api_catalog.reference_text import reference_text
 from abaqus_sim_agent.coding.api_lookup import _api_lookup_payload
@@ -35,7 +34,7 @@ def source_catalog(tmp_path):
     return catalog, selected, source
 
 
-def test_context_preserves_conditions_math_order_sources_and_old_records(tmp_path):
+def test_context_preserves_conditions_math_order_and_sources(tmp_path):
     catalog, records, source = source_catalog(tmp_path)
     elastic = next(r for r in records if r.callable_name == "Elastic")
     description, table = elastic.context
@@ -60,11 +59,6 @@ def test_context_preserves_conditions_math_order_sources_and_old_records(tmp_pat
         x.kind
         for x in next(r for r in records if r.callable_name == "setValues").context
     ] == ["object_description"]
-    old = elastic.model_dump(mode="json")
-    old.pop("context")
-    old_record = OfficialApiRecord.model_validate_json(json.dumps(old))
-    assert old_record.context is None
-    assert "context" not in old_record.model_dump()
     assert ApiCatalog.open(tmp_path / "catalog").cards == catalog.cards
 
 

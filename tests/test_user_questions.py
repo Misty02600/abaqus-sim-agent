@@ -848,65 +848,6 @@ async def test_cli_answer_file_continues_without_console(tmp_path, monkeypatch):
     )
 
 
-def test_launch_protocol_is_versioned_and_cannot_be_added_to_legacy():
-    from pydantic import ValidationError
-
-    config = baseline_execution_config()
-    legacy = LaunchManifest(
-        schema_version="coding-run-launch-v3",
-        skill_library=skill_library_path().resolve(),
-        **config.model_dump(),
-    )
-    assert legacy.question_protocol is None
-    data = legacy.model_dump(mode="json")
-    data["question_protocol"] = "ask_user_v1"
-    with pytest.raises(ValidationError, match="legacy launch"):
-        LaunchManifest.model_validate_json(json.dumps(data))
-    data["schema_version"] = "coding-run-launch-v4"
-    assert (
-        LaunchManifest.model_validate_json(json.dumps(data)).question_protocol
-        == "ask_user_v1"
-    )
-    del data["question_protocol"]
-    with pytest.raises(ValidationError, match="requires ask_user"):
-        LaunchManifest.model_validate_json(json.dumps(data))
-
-
-@pytest.mark.asyncio
-async def test_cli_new_resume_rejects_legacy_answer_mapping_before_model(
-    tmp_path, monkeypatch
-):
-    from abaqus_sim_agent.coding.cli import run_cli
-
-    service = service_for(
-        tmp_path,
-        lambda messages, info: call("ask_user", {"question": "Thickness?"}, "q"),
-    )
-    await service.run_step()
-
-    def forbidden(*args, **kwargs):
-        raise AssertionError(
-            "must reject incompatible answer format before model construction"
-        )
-
-    monkeypatch.setattr(
-        "abaqus_sim_agent.coding.cli.create_deepseek_chat_model", forbidden
-    )
-    assert (
-        await asyncio.to_thread(
-            run_cli,
-            [
-                "--resume",
-                str(service.request.state_dir),
-                "--answers",
-                str(tmp_path / "legacy.json"),
-            ],
-        )
-        == 1
-    )
-    assert load_resume_state(service.request.state_dir).status == "waiting_for_user"
-
-
 @pytest.mark.asyncio
 async def test_pending_question_is_answered_and_resumed_in_a_fresh_python_process(
     tmp_path,

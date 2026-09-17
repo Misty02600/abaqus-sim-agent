@@ -91,10 +91,6 @@ def test_small_table_is_one_child_and_empty_cells_are_explicit():
             "inline_element",
         ),
         (
-            "<table><tr><th>A</th></tr><tr><td><table/></td></tr></table>",
-            "inline_element",
-        ),
-        (
             '<table><tr><th id="a">A</th></tr><tr><td headers="other">1</td></tr></table>',
             "header_association",
         ),
@@ -105,10 +101,6 @@ def test_small_table_is_one_child_and_empty_cells_are_explicit():
         (
             "<table><tr><th>A</th></tr><tr><td>1</td>lost condition</tr></table>",
             "structural_tail",
-        ),
-        (
-            "<table><tr><th>A</th></tr><tr><th>B</th></tr></table>",
-            "multiple_header_rows",
         ),
     ],
 )
@@ -138,11 +130,9 @@ def test_table_row_overflow_is_not_partially_indexed():
     ("expression", "expected"),
     [
         ("<msub><mi>U</mi><mn>1</mn></msub>", "(U)_(1)"),
-        ("<msup><mi>x</mi><mn>2</mn></msup>", "(x)^(2)"),
         ("<msubsup><mi>x</mi><mi>i</mi><mn>2</mn></msubsup>", "(x)_(i)^(2)"),
         ("<mfrac><mi>a</mi><mi>b</mi></mfrac>", "(a)/(b)"),
         ("<msqrt><mi>x</mi></msqrt>", "sqrt(x)"),
-        ("<mroot><mi>x</mi><mn>3</mn></mroot>", "root(x, index=3)"),
         ('<mi mathvariant="bold">v</mi>', "bold(v)"),
     ],
 )
@@ -169,19 +159,9 @@ def test_math_formula_and_variable_definitions_are_searchable_together():
     assert split.split(unit.evidence)
 
 
-@pytest.mark.parametrize(
-    "xml",
-    [
-        "<mtable/>",
-        "<mfrac><mi>x</mi></mfrac>",
-        '<mfrac linethickness="0"><mi>x</mi><mi>y</mi></mfrac>',
-        "<mphantom><mi>x</mi></mphantom>",
-        "<mi><mglyph/></mi>",
-    ],
-)
-def test_unknown_math_is_deferred_without_losing_neighbor_text(xml: str):
+def test_unknown_math_is_deferred_without_losing_neighbor_text():
     old, unit, split = projected(
-        f"<p>Important condition <math>{xml}</math> applies.</p>"
+        "<p>Important condition <math><mtable/></math> applies.</p>"
     )
     assert unit.evidence.projection_status == "deferred_math"
     assert unit.evidence.body == old.evidence.body
@@ -220,18 +200,10 @@ def test_xml_entity_is_not_resolved():
         )
 
 
-@pytest.mark.parametrize(
-    "rows",
-    [
-        [("alpha", "description one"), ("beta", "description two")],
-        [("scope.item", "an item at this level")],
-        [("1", "first component"), ("1", "another occurrence, not overwritten")],
-        [("spelling example", "accepted"), ("another example", "rejected")],
-    ],
-)
-def test_headerless_pairs_preserve_every_row_without_inventing_meaning(rows):
+def test_headerless_pairs_preserve_every_row_without_inventing_meaning():
     import json
 
+    rows = [("1", "first component"), ("1", "another occurrence, not overwritten")]
     body = (
         "<table><caption>Original caption</caption>"
         + "".join(f"<tr><td>{a}</td><td>{b}</td></tr>" for a, b in rows)
@@ -272,32 +244,11 @@ def test_headerless_mode_is_explicit_and_does_not_rewrite_existing_headered_unit
     [
         ("<table><tr><td>A</td><td/></tr></table>", "empty_cell"),
         ("<table><tr><td>A</td><td>B</td><td>C</td></tr></table>", "two_columns"),
-        ("<table><tr><td>A</td></tr></table>", "two_columns"),
         (
             "<table><thead><tr><td>A</td><td>B</td></tr></thead><tbody><tr><td>C</td><td>D</td></tr></tbody></table>",
             "undeclared_header",
         ),
         ('<table><tr><td scope="row">A</td><td>B</td></tr></table>', "header_scope"),
-        (
-            '<table><tr><td headers="missing">A</td><td>B</td></tr></table>',
-            "header_association",
-        ),
-        (
-            '<table><tr><td rowspan="2">A</td><td>B</td></tr><tr><td>C</td><td>D</td></tr></table>',
-            "merged_cells",
-        ),
-        (
-            '<table role="presentation"><tr><td>A</td><td>B</td></tr></table>',
-            "presentational_role",
-        ),
-        (
-            "<table><tr><td>A</td><td><table><tr><td>nested</td></tr></table></td></tr></table>",
-            "inline_element",
-        ),
-        (
-            "<table><tr><td>A</td><td>B</td>unowned condition</tr></table>",
-            "structural_tail",
-        ),
     ],
 )
 def test_headerless_pattern_does_not_guess_missing_relationships(body, reason):

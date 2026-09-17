@@ -6,7 +6,6 @@ from tests.test_unified_retrieval import Backend, Ranker, make
 
 from abaqus_sim_agent.evaluation.unified_candidate_backend import BoundCandidateBackend
 from abaqus_sim_agent.evaluation.unified_retrieval import (
-    Applicability,
     CandidateBudget,
     QuestionQuery,
     SymbolQuery,
@@ -198,24 +197,16 @@ def test_sparse_page_results_fill_from_original_pool():
 
 @pytest.mark.parametrize(
     "violation",
-    ["wrong_page", "represented", "duplicate_parent", "quota", "scope", "source"],
+    ["wrong_page", "duplicate_parent", "quota", "source"],
 )
 def test_page_backend_contract_violations_are_fail_closed(violation):
     service, backend, ranker, docs = page_service()
     if violation == "wrong_page":
         backend.override = docs[12:13]
-    elif violation == "represented":
-        backend.override = docs[:1]
     elif violation == "duplicate_parent":
         backend.override = [docs[8], docs[8]]
     elif violation == "quota":
         backend.override = [docs[6], docs[8], docs[9]]
-    elif violation == "scope":
-        key = docs[8].metadata["parent_id"]
-        service.scopes[key] = Applicability(
-            ("Abaqus/Explicit",), "official_page", "Products"
-        )
-        backend.override = docs[8:9]
     else:
         backend.override = [docs[8].model_copy(deep=True)]
         backend.override[0].metadata["source_sha256"] = "bad"

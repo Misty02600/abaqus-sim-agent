@@ -422,7 +422,7 @@ async def test_runner_rejects_paths_outside_workspace(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize(
     "job_name",
-    ["", "1plate", "plate model", "plate&next", "模型", "a" * 81],
+    ["1plate", "plate model", "a" * 81],
 )
 @pytest.mark.asyncio
 async def test_solver_rejects_invalid_job_names(

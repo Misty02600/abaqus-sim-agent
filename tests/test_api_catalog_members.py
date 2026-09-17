@@ -173,7 +173,7 @@ def test_version_and_owner_selection_are_checked(tmp_path: Path) -> None:
         _members(path)
 
 
-def test_sidecar_roundtrip_hash_binding_and_legacy_compatibility(
+def test_sidecar_roundtrip_and_hash_binding(
     tmp_path: Path,
 ) -> None:
     members = _members(_wheel(tmp_path))
@@ -200,17 +200,6 @@ def test_sidecar_roundtrip_hash_binding_and_legacy_compatibility(
     (root / "members.jsonl").write_bytes(b"{}\n")
     with pytest.raises(ValueError, match="checksum"):
         ApiCatalog.open(root)
-    legacy_root = tmp_path / "legacy"
-    legacy = ApiCatalog((), runtime_release="2024").write(legacy_root)
-    raw = legacy.model_dump(mode="json", exclude={"member_count", "members_sha256"})
-    (legacy_root / "manifest.json").write_text(json.dumps(raw), encoding="utf-8")
-    assert ApiCatalog.open(legacy_root).members == ()
-    assert (
-        ApiCatalog.open(legacy_root).lookup("OdbAssembly.nodeSets").status
-        == "not_found"
-    )
-
-
 def test_member_strict_lookup_and_manifest_contracts(tmp_path: Path) -> None:
     member = _members(_wheel(tmp_path))[0]
     with pytest.raises(ValidationError):

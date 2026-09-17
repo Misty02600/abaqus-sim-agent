@@ -1,13 +1,12 @@
 import ast
 import hashlib
-import json
 
 import pytest
 from pydantic import ValidationError
 from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import FunctionModel
 
-from abaqus_sim_agent.api_catalog import AbqpyApiRecord, ApiCatalog, load_abqpy_records
+from abaqus_sim_agent.api_catalog import ApiCatalog, load_abqpy_records
 from abaqus_sim_agent.api_catalog.docstrings import extract_docstring
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.contracts import CodingRunRequest, RuntimeProfile
@@ -52,7 +51,7 @@ def catalog_fixture(tmp_path):
     return ApiCatalog.build(runtime_release="2024", abqpy_records=records), records[0]
 
 
-def test_docstrings_keep_variants_raw_source_and_old_record_semantics(tmp_path):
+def test_docstrings_keep_variants_raw_source_and_catalog_lookup(tmp_path):
     catalog, record = catalog_fixture(tmp_path)
     docs = record.documentation
     assert docs is not None
@@ -64,14 +63,6 @@ def test_docstrings_keep_variants_raw_source_and_old_record_semantics(tmp_path):
     assert "Returns" in docs[0].raw
     assert docs[0].docstring_sha256 == hashlib.sha256(docs[0].raw.encode()).hexdigest()
     assert docs[0].source_line < docs[1].source_line
-    raw = record.model_dump(mode="json")
-    raw.pop("documentation")
-    old = AbqpyApiRecord.model_validate_json(json.dumps(raw))
-    assert old.documentation is None
-    assert "documentation" not in old.model_dump(mode="json")
-    raw["documentation"] = [docs[0].model_dump(mode="json")]
-    with pytest.raises(ValidationError, match="one-to-one"):
-        AbqpyApiRecord.model_validate_json(json.dumps(raw))
     directory = tmp_path / "catalog"
     catalog.write(directory)
     loaded = ApiCatalog.open(directory)

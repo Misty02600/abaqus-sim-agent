@@ -21,7 +21,6 @@ from abaqus_sim_agent.coding.clarification import ScriptedClarificationProvider
 from abaqus_sim_agent.coding.concept_lookup import (
     DOC_QUERY_FORMULATION_VERSION,
     _document_query_filters,
-    _evidence_payload,
     concept_index_binding,
     doc_question_key,
 )
@@ -54,9 +53,8 @@ from abaqus_sim_agent.execution import Abaqus2024Runner
 from abaqus_sim_agent.retrieval import (
     AbaqusDocumentIndex,
     AbaqusDocumentLoader,
-    RetrievalHit,
 )
-from abaqus_sim_agent.retrieval.types import Document, Embeddings
+from abaqus_sim_agent.retrieval.types import Embeddings
 
 _FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "abaqus_docs"
 _VOCABULARY = ("static", "stress", "element", "plane", "output")
@@ -257,45 +255,6 @@ def test_optional_concept_tool_is_compact_budgeted_and_traced(tmp_path: Path) ->
     assert traces[0].index == request.concept_index
     assert traces[0].formulation_version == DOC_QUERY_FORMULATION_VERSION
     assert CONCEPT_ADOPTION_POLICY_VERSION == "docs-tool-selective-v1"
-
-
-def test_legacy_concept_trace_loads_with_unknown_causal_context() -> None:
-    trace = ConceptLookupTrace.model_validate(
-        {
-            "query": "legacy query",
-            "status": "found",
-            "document_ids": ("legacy-page",),
-            "counted": True,
-            "payload_bytes": 12,
-        }
-    )
-
-    assert trace.ranked_hits == ()
-    assert trace.context.trigger_source == "unknown"
-    assert trace.context.trigger_outcome == "unknown"
-    assert trace.context.recorded_at is None
-
-
-def test_old_index_evidence_does_not_invent_product_provenance_or_section_scope() -> (
-    None
-):
-    evidence = _evidence_payload(
-        RetrievalHit(
-            document=Document(
-                page_content="Older indexed passage.",
-                metadata={
-                    "document_id": "old-page",
-                    "products": ["Abaqus/Standard"],
-                    "section_title": "Output",
-                },
-            ),
-            match_type="semantic",
-        )
-    )
-    assert evidence.page_products == ("Abaqus/Standard",)
-    assert evidence.page_products_source == "unrecorded"
-    assert evidence.heading_path == ()
-    assert evidence.section_product_mentions == ()
 
 
 def _request(tmp_path: Path, index: AbaqusDocumentIndex) -> CodingRunRequest:

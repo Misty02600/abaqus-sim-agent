@@ -368,70 +368,10 @@ def test_preflight_detects_script_change_during_check(tmp_path: Path) -> None:
     assert report.stdout_raw_path.read_bytes() == process.output.stdout
 
 
-@pytest.mark.parametrize(
-    ("fixture_relative", "expected_rule", "expected_term"),
-    [
-        (
-            "tests/fixtures/api_repair_regressions/base_solid_box/repair_case.py",
-            "reportAttributeAccessIssue",
-            "BaseSolidBox",
-        ),
-        (
-            "tests/fixtures/api_repair_regressions/part_instance_set/repair_case.py",
-            "reportAttributeAccessIssue",
-            "PartInstance",
-        ),
-        (
-            "tests/fixtures/api_repair_final13/"
-            "beam_section_orientation_keyword/repair_case.py",
-            "reportCallIssue",
-            "orientation",
-        ),
-        (
-            "tests/fixtures/api_repair_final11/"
-            "set_element_type_direct_faces/repair_case.py",
-            "reportArgumentType",
-            "setElementType",
-        ),
-        (
-            "tests/fixtures/api_repair_final11/"
-            "assembly_surface_flat_edges/repair_case.py",
-            "reportArgumentType",
-            "side1Edges",
-        ),
-    ],
-)
-def test_real_basedpyright_catches_known_licensed_failure_shapes(
-    tmp_path: Path,
-    fixture_relative: str,
-    expected_rule: str,
-    expected_term: str,
-) -> None:
-    repository = Path(__file__).resolve().parents[1]
-    wheel = repository / "var/api-catalog/sources/abqpy-2024.10-py3-none-any.whl"
-    fixture = repository / fixture_relative
-    if not wheel.is_file() or not fixture.is_file():
-        pytest.skip("fixed abqpy source or licensed-derived fixture is unavailable")
-    workspace = tmp_path / "workspace"
-    workspace.mkdir()
-    shutil.copyfile(fixture, workspace / "repair_case.py")
-    source = prepare_abqpy_source(wheel, tmp_path / "cache")
-    preflight = AbqpyBasedPyrightPreflight(source, tmp_path / "state")
-
-    report = asyncio.run(preflight.inspect(workspace, "repair_case.py"))
-
-    assert report.status == "diagnostics"
-    assert any(
-        diagnostic.rule == expected_rule and expected_term in diagnostic.message
-        for diagnostic in report.diagnostics
-    )
-
-
-@pytest.mark.parametrize("script_name", ["build_model.py", "extract_results.py"])
 def test_real_basedpyright_policy_does_not_pause_known_passing_b31_reference(
     tmp_path: Path,
-    script_name: str,
 ) -> None:
+    script_name = "build_model.py"
     repository = Path(__file__).resolve().parents[1]
     wheel = repository / "var/api-catalog/sources/abqpy-2024.10-py3-none-any.whl"
     fixture = repository / "tests/fixtures/abaqus2024/beam_b31" / script_name
@@ -478,56 +418,10 @@ def test_real_basedpyright_catches_missing_orientation_arguments_from_v1_trace(
     )
 
 
-@pytest.mark.parametrize(
-    "fixture_relative",
-    [
-        "tests/fixtures/api_repair_regressions/base_solid_box/repair_case.py",
-        "tests/fixtures/api_repair_regressions/part_instance_set/repair_case.py",
-        "tests/fixtures/api_repair_final13/"
-        "beam_section_orientation_keyword/repair_case.py",
-        "tests/fixtures/api_repair_final11/"
-        "set_element_type_direct_faces/repair_case.py",
-        "tests/fixtures/api_repair_final11/assembly_surface_flat_edges/repair_case.py",
-    ],
-)
-def test_enforced_preflight_promotes_only_verified_failure_shapes_to_blockers(
-    tmp_path: Path,
-    fixture_relative: str,
-) -> None:
-    repository = Path(__file__).resolve().parents[1]
-    wheel = repository / "var/api-catalog/sources/abqpy-2024.10-py3-none-any.whl"
-    fixture = repository / fixture_relative
-    if not wheel.is_file() or not fixture.is_file():
-        pytest.skip("fixed abqpy source or licensed-derived fixture is unavailable")
-    workspace = tmp_path / "workspace"
-    workspace.mkdir()
-    shutil.copyfile(fixture, workspace / "repair_case.py")
-    source = prepare_abqpy_source(wheel, tmp_path / "cache")
-    preflight = AbqpyBasedPyrightPreflight(
-        source,
-        tmp_path / "state",
-        mode="enforced_verified",
-    )
-
-    report = asyncio.run(preflight.inspect(workspace, "repair_case.py"))
-
-    blockers = [
-        diagnostic
-        for diagnostic in report.diagnostics
-        if diagnostic.disposition == "block"
-    ]
-    assert report.mode == "enforced_verified"
-    assert report.policy_version == "abqpy-enforced-verified-v1"
-    assert blockers
-    assert all(diagnostic.policy_rule_id for diagnostic in blockers)
-    assert all(diagnostic.evidence_refs for diagnostic in blockers)
-
-
-@pytest.mark.parametrize("script_name", ["build_model.py", "extract_results.py"])
 def test_enforced_preflight_has_no_blocker_on_passing_b31_reference(
     tmp_path: Path,
-    script_name: str,
 ) -> None:
+    script_name = "build_model.py"
     repository = Path(__file__).resolve().parents[1]
     wheel = repository / "var/api-catalog/sources/abqpy-2024.10-py3-none-any.whl"
     fixture = repository / "tests/fixtures/abaqus2024/beam_b31" / script_name

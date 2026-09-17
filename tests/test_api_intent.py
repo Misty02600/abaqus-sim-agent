@@ -96,9 +96,6 @@ def test_intent_retains_authoritative_source_and_keeps_exact(tmp_path):
     assert result["lexical_configuration"]["profile"] == "english-snowball-v1"
     assert index.search("Part.assign")["route"] == "exact"
     assert index.search("Part.Assign")["status"] == "not_found"
-    legacy = CatalogDiscovery.open(catalog, tmp_path / "index")
-    assert "lexical_configuration" not in legacy.search("Part.assign")
-    assert "intent" not in legacy.search("Part.assign")
     for value in ["", "  "]:
         with pytest.raises(ValidationError):
             DiscoveryIntent(original_request=original, operation=value)

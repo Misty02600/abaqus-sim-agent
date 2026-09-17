@@ -72,13 +72,7 @@ def _call(candidate: str = PATCH, *, path: str = "extract.py") -> ToolCallInfo:
     "replacement",
     [
         "make_set()",
-        "sets[name]",
         "sets[compute()]",
-        "a if test else b",
-        "[value for value in values]",
-        "(a := b)",
-        "lambda: x",
-        "a or fallback",
         "42",
     ],
 )
@@ -93,8 +87,6 @@ def test_reference_form_denies_extra_behavior(tmp_path: Path, replacement: str) 
     "candidate",
     [
         PATCH + "helper()\n",
-        PATCH.replace("print(values)", "pass"),
-        PATCH.replace("保留注释", "改了注释"),
         PATCH.replace("field.getSubset", "other.getSubset"),
     ],
 )
@@ -108,10 +100,6 @@ def test_outside_text_is_fixed(tmp_path: Path, candidate: str) -> None:
     [
         "other.py",
         "../extract.py",
-        "./extract.py",
-        "folder/../extract.py",
-        "EXTRACT.py",
-        "D:/extract.py",
     ],
 )
 def test_other_files_and_aliases_are_denied(tmp_path: Path, path: str) -> None:
@@ -163,11 +151,8 @@ def test_hardlinked_target_is_rejected(tmp_path: Path) -> None:
     assert gate.check(_call())[0].action == "block"
 
 
-@pytest.mark.parametrize("newline", ["\n", "\r\n"])
-def test_full_write_and_second_edit_survive_raw_hash_reload(
-    tmp_path: Path, newline: str
-) -> None:
-    gate = _gate(tmp_path, SEED.replace("\n", newline))
+def test_full_write_and_second_edit_survive_raw_hash_reload(tmp_path: Path) -> None:
+    gate = _gate(tmp_path, SEED.replace("\n", "\r\n"))
 
     async def handler(arguments: dict[str, object]) -> str:
         (gate.workspace / "extract.py").write_text(

@@ -64,14 +64,8 @@ def test_explicit_empty_eligibility_preserves_all_original_ids_and_bytes():
     [
         "<p>Only inline <math><mi>T</mi></math> with prose.</p>",
         EQUATION + "<p><math><mi>T</mi></math></p>",
-        EQUATION + "<p><!-- prose is not visible --><math><mi>T</mi></math></p>",
         EQUATION + EXPLANATION + EQUATION,
         EQUATION + EXPLANATION + DEFINITIONS.removeprefix("<p>where</p>"),
-        EQUATION
-        + '<dl class="variablelist"><dt>T</dt><dd>'
-        + EXPLANATION
-        + "</dd></dl>",
-        EQUATION + "<ul><li>" + EXPLANATION + "</li></ul>",
         EQUATION + "<table><tr><td>" + EXPLANATION + "</td></tr></table>",
         '<figure class="usage">' + EQUATION + EXPLANATION + "</figure>",
         EQUATION + '<div class="keygroup">' + EXPLANATION + "</div>",

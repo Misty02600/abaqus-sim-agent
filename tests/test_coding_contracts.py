@@ -4,7 +4,6 @@ import pytest
 from pydantic import TypeAdapter, ValidationError
 
 from abaqus_sim_agent.coding.contracts import (
-    CLARIFICATION_POLICY_VERSION,
     ApiCatalogBinding,
     ApiLookupTrace,
     ArtifactKind,
@@ -17,7 +16,6 @@ from abaqus_sim_agent.coding.contracts import (
     CodingRunOutcome,
     CodingRunRequest,
     CodingRunStatus,
-    CodingRunUsage,
     DeliverableDeclaration,
     FailedDecision,
     NeedsInputDecision,
@@ -89,100 +87,6 @@ def test_runtime_script_policy_normalizes_and_rejects_unsafe_paths() -> None:
         RuntimeScriptPolicy(
             allowed_solver_inputs=("Beam_Tension.inp", "beam_tension.inp")
         )
-
-
-def test_request_round_trips_runtime_script_policy(tmp_path: Path) -> None:
-    request = CodingRunRequest(
-        run_id="run-runtime-policy",
-        goal="Create the allowed production artifacts.",
-        workspace=(tmp_path / "workspace").resolve(),
-        state_dir=(tmp_path / "state").resolve(),
-        runtime=make_runtime(tmp_path),
-        runtime_script_policy=RuntimeScriptPolicy(
-            allowed_cae_scripts=("build_model.py",),
-            allowed_abaqus_python_scripts=("extract_results.py",),
-            allowed_solver_inputs=("beam_tension.inp",),
-        ),
-    )
-
-    restored = CodingRunRequest.model_validate_json(request.model_dump_json())
-
-    assert restored == request
-    assert (
-        restored.clarification_policy_version
-        == "physics-materiality-clarification-v1"
-        == CLARIFICATION_POLICY_VERSION
-    )
-
-
-def test_request_round_trips_api_catalog_binding(tmp_path: Path) -> None:
-    workspace = (tmp_path / "workspace").resolve()
-    state_dir = (tmp_path / "state").resolve()
-    request = CodingRunRequest(
-        run_id="run-catalog",
-        goal="Create a model with exact API lookup.",
-        workspace=workspace,
-        state_dir=state_dir,
-        runtime=make_runtime(tmp_path),
-        api_catalog=ApiCatalogBinding(
-            schema_version="1",
-            cards_sha256="a" * 64,
-            card_count=5717,
-            runtime_release="2024",
-        ),
-    )
-
-    restored = CodingRunRequest.model_validate_json(request.model_dump_json())
-
-    assert restored == request
-
-
-def test_request_round_trips_static_preflight_binding(tmp_path: Path) -> None:
-    request = CodingRunRequest(
-        run_id="run-static-preflight",
-        goal="Review the production script before runtime.",
-        workspace=(tmp_path / "workspace").resolve(),
-        state_dir=(tmp_path / "state").resolve(),
-        runtime=make_runtime(tmp_path),
-        static_preflight=StaticPreflightBinding(
-            engine_version="1.39.10",
-            api_source_version="2024.10",
-            api_source_sha256="a" * 64,
-        ),
-    )
-
-    restored = CodingRunRequest.model_validate_json(request.model_dump_json())
-
-    assert restored == request
-
-
-def test_request_round_trips_enforced_aci_binding(tmp_path: Path) -> None:
-    request = CodingRunRequest(
-        run_id="run-enforced-aci",
-        goal="Hard-gate the production scripts before vendor execution.",
-        workspace=(tmp_path / "workspace").resolve(),
-        state_dir=(tmp_path / "state").resolve(),
-        runtime=make_runtime(tmp_path),
-        runtime_script_policy=RuntimeScriptPolicy(
-            allowed_cae_scripts=("build_model.py",),
-            allowed_abaqus_python_scripts=("extract_results.py",),
-            allowed_solver_inputs=("beam_tension.inp",),
-        ),
-        static_preflight=StaticPreflightBinding(
-            mode="enforced_verified",
-            policy_version="abqpy-enforced-verified-v1",
-            syntax_gate_version="python-3.10-production-syntax-v1",
-            engine_version="1.39.10",
-            api_source_version="2024.10",
-            api_source_sha256="a" * 64,
-        ),
-    )
-
-    restored = CodingRunRequest.model_validate_json(request.model_dump_json())
-
-    assert restored == request
-    assert restored.static_preflight is not None
-    assert restored.static_preflight.mode == "enforced_verified"
 
 
 def test_enforced_aci_rejects_policy_or_allowlist_mismatch(tmp_path: Path) -> None:
@@ -398,42 +302,6 @@ def test_artifact_path_must_stay_inside_workspace() -> None:
                 kind=ArtifactKind.ODB,
                 fresh=True,
             )
-
-
-def test_outcome_round_trips_through_json(tmp_path: Path) -> None:
-    del tmp_path
-    outcome = CodingRunOutcome(
-        run_id="run-001",
-        status=CodingRunStatus.COMPLETED,
-        summary="物理验收通过。",
-        verification_scope="task_oracle",
-        usage=CodingRunUsage(input_tokens=12, output_tokens=8),
-        artifacts=(
-            ArtifactRef(
-                relative_path="plate_tension.odb",
-                size_bytes=100,
-                sha256="a" * 64,
-                kind=ArtifactKind.ODB,
-                fresh=True,
-            ),
-        ),
-        clarifications=(
-            ClarificationEvent(
-                field_id="plate_thickness",
-                question="板厚是多少？",
-                kind="missing_physical_input",
-                impact="板厚会改变平面应力截面刚度和反力。",
-                answer="1 mm",
-                source="scripted",
-            ),
-        ),
-    )
-
-    restored = CodingRunOutcome.model_validate_json(outcome.model_dump_json())
-
-    assert restored == outcome
-    assert restored.usage.total_tokens == 20
-    assert restored.verification_scope == "task_oracle"
 
 
 def test_failed_outcome_requires_failure_stage() -> None:

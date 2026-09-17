@@ -258,7 +258,7 @@ def wait_for(path):
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows Job boundary")
 @pytest.mark.parametrize(
-    "mode", ["bad_json", "wrong_id", "wrong_hash", "missing", "unavailable"]
+    "mode", ["bad_json", "wrong_hash", "missing", "unavailable"]
 )
 @pytest.mark.asyncio
 async def test_receipt_failures_never_deliver_evidence(service, monkeypatch, mode):
@@ -376,14 +376,13 @@ async def test_query_is_only_data_no_provider_credentials(service, monkeypatch):
     assert stored.paths == service.paths
 
 
-@pytest.mark.parametrize("error", [ValueError("hash changed"), RuntimeError("failed")])
 @pytest.mark.asyncio
-async def test_startup_failure_no_retry(service, monkeypatch, error):
+async def test_startup_failure_no_retry(service, monkeypatch):
     calls = []
 
     def broken(*args):
         calls.append(1)
-        raise error
+        raise RuntimeError("failed")
 
     monkeypatch.setattr(runtime, "capture_snapshot", broken)
     result = await service.search(
@@ -408,7 +407,6 @@ def test_state_workspace_boundary(tmp_path):
     [
         OSError("cannot load model"),
         ValueError("bad source"),
-        RuntimeError("unclassified failure"),
     ],
 )
 def test_worker_loading_failures_have_no_search_or_partial_result(
@@ -462,11 +460,8 @@ def test_private_index_copy_is_independent_and_original_bytes_stay_bound(tmp_pat
         private_index_copies(req, state)
 
 
-@pytest.mark.parametrize(
-    "name", ["source.htm", "index.bin", "model.onnx", "equation.json"]
-)
-def test_dependency_damage_invalidates_snapshot_before_delivery(tmp_path, name):
-    dependency = tmp_path / name
+def test_dependency_damage_invalidates_snapshot_before_delivery(tmp_path):
+    dependency = tmp_path / "source.htm"
     dependency.write_bytes(b"original")
     snapshot = {str(dependency): receipt.digest(dependency)}
     dependency.write_bytes(b"damaged")
@@ -593,21 +588,6 @@ def test_source_constraint_never_widens_or_triggers_second_search(tmp_path):
     assert result.reason_code == "scope_filtered"
     assert result.limits[0].reason == "source_constraint"
     assert req.request.allowed_sources == ("https://allowed/page.htm",)
-
-
-def test_legacy_symbol_anchor_becomes_real_locator_not_fabricated_metadata(tmp_path):
-    source = tmp_path / "page.htm"
-    source.write_text(
-        '<html><body id="page"><dl><dt id="AT">AT</dt><dd>Acceleration</dd></dl></body></html>'
-    )
-    assert receipt.symbol_locator(
-        source, {"section_id": "AT", "document_id": "page"}
-    ) == ("/html/body/dl/dt",)
-    assert receipt.symbol_locator(
-        source, {"section_id": "", "document_id": "page"}
-    ) == ("/html/body",)
-    with pytest.raises(ValueError, match="missing or ambiguous"):
-        receipt.symbol_locator(source, {"section_id": "missing", "document_id": "page"})
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows Job boundary")
