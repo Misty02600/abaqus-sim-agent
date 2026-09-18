@@ -24,14 +24,14 @@ class FakeProcessStrategy:
     ) -> None:
         self.output = output
         self.effect = effect
-        self.calls: list[tuple[tuple[str, ...], Path, float]] = []
+        self.calls: list[tuple[tuple[str, ...], Path, float | None]] = []
 
     async def run(
         self,
         command: Sequence[str],
         *,
         cwd: Path,
-        timeout_seconds: float,
+        timeout_seconds: float | None,
     ) -> ProcessOutput:
         self.calls.append((tuple(command), cwd, timeout_seconds))
         if self.effect is not None:
@@ -53,6 +53,17 @@ def make_runner(
         process_strategy=strategy,
     )
     return runner, workspace.resolve(), state_dir.resolve()
+
+
+@pytest.mark.asyncio
+async def test_runtime_defaults_to_no_process_timeout(tmp_path: Path) -> None:
+    strategy = FakeProcessStrategy(ProcessOutput(exit_code=0, stdout=b"", stderr=b""))
+    runner, workspace, _ = make_runner(tmp_path, strategy)
+    (workspace / "build_model.py").write_text("print('build')\n", encoding="utf-8")
+
+    await runner.run_cae_script("build_model.py")
+
+    assert strategy.calls[0][2] is None
 
 
 @pytest.mark.asyncio

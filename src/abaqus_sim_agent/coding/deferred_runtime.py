@@ -97,7 +97,7 @@ class DeferredSolverRunner(Protocol):
         tool_call_id: str,
         job_name: str,
         input_file: str,
-        timeout_seconds: float,
+        timeout_seconds: float | None,
     ) -> str: ...
 
     def resolve_deferred_solver_job(

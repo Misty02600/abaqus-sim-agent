@@ -23,11 +23,23 @@ from ..coding.application import (
 )
 from ..coding.clarification import ScriptedClarificationProvider
 from ..coding.composition import ModelFactory, RunnerFactory, open_coding_run
-from ..coding.contracts import CodingRunBudget, CodingRunRequest, RuntimeProfile
+from ..coding.contracts import (
+    CodingRunBudget,
+    CodingRunControlValues,
+    CodingRunLimits,
+    CodingRunRequest,
+    EvaluationToolLimits,
+    RuntimeExecutionPolicy,
+    RuntimeProfile,
+)
 from ..coding.deferred_runtime import (
     DeferredSolverResolution,
     DeferredSolverRunner,
     load_deferred_tool_frontier,
+)
+from ..coding.domain_knowledge import (
+    DomainKnowledgeInventory,
+    discover_domain_knowledge_packs,
 )
 from ..coding.execution_verifier import ExecutionEvidenceVerifier
 from ..coding.model import (
@@ -93,19 +105,36 @@ from .storage import (
 @dataclass(frozen=True)
 class ServerConfig:
     root: Path
+    knowledge_packs_root: Path | None = None
     stream_model: bool = True
     execution: ModelExecutionConfig = field(
         default_factory=lambda: new_run_execution_config(
-            model_provider=DeepSeekGateway.OFFICIAL, model_name=DEEPSEEK_V4_FLASH
+            model_provider=DeepSeekGateway.OFFICIAL,
+            model_name=DEEPSEEK_V4_FLASH,
+            planning_enabled=False,
         )
     )
-    budget: CodingRunBudget = field(default_factory=CodingRunBudget)
+    limits: CodingRunLimits = field(default_factory=CodingRunLimits)
+    runtime_policy: RuntimeExecutionPolicy = field(
+        default_factory=RuntimeExecutionPolicy
+    )
+    evaluation_tool_limits: EvaluationToolLimits | None = None
+    budget: CodingRunBudget | None = None
     runtime: RuntimeProfile = field(
         default_factory=lambda: RuntimeProfile(
             launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()
         )
     )
-    context_warning_threshold_tokens: int | None = 100_000
+    context_warning_threshold_tokens: int | None = 900_000
+
+    def request_controls(self) -> CodingRunControlValues:
+        if self.budget is not None:
+            return self.budget.as_request_controls()
+        return {
+            "limits": self.limits,
+            "runtime_policy": self.runtime_policy,
+            "evaluation_tool_limits": self.evaluation_tool_limits,
+        }
 
 
 class _ToolExecutionRunner(DeferredSolverRunner):
@@ -137,7 +166,7 @@ class _ToolExecutionRunner(DeferredSolverRunner):
         job_name: str,
         *,
         input_file: Path | str | None = None,
-        timeout_seconds: float = 1_800.0,
+        timeout_seconds: float | None = None,
     ) -> AbaqusExecutionResult:
         effective_input = str(
             input_file if input_file is not None else f"{job_name}.inp"
@@ -151,13 +180,49 @@ class _ToolExecutionRunner(DeferredSolverRunner):
             timeout_seconds=timeout_seconds,
         )
 
+    def submit_solver_job(
+        self,
+        job_name: str,
+        *,
+        input_file: Path | str,
+        timeout_seconds: float | None = None,
+    ) -> str:
+        execution, _ = self._controller._start_solver_execution(
+            self._run_id,
+            self._invocation_id,
+            self._base,
+            tool_call_id=None,
+            tool_name="solver_job",
+            job_name=job_name,
+            input_file=str(input_file),
+            timeout_seconds=timeout_seconds,
+        )
+        return execution.execution_id
+
+    async def wait_solver_job(self, execution_id: str) -> AbaqusExecutionResult:
+        try:
+            return await self._controller._wait_solver_execution(
+                self._run_id,
+                execution_id,
+            )
+        except asyncio.CancelledError:
+            resolution = self._controller._resolve_solver_execution(
+                self._run_id,
+                execution_id,
+            )
+            if resolution.status == "cancelled":
+                raise RuntimeError(
+                    resolution.error or "Solver execution was cancelled"
+                ) from None
+            raise
+
     def start_deferred_solver_job(
         self,
         *,
         tool_call_id: str,
         job_name: str,
         input_file: str,
-        timeout_seconds: float,
+        timeout_seconds: float | None,
     ) -> str:
         execution, _ = self._controller._start_solver_execution(
             self._run_id,
@@ -321,7 +386,7 @@ class RunController:
         *,
         job_name: str,
         input_file: str,
-        timeout_seconds: float,
+        timeout_seconds: float | None,
     ) -> AbaqusExecutionResult:
         _, future = self._start_solver_execution(
             run_id,
@@ -334,6 +399,22 @@ class RunController:
         )
         return await asyncio.wrap_future(future)
 
+    async def _wait_solver_execution(
+        self,
+        run_id: str,
+        execution_id: str,
+    ) -> AbaqusExecutionResult:
+        with self._mutex:
+            future = self._tool_tasks.get(execution_id)
+        if future is not None:
+            return await asyncio.wrap_future(future)
+        resolution = self._resolve_solver_execution(run_id, execution_id)
+        if resolution.result is not None:
+            return resolution.result
+        raise RuntimeError(
+            resolution.error or f"Solver execution is {resolution.status}"
+        )
+
     def _start_solver_execution(
         self,
         run_id: str,
@@ -341,9 +422,10 @@ class RunController:
         runner: Abaqus2024Runner,
         *,
         tool_call_id: str | None,
+        tool_name: Literal["run_solver_job", "solver_job"] = "run_solver_job",
         job_name: str,
         input_file: str,
-        timeout_seconds: float,
+        timeout_seconds: float | None,
     ) -> tuple[ToolExecution, Future[AbaqusExecutionResult]]:
         normalized_input = input_file.replace("\\", "/")
         with self._mutex:
@@ -404,6 +486,7 @@ class RunController:
             execution_id=uuid4().hex,
             thread_id=run_id,
             invocation_id=invocation_id,
+            tool_name=tool_name,
             tool_call_id=tool_call_id,
             job_name=job_name,
             input_file=normalized_input,
@@ -944,14 +1027,27 @@ class RunController:
             state = self.registry.state_dir(run_id)
             workspace.mkdir()
             state.mkdir()
+            controls = self.config.request_controls()
+            base_runtime_policy = controls["runtime_policy"]
+            runtime_updates = {}
+            if command.abaqus_permission is not None:
+                runtime_updates["abaqus"] = command.abaqus_permission
+            if command.solver_permission is not None:
+                runtime_updates["solver"] = command.solver_permission
+            if runtime_updates:
+                controls["runtime_policy"] = base_runtime_policy.model_copy(
+                    update=runtime_updates
+                )
             prepared = prepare_new_run(
                 run_id=run_id,
                 goal=command.goal,
                 workspace=workspace,
                 state_dir=state,
                 execution=self.config.execution,
-                budget=self.config.budget,
                 runtime=self.config.runtime,
+                **controls,
+                knowledge_pack_ids=command.knowledge_pack_ids,
+                knowledge_packs_root=self.config.knowledge_packs_root,
             )
             with CodingRunFileLock(state):
                 registration = Registration(
@@ -964,6 +1060,9 @@ class RunController:
                 save_model(directory / "registration.json", registration)
                 self.threads.initialize(run_id, created_at=registration.created_at)
             return self.snapshot(run_id)
+
+    def list_knowledge_packs(self) -> DomainKnowledgeInventory:
+        return discover_domain_knowledge_packs(self.config.knowledge_packs_root)
 
     def _prepared(self, registration: Registration) -> PreparedCodingRun:
         if (registration.request.state_dir / "request.json").exists():
@@ -1165,13 +1264,13 @@ class RunController:
                 and (view.status == "interrupted" or pending_message is not None)
                 and not (view.question and view.question.pending)
             )
-            budget = (
-                self._effective[run_id].request.budget
+            request = (
+                self._effective[run_id].request
                 if run_id in self._effective
-                else registration.request.budget
+                else registration.request
             )
             message_block = None
-            if launch.schema_version != "coding-run-launch-v5":
+            if launch.schema_version != "coding-run-launch-v7":
                 message_block = "旧会话不支持追加消息，请新建会话。"
             elif tool_needs_reconcile:
                 message_block = "Solver 外部执行状态未知，请先核查运行状态与产物。"
@@ -1188,8 +1287,11 @@ class RunController:
             elif uncertain or view.phase in {"revision_pending", "execution_unknown"}:
                 message_block = "请先显式继续已保存的消息或核查上次执行。"
             elif (
-                view.usage.model_requests >= budget.max_model_requests
-                or view.usage.wall_time_seconds >= budget.wall_time_seconds
+                request.limits.request_limit is not None
+                and view.usage.model_requests >= request.limits.request_limit
+            ) or (
+                request.limits.active_wall_seconds is not None
+                and view.usage.wall_time_seconds >= request.limits.active_wall_seconds
             ):
                 message_block = "会话预算已用尽；可新建会话，或在CLI中显式调整预算。"
             value = RunSnapshot(
@@ -1201,7 +1303,13 @@ class RunController:
                 title=display.title,
                 title_version=display.version,
                 reasoning_policy=launch.effective_execution().reasoning_policy,
-                budget=budget,
+                limits=request.limits,
+                runtime_policy=request.runtime_policy,
+                knowledge_packs=(
+                    launch.domain_knowledge.packs
+                    if launch.domain_knowledge is not None
+                    else ()
+                ),
                 can_start=can_start,
                 can_answer=can_answer,
                 can_continue=can_continue,
@@ -1622,7 +1730,8 @@ class RunController:
             base_amendment_sequence=base_amendment_sequence,
             provider=prepared.launch.model_provider.value,
             model=prepared.launch.model_name,
-            budget=prepared.request.budget,
+            limits=prepared.request.limits,
+            runtime_policy=prepared.request.runtime_policy,
             step_persistence_reference=STEP_PERSISTENCE_DIRECTORY,
             compatibility_continuation_id=(
                 thread_message.message_id if thread_message is not None else None

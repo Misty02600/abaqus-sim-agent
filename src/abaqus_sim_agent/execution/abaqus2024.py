@@ -127,7 +127,7 @@ class ProcessStrategy(Protocol):
         command: Sequence[str],
         *,
         cwd: Path,
-        timeout_seconds: float,
+        timeout_seconds: float | None,
     ) -> ProcessOutput: ...
 
 
@@ -146,7 +146,7 @@ class WindowsProcessStrategy:
         command: Sequence[str],
         *,
         cwd: Path,
-        timeout_seconds: float,
+        timeout_seconds: float | None,
     ) -> ProcessOutput:
         return await self._run_process(
             command,
@@ -160,7 +160,7 @@ class WindowsProcessStrategy:
         command: Sequence[str],
         *,
         cwd: Path,
-        timeout_seconds: float,
+        timeout_seconds: float | None,
         process_started: ProcessStartedCallback,
     ) -> ProcessOutput:
         return await self._run_process(
@@ -175,10 +175,10 @@ class WindowsProcessStrategy:
         command: Sequence[str],
         *,
         cwd: Path,
-        timeout_seconds: float,
+        timeout_seconds: float | None,
         process_started: ProcessStartedCallback | None,
     ) -> ProcessOutput:
-        if timeout_seconds <= 0:
+        if timeout_seconds is not None and timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be greater than zero")
 
         if os.name == "nt":
@@ -266,6 +266,7 @@ class Abaqus2024Runner:
         self.launcher = Path(launcher)
         self._process_strategy = process_strategy or WindowsProcessStrategy()
         self._solver_process_started: ProcessStartedCallback | None = None
+        self._solver_tasks: dict[str, asyncio.Task[AbaqusExecutionResult]] = {}
 
     def set_solver_process_started_callback(
         self, callback: ProcessStartedCallback | None
@@ -278,7 +279,7 @@ class Abaqus2024Runner:
         script: Path | str,
         *,
         args: Sequence[str] = (),
-        timeout_seconds: float = 600.0,
+        timeout_seconds: float | None = None,
     ) -> AbaqusExecutionResult:
         script_path = self._resolve_input_file(script, suffix=".py")
         relative_script = script_path.relative_to(self.workspace).as_posix()
@@ -297,7 +298,7 @@ class Abaqus2024Runner:
         job_name: str,
         *,
         input_file: Path | str | None = None,
-        timeout_seconds: float = 1_800.0,
+        timeout_seconds: float | None = None,
     ) -> AbaqusExecutionResult:
         if not _JOB_NAME_PATTERN.fullmatch(job_name):
             raise ValueError(
@@ -324,12 +325,39 @@ class Abaqus2024Runner:
             input_artifacts=(relative_input,),
         )
 
+    def submit_solver_job(
+        self,
+        job_name: str,
+        *,
+        input_file: Path | str,
+        timeout_seconds: float | None = None,
+    ) -> str:
+        execution_id = uuid4().hex
+        self._solver_tasks[execution_id] = asyncio.create_task(
+            self.run_solver_job(
+                job_name,
+                input_file=input_file,
+                timeout_seconds=timeout_seconds,
+            )
+        )
+        return execution_id
+
+    async def wait_solver_job(self, execution_id: str) -> AbaqusExecutionResult:
+        task = self._solver_tasks.get(execution_id)
+        if task is None:
+            raise ValueError(f"unknown Solver execution id: {execution_id}")
+        try:
+            return await asyncio.shield(task)
+        finally:
+            if task.done():
+                self._solver_tasks.pop(execution_id, None)
+
     async def run_abaqus_python(
         self,
         script: Path | str,
         *,
         args: Sequence[str] = (),
-        timeout_seconds: float = 300.0,
+        timeout_seconds: float | None = None,
     ) -> AbaqusExecutionResult:
         script_path = self._resolve_input_file(script, suffix=".py")
         relative_script = script_path.relative_to(self.workspace).as_posix()
@@ -352,7 +380,7 @@ class Abaqus2024Runner:
         *,
         args: Sequence[str] = (),
         workspace_artifacts: Sequence[Path | str] = (),
-        timeout_seconds: float = 300.0,
+        timeout_seconds: float | None = None,
     ) -> AbaqusExecutionResult:
         """运行应用自有脚本；该入口不得注册为模型工具。
 
@@ -385,11 +413,11 @@ class Abaqus2024Runner:
         invocation: AbaqusInvocation,
         command: Sequence[str],
         *,
-        timeout_seconds: float,
+        timeout_seconds: float | None,
         diagnostic_stem: str | None = None,
         input_artifacts: Sequence[str] = (),
     ) -> AbaqusExecutionResult:
-        if timeout_seconds <= 0:
+        if timeout_seconds is not None and timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be greater than zero")
 
         before = await asyncio.to_thread(_snapshot_workspace, self.workspace)

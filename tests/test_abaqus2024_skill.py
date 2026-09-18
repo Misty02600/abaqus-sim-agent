@@ -38,7 +38,7 @@ def test_core_object_patterns_keep_the_verified_runtime_semantics() -> None:
         "dir()",
         "one minimal evidence-backed repair",
         "run_cae_script",
-        "run_solver_job",
+        "host Solver tool",
         "run_abaqus_python",
         "not prohibit scripts",
     )

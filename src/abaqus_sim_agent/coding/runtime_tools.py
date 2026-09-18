@@ -3,18 +3,21 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Awaitable
 from pathlib import Path, PurePosixPath, PureWindowsPath
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic_ai import Agent, CallDeferred, RunContext
+from pydantic import BaseModel, ConfigDict, Field
+from pydantic_ai import Agent, RunContext
 from pydantic_ai_harness.step_persistence import annotate_tool_effect
 
 from abaqus_sim_agent.coding.api_lookup import ApiCatalogMode, runtime_api_hint
+from abaqus_sim_agent.coding.cae_script_policy import (
+    find_cae_solver_lifecycle_calls,
+)
 from abaqus_sim_agent.coding.contracts import (
     ExecutionPurpose,
     ProbeConclusionStatus,
     ProbeResultInput,
 )
-from abaqus_sim_agent.coding.deferred_runtime import DeferredSolverRunner
 from abaqus_sim_agent.coding.dependencies import (
     CodingAgentDependencies,
     RuntimeBudgetExceeded,
@@ -28,19 +31,38 @@ from abaqus_sim_agent.coding.probe import ProbeProtocolMode, ProbeProtocolState
 from abaqus_sim_agent.coding.progress import CodingProgress, notify
 from abaqus_sim_agent.coding.resume import (
     append_execution_result,
-    load_execution_results,
 )
 from abaqus_sim_agent.coding.static_preflight import (
     StaticPreflightReport,
     static_preflight_payload,
 )
-from abaqus_sim_agent.coding.workspace import WorkspaceResolver
 from abaqus_sim_agent.execution.abaqus2024 import (
     AbaqusExecutionResult,
     AbaqusInvocation,
 )
 
-__all__ = ["finalize_runtime_result", "register_runtime_tools"]
+__all__ = ["SolverJobRequest", "finalize_runtime_result", "register_runtime_tools"]
+
+
+class _StrictModel(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
+
+
+class SubmitSolverJobRequest(_StrictModel):
+    action: Literal["submit"] = "submit"
+    job_name: str = Field(min_length=1, max_length=80)
+    input_file: str = Field(min_length=1)
+
+
+class WaitSolverJobRequest(_StrictModel):
+    action: Literal["wait"] = "wait"
+    execution_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+
+
+SolverJobRequest = Annotated[
+    SubmitSolverJobRequest | WaitSolverJobRequest,
+    Field(discriminator="action"),
+]
 
 
 def register_runtime_tools[AgentOutputT](
@@ -50,6 +72,7 @@ def register_runtime_tools[AgentOutputT](
     probe_target_scripts: tuple[str, ...] | None,
     api_catalog_mode: ApiCatalogMode,
     diagnostic_retrieval_mode: DiagnosticRetrievalMode,
+    background_solver_enabled: bool = False,
 ) -> None:
     if probe_protocol_mode == "typed":
 
@@ -191,29 +214,63 @@ def register_runtime_tools[AgentOutputT](
                 api_catalog_mode=api_catalog_mode,
             )
 
-        @agent.tool(name="run_solver_job", sequential=True)
-        async def run_solver_job_untyped(
-            ctx: RunContext[CodingAgentDependencies],
-            job_name: str,
-            input_file: str,
-        ) -> dict[str, object]:
-            """Run one Abaqus/Standard 2024 job from a workspace INP."""
-            await _annotate_runtime_tool(
-                ctx,
-                "solver_job",
-                input_file,
-                job_name=job_name,
-            )
-            return await _run_solver_tool(
-                ctx,
-                job_name,
-                input_file,
-                probe_protocol_enabled=False,
-                probe_result=None,
-                probe_target_scripts=None,
-                api_catalog_mode=api_catalog_mode,
-                diagnostic_retrieval_mode=diagnostic_retrieval_mode,
-            )
+        if background_solver_enabled:
+
+            @agent.tool(name="solver_job", sequential=True)
+            async def solver_job_untyped(
+                ctx: RunContext[CodingAgentDependencies],
+                request: SolverJobRequest,
+            ) -> dict[str, object]:
+                """Submit a Solver job or wait for a previously submitted execution.
+
+                Use ``submit`` to start Abaqus/Standard and immediately receive an
+                execution ID. Continue independent work, then use ``wait`` before
+                reading Solver outputs or requesting verification.
+                """
+                if isinstance(request, SubmitSolverJobRequest):
+                    await _annotate_runtime_tool(
+                        ctx,
+                        "solver_job",
+                        request.input_file,
+                        job_name=request.job_name,
+                    )
+                    return await _submit_solver_tool(
+                        ctx.deps,
+                        request.job_name,
+                        request.input_file,
+                    )
+                return await _wait_solver_tool(
+                    ctx.deps,
+                    request.execution_id,
+                    api_catalog_mode=api_catalog_mode,
+                    diagnostic_retrieval_mode=diagnostic_retrieval_mode,
+                )
+
+        else:
+
+            @agent.tool(name="run_solver_job", sequential=True)
+            async def run_solver_job_untyped(
+                ctx: RunContext[CodingAgentDependencies],
+                job_name: str,
+                input_file: str,
+            ) -> dict[str, object]:
+                """Run one Abaqus/Standard 2024 job from a workspace INP."""
+                await _annotate_runtime_tool(
+                    ctx,
+                    "solver_job",
+                    input_file,
+                    job_name=job_name,
+                )
+                return await _run_solver_tool(
+                    ctx,
+                    job_name,
+                    input_file,
+                    probe_protocol_enabled=False,
+                    probe_result=None,
+                    probe_target_scripts=None,
+                    api_catalog_mode=api_catalog_mode,
+                    diagnostic_retrieval_mode=diagnostic_retrieval_mode,
+                )
 
 
 async def _annotate_runtime_tool(
@@ -277,6 +334,8 @@ async def _run_cae_tool(
     probe_target_scripts: tuple[str, ...] | None,
     api_catalog_mode: ApiCatalogMode,
 ) -> dict[str, object]:
+    if permission_denied := dependencies.runtime_permission_denial(solver=False):
+        raise RuntimeBudgetExceeded(permission_denied)
     denied = dependencies.runtime_script_policy_denial(
         kind="cae",
         path=script_path,
@@ -287,6 +346,33 @@ async def _run_cae_tool(
         dependencies, kind="cae", path=script_path
     ):
         return document_denied
+    lifecycle_calls = find_cae_solver_lifecycle_calls(
+        dependencies.request.workspace,
+        script_path,
+    )
+    if lifecycle_calls:
+        return {
+            "succeeded": False,
+            "stage_succeeded": False,
+            "blocked": True,
+            "runtime_executed": False,
+            "budget_consumed": False,
+            "error_type": "CaeSolverLifecycleDenied",
+            "error": (
+                "CAE authoring scripts must not call submit() or "
+                "waitForCompletion(); generate the input deck and use "
+                "run_solver_job instead."
+            ),
+            "script_path": script_path.replace("\\", "/"),
+            "calls": [
+                {
+                    "method": call.method,
+                    "line": call.line,
+                    "column": call.column,
+                }
+                for call in lifecycle_calls
+            ],
+        }
     preflight_block, preflight_annotation = await _static_preflight_before_runtime(
         dependencies,
         kind="cae",
@@ -330,7 +416,9 @@ async def _run_cae_tool(
             dependencies,
             dependencies.runner.run_cae_script(
                 script_path,
-                timeout_seconds=180.0,
+                timeout_seconds=dependencies.request.runtime_policy.timeout_seconds(
+                    "cae"
+                ),
             ),
             api_catalog_mode=api_catalog_mode,
             probe_protocol=protocol,
@@ -354,6 +442,8 @@ async def _run_abaqus_python_tool(
     probe_target_scripts: tuple[str, ...] | None,
     api_catalog_mode: ApiCatalogMode,
 ) -> dict[str, object]:
+    if permission_denied := dependencies.runtime_permission_denial(solver=False):
+        raise RuntimeBudgetExceeded(permission_denied)
     denied = dependencies.runtime_script_policy_denial(
         kind="abaqus_python",
         path=script_path,
@@ -407,7 +497,9 @@ async def _run_abaqus_python_tool(
             dependencies,
             dependencies.runner.run_abaqus_python(
                 script_path,
-                timeout_seconds=120.0,
+                timeout_seconds=dependencies.request.runtime_policy.timeout_seconds(
+                    "abaqus_python"
+                ),
             ),
             api_catalog_mode=api_catalog_mode,
             probe_protocol=protocol,
@@ -433,6 +525,8 @@ async def _run_solver_tool(
     diagnostic_retrieval_mode: DiagnosticRetrievalMode,
 ) -> dict[str, object]:
     dependencies = ctx.deps
+    if permission_denied := dependencies.runtime_permission_denial(solver=True):
+        raise RuntimeBudgetExceeded(permission_denied)
     denied = dependencies.runtime_script_policy_denial(
         kind="solver_input",
         path=input_file,
@@ -470,39 +564,14 @@ async def _run_solver_tool(
                 dependencies.current_task_revision,
             ),
         )
-        if isinstance(dependencies.runner, DeferredSolverRunner):
-            if ctx.tool_call_id is None:
-                raise ValueError("deferred Solver requires a tool call id")
-            pre_solver_snapshot = WorkspaceResolver(
-                captured_cwd=dependencies.request.workspace
-            ).snapshot(dependencies.request.workspace)
-            execution_journal_count_before = len(
-                load_execution_results(dependencies.request.state_dir)
-            )
-            execution_id = dependencies.runner.start_deferred_solver_job(
-                tool_call_id=ctx.tool_call_id,
-                job_name=job_name,
-                input_file=input_file,
-                timeout_seconds=300.0,
-            )
-            metadata: dict[str, object] = {
-                "kind": "solver_job",
-                "execution_id": execution_id,
-                "execution_count_before": len(dependencies.executions),
-                "execution_journal_count_before": execution_journal_count_before,
-                "workspace_snapshot": pre_solver_snapshot.model_dump(mode="python"),
-                "api_catalog_mode": api_catalog_mode,
-                "diagnostic_retrieval_mode": diagnostic_retrieval_mode,
-            }
-            if recorded is not None:
-                metadata["recorded_probe_result"] = recorded["probe"]
-            raise CallDeferred(metadata=metadata)
         payload = await _runtime_tool_result(
             dependencies,
             dependencies.runner.run_solver_job(
                 job_name,
                 input_file=input_file,
-                timeout_seconds=300.0,
+                timeout_seconds=dependencies.request.runtime_policy.timeout_seconds(
+                    "solver"
+                ),
             ),
             api_catalog_mode=api_catalog_mode,
             diagnostic_retrieval_mode=diagnostic_retrieval_mode,
@@ -510,6 +579,107 @@ async def _run_solver_tool(
         if recorded is not None:
             payload["recorded_probe_result"] = recorded["probe"]
         return payload
+
+
+async def _submit_solver_tool(
+    dependencies: CodingAgentDependencies,
+    job_name: str,
+    input_file: str,
+) -> dict[str, object]:
+    if permission_denied := dependencies.runtime_permission_denial(solver=True):
+        raise RuntimeBudgetExceeded(permission_denied)
+    denied = dependencies.runtime_script_policy_denial(
+        kind="solver_input",
+        path=input_file,
+    )
+    if denied is not None:
+        return denied
+    if document_denied := await document_runtime_denial(
+        dependencies, kind="solver_input", path=input_file
+    ):
+        return document_denied
+    exhausted = dependencies.reserve_runtime_call(solver=True)
+    if exhausted:
+        raise RuntimeBudgetExceeded(exhausted)
+    notify(
+        dependencies.observer,
+        CodingProgress(
+            "runtime_started",
+            "solver",
+            dependencies.current_turn,
+            dependencies.current_task_revision,
+        ),
+    )
+    try:
+        execution_id = dependencies.runner.submit_solver_job(
+            job_name,
+            input_file=input_file,
+            timeout_seconds=dependencies.request.runtime_policy.timeout_seconds(
+                "solver"
+            ),
+        )
+    except (OSError, RuntimeError, ValueError) as exc:
+        notify(
+            dependencies.observer,
+            CodingProgress(
+                "runtime_finished",
+                "model",
+                dependencies.current_turn,
+                dependencies.current_task_revision,
+            ),
+        )
+        return {
+            "succeeded": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+    dependencies.pending_solver_executions.add(execution_id)
+    return {
+        "succeeded": True,
+        "submitted": True,
+        "execution_id": execution_id,
+        "job_name": job_name,
+        "input_file": input_file.replace("\\", "/"),
+        "guidance": (
+            "Continue independent work if useful, then call solver_job with "
+            "action='wait' before reading Solver outputs or requesting verification."
+        ),
+    }
+
+
+async def _wait_solver_tool(
+    dependencies: CodingAgentDependencies,
+    execution_id: str,
+    *,
+    api_catalog_mode: ApiCatalogMode,
+    diagnostic_retrieval_mode: DiagnosticRetrievalMode,
+) -> dict[str, object]:
+    try:
+        async with dependencies.active_wall.pause():
+            result = await dependencies.runner.wait_solver_job(execution_id)
+    except (OSError, RuntimeError, ValueError) as exc:
+        dependencies.pending_solver_executions.discard(execution_id)
+        notify(
+            dependencies.observer,
+            CodingProgress(
+                "runtime_finished",
+                "model",
+                dependencies.current_turn,
+                dependencies.current_task_revision,
+            ),
+        )
+        return {
+            "succeeded": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+    dependencies.pending_solver_executions.discard(execution_id)
+    return await finalize_runtime_result(
+        dependencies,
+        result,
+        api_catalog_mode=api_catalog_mode,
+        diagnostic_retrieval_mode=diagnostic_retrieval_mode,
+    )
 
 
 def _invalid_probe_result(recorded: dict[str, object]) -> dict[str, object]:
@@ -602,10 +772,11 @@ async def _static_preflight_before_runtime(
                 "error": exhausted,
             }
         try:
-            report = await preflight.inspect(
-                dependencies.request.workspace,
-                script_path,
-            )
+            async with dependencies.active_wall.pause():
+                report = await preflight.inspect(
+                    dependencies.request.workspace,
+                    script_path,
+                )
         except (OSError, RuntimeError, ValueError) as exc:
             if enforced:
                 return _enforced_preflight_unavailable(
@@ -768,7 +939,8 @@ async def _runtime_tool_result(
     diagnostic_retrieval_mode: DiagnosticRetrievalMode = "off",
 ) -> dict[str, object]:
     try:
-        result = await execution
+        async with dependencies.active_wall.pause():
+            result = await execution
     except (OSError, ValueError) as exc:
         notify(
             dependencies.observer,
