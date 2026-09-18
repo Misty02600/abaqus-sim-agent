@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from pathlib import Path, PurePosixPath
 from typing import Any, Literal
@@ -10,7 +11,7 @@ from pydantic_ai_harness import Coder, Skills, StepPersistence, ToolGuardrail
 from pydantic_ai_harness.guardrails import GuardrailResult, ToolCallInfo
 from pydantic_ai_harness.planning import Planning
 from pydantic_ai_harness.repo_context import RepoContext
-from pydantic_ai_harness.shell import Shell
+from pydantic_ai_harness.shell import LLM_API_KEY_ENV_PATTERNS, Shell
 from pydantic_ai_harness.step_persistence import StepStore
 
 from abaqus_sim_agent.coding.api_lookup import (
@@ -75,6 +76,14 @@ from abaqus_sim_agent.coding.user_questions import (
 )
 
 CODER_GENERAL_SHELL_POLICY_VERSION = "coder-general-shell-disabled-v1"
+PRODUCT_CODER_SHELL_POLICY_VERSION = "coder-shell-abaqus-launcher-denied-v1"
+
+_ABAQUS_LAUNCHER_PATTERN = re.compile(
+    r"(?i)(?<![a-z0-9_.-])"
+    r"(?:abaqus(?:20\d{2})?|abq(?:20\d{2})?(?:hf\d+)?)"
+    r"(?:\.(?:bat|cmd|exe))?"
+    r"(?![a-z0-9_.-])"
+)
 
 _LINEAR_STRUCTURAL_FEA_FOUNDATION_SKILLS = (
     "linear-structural-fea-formulation",
@@ -134,6 +143,25 @@ def _immutable_workspace_guard(
         )
 
     return guard
+
+
+def _abaqus_launcher_shell_guard(
+    ctx: RunContext[_CodingAgentDependencies],
+    call: ToolCallInfo,
+) -> GuardrailResult:
+    if call.name not in {"run_command", "start_command"}:
+        return GuardrailResult.allow()
+    command = call.args.get("command")
+    if not isinstance(command, str):
+        return GuardrailResult.allow()
+    normalized = command.replace("\\", "/").casefold()
+    launcher = ctx.deps.request.runtime.launcher_path.as_posix().casefold()
+    if launcher not in normalized and _ABAQUS_LAUNCHER_PATTERN.search(command) is None:
+        return GuardrailResult.allow()
+    return GuardrailResult.block(
+        "Abaqus launchers are not available through the general shell; use "
+        "run_cae_script, solver_job, or run_abaqus_python."
+    )
 
 
 def create_abaqus_coding_agent(
