@@ -8,9 +8,11 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from abaqus_sim_agent.coding.contracts import (
-    CodingRunBudget,
     CodingRunOutcome,
     CodingRunRequest,
+    DurationLimit,
+    RuntimeExecutionPolicy,
+    RuntimePermission,
 )
 from abaqus_sim_agent.coding.model import DeepSeekGateway
 from abaqus_sim_agent.coding.persistence import (
@@ -30,33 +32,29 @@ class _StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
 
 
-class CodingRunBudgetPatch(_StrictModel):
-    max_clarifications: int | None = Field(default=None, ge=0)
-    max_model_requests: int | None = Field(default=None, ge=1)
-    max_api_lookup_calls: int | None = Field(default=None, ge=0)
-    max_concept_lookup_calls: int | None = Field(default=None, ge=0)
-    max_diagnostic_retrieval_calls: int | None = Field(default=None, ge=0)
-    max_static_preflight_calls: int | None = Field(default=None, ge=0)
-    max_abaqus_calls: int | None = Field(default=None, ge=0)
-    max_solver_calls: int | None = Field(default=None, ge=0)
-    wall_time_seconds: float | None = Field(default=None, gt=0)
+class RuntimeExecutionPolicyPatch(_StrictModel):
+    abaqus: RuntimePermission | None = None
+    solver: RuntimePermission | None = None
+    cae_timeout: DurationLimit | None = None
+    abaqus_python_timeout: DurationLimit | None = None
+    solver_timeout: DurationLimit | None = None
 
     @model_validator(mode="after")
-    def require_value(self) -> "CodingRunBudgetPatch":
+    def require_value(self) -> "RuntimeExecutionPolicyPatch":
         if any(getattr(self, name) is None for name in self.model_fields_set):
-            raise ValueError("explicit null is not a supported budget patch value")
+            raise ValueError("explicit null is not a supported runtime policy patch")
         if not self.model_dump(exclude_none=True):
-            raise ValueError("budget patch must set at least one field")
+            raise ValueError("runtime policy patch must set at least one field")
         return self
 
-    def apply(self, budget: CodingRunBudget) -> CodingRunBudget:
-        values = budget.model_dump(mode="python")
+    def apply(self, policy: RuntimeExecutionPolicy) -> RuntimeExecutionPolicy:
+        values = policy.model_dump(mode="python")
         values.update(self.model_dump(mode="python", exclude_none=True))
-        return CodingRunBudget.model_validate(values)
+        return RuntimeExecutionPolicy.model_validate(values)
 
 
 class CodingRunConfigPatch(_StrictModel):
-    budget: CodingRunBudgetPatch | None = None
+    runtime_policy: RuntimeExecutionPolicyPatch | None = None
     model_provider: DeepSeekGateway | None = None
     model_name: str | None = Field(default=None, min_length=1)
     http_retries: int | None = Field(default=None, ge=0)
@@ -182,13 +180,13 @@ def resolve_effective_run(
     ledger: CodingRunAmendmentLedger,
 ) -> EffectiveCodingRun:
     goal = request.goal
-    budget = request.budget
+    runtime_policy = request.runtime_policy
     revision_snapshot = initial_snapshot
     execution_start_index = 0
     for amendment in ledger.amendments:
         if amendment.config is not None:
-            if amendment.config.budget is not None:
-                budget = amendment.config.budget.apply(budget)
+            if amendment.config.runtime_policy is not None:
+                runtime_policy = amendment.config.runtime_policy.apply(runtime_policy)
         if amendment.kind == "task_revision":
             assert amendment.goal is not None
             assert amendment.revision_workspace_snapshot is not None
@@ -200,7 +198,7 @@ def resolve_effective_run(
         {
             **request.model_dump(mode="python"),
             "goal": goal,
-            "budget": budget.model_dump(mode="python"),
+            "runtime_policy": runtime_policy.model_dump(mode="python"),
         }
     )
     return EffectiveCodingRun(

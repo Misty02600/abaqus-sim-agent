@@ -15,12 +15,14 @@ from pydantic_ai.messages import ModelMessage, ModelResponse
 from pydantic_ai.models import Model, ModelRequestParameters, StreamedResponse
 from pydantic_ai.models.openai import OpenAIChatModel, OpenAIChatModelSettings
 from pydantic_ai.models.wrapper import WrapperModel
+from pydantic_ai.profiles import ModelProfile
 from pydantic_ai.providers.deepseek import DeepSeekProvider
 from pydantic_ai.settings import ModelSettings
 
 DEEPSEEK_V4_FLASH = "deepseek-v4-flash"
-DEFAULT_MODEL_HTTP_RETRIES = 10
-DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS = 60.0
+DEEPSEEK_V4_FLASH_CONTEXT_WINDOW = 1_000_000
+DEFAULT_MODEL_HTTP_RETRIES = 4
+DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS = 300.0
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 OPENCODE_ZEN_BASE_URL = "https://opencode.ai/zen/v1"
 OPENCODE_GO_BASE_URL = "https://opencode.ai/zen/go/v1"
@@ -200,9 +202,15 @@ class OpenCodeGoChatModel(OpenAIChatModel):
         *,
         provider: DeepSeekProvider,
         conversation_id: str,
+        profile: ModelProfile | None = None,
         settings: ModelSettings | None = None,
     ):
-        super().__init__(model_name, provider=provider, settings=settings)
+        super().__init__(
+            model_name,
+            provider=provider,
+            profile=profile,
+            settings=settings,
+        )
         normalized = conversation_id.strip()
         if (
             not normalized
@@ -376,16 +384,21 @@ def create_deepseek_chat_model(
         DeepSeekGateway.OPENCODE_GO: OpenCodeGoDeepSeekProvider,
     }[gateway]
     provider = provider_type(openai_client=client)
+    profile = ModelProfile(context_window=DEEPSEEK_V4_FLASH_CONTEXT_WINDOW)
     model = (
         OpenCodeGoChatModel(
             normalized_model_name,
             provider=provider,
             conversation_id=conversation_id or "",
+            profile=profile,
             settings=settings,
         )
         if gateway is DeepSeekGateway.OPENCODE_GO
         else OpenAIChatModel(
-            normalized_model_name, provider=provider, settings=settings
+            normalized_model_name,
+            provider=provider,
+            profile=profile,
+            settings=settings,
         )
     )
     return model, client

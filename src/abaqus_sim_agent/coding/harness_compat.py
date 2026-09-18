@@ -13,9 +13,13 @@ from typing import Protocol, cast
 from anyio import to_thread
 
 HARNESS_WINDOWS_NEWLINE_HASH_PATCH_VERSION = "harness-0.24.0-windows-newline-hash-v1"
-HARNESS_WINDOWS_SHELL_TREE_PATCH_VERSION = "harness-0.24.0-windows-shell-tree-v1"
-HARNESS_WINDOWS_JSONL_APPEND_PATCH_VERSION = "harness-0.24.0-windows-jsonl-append-v1"
-_AFFECTED_HARNESS_VERSION = "0.24.0"
+HARNESS_WINDOWS_SHELL_TREE_PATCH_VERSION = "harness-0.24.0-0.31.0-windows-shell-tree-v2"
+HARNESS_WINDOWS_JSONL_APPEND_PATCH_VERSION = (
+    "harness-0.24.0-0.31.0-windows-jsonl-append-v2"
+)
+_NEWLINE_HASH_AFFECTED_HARNESS_VERSIONS = frozenset({"0.24.0"})
+_SHELL_TREE_AFFECTED_HARNESS_VERSIONS = frozenset({"0.24.0", "0.31.0"})
+_JSONL_APPEND_AFFECTED_HARNESS_VERSIONS = frozenset({"0.24.0", "0.31.0"})
 _HASH_PATCH_MARKER = "_abaqus_sim_agent_newline_hash_patch_version"
 _SHELL_PATCH_MARKER = "_abaqus_sim_agent_shell_tree_patch_version"
 _JSONL_PATCH_MARKER = "_abaqus_sim_agent_jsonl_append_patch_version"
@@ -49,7 +53,11 @@ def apply_harness_windows_newline_hash_patch(
     Returns:
         已启用时返回补丁版本；环境不匹配或包不存在时返回 ``None``。
     """
-    if not _is_affected_windows_harness(platform_name, harness_version):
+    if not _is_affected_windows_harness(
+        platform_name,
+        harness_version,
+        _NEWLINE_HASH_AFFECTED_HARNESS_VERSIONS,
+    ):
         return None
 
     if toolset_module is None:
@@ -82,11 +90,11 @@ def apply_harness_windows_shell_tree_patch(
     shell_toolset_class: type[object] | None = None,
     tree_terminator: Callable[[int], None] | None = None,
 ) -> str | None:
-    """修复 Harness 0.24.0 在 Windows 上调用 ``os.killpg`` 的错误。
+    """修复已确认受影响的 Harness 版本在 Windows 上调用 ``os.killpg`` 的错误。
 
     上游 ``ShellToolset`` 的超时和后台清理路径使用 POSIX process-group
     API；Windows 不提供 ``os.getpgid``/``os.killpg``，因此超时会把整个
-    Agent run 变成基础设施异常。本补丁只替换该精确版本的私有终止方法，
+    Agent run 变成基础设施异常。本补丁只替换已复现版本的私有终止方法，
     使用 Windows ``taskkill /T /F`` 终止准确 PID 的进程树。
 
     Args:
@@ -98,7 +106,11 @@ def apply_harness_windows_shell_tree_patch(
     Returns:
         已启用时返回补丁版本；环境不匹配或存在其他补丁时返回 ``None``。
     """
-    if not _is_affected_windows_harness(platform_name, harness_version):
+    if not _is_affected_windows_harness(
+        platform_name,
+        harness_version,
+        _SHELL_TREE_AFFECTED_HARNESS_VERSIONS,
+    ):
         return None
 
     if shell_toolset_class is None:
@@ -138,12 +150,12 @@ def apply_harness_windows_jsonl_append_patch(
     harness_version: str | None = None,
     file_step_store_class: type[object] | None = None,
 ) -> str | None:
-    """串行化 Harness 0.24.0 在 Windows 上的 JSONL 追加。
+    """串行化已确认受影响的 Harness 版本在 Windows 上的 JSONL 追加。
 
     同一模型响应中的并行工具会从多个worker thread打开同一
     ``tool_effects.jsonl``。Windows append handle不能保证这些文本写入彼此
     不覆盖，已复现完整记录被截成 ``ll}``，导致后续resume无法解析。
-    本补丁只包装精确版本的event/tool-effect同步追加方法；不同进程仍由
+    本补丁只包装已复现版本的event/tool-effect同步追加方法；不同进程仍由
     CodingRun state的OS锁隔离。
 
     Args:
@@ -154,7 +166,11 @@ def apply_harness_windows_jsonl_append_patch(
     Returns:
         已启用时返回补丁版本；环境不匹配或存在其他补丁时返回``None``。
     """
-    if not _is_affected_windows_harness(platform_name, harness_version):
+    if not _is_affected_windows_harness(
+        platform_name,
+        harness_version,
+        _JSONL_APPEND_AFFECTED_HARNESS_VERSIONS,
+    ):
         return None
     if file_step_store_class is None:
         store_module = import_module("pydantic_ai_harness.step_persistence._store")
@@ -213,6 +229,7 @@ def _serialized_jsonl_append(
 def _is_affected_windows_harness(
     platform_name: str | None,
     harness_version: str | None,
+    affected_versions: frozenset[str],
 ) -> bool:
     if (os.name if platform_name is None else platform_name) != "nt":
         return False
@@ -221,7 +238,7 @@ def _is_affected_windows_harness(
             harness_version = version("pydantic-ai-harness")
         except PackageNotFoundError:
             return False
-    return harness_version == _AFFECTED_HARNESS_VERSION
+    return harness_version in affected_versions
 
 
 def _terminate_windows_process_tree(pid: int) -> None:

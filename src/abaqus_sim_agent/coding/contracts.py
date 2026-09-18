@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import StrEnum
 from pathlib import Path, PurePosixPath, PureWindowsPath
-from typing import Annotated, Literal
+from typing import Annotated, Literal, TypedDict
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -20,7 +20,136 @@ class _StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
 
 
+class UnlimitedLimit(_StrictModel):
+    mode: Literal["unlimited"] = "unlimited"
+
+
+class LimitedCount(_StrictModel):
+    mode: Literal["limited"] = "limited"
+    value: int = Field(ge=0)
+
+
+class LimitedDuration(_StrictModel):
+    mode: Literal["limited"] = "limited"
+    seconds: float = Field(gt=0, allow_inf_nan=False)
+
+
+CountLimit = Annotated[UnlimitedLimit | LimitedCount, Field(discriminator="mode")]
+DurationLimit = Annotated[
+    UnlimitedLimit | LimitedDuration,
+    Field(discriminator="mode"),
+]
+
+
+class CodingRunLimits(_StrictModel):
+    model_requests: CountLimit = Field(default_factory=UnlimitedLimit)
+    clarifications: CountLimit = Field(default_factory=UnlimitedLimit)
+    active_wall: DurationLimit = Field(default_factory=UnlimitedLimit)
+
+    @model_validator(mode="after")
+    def model_request_limit_is_positive(self) -> "CodingRunLimits":
+        if (
+            isinstance(self.model_requests, LimitedCount)
+            and self.model_requests.value < 1
+        ):
+            raise ValueError("limited model_requests must be at least one")
+        return self
+
+    @property
+    def request_limit(self) -> int | None:
+        return (
+            self.model_requests.value
+            if isinstance(self.model_requests, LimitedCount)
+            else None
+        )
+
+    @property
+    def clarification_limit(self) -> int | None:
+        return (
+            self.clarifications.value
+            if isinstance(self.clarifications, LimitedCount)
+            else None
+        )
+
+    @property
+    def active_wall_seconds(self) -> float | None:
+        return (
+            self.active_wall.seconds
+            if isinstance(self.active_wall, LimitedDuration)
+            else None
+        )
+
+
+class RuntimeDenied(_StrictModel):
+    mode: Literal["deny"] = "deny"
+
+
+class RuntimeAllowed(_StrictModel):
+    mode: Literal["allow"] = "allow"
+
+
+class RuntimeAllowedWithLimit(_StrictModel):
+    mode: Literal["allow_with_limit"] = "allow_with_limit"
+    limit: int = Field(ge=1)
+
+
+RuntimePermission = Annotated[
+    RuntimeDenied | RuntimeAllowed | RuntimeAllowedWithLimit,
+    Field(discriminator="mode"),
+]
+
+
+class RuntimeExecutionPolicy(_StrictModel):
+    abaqus: RuntimePermission = Field(default_factory=RuntimeAllowed)
+    solver: RuntimePermission = Field(default_factory=RuntimeDenied)
+    cae_timeout: DurationLimit = Field(default_factory=UnlimitedLimit)
+    abaqus_python_timeout: DurationLimit = Field(default_factory=UnlimitedLimit)
+    solver_timeout: DurationLimit = Field(default_factory=UnlimitedLimit)
+
+    def timeout_seconds(
+        self, kind: Literal["cae", "abaqus_python", "solver"]
+    ) -> float | None:
+        value = {
+            "cae": self.cae_timeout,
+            "abaqus_python": self.abaqus_python_timeout,
+            "solver": self.solver_timeout,
+        }[kind]
+        return value.seconds if isinstance(value, LimitedDuration) else None
+
+    def runtime_denial(
+        self, *, solver: bool, abaqus_used: int, solver_used: int
+    ) -> str | None:
+        parent = self.abaqus
+        if isinstance(parent, RuntimeDenied):
+            return "Abaqus execution is not authorized"
+        if isinstance(parent, RuntimeAllowedWithLimit) and abaqus_used >= parent.limit:
+            return "Abaqus invocation allowance is exhausted"
+        if not solver:
+            return None
+        child = self.solver
+        if isinstance(child, RuntimeDenied):
+            return "Abaqus solver execution is not authorized"
+        if isinstance(child, RuntimeAllowedWithLimit) and solver_used >= child.limit:
+            return "Abaqus solver invocation allowance is exhausted"
+        return None
+
+
+class EvaluationToolLimits(_StrictModel):
+    api_lookup_calls: int | None = Field(default=None, ge=0)
+    concept_lookup_calls: int | None = Field(default=None, ge=0)
+    diagnostic_retrieval_calls: int | None = Field(default=None, ge=0)
+    static_preflight_calls: int | None = Field(default=None, ge=0)
+
+
+class CodingRunControlValues(TypedDict):
+    limits: CodingRunLimits
+    runtime_policy: RuntimeExecutionPolicy
+    evaluation_tool_limits: EvaluationToolLimits | None
+
+
 class CodingRunBudget(_StrictModel):
+    """冻结评测使用的旧式额度输入；产品 request 不持久化该聚合对象。"""
+
     max_clarifications: int = Field(default=2, ge=0)
     max_model_requests: int = Field(default=30, ge=1)
     max_api_lookup_calls: int = Field(default=4, ge=0)
@@ -37,6 +166,34 @@ class CodingRunBudget(_StrictModel):
             raise ValueError("max_solver_calls cannot exceed max_abaqus_calls")
         return self
 
+    def as_request_controls(self) -> CodingRunControlValues:
+        """把冻结评测额度转换为当前 request 拥有的分层控制模型。"""
+        return {
+            "limits": CodingRunLimits(
+                model_requests=LimitedCount(value=self.max_model_requests),
+                clarifications=LimitedCount(value=self.max_clarifications),
+                active_wall=LimitedDuration(seconds=self.wall_time_seconds),
+            ),
+            "runtime_policy": RuntimeExecutionPolicy(
+                abaqus=(
+                    RuntimeDenied()
+                    if self.max_abaqus_calls == 0
+                    else RuntimeAllowedWithLimit(limit=self.max_abaqus_calls)
+                ),
+                solver=(
+                    RuntimeDenied()
+                    if self.max_solver_calls == 0
+                    else RuntimeAllowedWithLimit(limit=self.max_solver_calls)
+                ),
+            ),
+            "evaluation_tool_limits": EvaluationToolLimits(
+                api_lookup_calls=self.max_api_lookup_calls,
+                concept_lookup_calls=self.max_concept_lookup_calls,
+                diagnostic_retrieval_calls=self.max_diagnostic_retrieval_calls,
+                static_preflight_calls=self.max_static_preflight_calls,
+            ),
+        }
+
 
 class RuntimeProfile(_StrictModel):
     name: str = Field(default="abaqus-2024", min_length=1)
@@ -50,6 +207,11 @@ class RuntimeProfile(_StrictModel):
         if self.launcher_path.resolve() != self.launcher_path:
             raise ValueError("launcher_path must be resolved")
         return self
+
+
+class CapabilityDefinitionBinding(_StrictModel):
+    capability_id: str = Field(min_length=1)
+    definition_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
 
 
 class RuntimeScriptPolicy(_StrictModel):
@@ -525,7 +687,14 @@ class CodingRunRequest(_StrictModel):
     clarification_policy_version: Literal["physics-materiality-clarification-v1"] = (
         CLARIFICATION_POLICY_VERSION
     )
-    budget: CodingRunBudget = Field(default_factory=CodingRunBudget)
+    limits: CodingRunLimits = Field(default_factory=CodingRunLimits)
+    runtime_policy: RuntimeExecutionPolicy = Field(
+        default_factory=RuntimeExecutionPolicy
+    )
+    evaluation_tool_limits: EvaluationToolLimits | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
 
     @model_validator(mode="after")
     def check_resolved_paths(self) -> "CodingRunRequest":
@@ -730,7 +899,10 @@ def _workspace_relative_path(value: str) -> str:
 class CodingRunUsage(_StrictModel):
     model_requests: int = Field(default=0, ge=0)
     input_tokens: int = Field(default=0, ge=0)
+    cache_write_tokens: int = Field(default=0, ge=0)
+    cache_read_tokens: int = Field(default=0, ge=0)
     output_tokens: int = Field(default=0, ge=0)
+    provider_details: dict[str, int] = Field(default_factory=dict)
     tool_calls: int = Field(default=0, ge=0)
     api_lookup_calls: int = Field(default=0, ge=0)
     concept_lookup_calls: int = Field(default=0, ge=0)

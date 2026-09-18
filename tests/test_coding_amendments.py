@@ -7,8 +7,8 @@ from pydantic import ValidationError
 from abaqus_sim_agent.coding import amendments as amendments_module
 from abaqus_sim_agent.coding.amendments import (
     AMENDMENT_LEDGER_NAME,
-    CodingRunBudgetPatch,
     CodingRunConfigPatch,
+    RuntimeExecutionPolicyPatch,
     append_operational_amendment,
     append_task_revision,
     load_amendment_ledger,
@@ -83,9 +83,11 @@ def test_operational_amendment_is_strict_atomic_overlay(
     amendment = append_operational_amendment(
         request.state_dir,
         patch=CodingRunConfigPatch(
-            budget=CodingRunBudgetPatch(
-                max_model_requests=2,
-                wall_time_seconds=30.0,
+            runtime_policy=RuntimeExecutionPolicyPatch.model_validate(
+                {
+                    "solver": {"mode": "allow_with_limit", "limit": 2},
+                    "solver_timeout": {"mode": "limited", "seconds": 30.0},
+                }
             ),
             model_name="replacement-model",
             http_retries=1,
@@ -98,8 +100,8 @@ def test_operational_amendment_is_strict_atomic_overlay(
     assert (request.state_dir / "request.json").read_bytes() == original_request
     effective = load_request_for_resume(request.state_dir)
     assert effective.goal == request.goal
-    assert effective.budget.max_model_requests == 2
-    assert effective.budget.wall_time_seconds == 30.0
+    assert effective.runtime_policy.solver.mode == "allow_with_limit"
+    assert effective.runtime_policy.timeout_seconds("solver") == 30.0
     ledger = load_amendment_ledger(request.state_dir, run_id=request.run_id)
     assert ledger.sequence == 1
     assert ledger.task_revision == 0
@@ -107,30 +109,30 @@ def test_operational_amendment_is_strict_atomic_overlay(
     with pytest.raises(ValidationError, match="extra_forbidden"):
         CodingRunConfigPatch.model_validate({"unknown": 1})
     with pytest.raises(ValidationError, match="at least one"):
-        CodingRunBudgetPatch()
+        RuntimeExecutionPolicyPatch()
     with pytest.raises(ValidationError, match="explicit null"):
-        CodingRunBudgetPatch.model_validate({"wall_time_seconds": None})
+        RuntimeExecutionPolicyPatch.model_validate({"solver_timeout": None})
 
 
-def test_invalid_merged_budget_does_not_replace_committed_ledger(
+def test_invalid_runtime_policy_patch_does_not_replace_committed_ledger(
     tmp_path: Path,
 ) -> None:
     request = _persist_base_state(tmp_path)
     append_operational_amendment(
         request.state_dir,
-        patch=CodingRunConfigPatch(budget=CodingRunBudgetPatch(max_model_requests=2)),
+        patch=CodingRunConfigPatch(
+            runtime_policy=RuntimeExecutionPolicyPatch.model_validate(
+                {"solver": {"mode": "allow"}}
+            )
+        ),
         reason="First valid amendment",
     )
     ledger_path = request.state_dir / AMENDMENT_LEDGER_NAME
     committed = ledger_path.read_bytes()
 
-    with pytest.raises(ValueError, match="max_solver_calls"):
-        append_operational_amendment(
-            request.state_dir,
-            patch=CodingRunConfigPatch(
-                budget=CodingRunBudgetPatch(max_solver_calls=10)
-            ),
-            reason="Invalid merged amendment",
+    with pytest.raises(ValidationError, match="greater than or equal to 1"):
+        RuntimeExecutionPolicyPatch.model_validate(
+            {"solver": {"mode": "allow_with_limit", "limit": 0}}
         )
 
     assert ledger_path.read_bytes() == committed
@@ -147,7 +149,9 @@ def test_amendment_fails_without_writing_while_run_lock_is_held(
             append_operational_amendment(
                 request.state_dir,
                 patch=CodingRunConfigPatch(
-                    budget=CodingRunBudgetPatch(wall_time_seconds=60.0)
+                    runtime_policy=RuntimeExecutionPolicyPatch.model_validate(
+                        {"solver": {"mode": "allow"}}
+                    )
                 ),
                 reason="Concurrent amendment",
             )
@@ -167,7 +171,9 @@ def test_amendment_cannot_bypass_runtime_reconciliation(tmp_path: Path) -> None:
         append_operational_amendment(
             request.state_dir,
             patch=CodingRunConfigPatch(
-                budget=CodingRunBudgetPatch(wall_time_seconds=60.0)
+                runtime_policy=RuntimeExecutionPolicyPatch.model_validate(
+                    {"solver": {"mode": "allow"}}
+                )
             ),
             reason="Must not bypass reconciliation",
         )
@@ -227,7 +233,11 @@ def test_post_commit_verification_cleanup_failure_does_not_duplicate_amendment(
 
     amendment = append_operational_amendment(
         request.state_dir,
-        patch=CodingRunConfigPatch(budget=CodingRunBudgetPatch(wall_time_seconds=60.0)),
+        patch=CodingRunConfigPatch(
+            runtime_policy=RuntimeExecutionPolicyPatch.model_validate(
+                {"solver": {"mode": "allow"}}
+            )
+        ),
         reason="Committed despite stale projection cleanup",
     )
 
@@ -259,7 +269,14 @@ def test_repeated_pending_amendments_archive_by_outcome_sequence(
         append_operational_amendment(
             request.state_dir,
             patch=CodingRunConfigPatch(
-                budget=CodingRunBudgetPatch(wall_time_seconds=seconds)
+                runtime_policy=RuntimeExecutionPolicyPatch.model_validate(
+                    {
+                        "solver_timeout": {
+                            "mode": "limited",
+                            "seconds": seconds,
+                        }
+                    }
+                )
             ),
             reason=f"Set wall time to {seconds}",
         )

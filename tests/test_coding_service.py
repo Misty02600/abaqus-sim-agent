@@ -19,8 +19,8 @@ from pydantic_ai_harness.step_persistence import ToolEffectRecord
 
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.amendments import (
-    CodingRunBudgetPatch,
     CodingRunConfigPatch,
+    RuntimeExecutionPolicyPatch,
     append_operational_amendment,
     append_task_revision,
 )
@@ -120,7 +120,7 @@ def _request(
         runtime=RuntimeProfile(
             launcher_path=Path(r"D:\SIMULIA\Commands\abq2024.bat").resolve()
         ),
-        budget=budget or CodingRunBudget(),
+        **(budget or CodingRunBudget()).as_request_controls(),
     )
     return request, initial_snapshot
 
@@ -587,7 +587,7 @@ def test_service_stops_when_runtime_budget_is_exhausted(tmp_path: Path) -> None:
 
     assert result.outcome.status is CodingRunStatus.FAILED
     assert result.outcome.failure_stage == "runtime_budget"
-    assert "budget is exhausted" in result.outcome.summary
+    assert "not authorized" in result.outcome.summary
     assert call_count == 1
     persisted_history = ModelMessagesTypeAdapter.validate_json(
         (request.state_dir / "history.json").read_bytes()
@@ -1647,7 +1647,11 @@ def test_service_rejects_stale_composition_after_concurrent_amendment(
 
     append_operational_amendment(
         request.state_dir,
-        patch=CodingRunConfigPatch(budget=CodingRunBudgetPatch(max_model_requests=40)),
+        patch=CodingRunConfigPatch(
+            runtime_policy=RuntimeExecutionPolicyPatch.model_validate(
+                {"solver": {"mode": "allow"}}
+            )
+        ),
         reason="First composition amendment",
     )
     composed_request = load_request_for_resume(request.state_dir)
@@ -1684,7 +1688,9 @@ def test_service_rejects_stale_composition_after_concurrent_amendment(
     append_operational_amendment(
         request.state_dir,
         patch=CodingRunConfigPatch(
-            budget=CodingRunBudgetPatch(wall_time_seconds=5400.0)
+            runtime_policy=RuntimeExecutionPolicyPatch.model_validate(
+                {"solver_timeout": {"mode": "limited", "seconds": 5400.0}}
+            )
         ),
         reason="Concurrent second amendment",
     )

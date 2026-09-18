@@ -134,7 +134,7 @@ class _RunStartState:
     history: list[ModelMessage]
     prompt: str | None
     turn: int
-    remaining_wall_time_seconds: float
+    remaining_wall_time_seconds: float | None
 
 
 @dataclass(slots=True)
@@ -231,11 +231,10 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             return self._tool_waiting_result(self._pending_tool_frontier)
         if self._pending_question is not None and self._pending_question.pending:
             return self._waiting(shared_usage, clarifications, started)
-        self.dependencies.document_deadline = (
-            monotonic() + start.remaining_wall_time_seconds
-        )
-
-        if start.remaining_wall_time_seconds <= 0:
+        if (
+            start.remaining_wall_time_seconds is not None
+            and start.remaining_wall_time_seconds <= 0
+        ):
             return self._failed(
                 "timeout",
                 "Coding run exhausted its cumulative wall-clock budget",
@@ -245,7 +244,8 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             )
 
         try:
-            async with asyncio.timeout(start.remaining_wall_time_seconds):
+            async with asyncio.timeout(start.remaining_wall_time_seconds) as timeout:
+                self.dependencies.active_wall.attach_timeout(timeout)
                 while True:
                     turn += 1
                     self._current_turn = turn
@@ -266,7 +266,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                         run_id=f"{self.request.run_id}-turn-{turn}",
                         usage=shared_usage,
                         usage_limits=UsageLimits(
-                            request_limit=self.request.budget.max_model_requests,
+                            request_limit=self.request.limits.request_limit,
                         ),
                     ) as agent_run:
                         self._deferred_input = None
@@ -334,10 +334,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                         ledger = load_questions(
                             self.request.state_dir, self.request.run_id
                         )
-                        if (
-                            len(ledger.questions)
-                            >= self.request.budget.max_clarifications
-                        ):
+                        if self._clarification_exhausted(len(ledger.questions)):
                             return self._failed(
                                 "clarification_budget",
                                 "User question budget exhausted",
@@ -382,6 +379,26 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                         decision.model_dump(mode="json"),
                     )
 
+                    if self.dependencies.pending_solver_executions:
+                        pending = ", ".join(
+                            sorted(self.dependencies.pending_solver_executions)
+                        )
+                        feedback = (
+                            "Solver executions are still pending: "
+                            f"{pending}. Call solver_job with action='wait' before "
+                            "ending this run."
+                        )
+                        history = self._persist_history_json(
+                            result.all_messages_json(
+                                output_tool_return_content=feedback
+                            )
+                        )
+                        prompt = feedback
+                        self._save_resume_state(
+                            "running", shared_usage, clarifications, started
+                        )
+                        continue
+
                     if isinstance(decision, NeedsInputDecision):
                         if self.dependencies.abaqus_calls:
                             return self._failed(
@@ -391,10 +408,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                                 clarifications,
                                 started,
                             )
-                        if (
-                            len(clarifications)
-                            >= self.request.budget.max_clarifications
-                        ):
+                        if self._clarification_exhausted(len(clarifications)):
                             return self._failed(
                                 "clarification",
                                 "Clarification budget is exhausted",
@@ -597,10 +611,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                             verification=verification,
                         )
 
-                    if (
-                        self.dependencies.abaqus_calls
-                        >= self.request.budget.max_abaqus_calls
-                    ):
+                    if self.dependencies.runtime_permission_denial(solver=False):
                         return self._failed(
                             verification.failure_stage or "verification",
                             verification.feedback,
@@ -793,6 +804,10 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
         if self.response_control and self.response_control.requested:
             raise UserStoppedError("User stopped before tool dispatch")
 
+    def _clarification_exhausted(self, used: int) -> bool:
+        limit = self.request.limits.clarification_limit
+        return limit is not None and used >= limit
+
     async def _prepare_start(self) -> _RunStartState:
         from .launch import LaunchManifest
 
@@ -802,8 +817,10 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             if self.resume and launch_path.is_file()
             else self.launch_manifest_json
         )
+        prepared_domain_knowledge = False
         if raw_launch is not None:
             launch = LaunchManifest.model_validate_json(raw_launch)
+            prepared_domain_knowledge = launch.domain_knowledge is not None
             if (
                 launch.question_protocol or "legacy_decision"
             ) != self.question_protocol:
@@ -822,10 +839,17 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             if self.dependencies.edit_scope_gate is not None:
                 self.dependencies.edit_scope_gate.prepare(resume=True)
             return await self._prepare_resume_start()
-        return self._prepare_new_start()
+        return self._prepare_new_start(
+            prepared_domain_knowledge=prepared_domain_knowledge
+        )
 
-    def _prepare_new_start(self) -> _RunStartState:
-        ensure_new_run_state_available(self.request.state_dir)
+    def _prepare_new_start(
+        self, *, prepared_domain_knowledge: bool = False
+    ) -> _RunStartState:
+        ensure_new_run_state_available(
+            self.request.state_dir,
+            prepared_domain_knowledge=prepared_domain_knowledge,
+        )
         if self.dependencies.edit_scope_gate is not None:
             self.dependencies.edit_scope_gate.prepare(resume=False)
         if self.launch_manifest_json is not None:
@@ -836,6 +860,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             self.initial_snapshot.model_dump_json(indent=2),
         )
         started = perf_counter()
+        self.dependencies.active_wall.reset()
         usage = RunUsage()
         clarifications: list[ClarificationEvent] = []
         self._current_turn = 0
@@ -854,7 +879,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             history=[],
             prompt=self.request.goal,
             turn=0,
-            remaining_wall_time_seconds=self.request.budget.wall_time_seconds,
+            remaining_wall_time_seconds=self.request.limits.active_wall_seconds,
         )
 
     async def _prepare_resume_start(self) -> _RunStartState:
@@ -944,9 +969,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             self.dependencies,
             journaled_executions=load_execution_results(self.request.state_dir),
             journaled_api_lookups=load_api_lookup_traces(self.request.state_dir),
-            journaled_api_discoveries=load_api_discovery_traces(
-                self.request.state_dir
-            ),
+            journaled_api_discoveries=load_api_discovery_traces(self.request.state_dir),
             journaled_diagnostic_retrievals=load_diagnostic_retrieval_traces(
                 self.request.state_dir
             ),
@@ -981,7 +1004,8 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                 "task revision execution boundary exceeds persisted executions"
             )
         self._current_turn = persisted.turn
-        started = perf_counter() - persisted.active_wall_time_seconds
+        started = perf_counter()
+        self.dependencies.active_wall.reset(persisted.active_wall_time_seconds)
         deferred_frontier = load_deferred_tool_frontier(self.request.state_dir)
         if (
             deferred_frontier is not None
@@ -1018,10 +1042,8 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                     history=history_at_deferral,
                     prompt=None,
                     turn=persisted.turn,
-                    remaining_wall_time_seconds=max(
-                        0.0,
-                        self.request.budget.wall_time_seconds
-                        - persisted.active_wall_time_seconds,
+                    remaining_wall_time_seconds=self.dependencies.active_wall.remaining_seconds(
+                        self.request.limits.active_wall_seconds
                     ),
                 )
             if resolution.status == "needs_reconcile":
@@ -1296,9 +1318,8 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                 new_continuation=new_continuation,
             ),
             turn=persisted.turn,
-            remaining_wall_time_seconds=max(
-                0.0,
-                self.request.budget.wall_time_seconds - (perf_counter() - started),
+            remaining_wall_time_seconds=self.dependencies.active_wall.remaining_seconds(
+                self.request.limits.active_wall_seconds
             ),
         )
 
@@ -1685,7 +1706,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             continuation_id=self._current_continuation_id,
             revision_workspace_snapshot=self._verification_snapshot(),
             revision_execution_start_index=self._revision_execution_start_index,
-            active_wall_time_seconds=max(0.0, perf_counter() - started),
+            active_wall_time_seconds=self.dependencies.active_wall.elapsed_seconds,
             workspace_snapshot=WorkspaceResolver(
                 captured_cwd=self.request.workspace
             ).snapshot(self.request.workspace),
@@ -1770,6 +1791,13 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             scope=binding.spec.scope,
         )
         needs = tuple(n.host_need() for n in binding.spec.host_needs)
+        evaluation_limits = self.request.evaluation_tool_limits
+        document_lookup_limit = (
+            evaluation_limits.concept_lookup_calls
+            if evaluation_limits is not None
+            and evaluation_limits.concept_lookup_calls is not None
+            else 2
+        )
         if restoring:
             policy.restore(configuration, checkpoint=self._document_checkpoint)
             if policy.journal.state.revision > self._current_task_revision:
@@ -1778,17 +1806,12 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                 )
             while policy.journal.state.revision < self._current_task_revision:
                 policy.host_start_revision(needs, scope=binding.spec.scope)
-            if (
-                policy.journal.state.limit
-                != self.request.budget.max_concept_lookup_calls
-            ):
-                policy.host_amend_lookup_limit(
-                    self.request.budget.max_concept_lookup_calls
-                )
+            if policy.journal.state.limit != document_lookup_limit:
+                policy.host_amend_lookup_limit(document_lookup_limit)
         else:
             policy.create(
                 configuration,
-                max_lookup_calls=self.request.budget.max_concept_lookup_calls,
+                max_lookup_calls=document_lookup_limit,
                 host_needs=needs,
             )
         self.dependencies.document_policy = policy
@@ -1846,7 +1869,8 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             return "document policy is required but unavailable"
         try:
             gate = await policy.validate_execution_gate(
-                "ready_for_verification", deadline=self.dependencies.document_deadline
+                "ready_for_verification",
+                deadline=self.dependencies.document_operation_deadline(),
             )
         except (DocumentPolicyDenied, TimeoutError) as exc:
             return str(exc)
@@ -1998,12 +2022,15 @@ def _compose_resume_prompt(
 def _usage(
     usage: RunUsage,
     dependencies: CodingAgentDependencies,
-    started: float,
+    _started: float,
 ) -> CodingRunUsage:
     return CodingRunUsage(
         model_requests=usage.requests,
         input_tokens=usage.input_tokens,
+        cache_write_tokens=usage.cache_write_tokens,
+        cache_read_tokens=usage.cache_read_tokens,
         output_tokens=usage.output_tokens,
+        provider_details=dict(usage.details),
         tool_calls=usage.tool_calls,
         api_lookup_calls=dependencies.api_lookup_calls,
         concept_lookup_calls=dependencies.concept_lookup_calls,
@@ -2026,6 +2053,6 @@ def _usage(
         static_preflight_calls=dependencies.static_preflight_calls,
         abaqus_calls=dependencies.abaqus_calls,
         solver_calls=dependencies.solver_calls,
-        wall_time_seconds=perf_counter() - started,
+        wall_time_seconds=dependencies.active_wall.elapsed_seconds,
         estimated_cost_usd=float(usage.cost) if usage.cost is not None else None,
     )

@@ -38,6 +38,9 @@ from abaqus_sim_agent.coding.contracts import (
 from abaqus_sim_agent.coding.deferred_runtime import DEFERRED_TOOL_FRONTIER_NAME
 from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
 from abaqus_sim_agent.coding.document_policy_contracts import PolicyCheckpoint
+from abaqus_sim_agent.coding.domain_knowledge import (
+    DOMAIN_KNOWLEDGE_STATE_DIRECTORY,
+)
 from abaqus_sim_agent.coding.persistence import write_text_atomic
 from abaqus_sim_agent.coding.static_preflight import StaticPreflightReport
 from abaqus_sim_agent.coding.workspace import WorkspaceSnapshot
@@ -47,7 +50,7 @@ RESUME_STATE_SCHEMA_VERSION = "coding-run-resume-v3"
 STEP_PERSISTENCE_DIRECTORY = "step-persistence"
 EXECUTION_JOURNAL_NAME = "execution_results.jsonl"
 RUNTIME_TOOL_NAMES = frozenset(
-    {"run_cae_script", "run_solver_job", "run_abaqus_python"}
+    {"run_cae_script", "run_solver_job", "solver_job", "run_abaqus_python"}
 )
 _OWNED_RUN_STATE_FILES = (
     "edit_scope_state.json",
@@ -63,6 +66,7 @@ _OWNED_RUN_STATE_FILES = (
 )
 _OWNED_RUN_STATE_DIRECTORIES = (
     STEP_PERSISTENCE_DIRECTORY,
+    DOMAIN_KNOWLEDGE_STATE_DIRECTORY,
     "document-evidence",
     "document-validation",
     "user-questions",
@@ -471,10 +475,15 @@ def create_step_store(state_dir: Path) -> FileStepStore:
     return FileStepStore(state_dir / STEP_PERSISTENCE_DIRECTORY)
 
 
-def ensure_new_run_state_available(state_dir: Path) -> None:
+def ensure_new_run_state_available(
+    state_dir: Path, *, prepared_domain_knowledge: bool = False
+) -> None:
     occupied = [name for name in _OWNED_RUN_STATE_FILES if (state_dir / name).exists()]
     occupied.extend(
-        name for name in _OWNED_RUN_STATE_DIRECTORIES if (state_dir / name).exists()
+        name
+        for name in _OWNED_RUN_STATE_DIRECTORIES
+        if (state_dir / name).exists()
+        and not (prepared_domain_knowledge and name == DOMAIN_KNOWLEDGE_STATE_DIRECTORY)
     )
     if occupied:
         raise CodingRunResumeError(

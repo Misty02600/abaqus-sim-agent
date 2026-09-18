@@ -22,6 +22,7 @@ from abaqus_sim_agent.coding.model import (
     APPLICATION_USER_AGENT,
     DEEPSEEK_BASE_URL,
     DEEPSEEK_V4_FLASH,
+    DEEPSEEK_V4_FLASH_CONTEXT_WINDOW,
     DEFAULT_MODEL_HTTP_RETRIES,
     DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS,
     OPENCODE_GO_BASE_URL,
@@ -36,6 +37,11 @@ from abaqus_sim_agent.coding.model import (
     new_run_execution_config,
     take_gateway_api_key_from_environment,
 )
+
+
+def test_model_http_defaults_match_product_policy() -> None:
+    assert DEFAULT_MODEL_HTTP_RETRIES == 4
+    assert DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS == 300.0
 
 
 def test_create_deepseek_model_has_pinned_identity_and_explicit_retries() -> None:
@@ -112,9 +118,13 @@ def test_create_deepseek_chat_model_uses_explicit_gateway(
         assert client.timeout == DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS
         assert gateway_api_key_env(gateway) == expected_key_env
         assert model.profile["supports_thinking"] is True
+        assert model.profile["context_window"] == DEEPSEEK_V4_FLASH_CONTEXT_WINDOW
         assert model.profile["openai_chat_thinking_field"] == "reasoning_content"
         assert model.profile["openai_chat_send_back_thinking_parts"] == "field"
-        assert model.profile["openai_supports_tool_choice_required"] is False
+        assert model.profile["openai_supports_tool_choice_required"] is True
+        assert (
+            model.profile["openai_supports_forced_tool_choice_with_thinking"] is False
+        )
     finally:
         asyncio.run(client.close())
 

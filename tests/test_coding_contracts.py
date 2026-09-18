@@ -13,6 +13,7 @@ from abaqus_sim_agent.coding.contracts import (
     ClarificationRequest,
     CodingRunBudget,
     CodingRunDecision,
+    CodingRunLimits,
     CodingRunOutcome,
     CodingRunRequest,
     CodingRunStatus,
@@ -24,6 +25,7 @@ from abaqus_sim_agent.coding.contracts import (
     ProbeResultInput,
     ProbeTrace,
     ReadyForVerificationDecision,
+    RuntimeExecutionPolicy,
     RuntimeProfile,
     RuntimeScriptPolicy,
     StaticPreflightBinding,
@@ -203,11 +205,66 @@ def test_budget_rejects_solver_calls_above_abaqus_calls() -> None:
         CodingRunBudget(max_abaqus_calls=1, max_solver_calls=2)
 
 
-def test_api_lookup_budget_defaults_to_four_and_trace_is_strict() -> None:
-    assert CodingRunBudget().max_api_lookup_calls == 4
-    assert CodingRunBudget().max_diagnostic_retrieval_calls == 2
-    assert CodingRunBudget().wall_time_seconds == 2_700.0
+def test_product_limits_are_explicitly_unlimited() -> None:
+    limits = CodingRunLimits()
 
+    assert limits.request_limit is None
+    assert limits.clarification_limit is None
+    assert limits.active_wall_seconds is None
+    assert limits.model_dump(mode="json") == {
+        "model_requests": {"mode": "unlimited"},
+        "clarifications": {"mode": "unlimited"},
+        "active_wall": {"mode": "unlimited"},
+    }
+
+    finite = CodingRunLimits.model_validate(
+        {
+            "model_requests": {"mode": "limited", "value": 3},
+            "clarifications": {"mode": "limited", "value": 0},
+            "active_wall": {"mode": "limited", "seconds": 12.5},
+        }
+    )
+    assert finite.request_limit == 3
+    assert finite.clarification_limit == 0
+    assert finite.active_wall_seconds == 12.5
+
+    with pytest.raises(ValidationError, match="at least one"):
+        CodingRunLimits.model_validate(
+            {
+                "model_requests": {"mode": "limited", "value": 0},
+            }
+        )
+
+
+def test_runtime_policy_defaults_and_parent_child_limits() -> None:
+    policy = RuntimeExecutionPolicy()
+
+    assert policy.runtime_denial(solver=False, abaqus_used=0, solver_used=0) is None
+    assert policy.runtime_denial(solver=True, abaqus_used=0, solver_used=0) == (
+        "Abaqus solver execution is not authorized"
+    )
+    assert policy.timeout_seconds("cae") is None
+    assert policy.timeout_seconds("abaqus_python") is None
+    assert policy.timeout_seconds("solver") is None
+
+    finite = RuntimeExecutionPolicy.model_validate(
+        {
+            "abaqus": {"mode": "allow_with_limit", "limit": 2},
+            "solver": {"mode": "allow_with_limit", "limit": 1},
+            "solver_timeout": {"mode": "limited", "seconds": 30.0},
+        }
+    )
+    assert finite.runtime_denial(solver=True, abaqus_used=0, solver_used=0) is None
+    assert finite.runtime_denial(solver=True, abaqus_used=1, solver_used=1) == (
+        "Abaqus solver invocation allowance is exhausted"
+    )
+    assert finite.runtime_denial(solver=False, abaqus_used=2, solver_used=1) == (
+        "Abaqus invocation allowance is exhausted"
+    )
+    assert finite.timeout_seconds("solver") == 30.0
+
+
+def test_api_lookup_trace_is_strict() -> None:
     trace = ApiLookupTrace(
         source="automatic",
         query="Set",
