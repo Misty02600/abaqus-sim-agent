@@ -51,7 +51,10 @@ def build_instructions(
         "blocking input is unresolved. Independent inspection may continue; obey an explicit\n"
         "user instruction to ask first without taking other actions."
     )
-    runtime_script_policy_instructions = _runtime_script_policy_instructions(request)
+    runtime_script_policy_instructions = _runtime_script_policy_instructions(
+        request,
+        background_solver_enabled=general_shell_enabled,
+    )
     static_preflight_instructions = _static_preflight_instructions(request)
     catalog_instructions = (
         (
