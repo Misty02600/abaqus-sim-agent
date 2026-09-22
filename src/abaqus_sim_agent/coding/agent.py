@@ -95,6 +95,34 @@ _LINEAR_STRUCTURAL_FEA_FOUNDATION_SKILLS = (
     "linear-structural-fea-verification",
 )
 
+_STRUCTURAL_MECHANICS_PACK_SKILLS = {
+    "hyperelasticity": (
+        "hyperelastic-fea",
+        "hyperelastic-calibration",
+    ),
+    "metal-plasticity": ("plasticity-fea",),
+    "geometric-nonlinearity": ("geometric-nonlinear-fea",),
+    "structural-dynamics": (
+        "structural-dynamics-fea",
+        "modal-dynamics-fea",
+    ),
+    "explicit-dynamics": (
+        "explicit-dynamics-fea",
+        "quasi-static-explicit-fea",
+    ),
+    "contact": (
+        "contact-fea",
+        "contact-diagnostics-fea",
+    ),
+    "interface-cohesive": ("interface-cohesive-fea",),
+}
+
+_STRUCTURAL_MECHANICS_TOPIC_SKILLS = tuple(
+    skill_name
+    for pack_skills in _STRUCTURAL_MECHANICS_PACK_SKILLS.values()
+    for skill_name in pack_skills
+)
+
 __all__ = [
     "CODER_GENERAL_SHELL_POLICY_VERSION",
     "PRODUCT_CODER_SHELL_POLICY_VERSION",
@@ -189,6 +217,7 @@ def create_abaqus_coding_agent(
     execution_config: ModelExecutionConfig | None = None,
     question_protocol: QuestionProtocol = "legacy_decision",
     foundation_skill_profile: Literal["off", "linear_structural_fea_v1"] = "off",
+    structural_topic_skill_profile: Literal["off", "structural_mechanics_v1"] = "off",
     knowledge_resources_dir: Path | None = None,
     knowledge_allowed_patterns: tuple[str, ...] = ("*.md", "*.py"),
     response_enabled: bool = False,
@@ -227,6 +256,9 @@ def create_abaqus_coding_agent(
             ``FileStepStore``，与模型可写 workspace 隔离。
         foundation_skill_profile: 显式 ``linear_structural_fea_v1`` 时为受控评测
             暴露五个线性结构基础 deferred Skills；默认 ``off``，保持产品现状。
+        structural_topic_skill_profile: 显式 ``structural_mechanics_v1`` 时暴露
+            超弹性、塑性、几何非线性、结构动力学、Explicit 和接触六个专题 Skill；
+            默认 ``off``，不改变普通产品行为。
         knowledge_resources_dir: 宿主准备的只读资料目录；仅新增读取工具，不执行资料。
             产品调用方传入 run 绑定快照的临时物化副本，显式评测调用方负责自行冻结内容。
         knowledge_allowed_patterns: 只读资料工具允许访问的文本文件 glob。
@@ -257,8 +289,12 @@ def create_abaqus_coding_agent(
         planning_enabled = False
     if foundation_skill_profile not in {"off", "linear_structural_fea_v1"}:
         raise ValueError("unknown foundation Skill profile")
-    if foundation_skill_profile != "off" and skill_library is None:
-        raise ValueError("foundation Skill profile requires skill_library")
+    if structural_topic_skill_profile not in {"off", "structural_mechanics_v1"}:
+        raise ValueError("unknown structural topic Skill profile")
+    if (
+        foundation_skill_profile != "off" or structural_topic_skill_profile != "off"
+    ) and skill_library is None:
+        raise ValueError("Skill profiles require skill_library")
     apply_harness_windows_newline_hash_patch()
     apply_harness_windows_shell_tree_patch()
     apply_harness_windows_jsonl_append_patch()
@@ -319,6 +355,8 @@ def create_abaqus_coding_agent(
         skill_include = ("abaqus-2024-coding",)
         if foundation_skill_profile == "linear_structural_fea_v1":
             skill_include += _LINEAR_STRUCTURAL_FEA_FOUNDATION_SKILLS
+        if structural_topic_skill_profile == "structural_mechanics_v1":
+            skill_include += _STRUCTURAL_MECHANICS_TOPIC_SKILLS
         capabilities.append(
             Skills[_CodingAgentDependencies](
                 skill_library,
@@ -427,6 +465,7 @@ def create_abaqus_coding_agent(
             if execution_config
             else "legacy",
             general_shell_enabled=product_shell_enabled,
+            foundation_skill_profile=foundation_skill_profile,
         )
         + (
             "\n\n" + KNOWLEDGE_INSTRUCTIONS

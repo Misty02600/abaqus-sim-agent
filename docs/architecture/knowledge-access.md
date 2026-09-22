@@ -10,7 +10,8 @@
 | `search_abaqus_docs` | 显式 Concept `tool`；默认 off | 本地官方文档候选；普通模式按需查询，允许零查询 |
 | Solver diagnostic advisory | 独立、默认 off 的模式 | 非超时结构化 Solver warning/error 后附有界文档候选，不覆盖原运行结果 |
 | `bounded_v1` document policy | 显式 policy spec + Concept tool，已接入同一 Coder；默认 off | need、receipt、assessment 与逐链预算；运行和 ready 前有宿主证据门禁 |
-| 基础力学 Skill 与只读参考资料 | 显式 Agent 工厂 / 评测入口 | `foundation_skill_profile="linear_structural_fea_v1"` 与独立 `knowledge_resources_dir`；普通 CLI/launch 尚无资料选择和快照绑定 |
+| 力学 Skill 与只读参考资料 | 显式 Agent 工厂 / 评测入口 | 基础层 `foundation_skill_profile="linear_structural_fea_v1"`；专题层 `structural_topic_skill_profile="structural_mechanics_v1"`；参考脚本仍由独立 `knowledge_resources_dir` 提供，普通 CLI/launch 尚无资料选择和快照绑定 |
+| 本机私有领域知识包 | CLI `--knowledge-pack` / Web 新会话显式选择；默认 off | 从用户级应用数据根发现 strict manifest，launch v7 绑定 state 快照；模型只经两个只读文件工具按需读取 |
 
 当前 Catalog 是精确卡片与对象方法目录，独立检索实验另有 BM25/E5 意图搜索。两者不能仅因都叫
 discovery 就视为同一产品接口。早期 [API 方案实验](../../benchmarks/api_catalog/api_discovery_loop_v1_20260915.md)
@@ -31,8 +32,8 @@ lookup。不提供 Catalog 时不能启用该模式；默认 run 不自动加载
 工具会提示“候选不是 API 证据”，但没有通用机制证明模型实际遵守了这一推理顺序。确定性保证是：
 discovery 的候选 ID 不进入已读卡片集合，也不会阻止随后 exact lookup。查到名字不证明签名、适用性或运行成功。
 
-discovery 与 lookup 共用 `max_api_lookup_calls`。有效、非重复且 Catalog 可用的目录查询先预留一次额度，
-即使无候选也计数；无效、重复、未配置或预算不足不消耗新额度。去重按规范化 receiver/query/limit，
+普通产品的 discovery 与 lookup 不设调用次数上限。有效、非重复且 Catalog 可用的查询进入累计 usage/journal；
+无效、重复或未配置不增加计数。去重按规范化 receiver/query/limit，
 不把候选误记成已交付的完整卡片或参数。
 
 `api_discoveries.jsonl` 和 `api_lookups.jsonl` 保存在 workspace 外。恢复合并 journal 与 snapshot，继承
@@ -44,6 +45,31 @@ discovery 与 lookup 共用 `max_api_lookup_calls`。有效、非重复且 Catal
 [Agent 合同测试](../../tests/test_coding_agent.py)、[journal 恢复测试](../../tests/test_coding_resume.py)、
 [CLI 测试](../../tests/test_coding_cli.py)。本次文档同步不新增真实模型或 Abaqus 收益结论。
 
+## 本机私有领域知识包
+
+产品使用 `platformdirs` 的 `user_data_path/knowledge/packs/` 作为当前用户的知识包根。只检查其直接非隐藏
+子目录；每个目录必须包含 `domain-knowledge-pack-v1` 的 strict `pack.json`，目录名与 `pack_id` 一致，
+入口必须属于显式资源清单。Markdown、纯文本、Python、INP、JSON 和 YAML 只作为 UTF-8 参考文本；链接、
+junction、路径越界、未列出文件、重复 ID、单文件/整包超限和不支持的后缀在模型调用前拒绝。
+
+发现不等于启用。CLI 用可重复的 `--knowledge-pack <pack_id>`，Web 在创建新会话时选择包；空列表保持原产品
+行为。宿主按 `pack_id` 找到源目录，读取实际 bytes，生成逐文件 hash、pack digest 和按 ID 排序的 bundle
+digest，并把 `pack.json` 与所列资源复制到 state 的 `domain-knowledge/`。launch v7 保存完整 binding；普通
+恢复、Web continuation 和 task revision 只校验原 state 快照，不回读已变化或已删除的用户级源目录，也不允许
+通过 amendment 换包。
+
+每个工作段把通过校验的资源物化到临时 bundle 根，按 `pack_id` 分目录，并生成宿主目录 `_catalog.md`。
+Coder 仍只得到 `knowledge_list_directory` 和 `knowledge_read_file`，按需读取所选包；模型看不到未选择的已安装包，
+也不能把包内 `SKILL.md` 注册为 instructions。读取记录沿用 Harness history，不新增逐条 receipt 状态机。
+采用后的代码必须写入当前 workspace，执行与验收仍由原三个 runtime tools 和宿主 verifier 所有。
+
+manifest 保存来源、作者 release、兼容声明和分项验证状态；这些声明与内容一起进入 digest。只读与 hash 证明
+内容身份，不证明来源结论正确、Abaqus 2024 兼容、模型已经采用或任务通过。当前验证只有 schema/path/
+snapshot/resume、CLI/Web 接线和确定性模型读取等离线回归，没有真实 Provider、持证 Abaqus 或通用任务收益
+结论。源码与验证入口：[知识包](../../src/abaqus_sim_agent/coding/domain_knowledge.py)、
+[launch](../../src/abaqus_sim_agent/coding/launch.py)、[核心测试](../../tests/test_domain_knowledge.py)、
+[Web 测试](../../tests/test_web_domain_knowledge.py)。
+
 ## 文档和资料的使用边界
 
 - 普通 Concept 工具接收 question/observed context，宿主做已有符号和产品 metadata 路由，沿用
@@ -54,9 +80,25 @@ discovery 与 lookup 共用 `max_api_lookup_calls`。有效、非重复且 Catal
   进入工作区外 ledger。工程已接线，模型行为资格未通过，继续默认 off。
 - Foundation 五项 Skill 覆盖 formulation、modeling、discretization、postprocess 和 verification，
   是同一 Coder 可选读取的领域资源，不是五个 Agent。
-- 显式参考目录只暴露 `knowledge_list_directory`、`knowledge_read_file`；只读 Markdown/Python，
-  分页有界，根目录不能与 workspace/state 重叠。调用者负责冻结资料；当前没有普通 CLI 的内容绑定恢复保证。
+- `structural_mechanics_v1` 当前暴露七个 **Capability Pack** 的 Skill 入口；Pack 是知识范围/维护边界，Skill 是
+  可独立触发的任务入口，两者不再按一一对应理解。当前拆分为：hyperelasticity（`hyperelastic-fea`、
+  `hyperelastic-calibration`）、metal-plasticity（`plasticity-fea`）、geometric-nonlinearity
+  （`geometric-nonlinear-fea`）、structural-dynamics（`structural-dynamics-fea`、`modal-dynamics-fea`）、
+  explicit-dynamics（`explicit-dynamics-fea`、`quasi-static-explicit-fea`）、contact（`contact-fea`、
+  `contact-diagnostics-fea`）、interface-cohesive（`interface-cohesive-fea`）。只有存在独立任务入口时才拆 Skill；
+  不因为 Pack 内有多个知识章节就机械拆分。
+- 显式评测参考目录继续只暴露 `knowledge_list_directory`、`knowledge_read_file`；默认只读 Markdown/Python，
+  分页有界，根目录不能与 workspace/state 重叠。调用者自行冻结该旧入口；它不替代上面的产品知识包绑定。
 - 官方示例原稿与任务适配副本分开。保留 GUI、旧 API 或 submit/wait 原文便于理解，不等于允许原样执行。
+  共享官方结构案例池把精选脚本分成 `basic-representative`、`topic-typical`、`complex-comprehensive` 三层；
+  一个脚本只有一个 canonical 副本，以 `primary_topic` / `cross_topics` 交叉引用。Getting Started 页按内嵌
+  `h2 + pre.codeblock` 提取，EXA/BMK/VER 页按其显式 `SIMAINPRefResources/*.py` 链接读取原资源。
+  `inventory.json` 只索引 EXA/BMK/VER 的全部 Python 链接与来源/hash/语法状态，不把全部 vendor 脚本复制进
+  默认上下文；精选 `scripts/` 与全量 inventory 分开。importer 不执行 Abaqus，也不把 2026 FD02 文档视为
+  2024 兼容证据。
+  官方文本使用独立的精选页面来源清单记录 release、页面、标题、章节标题和 hash，不复制手册整页正文；运行时
+  Skill 只按需读取从这些页面整理的原创 `references/abaqus-official-notes.md`。教材、开放课程、NAFEMS 和其他
+  求解器 verification case 只按各自证据角色进入来源图谱，不覆盖 Abaqus 官方实现语义。
   [官方梁示例记录](../../benchmarks/coding/knowledge_reference_resources_20260915.md)只验证一份适配脚本，
   没有证明 Agent 能正确采用所有示例。
 
@@ -66,7 +108,9 @@ discovery 与 lookup 共用 `max_api_lookup_calls`。有效、非重复且 Catal
 ## 相关决定与证据
 
 - [ADR-0009](../adr/0009-exact-abaqus-api-catalog.md)：Catalog 来源和证据合同。
-- [ADR-0010](../adr/0010-budgeted-official-concept-retrieval.md)：可选、有预算的 Concept 接入。
+- [ADR-0010](../adr/0010-budgeted-official-concept-retrieval.md)：可选 Concept 接入；普通产品次数上限已由 ADR-0031 替代。
 - [ADR-0022](../adr/0022-evaluate-bm25-dense-rrf-before-agent-adoption.md)：先独立对照再决定采用。
+- [ADR-0028](../adr/0028-bind-user-domain-knowledge-as-read-only-snapshots.md)：私有包的只读内容和 run 快照边界。
+- [ADR-0029](../adr/0029-discover-private-knowledge-from-user-data.md)：用户级存储、受限发现和显式启用。
 - [验证证据入口](verification-evidence.md)：不同实验分别支持哪些声明。
 - [SQLite/NumPy迁移回放](../../benchmarks/rag/sqlite_numpy_flat_storage_v1_20260916.md)：存储、依赖与排名边界。

@@ -92,3 +92,5 @@ An example's element code and mesh size are choices for that example, not univer
 ## Evidence and maintenance boundary
 
 Read [references/evidence.md](references/evidence.md) when auditing, extending, or disputing a rule in this skill. It records the authority and limits of the current evidence. For ordinary use, the decision rules above should be sufficient; do not load the evidence reference merely to repeat the same guidance.
+
+When an Abaqus-specific element-family choice is unresolved, use the shared linear-foundation references in `../linear-structural-fea-modeling/references/`: `beam-element-selection.md`, `shell-element-selection.md`, or `solid-element-selection.md`. These summarize the 2026 FD02 product semantics; exact Abaqus 2024 labels and options remain release-specific evidence.

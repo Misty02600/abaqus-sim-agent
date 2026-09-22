@@ -31,6 +31,7 @@ def build_instructions(
     question_protocol: Literal["legacy_decision", "ask_user_v1"] = "legacy_decision",
     response_enabled: bool = False,
     general_shell_enabled: bool = False,
+    foundation_skill_profile: Literal["off", "linear_structural_fea_v1"] = "off",
 ) -> str:
     if interaction_policy not in ("legacy", "workspace_facts_first"):
         raise ValueError("unknown interaction policy")
@@ -227,6 +228,40 @@ automatic Skill or Catalog updates.
         if general_shell_enabled
         else "Use `run_solver_job` for the Solver stage."
     )
+    if foundation_skill_profile == "linear_structural_fea_v1":
+        foundation_skill_instructions = """
+Linear structural Foundation Skills are available as deferred capabilities. Keep
+progressive disclosure: load only the Skill whose engineering decision is active.
+When you must make a substantive engineering choice covered by one of these Skills,
+load that Skill before making the choice, even when the choice seems straightforward:
+
+- `linear-structural-fea-formulation` for unresolved linear/static applicability,
+  physical QoI, structural idealization, or model-defining assumptions;
+- `linear-structural-fea-modeling` for translating fixed physical facts into material,
+  section, load, support, symmetry, or control semantics, including meaning-level
+  changes to an accepted existing model;
+- `linear-structural-fea-discretization` for representation, element formulation or
+  order, integration, mesh strategy, locking/hourglass risk, or mesh convergence;
+- `linear-structural-fea-postprocess` only when result position, averaging, section
+  point, orientation, derived quantity, peak, or extraction meaning is itself
+  unresolved or requested. Do not load it merely to extract a task-prescribed QoI;
+- `linear-structural-fea-verification` when you must choose or judge engineering
+  credibility checks beyond a task-prescribed host oracle.
+
+An accepted existing formulation does not by itself resolve a modeling edit. When the
+user or task fixes a material, section, load, support, symmetry, or control change and
+you must map that fixed physical fact into model semantics, load
+`linear-structural-fea-modeling` before editing.
+
+Do not load a Foundation Skill merely because it is available. Skip it when the user,
+task contract, accepted workspace model, or host verifier already fixes the relevant
+engineering decision and no meaning-level mapping remains, and for
+purely local coding/API repair with no engineering choice.
+""".strip()
+    elif foundation_skill_profile == "off":
+        foundation_skill_instructions = ""
+    else:
+        raise ValueError("unknown foundation Skill profile")
     instructions = f"""
 You are completing one Abaqus 2024 coding run in this workspace:
 {request.workspace}
@@ -254,8 +289,14 @@ physical value or silently resolve a material ambiguity. {clarification_exit} {t
 
 {KNOWLEDGE_SCOPE_INSTRUCTIONS}
 
-Load the `abaqus-2024-coding` capability before authoring or running Abaqus
-code so that the release-specific runtime boundaries are available.
+{foundation_skill_instructions}
+
+Load the `abaqus-2024-coding` capability before running Abaqus code. When
+authoring or editing Abaqus code, load it only if correctness depends on
+Abaqus-specific API, input-keyword, release, or runtime semantics. Do not load
+it for engineering reasoning alone or for a workspace-local edit whose correct
+replacement is already established by local files and needs no Abaqus-specific
+knowledge.
 
 {runtime_script_policy_instructions}
 

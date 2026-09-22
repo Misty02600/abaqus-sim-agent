@@ -137,3 +137,25 @@ def test_interaction_policy_changes_only_the_declared_clarification_boundary(tmp
     )
     assert "user instruction to ask first without taking other actions" in current
     assert "when explicit user\n  constraints conflict" in current
+
+
+def test_foundation_profile_adds_decision_owned_skill_routing_rule(tmp_path):
+    request = _persist_base_state(tmp_path)
+    default = build_instructions(request, api_catalog_enabled=False)
+    foundation = build_instructions(
+        request,
+        api_catalog_enabled=False,
+        foundation_skill_profile="linear_structural_fea_v1",
+    )
+
+    marker = "When you must make a substantive engineering choice"
+    accepted_model_marker = (
+        "An accepted existing formulation does not by itself resolve a modeling edit."
+    )
+    assert marker not in default
+    assert accepted_model_marker not in default
+    assert marker in foundation
+    assert accepted_model_marker in foundation
+    assert "meaning-level\n  changes to an accepted existing model" in foundation
+    assert "linear-structural-fea-discretization" in foundation
+    assert "purely local coding/API repair" in foundation

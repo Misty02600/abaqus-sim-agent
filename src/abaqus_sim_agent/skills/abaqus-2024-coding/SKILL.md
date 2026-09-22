@@ -1,6 +1,6 @@
 ---
 name: abaqus-2024-coding
-description: "Handle Abaqus 2024-specific implementation and runtime work: author or repair Abaqus Python/INP/API bindings, operate CAE/solver/ODB stages, or interpret release-specific artifacts and errors. Use when the task depends on Abaqus 2024 behavior; do not load it for product-independent FEA reasoning or a workspace-only text/name edit whose answer is already established locally."
+description: "Use only for Abaqus 2024-specific implementation or runtime evidence: exact Abaqus Python API or INP keyword semantics, CAE/solver/ODB execution, release-specific artifacts/errors, or code changes whose correctness depends on those vendor semantics. Do not load it for structural/FEA reasoning alone, even when the task uses Abaqus terminology, or for workspace-local edits whose replacement is fully established by local files and needs no Abaqus-specific knowledge."
 ---
 
 # Abaqus 2024 Coding
@@ -28,7 +28,7 @@ These are object-model rules, not a recipe for any particular model. `Official` 
 - **Regions — Official + 2024 reference.** Create a persistent named part `Set` and pass that `Set` to `SectionAssignment`. For a boundary condition or load applied after instancing, create an assembly-level `Set` from the target instance's geometry and pass that instance-level region; preserve the part/assembly ownership level instead of mixing repositories.
 - **ODB fields — Official.** Use `FieldOutput.componentLabels` to interpret component order and `FieldValue.data` plus `FieldValue.nodeLabel` to read values and locations. Prefer `FieldOutput.getSubset(...)` by region, position, section point, or instance before iterating `.values` instead of scanning the whole field and guessing component indices.
 - **Evidence-driven repair — 2024 trace evidence + project policy.** When a traceback or `.dat` diagnostic already identifies a failing call, do not dump every attribute with `dir()`. Apply one minimal evidence-backed repair, rerun only the failed stage, and reassess the new evidence before changing anything else.
-- **Scripts and tools — Project runtime contract, not a vendor-document claim.** The Agent still writes ordinary Abaqus Python and `.inp` text. `run_cae_script` executes its CAE-authoring script, `run_solver_job` executes the generated input deck, and `run_abaqus_python` executes its ODB extraction script; the typed tools separate runtime stages and evidence, not prohibit scripts.
+- **Scripts and tools — Project runtime contract, not a vendor-document claim.** The Agent still writes ordinary Abaqus Python and `.inp` text. `run_cae_script` executes its CAE-authoring script, the host Solver tool (`solver_job` for ordinary sessions) executes the generated input deck, and `run_abaqus_python` executes its ODB extraction script; the typed tools separate runtime stages and evidence, not prohibit scripts.
 - **Requested visual artifacts — Official API + 2024 reference.** When the requested deliverable includes a CAE viewport image or browser-viewable geometry, export them as ordinary workspace artifacts from the CAE script. `session.printToFile(..., format=PNG, ...)` produces the viewport image and `session.writeOBJFile(...)` produces OBJ geometry for supported displayed objects. Before PNG export, prefer an explicit web-preview size such as `session.pngOptions.setValues(imageSize=(1600, 1080))` instead of the default screen-sized output; keep the chosen dimensions within the local graphics limit. Generate only the visual artifact(s) needed by the request: PNG and OBJ are independent deliverables and neither requires the other.
 
 ## Route by requested outcome and available artifact
@@ -68,7 +68,7 @@ Keep acquired source examples intact, including GUI/session operations. Adapt th
 current workspace script to the requested runtime: omit display-only code when it
 does not serve the deliverable, and never carry an example's `submit()` or
 `waitForCompletion()` into a CAE authoring script. Solver execution belongs to
-`run_solver_job` so its budget and evidence remain visible to the host.
+the host Solver tool so its budget and evidence remain visible to the host.
 
 ## Completion report
 

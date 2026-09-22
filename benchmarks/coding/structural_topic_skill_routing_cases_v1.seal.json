@@ -1,0 +1,21 @@
+{
+  "benchmark_version": "structural-topic-skill-routing-v1",
+  "sealed_at": "2026-09-17",
+  "case_count": 13,
+  "sha256": "5258fa04d69bb22c7324de3783070d2a74844168c6e67c38bd1a2b38722620f1",
+  "capability_ids": [
+    "abaqus-2024-coding",
+    "hyperelastic-fea",
+    "hyperelastic-calibration",
+    "plasticity-fea",
+    "geometric-nonlinear-fea",
+    "structural-dynamics-fea",
+    "modal-dynamics-fea",
+    "explicit-dynamics-fea",
+    "quasi-static-explicit-fea",
+    "contact-fea",
+    "contact-diagnostics-fea",
+    "interface-cohesive-fea"
+  ],
+  "scope": "Deferred structural topic Skill routing only; frozen before live model trials."
+}

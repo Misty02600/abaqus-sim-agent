@@ -68,6 +68,10 @@ When using a reduced symmetric model, keep global resultant scaling explicit and
 
 Once the physical meaning is fixed, use exact Abaqus evidence for uncertain bindings. An implementation reference can help connect geometry, section and load operations; when knowledge_read_file is available, its README.md describes the supplied examples. Compare their load region, direction and distribution with this task before adapting code.
 
+When choosing a basic structural representation example, [references/official-examples.md](references/official-examples.md) records the shared official-pool anchors for truss/wire, solid, shell/plate, and beam models. They are navigation examples, not substitutes for the formulation, discretization, or release-specific API evidence required by the current task.
+
+Read [references/abaqus-official-notes.md](references/abaqus-official-notes.md) as the official-reference index. Load only the matching topic file: static procedure, beam selection, shell selection, or solid selection. This keeps the full element-selection pages out of ordinary context.
+
 Use the discretization skill when the unresolved question is element formulation, integration, mesh, or convergence. Use postprocess when the unresolved question is what a result value means. Use verification when judging the credibility or claim boundary of a completed result.
 
 ## Evidence and maintenance boundary
