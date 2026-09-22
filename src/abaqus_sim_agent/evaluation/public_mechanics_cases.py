@@ -1,5 +1,6 @@
 """公开力学问题的 Abaqus 端到端合同；不是产品建模 IR。"""
 
+import math
 from typing import Literal, TypedDict
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -18,7 +19,23 @@ class Metric(BaseModel):
 class MechanicsCase(BaseModel):
     model_config = ConfigDict(strict=True, extra="forbid", frozen=True)
     case_id: str
-    family: Literal["truss", "beam", "hole", "solid_beam"]
+    family: Literal[
+        "truss",
+        "beam",
+        "shaft",
+        "plane_stress",
+        "elliptic_membrane",
+        "thick_plate",
+        "axisymmetric_pressure",
+        "axisymmetric_shell",
+        "skew_plate",
+        "hemisphere_shell",
+        "z_section_shell",
+        "cylindrical_shell_patch",
+        "thermal_solid",
+        "hole",
+        "solid_beam",
+    ]
     description: str
     source: str
     adaptation: str
@@ -28,12 +45,34 @@ class MechanicsCase(BaseModel):
     young: float
     poisson: float
     load: float
+    inner_radius: float = 0.0
+    inner_semi_axis_x: float = 0.0
+    inner_semi_axis_y: float = 0.0
+    skew_angle_degrees: float = 0.0
+    radius: float = 0.0
+    arc_angle_degrees: float = 0.0
+    sample_angle_degrees: float = 0.0
+    sample_axial_position: float = 0.0
+    sample_radius: float = 0.0
+    crown_radius: float = 0.0
+    knuckle_radius: float = 0.0
+    branch_sphere_radius: float = 0.0
+    branch_center_axial_position: float = 0.0
+    thermal_expansion: float = 0.0
+    axisymmetric_shell_profile: Literal[
+        "hyperbolic",
+        "sphere_cylinder",
+        "crown_knuckle_cylinder",
+        "branched_sphere_cylinder",
+    ] | None = None
     segments: tuple[tuple[float, float], ...] = ()
     distributed: bool = False
     refinement: bool = False
     metrics: dict[str, Metric]
 
     def physical_description(self) -> str:
+        if self.family == "thermal_solid":
+            return self.description
         if self.family == "solid_beam":
             return (
                 f"in-lbf-psi 单位。3D实体梁：0 ≤ x ≤ {self.length:g} in，"
@@ -74,7 +113,7 @@ class MechanicsCase(BaseModel):
 所有必需物理输入已给全；接口/网格等实现选择可在预算内查证，不用请求用户选择 API。
 建模脚本 build_model.py 只能生成 model.cae 和 INP，不能提交 Job；求解必须用独立 solver 工具。
 使用独立 extract_results.py 从本次 ODB 读取结果，写 results.json；不得硬编码参考结果。
-保留所需 U/RF/S 场；梁还需能读取 UR/RM（来自 U/RF 输出），实体须请求 EVOL 供宿主核对体积。
+保留所需 U/RF/S 场；梁/圆轴还需能读取 UR/RM（来自 U/RF 输出），3D实体题须请求 EVOL 供宿主核对体积。
 {extra}
 当前独立ODB读取器要求单个实例；集合名称、INP分块及API写法自行选择。装配、约束和载荷的实现说明供脚本审查。
 按题给全局坐标建立几何以便独立取数，使用常数各向同性Elastic；梁截面的物理尺寸和方向保持题设。
@@ -180,6 +219,137 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             },
         ),
         MechanicsCase(
+            **common,
+            case_id="circular-shaft-pure-torsion",
+            family="shaft",
+            width=20.0,
+            height=0.0,
+            load=100000.0,
+            source="Saint-Venant circular-shaft torsion: phi=T*L/(G*J), tau_max=T*R/J.",
+            description=(
+                "mm-N-MPa 单位。沿X长1000 mm的圆截面wire轴，直径20 mm，"
+                "E=200000 MPa、nu=0.3；左端固支，右端施加绕+X的100000 Nmm纯扭矩。"
+            ),
+            adaptation=(
+                "允许B31/B32，使用实心圆截面；右端只施加绕X轴的集中力矩，不叠加横向力或轴力。"
+                "表面名义剪应力由abs(左端RM1)*(d/2)/(pi*d^4/32)从ODB反力矩恢复，"
+                "不是把解析参考值直接写入results.json。"
+            ),
+            metrics={
+                "tip_ur1": _m(0.08276057040778557, "右端UR1/rad", 0.01),
+                "reaction_mx": _m(-100000.0, "左端RM1/Nmm", 0.0001),
+                "surface_shear_nominal": _m(
+                    63.66197723675813,
+                    "由ODB反力矩恢复的圆轴表面名义剪应力/MPa",
+                    0.001,
+                ),
+            },
+        ),
+        MechanicsCase(
+            case_id="plane-stress-uniform-tension",
+            family="plane_stress",
+            length=100.0,
+            width=20.0,
+            height=2.0,
+            young=200000.0,
+            poisson=0.3,
+            load=0.05,
+            source=(
+                "Uniform plane-stress extension: epsilon_x=delta/L, "
+                "sigma_11=E*epsilon_x, resultant=sigma_11*thickness*width."
+            ),
+            description=(
+                "mm-N-MPa 单位。二维平面应力矩形板：x=0..100 mm、y=0..20 mm、厚度2 mm，"
+                "E=200000 MPa、nu=0.3。左边界仅约束U1，左下角额外约束U2去除刚体平移；"
+                "右边界施加U1=+0.05 mm，其他方向自由。"
+            ),
+            adaptation=(
+                "必须使用完整二维plane-stress连续体，不用3D实体、梁、壳或平面应变替代；"
+                "允许CPS4/CPS4R/CPS8/CPS8R。厚度必须为2 mm。"
+                "本题载荷就是右边界规定U1=+0.05 mm，不另加节点力、压力或面力；"
+                "不得把整个左边界U2锁死而抑制泊松收缩。"
+            ),
+            metrics={
+                "tip_u1": _m(0.05, "右边界U1均值/mm", 0.0001),
+                "reaction_x": _m(-4000.0, "左边界RF1总和/N", 0.001),
+                "mean_s11": _m(100.0, "积分点S11均值/MPa", 0.001),
+            },
+        ),
+        MechanicsCase(
+            case_id="thick-cylinder-internal-pressure",
+            family="axisymmetric_pressure",
+            length=40.0,
+            width=20.0,
+            height=0.0,
+            inner_radius=20.0,
+            young=200000.0,
+            poisson=0.3,
+            load=100.0,
+            source=(
+                "Lamé thick-cylinder solution for an open-ended axisymmetric cylinder: "
+                "sigma_r=A-B/r^2, sigma_theta=A+B/r^2, "
+                "u=((1-nu)Ar+(1+nu)B/r)/E. Cross-section area means are "
+                "mean(sigma_r)=A-B/(ab) and mean(sigma_theta)=A+B/(ab)."
+            ),
+            description=(
+                "mm-N-MPa 单位。开口端厚壁圆筒的二维轴对称 r-z 截面："
+                "内半径20 mm、外半径40 mm、轴向长度20 mm，E=200000 MPa、nu=0.3。"
+                "内壁施加100 MPa均匀内压，外壁和两端自由；仅在(r=40,z=0)约束U2去除轴向刚体平移。"
+            ),
+            adaptation=(
+                "必须使用二维axisymmetric连续体，不用plane stress/plane strain、3D实体、壳或梁替代；"
+                "允许CAX4/CAX4R/CAX8/CAX8R。全局X是半径r、Y是轴向z。"
+                "压力必须覆盖完整r=20 mm内壁，外壁不施加压力；不要额外约束径向位移。"
+                "应力按Abaqus轴对称分量读取：S11为径向、S33为环向；"
+                "应力QoI使用积分点结果按单元r-z截面积加权，避免把边界外推误差当成物理错误。"
+            ),
+            metrics={
+                "inner_u1": _m(0.01966666666666667, "内壁平均径向U1/mm", 0.01),
+                "outer_u1": _m(0.013333333333333334, "外壁平均径向U1/mm", 0.01),
+                "area_mean_s11": _m(
+                    -33.333333333333336, "r-z截面积加权平均径向S11/MPa", 0.01
+                ),
+                "area_mean_s33": _m(
+                    100.0, "r-z截面积加权平均环向S33/MPa", 0.01
+                ),
+            },
+        ),
+        MechanicsCase(
+            case_id="nafems-le6-skew-plate",
+            family="skew_plate",
+            length=1.0,
+            width=1.0,
+            height=0.01,
+            skew_angle_degrees=30.0,
+            young=210.0e9,
+            poisson=0.3,
+            load=700.0,
+            source=(
+                "NAFEMS P18.LE6 / TNSB Rev. 3 (1990), also reproduced by the Abaqus 2024 "
+                "Benchmarks Guide: skew plate under normal pressure; reference lower-surface "
+                "maximum principal stress at plate center E = 0.802 MPa."
+            ),
+            description=(
+                "m-N-Pa 单位。NAFEMS P18.LE6 斜板：平面内为边长均为1 m、A点内角30°的平行四边形，"
+                "厚度0.01 m，E=210 GPa、nu=0.3。取A=(0,0,0)、B=(1,0,0)、"
+                "D=(cos30°,sin30°,0)、C=B+D；全板施加700 Pa沿-Z的均匀法向压力。"
+                "四条边仅约束U3=0；A额外约束U1=U2=0，B额外约束U2=0以消除面内刚体运动。"
+            ),
+            adaptation=(
+                "必须使用常规shell/plate表示和0.01 m均匀壳厚；允许S4/S4R/S8R/S8R5/S9R5。"
+                "不得把边界改成固支，也不得额外约束转角。网格必须包含板中心E节点，以便宿主独立读取。"
+                "center_lower_max_principal 定义为E点下表面ELEMENT_NODAL贡献先按应力分量平均、"
+                "再计算面内最大主应力；reaction_z 为所有受U3约束边界节点RF3总和。"
+                "公开0.802 MPa是NAFEMS连续体参考；离散化需要足够准确才能进入10%容差。"
+            ),
+            metrics={
+                "center_lower_max_principal": _m(
+                    0.802e6, "板中心E下表面最大主应力/Pa", 0.10
+                ),
+                "reaction_z": _m(350.0, "四边U3约束节点RF3总和/N", 0.002),
+            },
+        ),
+        MechanicsCase(
             case_id="plate-with-hole-tension",
             family="hole",
             length=15.0,
@@ -217,6 +387,388 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
                 "reaction_x_x": _m(-1, "X工况左端RF1/lbf", 0.001),
                 "reaction_y_y": _m(-1, "Y工况左端RF2/lbf", 0.001),
                 "reaction_z_z": _m(-1, "Z工况左端RF3/lbf", 0.001),
+            },
+        ),
+        MechanicsCase(
+            case_id="nafems-le1-elliptic-membrane",
+            family="elliptic_membrane",
+            length=3.25,
+            width=2.75,
+            height=0.1,
+            inner_semi_axis_x=2.0,
+            inner_semi_axis_y=1.0,
+            young=210.0e9,
+            poisson=0.3,
+            load=10.0e6,
+            source=(
+                "NAFEMS P18.LE1 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2024 "
+                "Benchmarks Guide: elliptic membrane; target tangential edge stress "
+                "sigma_yy at inner point D = 92.7 MPa."
+            ),
+            description=(
+                "m-N-Pa 单位。NAFEMS P18.LE1 四分之一椭圆环形膜：内椭圆半轴"
+                "a=2.0 m、b=1.0 m，外椭圆半轴a=3.25 m、b=2.75 m，厚度0.1 m；"
+                "E=210 GPa、nu=0.3。x=0直边施加X对称，y=0直边施加Y对称；"
+                "外椭圆边施加10 MPa均匀向外压力，内椭圆边自由。"
+            ),
+            adaptation=(
+                "必须使用二维plane-stress连续体和0.1 m厚度；使用二次平面应力单元"
+                "CPS6/CPS6M/CPS8/CPS8R，并使曲边网格足以解析D=(2,0)处局部应力。"
+                "网格必须包含精确D节点。d_sigma_yy 定义为D点未平均ELEMENT_NODAL S22贡献的均值；"
+                "reaction_x/reaction_y 分别为x=0对称边RF1和y=0对称边RF2总和。"
+                "公开92.7 MPa是NAFEMS连续体参考；Abaqus 2024官方细网格CPS8结果为92.81 MPa。"
+            ),
+            metrics={
+                "d_sigma_yy": _m(92.7e6, "D点切向S22/Pa", 0.05),
+                "reaction_x": _m(-2.75e6, "x=0对称边RF1总和/N", 0.002),
+                "reaction_y": _m(-3.25e6, "y=0对称边RF2总和/N", 0.002),
+            },
+        ),
+        MechanicsCase(
+            case_id="nafems-le10-thick-plate-pressure",
+            family="thick_plate",
+            length=3.25,
+            width=2.75,
+            height=0.6,
+            inner_semi_axis_x=2.0,
+            inner_semi_axis_y=1.0,
+            young=210.0e9,
+            poisson=0.3,
+            load=1.0e6,
+            source=(
+                "NAFEMS P18.LE10 / TNSB Rev. 3 (1990), reproduced by the Abaqus "
+                "Benchmarks Guide: thick plate under uniform pressure; target direct "
+                "stress sigma_yy at D=(2,0,0.6) = -5.38 MPa."
+            ),
+            description=(
+                "m-N-Pa 单位。NAFEMS P18.LE10 四分之一椭圆环形厚板：内椭圆半轴"
+                "a=2.0 m、b=1.0 m，外椭圆半轴a=3.25 m、b=2.75 m，厚度0.6 m；"
+                "E=210 GPa、nu=0.3。x=0侧面约束U1，y=0侧面约束U2；"
+                "外椭圆柱面约束U1=U2，外椭圆边在厚度中面z=0.3 m处约束U3。"
+                "z=0.6 m上表面施加1 MPa均匀法向压力，z=0下表面自由。"
+            ),
+            adaptation=(
+                "必须使用完整3D实体厚板，不用壳、平面应力/应变或轴对称替代；"
+                "允许Abaqus官方LE10验证使用的二次实体C3D20/C3D20R/C3D10/C3D10HS/C3D10M。"
+                "网格必须包含精确D=(2,0,0.6)节点，并足以解析厚板弯曲和D点局部S22。"
+                "d_sigma_yy 定义为D点未平均ELEMENT_NODAL S22贡献的均值；"
+                "reaction_z 为外椭圆边厚度中面U3约束节点RF3总和。"
+                "公开-5.38 MPa是NAFEMS参考；Abaqus官方细网格C3D20/C3D20R结果分别约"
+                "-5.64/-5.53 MPa，因此本题采用10%应力容差。"
+            ),
+            metrics={
+                "d_sigma_yy": _m(-5.38e6, "D点全局S22/Pa", 0.10),
+                "reaction_z": _m(
+                    5.448699758569798e6,
+                    "外椭圆边厚度中面U3约束节点RF3总和/N",
+                    0.002,
+                ),
+            },
+        ),
+        MechanicsCase(
+            case_id="nafems-le3-hemisphere-point-loads",
+            family="hemisphere_shell",
+            length=10.0,
+            width=10.0,
+            height=0.04,
+            radius=10.0,
+            young=68.25e9,
+            poisson=0.3,
+            load=2000.0,
+            source=(
+                "NAFEMS P18.LE3 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                "Benchmarks Guide: hemisphere with point loads; target radial displacement "
+                "Ux at A=(10,0,0) = 0.185 m."
+            ),
+            description=(
+                "m-N-Pa 单位。NAFEMS P18.LE3 四分之一球壳：中面半径10 m、厚度0.04 m，"
+                "E=68.25 GPa、nu=0.3。取A=(10,0,0)、C=(0,10,0)、E=(0,0,10)；"
+                "A点沿+X径向施加2 kN，C点沿-Y径向施加2 kN。"
+                "AE边(y=0)施加Y对称，CE边(x=0)施加X对称，E点额外约束U3=0。"
+            ),
+            adaptation=(
+                "必须使用常规shell表示完整四分之一球面和0.04 m均匀壳厚；"
+                "允许S8R/S8R5/S9R5。网格必须包含精确A、C、E节点，且所有壳节点位于半径10 m球面。"
+                "XSYMM/YSYMM按Abaqus壳自由度语义验收，不能只约束平移自由度，也不能额外固支边界。"
+                "a_u1 定义为A点最终帧U1。公开参考为0.185 m；Abaqus官方细网格S8R5结果为0.185 m。"
+            ),
+            metrics={
+                "a_u1": _m(0.185, "A点径向U1/m", 0.02),
+            },
+        ),
+        MechanicsCase(
+            case_id="nafems-le5-z-section-cantilever",
+            family="z_section_shell",
+            length=10.0,
+            width=2.0,
+            height=0.1,
+            young=210.0e9,
+            poisson=0.3,
+            load=1.2e6,
+            source=(
+                "NAFEMS P18.LE5 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                "Benchmarks Guide: Z-section cantilever under end torque; reference "
+                "midsurface axial stress sigma_xx at A=(2.5,-1,-1) = -108 MPa."
+            ),
+            description=(
+                "m-N-Pa 单位。NAFEMS P18.LE5 Z形开口薄壁悬臂：轴线x=0..10 m；"
+                "截面中面依次为(y,z)=(-1,-1)->(-1,0)->(1,0)->(1,1)，壳厚0.1 m；"
+                "E=210 GPa、nu=0.3。x=0整条截面ENCASTRE。x=10端通过上下自由翼缘的"
+                "反向Z向剪力形成绕+X的1.2 MN·m纯扭矩；总力为零，每侧翼缘剪力合力为0.6 MN。"
+            ),
+            adaptation=(
+                "必须使用常规shell表示完整Z形中面和0.1 m均匀壳厚；允许S8R/S8R5/S9R5。"
+                "所有壳节点必须位于三块中面之一：y=-1且z∈[-1,0]、z=0且y∈[-1,1]、"
+                "y=1且z∈[0,1]。网格必须包含精确A=(2.5,-1,-1)节点。"
+                "端部载荷只能是x=10处、y=±1翼缘上的Z向CLOAD；合力为零且"
+                "sum(y*Fz)=+1.2e6 N·m。a_sigma_xx 定义为A点ELEMENT_NODAL S11的壳中面值："
+                "若ODB有显式中面section point则直接取其贡献均值，否则分别平均负/正表面贡献后取二者中值。"
+                "公开参考为-108 MPa；Abaqus官方S8R粗网格结果约-109.85 MPa。"
+            ),
+            metrics={
+                "a_sigma_xx": _m(-108.0e6, "A点壳中面轴向S11/Pa", 0.03),
+            },
+        ),
+        MechanicsCase(
+            case_id="nafems-le2-cylindrical-shell-patch",
+            family="cylindrical_shell_patch",
+            length=0.5,
+            width=0.0,
+            height=0.01,
+            radius=1.0,
+            arc_angle_degrees=10.0,
+            sample_angle_degrees=6.6667,
+            sample_axial_position=0.3,
+            young=210.0e9,
+            poisson=0.3,
+            load=1000.0,
+            source=(
+                "NAFEMS P18.LE2 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                "Benchmarks Guide: cylindrical shell bending patch test; reference outer-surface "
+                "tangential stress at E = 60 MPa."
+            ),
+            description=(
+                "m-N-Pa 单位。NAFEMS P18.LE2 圆柱壳扇区：中面半径1 m、轴向长度0.5 m、"
+                "圆周角10°、壳厚0.01 m；E=210 GPa、nu=0.3。theta=0 的AB边固支；"
+                "z=0 的AD边和z=0.5 m的BC边施加轴向对称约束。theta=10° 的DC边施加"
+                "1000 N·m/m均匀法向边矩，因此该0.5 m边上的总外加矩为+500 N·m。"
+            ),
+            adaptation=(
+                "必须使用常规shell表示半径1 m的圆柱中面；允许S4/S4R/S8R/S8R5/S9R5。"
+                "网格必须包含精确E=(r=1 m, theta=6.6667°, z=0.3 m)节点。壳局部1方向须为"
+                "圆周切向，使e_outer_s11表示E点外表面SPOS的切向S11；按所有相邻单元的"
+                "ELEMENT_NODAL外推贡献取均值。DC边矩只允许绕圆柱轴正向施加，总矩500 N·m；"
+                "reaction_m3为AB固支边绕同一轴的总反力矩，目标为-500 N·m。"
+            ),
+            metrics={
+                "e_outer_s11": _m(60.0e6, "E点外表面圆周切向S11/Pa", 0.03),
+                "reaction_m3": _m(-500.0, "AB固支边绕圆柱轴总反力矩/N·m", 0.002),
+            },
+        ),
+        MechanicsCase(
+            case_id="nafems-le4-axisymmetric-hyperbolic-shell",
+            family="axisymmetric_shell",
+            axisymmetric_shell_profile="hyperbolic",
+            length=1.0,
+            width=2**0.5,
+            height=0.01,
+            radius=1.0,
+            young=210.0e9,
+            poisson=0.3,
+            load=1.0e6,
+            source=(
+                "NAFEMS P18.LE4 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                "Benchmarks Guide: axisymmetric hyperbolic shell under uniform internal "
+                "pressure; midsurface stress at K is sigma_phi_phi=-50 MPa and "
+                "sigma_theta_theta=+50 MPa."
+            ),
+            description=(
+                "m-N-Pa 单位。NAFEMS P18.LE4 轴对称双曲壳：母线满足 r=sqrt(1+z^2)，"
+                "0<=z<=1 m，K=(r=1,z=0)，A=(r=sqrt(2),z=1)；壳厚0.01 m，"
+                "E=210 GPa、nu=0.3。壳内表面承受1 MPa均匀压力。"
+                "Abaqus官方网页文字写B点uz=0，但官方SAX1/SAX2/SAXA11/SAXA21可执行输入"
+                "均在K侧物理节点约束U2；本公开合同以可复现的官方可执行样例为准，在K约束轴向U2。"
+            ),
+            adaptation=(
+                "必须使用常规轴对称壳SAX1或SAX2，完整表示上述双曲中面和0.01 m均匀壳厚；"
+                "所有壳节点都须满足r^2-z^2=1，网格必须包含精确K=(1,0)节点。"
+                "仅K点U2=0，不额外约束径向位移或转角；对全部壳单元施加+1 MPa压力。"
+                "k_meridional_s11/k_hoop_s22 定义为K点ELEMENT_NODAL S11/S22的壳中面值；"
+                "若无显式中面section point，则分别平均负/正表面贡献后取二者中值。"
+                "reaction_z 为K点RF2。Abaqus官方细网格SAX2约为-50.02 MPa、48.34 MPa，"
+                "因此环向应力使用4%容差；K点轴向反力应平衡 pi*1e6 N。"
+            ),
+            metrics={
+                "k_meridional_s11": _m(-50.0e6, "K点壳中面子午向S11/Pa", 0.03),
+                "k_hoop_s22": _m(50.0e6, "K点壳中面环向S22/Pa", 0.04),
+                "reaction_z": _m(math.pi * 1.0e6, "K点轴向RF2/N", 0.002),
+            },
+        ),
+        MechanicsCase(
+            case_id="nafems-le7-axisymmetric-cylinder-sphere",
+            family="axisymmetric_shell",
+            axisymmetric_shell_profile="sphere_cylinder",
+            length=2.5,
+            width=1.5,
+            height=0.025,
+            radius=1.0,
+            sample_axial_position=1.4034,
+            young=210.0e9,
+            poisson=0.3,
+            load=1.0e6,
+            source=(
+                "NAFEMS P18.LE7 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                "Benchmarks Guide: axisymmetric cylinder/sphere under uniform internal "
+                "pressure; reference outer-surface axial stress at D is 25.9 MPa."
+            ),
+            description=(
+                "m-N-Pa 单位。NAFEMS P18.LE7 轴对称球冠-圆柱壳：圆柱中面半径1 m，"
+                "0<=z<=1.5 m；上部为半径1 m、球心位于(r=0,z=1.5 m)的球冠，"
+                "延伸至极点(r=0,z=2.5 m)。壳厚0.025 m，E=210 GPa、nu=0.3；"
+                "整个壳内表面承受1 MPa均匀压力。极点约束U1和UR3，底部(r=1,z=0)约束U2。"
+            ),
+            adaptation=(
+                "必须使用常规轴对称壳SAX1或SAX2表示球冠与圆柱连续中面；网格必须精确包含"
+                "D=(r=1,z=1.4034 m)节点。D点外表面SPOS的子午/轴向S11按相邻单元"
+                "ELEMENT_NODAL贡献取均值，记为d_outer_s11。reaction_z为底部(r=1,z=0)"
+                "节点RF2。Abaqus官方fine SAX2为25.878 MPa；底部轴向反力应平衡"
+                "-pi*1e6 N。"
+            ),
+            metrics={
+                "d_outer_s11": _m(25.9e6, "D点外表面SPOS轴向/子午向S11/Pa", 0.02),
+                "reaction_z": _m(-math.pi * 1.0e6, "底部节点轴向RF2/N", 0.002),
+            },
+        ),
+        MechanicsCase(
+            case_id="nafems-le8-axisymmetric-crown-knuckle-shell",
+            family="axisymmetric_shell",
+            axisymmetric_shell_profile="crown_knuckle_cylinder",
+            length=0.5625,
+            width=0.5,
+            height=0.01,
+            radius=0.25,
+            crown_radius=0.25,
+            knuckle_radius=0.0625,
+            sample_radius=0.150763,
+            sample_axial_position=0.5505748,
+            young=210.0e9,
+            poisson=0.3,
+            load=1.0e6,
+            source=(
+                "NAFEMS P18.LE8 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                "Benchmarks Guide: axisymmetric crown/knuckle/cylinder shell under uniform "
+                "internal pressure; reference outer-surface hoop stress at D is 94.5 MPa."
+            ),
+            description=(
+                "m-N-Pa 单位。NAFEMS P18.LE8 轴对称压力壳：圆柱中面半径0.25 m，"
+                "从z=0延伸至约z=0.5 m；上部由半径0.0625 m的圆环过渡段连接"
+                "半径0.25 m的球冠，轴线上球冠极点为(r=0,z=0.5 m)。壳厚0.01 m，"
+                "E=210 GPa、nu=0.3，整个壳内表面承受1 MPa均匀压力。极点约束U1和UR3，"
+                "底部(r=0.25,z=0)约束U2。"
+            ),
+            adaptation=(
+                "必须使用常规轴对称壳SAX1或SAX2表示球冠、圆环过渡段和圆柱连续中面；"
+                "球冠圆心为(r=0,z=0.75 m)、半径0.25 m，圆环段圆心为"
+                "(r=0.1875,z=0.5 m)、半径0.0625 m。网格必须精确包含"
+                "D=(r=0.150763,z=0.5505748 m)节点。D点外表面SPOS环向S22按相邻单元"
+                "ELEMENT_NODAL贡献取均值，记为d_outer_s22。reaction_z为底部节点RF2。"
+                "NAFEMS连续体参考为94.5 MPa；Abaqus官方SAX2粗/细网格约为90.12/90.41 MPa，"
+                "官方fine SAX1约89.3 MPa，因此应把这一本征离散偏差与错误建模区分开。"
+                "底部轴向反力应平衡-pi*1e6*0.25^2 N。"
+            ),
+            metrics={
+                "d_outer_s22": _m(94.5e6, "D点外表面SPOS环向S22/Pa", 0.06),
+                "reaction_z": _m(
+                    -math.pi * 1.0e6 * 0.25**2,
+                    "底部节点轴向RF2/N",
+                    0.002,
+                ),
+            },
+        ),
+        MechanicsCase(
+            case_id="nafems-le9-branched-axisymmetric-shell",
+            family="axisymmetric_shell",
+            axisymmetric_shell_profile="branched_sphere_cylinder",
+            length=2.0,
+            width=1.0,
+            height=0.01,
+            radius=0.707107,
+            sample_radius=0.707107,
+            sample_axial_position=1.0,
+            branch_sphere_radius=1.0,
+            branch_center_axial_position=1.707107,
+            young=210.0e9,
+            poisson=0.3,
+            load=1.0e6,
+            source=(
+                "NAFEMS P18.LE9 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                "Benchmarks Guide: branched axisymmetric cylinder/spherical shell under "
+                "pressure; reference outer-surface axial stress at C on the upper cylinder "
+                "is -319.9 MPa."
+            ),
+            description=(
+                "m-N-Pa 单位。NAFEMS P18.LE9 分支轴对称壳：圆柱中面半径0.707107 m，"
+                "0<=z<=2 m；半径1 m的球壳分支圆心位于(r=0,z=1.707107 m)，"
+                "从轴线极点(r=0,z=0.707107 m)延伸至圆柱交点C=(r=0.707107,z=1 m)。"
+                "圆柱与球壳在C使用两个重合节点并由MPC TIE连接。壳厚0.01 m，"
+                "E=210 GPa、nu=0.3。仅z>=1 m的上圆柱与球壳分支承受1 MPa内压；"
+                "z<1 m下圆柱不承压。底部(r=0.707107,z=0)约束U1、U2和UR3。"
+            ),
+            adaptation=(
+                "必须使用SAX1或SAX2；C处保留圆柱节点与球壳节点两个独立重合节点，并用"
+                "一个MPC TIE连接。Shell Section必须使用SECTION INTEGRATION=GAUSS和3个"
+                "厚度积分点。压力只覆盖上圆柱与球壳分支，DLOAD符号为-1 MPa。"
+                "c_outer_s11取C处上圆柱单元的轴向S11；3点Gauss的section-point fraction"
+                "约为±0.774597和0，它们是厚度积分点而不是壳面，因此宿主按section-point"
+                "fraction线性外推到负侧fraction=-1的外表面。Abaqus官方fine SAX2约为"
+                "-314.81 MPa；NAFEMS连续体参考为-319.9 MPa。reaction_z为底部RF2，"
+                "应平衡+pi*p*r^2。"
+            ),
+            metrics={
+                "c_outer_s11": _m(-319.9e6, "C点上圆柱外表面轴向S11/Pa", 0.03),
+                "reaction_z": _m(
+                    math.pi * 1.0e6 * 0.707107**2,
+                    "底部节点轴向RF2/N",
+                    0.002,
+                ),
+            },
+        ),
+        MechanicsCase(
+            case_id="nafems-le11-thermal-solid",
+            family="thermal_solid",
+            length=1.4,
+            width=1.4,
+            height=1.79,
+            inner_radius=0.7071,
+            radius=1.4,
+            young=210.0e9,
+            poisson=0.3,
+            load=0.0,
+            thermal_expansion=2.3e-4,
+            source=(
+                "NAFEMS P18.LE11 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                "Benchmarks Guide: solid cylinder/taper/sphere under prescribed temperature; "
+                "reference direct stress sigma_zz at A is -105 MPa."
+            ),
+            description=(
+                "m-N-Pa-°C 单位。NAFEMS P18.LE11 四分之一三维热弹性实体。"
+                "全局Z为轴向，0<=theta<=90°，0<=z<=1.79 m；内表面在z=0..0.7071 m"
+                "满足r²+z²=1，随后r=0.7071至顶部。外表面在z=0..0.7 m满足"
+                "r²+z²=1.4²，随后经(r,z)=(1.2124,0.7)、(1.1062,1.045)、"
+                "(1,1.39)线性收缩，再以r=1延伸到z=1.79。E=210 GPa、nu=0.3，"
+                "线膨胀系数alpha=2.3e-4 /°C。温升场为ΔT=sqrt(x²+y²)+z。"
+                "y=0面约束U2，x=0面约束U1，z=0底面和z=1.79顶面约束U3；无机械载荷。"
+            ),
+            adaptation=(
+                "必须使用C3D20或C3D20R并覆盖完整实体；公开测评使用显式节点TEMPERATURE，"
+                "不依赖UTEMP/用户子程序。每个节点温度必须等于sqrt(x^2+y^2)+z，"
+                "不得叠加CLOAD/DLOAD/DSLOAD。A点为(1,0,0)内表面底部交点，"
+                "a_sigma_zz读取最终ODB中该点的全局S33。Abaqus官方fine C3D20约为"
+                "-103.26 MPa，fine C3D20R约为-99.60 MPa，因此相对NAFEMS -105 MPa"
+                "采用6%容差以覆盖两种允许的二次实体离散。"
+            ),
+            metrics={
+                "a_sigma_zz": _m(-105.0e6, "A点全局轴向S33/Pa", 0.06),
             },
         ),
     )

@@ -61,7 +61,7 @@ from abaqus_sim_agent.verification.public_mechanics_run import (
 )
 
 ROOT = Path(__file__).parents[3]
-VERSION = "public-mechanics-e2e-v5-knowledge-discovery"
+VERSION = "public-mechanics-e2e-v22-foundation-routing-rule"
 
 
 def _write(path, value):
@@ -280,7 +280,7 @@ async def preflight(root: Path):
         state_dir=s,
         runtime=RuntimeProfile(launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()),
         api_catalog=_eval_api_catalog_binding(catalog),
-        budget=c.run_budget(),
+        **c.run_budget().as_request_controls(),
     )
     observed = {}
 
@@ -483,7 +483,9 @@ def _request(root, name, catalog):
             else ("model.inp",),
         ),
         api_catalog=_eval_api_catalog_binding(catalog),
-        budget=CodingRunBudget.model_validate(manifest["budgets"][name]),
+        **CodingRunBudget.model_validate(
+            manifest["budgets"][name]
+        ).as_request_controls(),
     )
 
 
