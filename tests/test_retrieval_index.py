@@ -227,7 +227,11 @@ def test_bm25_rejects_current_dense_semantic_corpus_drift(tmp_path: Path) -> Non
         where={"retrieval_role": "semantic"},
         include=[],
     )
-    index.vector_store.delete(ids=[str(semantic_records["ids"][0])])
+    with sqlite3.connect(index.vector_store.database_path) as connection:
+        connection.execute(
+            "UPDATE documents SET deleted = 1 WHERE chunk_id = ?",
+            (str(semantic_records["ids"][0]),),
+        )
 
     with pytest.raises(BM25IndexError, match="current dense semantic corpus"):
         index.search_bm25("static equilibrium")
@@ -248,7 +252,11 @@ def test_hybrid_rechecks_dense_corpus_after_bm25_was_cached(tmp_path: Path) -> N
         where={"retrieval_role": "semantic"},
         include=[],
     )
-    index.vector_store.delete(ids=[str(semantic_records["ids"][0])])
+    with sqlite3.connect(index.vector_store.database_path) as connection:
+        connection.execute(
+            "UPDATE documents SET deleted = 1 WHERE chunk_id = ?",
+            (str(semantic_records["ids"][0]),),
+        )
 
     with pytest.raises(BM25IndexError, match="current dense semantic corpus"):
         index.search_hybrid("static equilibrium")

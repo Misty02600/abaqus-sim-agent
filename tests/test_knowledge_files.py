@@ -32,7 +32,10 @@ def _request(tmp_path: Path) -> CodingRunRequest:
         workspace=workspace.resolve(),
         state_dir=state.resolve(),
         runtime=RuntimeProfile(launcher_path=(tmp_path / "never-run.bat").resolve()),
-        budget=CodingRunBudget(max_abaqus_calls=0, max_solver_calls=0),
+        **CodingRunBudget(
+            max_abaqus_calls=0,
+            max_solver_calls=0,
+        ).as_request_controls(),
     )
 
 

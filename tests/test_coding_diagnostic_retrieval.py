@@ -108,11 +108,11 @@ def _request(tmp_path: Path, index: AbaqusDocumentIndex) -> CodingRunRequest:
             launcher_path=Path(r"D:\SIMULIA\Commands\abq2024.bat").resolve()
         ),
         concept_index=concept_index_binding(index),
-        budget=CodingRunBudget(
+        **CodingRunBudget(
             max_abaqus_calls=1,
             max_solver_calls=1,
             max_diagnostic_retrieval_calls=1,
-        ),
+        ).as_request_controls(),
     )
 
 

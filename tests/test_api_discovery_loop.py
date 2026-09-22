@@ -79,9 +79,9 @@ async def test_discovery_read_budget_and_dedup(tmp_path):
         workspace=workspace,
         state_dir=state,
         runtime=RuntimeProfile(launcher_path=(tmp_path / "fake.bat").resolve()),
-        budget=CodingRunBudget(
+        **CodingRunBudget(
             max_api_lookup_calls=2, max_abaqus_calls=0, max_solver_calls=0
-        ),
+        ).as_request_controls(),
     )
     count = 0
     returned = []

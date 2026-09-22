@@ -281,7 +281,7 @@ def test_members_traverse_real_coder_tool_budget_and_trace(
         state_dir=state.resolve(),
         runtime=RuntimeProfile(launcher_path=(tmp_path / "unused.bat").resolve()),
         api_catalog=_api_catalog_binding(catalog),
-        budget=CodingRunBudget(max_api_lookup_calls=2),
+        **CodingRunBudget(max_api_lookup_calls=2).as_request_controls(),
     )
     queries = [
         "OdbAssembly.nodeSets",

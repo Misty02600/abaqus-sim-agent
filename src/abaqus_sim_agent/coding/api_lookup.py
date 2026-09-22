@@ -246,7 +246,11 @@ def register_api_discovery_tool[AgentOutputT](
             return payload
 
         dedupe_key = "\0".join(
-            (normalized_receiver.casefold(), (normalized_query or "").casefold(), str(limit))
+            (
+                normalized_receiver.casefold(),
+                (normalized_query or "").casefold(),
+                str(limit),
+            )
         )
         if not ctx.deps.register_api_discovery_query(dedupe_key):
             payload = {

@@ -12,8 +12,8 @@ from pydantic_ai_harness.guardrails import ToolCallInfo
 
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.amendments import (
-    CodingRunBudgetPatch,
     CodingRunConfigPatch,
+    RuntimeExecutionPolicyPatch,
     append_operational_amendment,
 )
 from abaqus_sim_agent.coding.clarification import ScriptedClarificationProvider
@@ -353,7 +353,11 @@ def test_real_harness_guard_blocks_then_allows_and_service_resumes(
     append_operational_amendment(
         state,
         reason="test continuation",
-        patch=CodingRunConfigPatch(budget=CodingRunBudgetPatch(max_model_requests=40)),
+        patch=CodingRunConfigPatch(
+            runtime_policy=RuntimeExecutionPolicyPatch.model_validate(
+                {"solver": {"mode": "allow"}}
+            )
+        ),
     )
     recovered = load_request_for_resume(state)
     assert recovered.edit_scope == request.edit_scope

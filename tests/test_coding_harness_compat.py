@@ -2,10 +2,8 @@ import asyncio
 import os
 import re
 import time
-from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from types import ModuleType
 
 import pytest
 from pydantic_ai.messages import ModelMessage, ModelResponse
@@ -27,11 +25,6 @@ from abaqus_sim_agent.coding.harness_compat import (
 )
 
 
-class _FakeToolsetModule(ModuleType):
-    _content_hash: Callable[[str], str]
-    _abaqus_sim_agent_newline_hash_patch_version: str
-
-
 class _FakeProcess:
     pid = 42
 
@@ -40,63 +33,6 @@ def _hash_from(text: str) -> str:
     match = re.search(r"hash:\[?\s*([0-9a-f]{12})", text)
     assert match is not None
     return match.group(1)
-
-
-def test_harness_hash_patch_is_noop_for_nonmatching_environment() -> None:
-    fake_toolset = _FakeToolsetModule("fake_harness_toolset")
-
-    def original_hash(content: str) -> str:
-        return content
-
-    fake_toolset._content_hash = original_hash
-
-    assert (
-        apply_harness_windows_newline_hash_patch(
-            platform_name="posix",
-            harness_version="0.24.0",
-            toolset_module=fake_toolset,
-        )
-        is None
-    )
-    assert (
-        apply_harness_windows_newline_hash_patch(
-            platform_name="nt",
-            harness_version="0.25.0",
-            toolset_module=fake_toolset,
-        )
-        is None
-    )
-    assert fake_toolset._content_hash is original_hash
-
-
-def test_harness_hash_patch_canonicalizes_all_text_newlines_and_is_idempotent() -> None:
-    fake_toolset = _FakeToolsetModule("fake_harness_toolset")
-    fake_toolset._content_hash = lambda content: content
-
-    assert (
-        apply_harness_windows_newline_hash_patch(
-            platform_name="nt",
-            harness_version="0.24.0",
-            toolset_module=fake_toolset,
-        )
-        == HARNESS_WINDOWS_NEWLINE_HASH_PATCH_VERSION
-    )
-    patched_hash = fake_toolset._content_hash
-    assert patched_hash("first\r\nsecond\r") == patched_hash("first\nsecond\n")
-    assert (
-        fake_toolset._abaqus_sim_agent_newline_hash_patch_version
-        == HARNESS_WINDOWS_NEWLINE_HASH_PATCH_VERSION
-    )
-
-    assert (
-        apply_harness_windows_newline_hash_patch(
-            platform_name="nt",
-            harness_version="0.24.0",
-            toolset_module=fake_toolset,
-        )
-        == HARNESS_WINDOWS_NEWLINE_HASH_PATCH_VERSION
-    )
-    assert fake_toolset._content_hash is patched_hash
 
 
 @pytest.mark.asyncio
@@ -126,7 +62,7 @@ async def test_harness_shell_patch_is_version_scoped_and_idempotent() -> None:
     assert (
         apply_harness_windows_shell_tree_patch(
             platform_name="nt",
-            harness_version="0.24.0",
+            harness_version="0.31.0",
             shell_toolset_class=FakeShellToolset,
             tree_terminator=terminated.append,
         )
@@ -141,7 +77,7 @@ async def test_harness_shell_patch_is_version_scoped_and_idempotent() -> None:
     assert (
         apply_harness_windows_shell_tree_patch(
             platform_name="nt",
-            harness_version="0.24.0",
+            harness_version="0.31.0",
             shell_toolset_class=FakeShellToolset,
             tree_terminator=terminated.append,
         )
@@ -188,7 +124,7 @@ def test_harness_jsonl_patch_serializes_parallel_append_methods() -> None:
     assert (
         apply_harness_windows_jsonl_append_patch(
             platform_name="nt",
-            harness_version="0.24.0",
+            harness_version="0.31.0",
             file_step_store_class=FakeFileStepStore,
         )
         == HARNESS_WINDOWS_JSONL_APPEND_PATCH_VERSION
@@ -210,7 +146,7 @@ def test_harness_jsonl_patch_serializes_parallel_append_methods() -> None:
     assert (
         apply_harness_windows_jsonl_append_patch(
             platform_name="nt",
-            harness_version="0.24.0",
+            harness_version="0.31.0",
             file_step_store_class=FakeFileStepStore,
         )
         == HARNESS_WINDOWS_JSONL_APPEND_PATCH_VERSION
@@ -244,7 +180,7 @@ def test_harness_jsonl_patch_serializes_first_install(
             pool.map(
                 lambda _index: apply_harness_windows_jsonl_append_patch(
                     platform_name="nt",
-                    harness_version="0.24.0",
+                    harness_version="0.31.0",
                     file_step_store_class=FakeFileStepStore,
                 ),
                 range(20),
@@ -347,14 +283,8 @@ def test_coding_agent_applies_hash_patch_before_building_coder(
 async def test_filesystem_hash_is_stable_across_windows_write_read_and_edit(
     tmp_path: Path,
 ) -> None:
-    assert (
-        apply_harness_windows_newline_hash_patch()
-        == HARNESS_WINDOWS_NEWLINE_HASH_PATCH_VERSION
-    )
-    assert (
-        apply_harness_windows_newline_hash_patch()
-        == HARNESS_WINDOWS_NEWLINE_HASH_PATCH_VERSION
-    )
+    assert apply_harness_windows_newline_hash_patch() is None
+    assert apply_harness_windows_newline_hash_patch() is None
 
     toolset = FileSystem(
         root_dir=tmp_path,
@@ -363,7 +293,7 @@ async def test_filesystem_hash_is_stable_across_windows_write_read_and_edit(
     assert isinstance(toolset, FileSystemToolset)
 
     write_result = await toolset.write_file("example.py", "first\nsecond\n")
-    assert b"\r\n" in (tmp_path / "example.py").read_bytes()
+    assert (tmp_path / "example.py").read_bytes() == b"first\nsecond\n"
 
     read_result = await toolset.read_file("example.py")
     info_result = await toolset.file_info("example.py")

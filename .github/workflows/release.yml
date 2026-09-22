@@ -56,6 +56,9 @@ jobs:
       - name: pytest
         run: uv run --no-sync pytest
 
+      - name: pytest component regressions
+        run: uv run --no-sync pytest -m component
+
       - name: Build distributions
         run: uv build --no-sources
 

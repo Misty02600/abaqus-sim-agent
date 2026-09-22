@@ -89,7 +89,7 @@ def _index(path: Path) -> AbaqusDocumentIndex:
     return index
 
 
-def test_optional_concept_tool_is_compact_budgeted_and_traced(tmp_path: Path) -> None:
+def test_optional_concept_tool_is_compact_unlimited_and_traced(tmp_path: Path) -> None:
     workspace = (tmp_path / "workspace").resolve()
     state_dir = (tmp_path / "state").resolve()
     workspace.mkdir()
@@ -129,10 +129,7 @@ def test_optional_concept_tool_is_compact_budgeted_and_traced(tmp_path: Path) ->
         assert "Zero lookups are valid" in normalized_instructions
         assert "after a successful run with warnings" in normalized_instructions
         assert "specific unresolved technical fact" in normalized_instructions
-        assert (
-            "configured document lookup budget for this run is 2"
-            in normalized_instructions
-        )
+        assert "lookup budget" not in normalized_instructions
         assert (
             "must never invent or override a missing physical input"
             in normalized_instructions
@@ -194,7 +191,7 @@ def test_optional_concept_tool_is_compact_budgeted_and_traced(tmp_path: Path) ->
     result = asyncio.run(agent.run(request.goal, deps=dependencies))
 
     assert isinstance(result.output, FailedDecision)
-    assert dependencies.concept_lookup_calls == 2
+    assert dependencies.concept_lookup_calls == 3
     returns = [
         part
         for message in observed
@@ -209,7 +206,7 @@ def test_optional_concept_tool_is_compact_budgeted_and_traced(tmp_path: Path) ->
         for key in ("title", "section", "excerpt", "source", "match", "CPS4R")
     )
     assert "duplicate" in str(returns[1].content)
-    assert "budget is exhausted" in str(returns[3].content)
+    assert "budget is exhausted" not in str(returns[3].content).casefold()
     first_bundle = AbaqusDocEvidenceBundle.model_validate(returns[0].content)
     assert all(item.release == "2026 FD02" for item in first_bundle.evidence)
     assert all(item.section_id for item in first_bundle.evidence)
@@ -229,9 +226,9 @@ def test_optional_concept_tool_is_compact_budgeted_and_traced(tmp_path: Path) ->
         "found",
         "duplicate",
         "found",
-        "unavailable",
+        "found",
     ]
-    assert [trace.counted for trace in traces] == [True, False, True, False]
+    assert [trace.counted for trace in traces] == [True, False, True, True]
     assert traces[0].exact_terms == ("CPS4R",)
     assert traces[0].products == ("Abaqus/Standard",)
     assert traces[0].document_ids
@@ -270,7 +267,7 @@ def _request(tmp_path: Path, index: AbaqusDocumentIndex) -> CodingRunRequest:
         runtime=RuntimeProfile(
             launcher_path=Path(r"D:\SIMULIA\Commands\abq2024.bat").resolve()
         ),
-        budget=CodingRunBudget(max_model_requests=8),
+        **CodingRunBudget(max_model_requests=8).as_request_controls(),
         concept_index=concept_index_binding(index),
     )
 
