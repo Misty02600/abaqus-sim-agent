@@ -19,7 +19,6 @@ from abaqus_sim_agent.coding.amendments import load_amendment_ledger
 from abaqus_sim_agent.coding.cli import (
     _api_catalog_binding,
     _configure_cli_output,
-    _LaunchManifest,
     _load_answers,
     _load_api_catalog,
     _load_launch_manifest,
