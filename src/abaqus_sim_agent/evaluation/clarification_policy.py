@@ -310,7 +310,7 @@ async def _run_attempt(
             allowed_abaqus_python_scripts=(),
             allowed_solver_inputs=(),
         ),
-        budget=CodingRunBudget(
+        **CodingRunBudget(
             max_clarifications=1,
             max_model_requests=8,
             max_api_lookup_calls=0,
@@ -319,7 +319,7 @@ async def _run_attempt(
             max_abaqus_calls=0,
             max_solver_calls=0,
             wall_time_seconds=300.0,
-        ),
+        ).as_request_controls(),
     )
     runner = Abaqus2024Runner(request.workspace, request.state_dir)
     model, client = create_deepseek_chat_model(

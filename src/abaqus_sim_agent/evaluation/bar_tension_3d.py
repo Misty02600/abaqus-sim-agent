@@ -419,7 +419,7 @@ async def run_evaluation(
                 if concept_index is not None
                 else None
             ),
-            budget=EVAL_BUDGET,
+            **EVAL_BUDGET.as_request_controls(),
         )
         runner = Abaqus2024Runner(
             request.workspace,

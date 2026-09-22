@@ -143,7 +143,7 @@ def test_verified_plate_seed_rejects_revised_outcome_with_old_verification(
         load_verified_plate_seed(source_run)
 
 
-def test_verified_plate_seed_rejects_amended_run_with_old_projections(
+def test_verified_plate_seed_rejects_pre_policy_amendment_schema(
     tmp_path: Path,
 ) -> None:
     source_run = _make_source_run(tmp_path / "source")
@@ -166,7 +166,7 @@ def test_verified_plate_seed_rejects_amended_run_with_old_projections(
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="post-Gold amendments"):
+    with pytest.raises(ValueError, match=r"config\.budget"):
         load_verified_plate_seed(source_run)
 
 

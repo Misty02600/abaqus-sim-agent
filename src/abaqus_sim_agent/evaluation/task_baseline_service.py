@@ -16,6 +16,10 @@ from pydantic_ai.exceptions import UnexpectedModelBehavior
 from pydantic_ai.models import Model
 from pydantic_ai.models.function import FunctionModel
 
+from abaqus_sim_agent.coding.context_policy import (
+    CONTEXT_POLICY_VERSION,
+    bind_filesystem_skills,
+)
 from abaqus_sim_agent.coding.contracts import CodingRunRequest, RuntimeProfile
 from abaqus_sim_agent.coding.deferred_runtime import WaitingForToolExecution
 from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
@@ -133,7 +137,7 @@ def _prepare(
                     resolved.state_dir / "fixture-only-never-launch.bat"
                 ).resolve()
             ),
-            budget=candidate.candidate_budget,
+            **candidate.candidate_budget.as_request_controls(),
         )
         binding = {
             "evidence_kind": evidence_kind,
@@ -544,16 +548,19 @@ async def _execute_service(
     clarification = ThicknessClarificationFixture(
         enabled=prepared.candidate.task_id == "missing-input-plate-v1"
     )
+    skill_library = skill_library_path().resolve()
     launch = LaunchManifest(
-        schema_version="coding-run-launch-v4"
-        if question_protocol == "ask_user_v1"
-        else "coding-run-launch-v3",
-        **(
-            {"question_protocol": "ask_user_v1"}
-            if question_protocol == "ask_user_v1"
-            else {}
+        schema_version="coding-run-launch-v7",
+        question_protocol=(
+            "ask_user_v1" if question_protocol == "ask_user_v1" else None
         ),
-        skill_library=skill_library_path().resolve(),
+        response_enabled=False,
+        capability_definitions=bind_filesystem_skills(
+            skill_library,
+            ("abaqus-2024-coding",),
+        ),
+        context_policy_version=CONTEXT_POLICY_VERSION,
+        skill_library=skill_library,
         **config.model_dump(),
     )
     service = CodingRunService(

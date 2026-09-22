@@ -325,7 +325,7 @@ async def run_evaluation(
             runtime=RuntimeProfile(
                 launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()
             ),
-            budget=budget,
+            **budget.as_request_controls(),
             api_catalog=api_binding,
             concept_index=binding,
         )

@@ -154,6 +154,9 @@ def baseline_execution_config() -> ModelExecutionConfig:
     return new_run_execution_config(
         model_provider=DeepSeekGateway.OPENCODE_GO,
         model_name=DEEPSEEK_V4_FLASH,
+        http_retries=10,
+        http_timeout_seconds=60.0,
+        planning_enabled=True,
     )
 
 
@@ -393,6 +396,7 @@ def compose_baseline_agent(
         immutable_workspace_paths=immutable_workspace_paths,
         step_store=step_store,
         question_protocol=question_protocol,
+        context_policy_enabled=True,
     )
 
 

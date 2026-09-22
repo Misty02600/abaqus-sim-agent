@@ -262,10 +262,10 @@ async def test_real_service_all_four_cards_with_fake_model_and_process(
     assert launch["http_timeout_seconds"] == 60.0
     assert launch["planning_enabled"] is True
     request = json.loads((state / "request.json").read_text(encoding="utf-8"))
-    assert (
-        request["budget"]["max_model_requests"]
-        == prepared.candidate.candidate_budget.max_model_requests
-    )
+    assert request["limits"]["model_requests"] == {
+        "mode": "limited",
+        "value": prepared.candidate.candidate_budget.max_model_requests,
+    }
     assert "4200" not in request["goal"]
     for path in prepared.candidate.preserved_inputs:
         assert (context.workspace / path).read_bytes() == prepared.workspace_files[path]

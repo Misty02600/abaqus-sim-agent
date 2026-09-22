@@ -13,6 +13,7 @@ from abaqus_sim_agent.evaluation.behavior_measurement import (
     Completion,
     MeasurementContract,
     SourceRef,
+    Termination,
     TrialCost,
     TrialReview,
     Verdict,
@@ -71,21 +72,23 @@ def _source_ref(batch: Path, path: Path, pointer: str = "") -> SourceRef:
     return ref
 
 
-def _termination(outcome: dict | None, rubric: CaseRubric, error: str | None) -> str:
+def _termination(
+    outcome: dict | None, rubric: CaseRubric, error: str | None
+) -> Termination:
     if outcome is not None:
         failure = outcome.get("failure_stage")
         if outcome.get("status") == "completed":
             return "normal"
         if failure == "clarification" and "appropriately_stopped" in rubric.accepted_completions:
             return "normal"
-        mapping = {
+        mapping: dict[str, Termination] = {
             "model_budget": "model_budget",
             "runtime_budget": "runtime_budget",
             "wall_clock": "wall_budget",
             "timeout": "wall_budget",
             "provider": "provider",
         }
-        return mapping.get(failure, "unknown")
+        return mapping.get(failure, "unknown") if isinstance(failure, str) else "unknown"
     return "unknown" if error else "environment"
 
 

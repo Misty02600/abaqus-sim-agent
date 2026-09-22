@@ -63,6 +63,13 @@ def _write_new(path: Path, value: object) -> None:
         stream.write("\n")
 
 
+def _required_int(item: dict[str, object], key: str) -> int:
+    value = item[key]
+    if not isinstance(value, (str, int, float)):
+        raise TypeError(f"{key} must be numeric")
+    return int(value)
+
+
 def _tool_calls(state: Path) -> list[dict[str, object]]:
     history = state / "history.json"
     if not history.is_file():
@@ -249,7 +256,7 @@ async def run_evaluation(
             workspace=workspace,
             state_dir=state,
             runtime=RuntimeProfile(launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()),
-            budget=budget,
+            **budget.as_request_controls(),
         )
         initial = WorkspaceResolver(captured_cwd=workspace).snapshot(workspace)
         model, client = create_deepseek_chat_model(
@@ -316,9 +323,15 @@ async def run_evaluation(
         "repetition": repetition,
         "case_count": len(observations),
         "pending_behavior_reviews": len(observations),
-        "forbidden_loads_total": sum(int(item["forbidden_load_count"]) for item in observations),
-        "load_calls_total": sum(int(item["load_call_count"]) for item in observations),
-        "loaded_skill_body_bytes_total": sum(int(item["loaded_skill_body_bytes"]) for item in observations),
+        "forbidden_loads_total": sum(
+            _required_int(item, "forbidden_load_count") for item in observations
+        ),
+        "load_calls_total": sum(
+            _required_int(item, "load_call_count") for item in observations
+        ),
+        "loaded_skill_body_bytes_total": sum(
+            _required_int(item, "loaded_skill_body_bytes") for item in observations
+        ),
         "cases": observations,
         "behavior_review_status": "pending_host_semantic_review",
         "environment_verified_after_run": True,

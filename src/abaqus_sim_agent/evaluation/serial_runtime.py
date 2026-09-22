@@ -15,7 +15,7 @@ class SerialRuntime:
         self.wait_seconds = 0.0
 
     async def run(
-        self, command: Sequence[str], *, cwd: Path, timeout_seconds: float
+        self, command: Sequence[str], *, cwd: Path, timeout_seconds: float | None
     ) -> ProcessOutput:
         """等待计入调用方的wall预算；取消等待不启动进程，清理完成前不释放占用。"""
         started = time.perf_counter()

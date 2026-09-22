@@ -59,6 +59,7 @@ from abaqus_sim_agent.evaluation.foundation_skill_behavior import (
 )
 from abaqus_sim_agent.evaluation.foundation_skill_behavior import (
     TASK_INSTRUCTIONS,
+    _required_int,
 )
 from abaqus_sim_agent.evaluation.foundation_skill_behavior import (
     load_rubrics as load_diagnostic_rubrics,
@@ -396,7 +397,7 @@ async def run_pilot(
             workspace=workspace,
             state_dir=state,
             runtime=RuntimeProfile(launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()),
-            budget=budget,
+            **budget.as_request_controls(),
         )
         initial = WorkspaceResolver(captured_cwd=workspace).snapshot(workspace)
         model, client = create_deepseek_chat_model(
@@ -463,7 +464,7 @@ async def run_pilot(
         "trial_count": len(observations),
         "pending_behavior_reviews": len(observations),
         "loaded_skill_body_bytes_total": sum(
-            int(item["loaded_skill_body_bytes"]) for item in observations
+            _required_int(item, "loaded_skill_body_bytes") for item in observations
         ),
         "trials": observations,
         "review_status": "pending_host_semantic_review",

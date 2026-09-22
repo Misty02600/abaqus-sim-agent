@@ -354,14 +354,14 @@ async def run_evaluation(
                 launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()
             ),
             api_catalog=_api_catalog_binding(api_catalog),
-            budget=CodingRunBudget(
+            **CodingRunBudget(
                 max_clarifications=0,
                 max_model_requests=18,
                 max_api_lookup_calls=3,
                 max_abaqus_calls=5,
                 max_solver_calls=0,
                 wall_time_seconds=600.0,
-            ),
+            ).as_request_controls(),
         )
         runner = Abaqus2024Runner(
             request.workspace,

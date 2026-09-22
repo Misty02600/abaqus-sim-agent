@@ -108,7 +108,7 @@ async def execute_model_change_case[AttemptT: VerificationAttempt](
         concept_index=(
             concept_index_binding(concept_index) if concept_index is not None else None
         ),
-        budget=budget,
+        **budget.as_request_controls(),
     )
     runner = Abaqus2024Runner(
         request.workspace,

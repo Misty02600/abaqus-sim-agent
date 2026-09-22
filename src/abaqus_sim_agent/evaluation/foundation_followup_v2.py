@@ -136,7 +136,7 @@ def request_for(root: Path, trial, case: PilotCase) -> CodingRunRequest:
         workspace=workspace,
         state_dir=state,
         runtime=RuntimeProfile(launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()),
-        budget=budget(),
+        **budget().as_request_controls(),
     )
 
 

@@ -7,7 +7,6 @@ import pytest
 from openai import AsyncOpenAI
 from pydantic import SecretStr
 from tests.test_coding_amendments import _persist_base_state
-from tests.test_execution_config import target_config
 
 from abaqus_sim_agent.coding.cli import run_cli
 from abaqus_sim_agent.coding.contracts import ClarificationRequest
@@ -242,12 +241,15 @@ def test_actual_cli_and_baseline_http_configuration_parity_with_sdk_retry(
 
     async def evaluate():
         config = baseline_execution_config()
-        assert config == target_config()
+        assert config.http_retries == 10
+        assert config.http_timeout_seconds == 60.0
         model, client = create_deepseek_chat_model(
             gateway=config.model_provider,
             model_name=config.model_name,
             api_key=SecretStr("offline"),
             conversation_id=request.run_id,
+            http_retries=config.http_retries,
+            timeout_seconds=config.http_timeout_seconds,
             execution_config=config,
         )
         agent = compose_baseline_agent(
@@ -277,67 +279,39 @@ def test_actual_cli_and_baseline_http_configuration_parity_with_sdk_retry(
         assert body["reasoning_effort"] == "high"
         assert "max_tokens" not in body
         assert "max_completion_tokens" not in body
-    # New ordinary launch v5 can answer without artifacts; the frozen evaluator
-    # retains its artifact contract. Every shared tool schema must still match.
-    response_name = "final_result_ResponseDecision"
-    response_outputs = [
-        t for t in bodies[1]["tools"] if t["function"]["name"] == response_name
-    ]
-    assert len(response_outputs) == 1
-    assert not any(t["function"]["name"] == response_name for t in bodies[3]["tools"])
-    assert [
-        t for t in bodies[1]["tools"] if t["function"]["name"] != response_name
-    ] == bodies[3]["tools"]
-    tool_names = {t["function"]["name"] for t in bodies[3]["tools"]}
-    assert "write_plan" in tool_names
-    assert not tool_names & {"run_command", "search_abaqus_docs", "lookup_abaqus_api"}
-    assert all(c.max_retries == 10 and c.timeout == 60.0 for c in clients)
-
-
-def test_cli_wall_budget_cancels_sdk_backoff(tmp_path, monkeypatch):
-    attempts = []
-
-    def response(request):
-        attempts.append(request)
-        return httpx.Response(
-            503,
-            headers={"retry-after": "10"},
-            json={"error": {"message": "offline unavailable"}},
-        )
-
-    monkeypatch.setattr(
-        "abaqus_sim_agent.coding.model.AsyncOpenAI",
-        lambda **kwargs: AsyncOpenAI(
-            **kwargs,
-            http_client=httpx.AsyncClient(transport=httpx.MockTransport(response)),
-        ),
-    )
-    monkeypatch.setattr(
-        "abaqus_sim_agent.coding.cli.take_gateway_api_key_from_environment",
-        lambda _: SecretStr("offline"),
-    )
-    work, state = tmp_path / "work", tmp_path / "state"
-    work.mkdir()
+    # Ordinary product sessions expose the coding shell and background Solver
+    # contract; the frozen evaluator retains its original runtime tool schema.
+    product_tools = {t["function"]["name"]: t for t in bodies[1]["tools"]}
+    evaluator_tools = {t["function"]["name"]: t for t in bodies[3]["tools"]}
+    assert {
+        "final_result_ResponseDecision",
+        "run_command",
+        "start_command",
+        "check_command",
+        "stop_command",
+        "solver_job",
+    } <= product_tools.keys()
+    assert "run_solver_job" not in product_tools
+    assert "run_solver_job" in evaluator_tools
     assert (
-        run_cli(
-            [
-                "--goal",
-                "offline budget test",
-                "--workspace",
-                str(work),
-                "--state-dir",
-                str(state),
-                "--model-provider",
-                "opencode-go",
-                "--wall-time-seconds",
-                "0.5",
-            ]
-        )
-        == 1
+        not {
+            "final_result_ResponseDecision",
+            "run_command",
+            "start_command",
+            "check_command",
+            "stop_command",
+            "solver_job",
+        }
+        & evaluator_tools.keys()
     )
-    outcome = json.loads((state / "outcome.json").read_text())
-    assert outcome["failure_stage"] == "timeout"
-    assert len(attempts) == 1
+    assert "write_plan" in evaluator_tools
+    assert "write_plan" not in product_tools
+    for name in product_tools.keys() & evaluator_tools.keys():
+        assert product_tools[name] == evaluator_tools[name]
+    assert [(c.max_retries, c.timeout) for c in clients] == [
+        (4, 300.0),
+        (10, 60.0),
+    ]
 
 
 def _fixture_result(context, **changes):

@@ -688,7 +688,7 @@ async def execute_batch(
             state_dir=state,
             runtime=RuntimeProfile(launcher_path=root / "never-run.bat"),
             document_policy=case_binding,
-            budget=budget,
+            **budget.as_request_controls(),
         )
         snapshot = WorkspaceResolver(captured_cwd=workspace).snapshot(workspace)
         port = ControlledEvidencePort(case, case_binding, evidence, count, state)

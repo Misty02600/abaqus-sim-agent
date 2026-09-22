@@ -1107,6 +1107,7 @@ def _validate_persisted_agent_batch(
         manifest,
     )
     current_index_binding = concept_index_binding(index)
+    expected_controls = expected_budget.as_request_controls()
     for observation in observations:
         state = root / observation.run_id / "state"
         request = CodingRunRequest.model_validate_json(
@@ -1118,7 +1119,10 @@ def _validate_persisted_agent_batch(
         if (
             request.run_id != observation.run_id
             or request.goal != REPAIR_GOAL
-            or request.budget != expected_budget
+            or request.limits != expected_controls["limits"]
+            or request.runtime_policy != expected_controls["runtime_policy"]
+            or request.evaluation_tool_limits
+            != expected_controls["evaluation_tool_limits"]
             or request.runtime_script_policy != expected_policy
             or request.concept_index != current_index_binding
             or outcome != observation.outcome

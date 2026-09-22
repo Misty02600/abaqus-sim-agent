@@ -59,7 +59,10 @@ async def run(output: Path, spec_file: Path):
         state_dir=state,
         runtime=RuntimeProfile(launcher_path=output / "never-run.bat"),
         document_policy=binding,
-        budget=CodingRunBudget(max_model_requests=6, wall_time_seconds=300.0),
+        **CodingRunBudget(
+            max_model_requests=6,
+            wall_time_seconds=300.0,
+        ).as_request_controls(),
     )
     snapshot = WorkspaceResolver(captured_cwd=workspace).snapshot(workspace)
     calls = 0

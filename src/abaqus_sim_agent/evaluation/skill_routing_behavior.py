@@ -58,6 +58,13 @@ measures capability loading behavior, not simulation correctness.
 """.strip()
 
 
+def _required_int(item: dict[str, object], key: str) -> int:
+    value = item[key]
+    if not isinstance(value, (str, int, float)):
+        raise TypeError(f"{key} must be numeric")
+    return int(value)
+
+
 class SkillRoutingCase(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
 
@@ -292,7 +299,7 @@ async def run_evaluation(
             runtime=RuntimeProfile(
                 launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()
             ),
-            budget=budget,
+            **budget.as_request_controls(),
         )
         initial = WorkspaceResolver(captured_cwd=workspace).snapshot(workspace)
         model, client = create_deepseek_chat_model(
@@ -353,8 +360,12 @@ async def run_evaluation(
         "manifest_sha256": _sha256(root / "manifest.json"),
         "exact_route_passes": sum(bool(item["exact_route_pass"]) for item in observations),
         "case_count": len(observations),
-        "forbidden_loads_total": sum(int(item["forbidden_load_count"]) for item in observations),
-        "load_calls_total": sum(int(item["load_call_count"]) for item in observations),
+        "forbidden_loads_total": sum(
+            _required_int(item, "forbidden_load_count") for item in observations
+        ),
+        "load_calls_total": sum(
+            _required_int(item, "load_call_count") for item in observations
+        ),
         "cases": observations,
         "review_status": "pending_manual_review",
         "environment_verified_after_run": True,
