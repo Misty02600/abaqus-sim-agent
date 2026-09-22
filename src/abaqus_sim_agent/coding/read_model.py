@@ -127,6 +127,9 @@ def preview(value: object) -> str:
 
 def _target(arguments: object) -> str | None:
     if isinstance(arguments, dict):
+        nested = arguments.get("request")
+        if isinstance(nested, dict):
+            arguments = nested
         for key in ("script_path", "input_file", "path", "job_name"):
             value = arguments.get(key)
             if isinstance(value, str):
@@ -460,7 +463,10 @@ def project_checkpoint(
     usage = CodingRunUsage(
         model_requests=state.usage.requests,
         input_tokens=state.usage.input_tokens,
+        cache_write_tokens=state.usage.cache_write_tokens,
+        cache_read_tokens=state.usage.cache_read_tokens,
         output_tokens=state.usage.output_tokens,
+        provider_details=dict(state.usage.details),
         tool_calls=state.usage.tool_calls,
         abaqus_calls=state.dependencies.abaqus_calls,
         solver_calls=state.dependencies.solver_calls,

@@ -9,6 +9,10 @@ from tests.test_task_baseline_service import FakeAbaqusProcess
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.amendments import append_task_revision
 from abaqus_sim_agent.coding.clarification import ScriptedClarificationProvider
+from abaqus_sim_agent.coding.context_policy import (
+    CONTEXT_POLICY_VERSION,
+    bind_filesystem_skills,
+)
 from abaqus_sim_agent.coding.contracts import CodingRunRequest, RuntimeProfile
 from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
 from abaqus_sim_agent.coding.execution_verifier import ExecutionEvidenceVerifier
@@ -44,7 +48,7 @@ def call(name, args, call_id="call"):
 @pytest.mark.parametrize(
     "mode", ["full", "automatic_verified_only", "automatic_exact_signature"]
 )
-def test_cli_catalog_questions_resume_preserves_schema_binding_and_lookup_budget(
+def test_cli_catalog_questions_resume_preserves_schema_binding_and_lookup_usage(
     tmp_path, monkeypatch, mode
 ):
     from pydantic import SecretStr
@@ -138,8 +142,6 @@ def test_cli_catalog_questions_resume_preserves_schema_binding_and_lookup_budget
                 str(catalog_dir),
                 "--api-catalog-mode",
                 mode,
-                "--max-api-lookup-calls",
-                "2",
             ]
         )
         == 2
@@ -156,7 +158,7 @@ def test_cli_catalog_questions_resume_preserves_schema_binding_and_lookup_budget
     assert (state / "launch.json").read_bytes() == launch_bytes
     resumed = load_resume_state(state)
     assert resumed.usage.requests == len(steps)
-    assert resumed.dependencies.api_lookup_calls == (2 if mode == "full" else 0)
+    assert resumed.dependencies.api_lookup_calls == (3 if mode == "full" else 0)
     if mode == "full":
         traces = [
             json.loads(line)
@@ -168,7 +170,7 @@ def test_cli_catalog_questions_resume_preserves_schema_binding_and_lookup_budget
             "found",
             "duplicate",
             "found",
-            "unavailable",
+            "found",
         ]
     assert len(load_questions(state, resumed.run_id).questions) == 1
 
@@ -256,10 +258,17 @@ def service_for(tmp_path, reply, *, resume=False):
         )
         initial = WorkspaceResolver().snapshot(workspace)
     config = baseline_execution_config()
+    skill_library = skill_library_path().resolve()
     launch = LaunchManifest(
-        schema_version="coding-run-launch-v4",
+        schema_version="coding-run-launch-v7",
         question_protocol="ask_user_v1",
-        skill_library=skill_library_path().resolve(),
+        response_enabled=True,
+        capability_definitions=bind_filesystem_skills(
+            skill_library,
+            ("abaqus-2024-coding",),
+        ),
+        context_policy_version=CONTEXT_POLICY_VERSION,
+        skill_library=skill_library,
         **config.model_dump(),
     )
     store = create_step_store(state)

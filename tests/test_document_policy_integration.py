@@ -14,8 +14,8 @@ from tests.test_document_policy import BINDING, SCOPE, FakePort, FakeValidator, 
 
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.amendments import (
-    CodingRunBudgetPatch,
     CodingRunConfigPatch,
+    RuntimeExecutionPolicyPatch,
     append_operational_amendment,
     append_task_revision,
 )
@@ -25,7 +25,11 @@ from abaqus_sim_agent.coding.cli import (
     _validate_resume_arguments,
     build_parser,
 )
-from abaqus_sim_agent.coding.contracts import CodingRunBudget
+from abaqus_sim_agent.coding.context_policy import CONTEXT_POLICY_VERSION
+from abaqus_sim_agent.coding.contracts import (
+    CapabilityDefinitionBinding,
+    CodingRunBudget,
+)
 from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
 from abaqus_sim_agent.coding.document_policy_binding import (
     DeclaredDocumentNeed,
@@ -33,7 +37,7 @@ from abaqus_sim_agent.coding.document_policy_binding import (
     DocumentPolicySpec,
     load_document_policy_spec,
 )
-from abaqus_sim_agent.coding.model import DeepSeekGateway
+from abaqus_sim_agent.coding.model import DeepSeekGateway, new_run_execution_config
 from abaqus_sim_agent.coding.resume import (
     create_step_store,
     load_request_for_resume,
@@ -318,7 +322,7 @@ def test_host_physical_input_is_resolved_only_by_real_clarification_path(tmp_pat
     assert result.outcome.clarifications[0].abaqus_calls_before_answer == 0
 
 
-def test_real_service_resume_reuses_receipt_and_keeps_quota_amendment(tmp_path):
+def test_real_service_resume_reuses_receipt_across_runtime_amendment(tmp_path):
     request, snapshot = _request(tmp_path)
     request = request.model_copy(update={"document_policy": bound(tmp_path)})
     port = FakePort()
@@ -340,9 +344,11 @@ def test_real_service_resume_reuses_receipt_and_keeps_quota_amendment(tmp_path):
     append_operational_amendment(
         request.state_dir,
         patch=CodingRunConfigPatch(
-            budget=CodingRunBudgetPatch(max_concept_lookup_calls=3)
+            runtime_policy=RuntimeExecutionPolicyPatch.model_validate(
+                {"solver": {"mode": "allow"}}
+            )
         ),
-        reason="test host quota change",
+        reason="test unrelated runtime policy change",
     )
     effective = load_request_for_resume(request.state_dir)
     resumed_calls = 0
@@ -369,7 +375,7 @@ def test_real_service_resume_reuses_receipt_and_keeps_quota_amendment(tmp_path):
     assert outcome.status.value == "completed"
     assert len(port.calls) == 1
     assert deps.concept_lookup_calls == 1
-    assert deps.document_policy.journal.state.limit == 3
+    assert deps.document_policy.journal.state.limit == 2
     assert (request.state_dir / "request.json").read_bytes() == original_request
     append_task_revision(
         request.state_dir,
@@ -411,26 +417,38 @@ def test_resume_with_damaged_policy_never_calls_model(tmp_path, damaged):
     assert called == []
 
 
-def test_explicit_binding_and_legacy_formats_roundtrip(tmp_path):
+def test_explicit_binding_current_launch_roundtrip(tmp_path):
     request, _ = _request(tmp_path)
     assert "document_policy" not in request.model_dump()
-    launch = _LaunchManifest(
+    config = new_run_execution_config(
         model_provider=DeepSeekGateway.OFFICIAL,
         model_name="fake",
         http_retries=0,
+    )
+    launch = _LaunchManifest(
+        schema_version="coding-run-launch-v7",
+        response_enabled=False,
+        capability_definitions=(
+            CapabilityDefinitionBinding(
+                capability_id="fixture",
+                definition_sha256="a" * 64,
+            ),
+        ),
+        context_policy_version=CONTEXT_POLICY_VERSION,
         skill_library=tmp_path,
+        **config.model_dump(),
     )
     assert "document_policy" not in launch.model_dump()
     value = launch.model_dump() | {
         "document_policy": bound(tmp_path),
         "concept_retrieval_mode": "tool",
     }
-    with pytest.raises(ValidationError):
-        _LaunchManifest.model_validate(value)
-    updated = _LaunchManifest.model_validate(
-        value | {"schema_version": "coding-run-launch-v2"}
-    )
+    updated = _LaunchManifest.model_validate(value)
     assert _LaunchManifest.model_validate_json(updated.model_dump_json()) == updated
+    with pytest.raises(ValidationError, match="bounded documents require concept"):
+        _LaunchManifest.model_validate(
+            launch.model_dump() | {"document_policy": bound(tmp_path)}
+        )
     active_request = request.model_copy(update={"document_policy": bound(tmp_path)})
     with pytest.raises(ValueError, match="requires concept"):
         create_abaqus_coding_agent(FunctionModel(lambda m, i: ready()), active_request)
@@ -545,9 +563,9 @@ def test_cli_bounded_profile_persists_launch_and_ignores_edited_spec_on_resume(
         (state / "request.json").read_bytes(),
         (state / "launch.json").read_bytes(),
     )
-    assert json.loads(original_launch)["schema_version"] == "coding-run-launch-v3"
+    assert json.loads(original_launch)["schema_version"] == "coding-run-launch-v7"
     assert json.loads(original_launch)["reasoning_policy"] == "provider_default"
-    assert json.loads(original_launch)["planning_enabled"] is True
+    assert json.loads(original_launch)["planning_enabled"] is False
     assert json.loads(original_request)["document_policy"]["mode"] == "bounded_v1"
     spec_path.write_text("broken after immutable launch")
     assert (

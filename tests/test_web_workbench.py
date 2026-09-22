@@ -124,6 +124,32 @@ def create(client, *, key=None):
     return response.json()["view"]["run_id"]
 
 
+def test_create_run_persists_explicit_runtime_permissions(tmp_path) -> None:
+    app, _ = configured_app(tmp_path)
+    with TestClient(app, base_url="http://127.0.0.1") as client:
+        login(client)
+        response = client.post(
+            "/api/v1/runs",
+            json={
+                "idempotency_key": str(uuid4()),
+                "goal": "Create a configured run",
+                "abaqus_permission": {"mode": "allow"},
+                "solver_permission": {
+                    "mode": "allow_with_limit",
+                    "limit": 2,
+                },
+            },
+        )
+
+    assert response.status_code == 201, response.text
+    snapshot = response.json()
+    assert snapshot["runtime_policy"]["abaqus"] == {"mode": "allow"}
+    assert snapshot["runtime_policy"]["solver"] == {
+        "mode": "allow_with_limit",
+        "limit": 2,
+    }
+
+
 def settled(client, run_id, *, status=None):
     for _ in range(200):
         response = client.get(f"/api/v1/runs/{run_id}")
@@ -206,7 +232,7 @@ def test_commands_questions_and_read_only_state(tmp_path):
             ).status_code
             == 409
         )
-        assert "run_command" not in calls[0]
+        assert "run_command" in calls[0]
         assert all(names == calls[0] for names in calls)
 
 

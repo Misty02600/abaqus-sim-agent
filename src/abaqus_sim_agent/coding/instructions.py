@@ -89,7 +89,7 @@ candidate IDs as if their Cards had been read.
         else ""
     )
     concept_instructions = (
-        f"""
+        """
 Official Abaqus documentation is available through `search_abaqus_docs`.
 Use it when a specific unresolved technical fact matters to your next action
 and the task, relevant workspace files, Skill, or existing runtime evidence do
@@ -111,8 +111,7 @@ because a task starts or a runtime reports an error. Reuse relevant evidence
 already supplied by automatic hints; search again only for an unresolved question
 or materially new context. A found result is candidate evidence, not a confirmed
 answer. Inspect its content and release before using it. Documentation must never
-invent or override a missing physical input. The configured document lookup
-budget for this run is {request.budget.max_concept_lookup_calls}.
+invent or override a missing physical input.
 """.strip()
         if concept_retrieval_enabled
         else ""
@@ -273,7 +272,7 @@ code so that the release-specific runtime boundaries are available.
 Keep authoring, solver, and ODB extraction separate. {solver_instructions}
 {artifact_instructions}
 Use runtime and verifier evidence to make the smallest relevant repair, and do
-not spend the finite tool budget on an unchanged retry without a reason.
+not repeat an unchanged runtime call without a reason.
 When exact evidence proves that an attribute is absent or a keyword is invalid,
 inspect the current target script for every occurrence of that same
 owner/attribute or callable/keyword before the next runtime call. Apply the
@@ -356,7 +355,7 @@ def _runtime_script_policy_instructions(
         return ""
     lines = [
         "The host enforces an exact runtime-file allowlist for this task. Calls",
-        "outside it are blocked before execution and do not consume Abaqus budget:",
+        "outside it are blocked before execution:",
     ]
     for label, paths in restricted:
         rendered = ", ".join(f"`{path}`" for path in paths) or "nothing"
@@ -396,7 +395,7 @@ Before vendor execution, the host runs {binding.engine} against the current
 production script using {binding.api_source} {binding.api_source_version} type
 information, then filters its raw output through the pinned
 `{binding.policy_version}` high-confidence policy. The first report for a script
-hash pauses execution without consuming Abaqus budget. Review every reported
+hash pauses execution before Abaqus starts. Review every reported
 item and apply all independent supported repairs in one edit before vendor
 execution; do not use an unchanged retry merely to ask Abaqus to confirm the
 same errors. An unchanged retry remains a false-positive escape hatch, but use

@@ -69,7 +69,10 @@ def register_document_policy_tools[AgentOutputT](
             return {"status": "blocked", "reason": "Document policy is not initialized"}
         try:
             return (
-                await policy.search(query, deadline=ctx.deps.document_deadline)
+                await policy.search(
+                    query,
+                    deadline=ctx.deps.document_operation_deadline(),
+                )
             ).model_dump(mode="json")
         except (DocumentPolicyDenied, TimeoutError) as exc:
             return {
@@ -94,7 +97,8 @@ def register_document_policy_tools[AgentOutputT](
             return {"status": "blocked", "reason": "Document policy is not initialized"}
         try:
             await policy.record_assessment(
-                assessment, deadline=ctx.deps.document_deadline
+                assessment,
+                deadline=ctx.deps.document_operation_deadline(),
             )
             return {
                 "status": "recorded",
@@ -151,7 +155,7 @@ async def document_runtime_denial(
         try:
             gate = await policy.validate_execution_gate(
                 "abaqus",
-                deadline=deps.document_deadline,
+                deadline=deps.document_operation_deadline(),
                 host_operation_id=_independent_operation(deps, kind, path),
             )
             if gate.allowed:

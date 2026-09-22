@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from time import monotonic
 from typing import Literal
 
 from pydantic_ai_harness.step_persistence import StepStore
@@ -35,6 +36,8 @@ from abaqus_sim_agent.execution.abaqus2024 import (
 )
 from abaqus_sim_agent.retrieval import AbaqusDocumentIndex
 
+from .active_wall import ActiveWallClock
+
 __all__ = ["CodingAgentDependencies", "RuntimeBudgetExceeded"]
 
 
@@ -46,6 +49,7 @@ class RuntimeBudgetExceeded(RuntimeError):
 class CodingAgentDependencies:
     request: CodingRunRequest
     runner: Abaqus2024Runner
+    active_wall: ActiveWallClock = field(default_factory=ActiveWallClock)
     step_store: StepStore | None = None
     observer: ProgressObserver | None = None
     api_catalog: ApiCatalog | None = None
@@ -53,7 +57,7 @@ class CodingAgentDependencies:
     document_port: DocumentSearchPort | None = None
     document_validator: DocumentReceiptValidator | None = None
     document_policy: DocumentPolicy | None = None
-    document_deadline: float = 0.0
+    document_operation_timeout_seconds: float = 300.0
     api_lookup_calls: int = 0
     concept_lookup_calls: int = 0
     diagnostic_retrieval_calls: int = 0
@@ -67,6 +71,7 @@ class CodingAgentDependencies:
     returned_api_parameter_keys: set[tuple[str, str]] = field(default_factory=set)
     abaqus_calls: int = 0
     solver_calls: int = 0
+    pending_solver_executions: set[str] = field(default_factory=set)
     executions: list[AbaqusExecutionResult] = field(default_factory=list)
     probe_protocol: ProbeProtocolState | None = None
     probe_runtime_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
@@ -117,17 +122,30 @@ class CodingAgentDependencies:
             raise ValueError("hard syntax gate requires enforced_verified mode")
 
     def reserve_runtime_call(self, *, solver: bool) -> str | None:
-        if self.request.edit_scope is not None:
-            return "Pure edit scope prohibits all Abaqus execution"
-        budget = self.request.budget
-        if self.abaqus_calls >= budget.max_abaqus_calls:
-            return "Abaqus invocation budget is exhausted"
-        if solver and self.solver_calls >= budget.max_solver_calls:
-            return "Abaqus solver invocation budget is exhausted"
+        if denied := self.runtime_permission_denial(solver=solver):
+            return denied
         self.abaqus_calls += 1
         if solver:
             self.solver_calls += 1
         return None
+
+    def document_operation_deadline(self) -> float:
+        timeout = self.document_operation_timeout_seconds
+        remaining = self.active_wall.remaining_seconds(
+            self.request.limits.active_wall_seconds
+        )
+        if remaining is not None:
+            timeout = min(timeout, remaining)
+        return monotonic() + timeout
+
+    def runtime_permission_denial(self, *, solver: bool) -> str | None:
+        if self.request.edit_scope is not None:
+            return "Pure edit scope prohibits all Abaqus execution"
+        return self.request.runtime_policy.runtime_denial(
+            solver=solver,
+            abaqus_used=self.abaqus_calls,
+            solver_used=self.solver_calls,
+        )
 
     def runtime_script_policy_denial(
         self,
@@ -168,7 +186,9 @@ class CodingAgentDependencies:
     def reserve_api_lookup(self) -> str | None:
         if self.api_catalog is None:
             return "Abaqus API catalog is not configured"
-        if self.api_lookup_calls >= self.request.budget.max_api_lookup_calls:
+        limits = self.request.evaluation_tool_limits
+        limit = limits.api_lookup_calls if limits is not None else None
+        if limit is not None and self.api_lookup_calls >= limit:
             return "Abaqus API lookup budget is exhausted"
         self.api_lookup_calls += 1
         return None
@@ -176,10 +196,9 @@ class CodingAgentDependencies:
     def reserve_static_preflight(self) -> str | None:
         if self.static_preflight is None:
             return "Static preflight is not configured"
-        if (
-            self.static_preflight_calls
-            >= self.request.budget.max_static_preflight_calls
-        ):
+        limits = self.request.evaluation_tool_limits
+        limit = limits.static_preflight_calls if limits is not None else None
+        if limit is not None and self.static_preflight_calls >= limit:
             return "Static preflight budget is exhausted"
         self.static_preflight_calls += 1
         return None
@@ -215,7 +234,9 @@ class CodingAgentDependencies:
     def reserve_concept_lookup(self) -> str | None:
         if self.concept_index is None:
             return "Abaqus concept document index is not configured"
-        if self.concept_lookup_calls >= self.request.budget.max_concept_lookup_calls:
+        limits = self.request.evaluation_tool_limits
+        limit = limits.concept_lookup_calls if limits is not None else None
+        if limit is not None and self.concept_lookup_calls >= limit:
             return "Abaqus concept document lookup budget is exhausted"
         self.concept_lookup_calls += 1
         return None
@@ -223,10 +244,9 @@ class CodingAgentDependencies:
     def reserve_diagnostic_retrieval(self) -> str | None:
         if self.concept_index is None:
             return "Abaqus diagnostic document index is not configured"
-        if (
-            self.diagnostic_retrieval_calls
-            >= self.request.budget.max_diagnostic_retrieval_calls
-        ):
+        limits = self.request.evaluation_tool_limits
+        limit = limits.diagnostic_retrieval_calls if limits is not None else None
+        if limit is not None and self.diagnostic_retrieval_calls >= limit:
             return "Abaqus diagnostic retrieval budget is exhausted"
         self.diagnostic_retrieval_calls += 1
         return None

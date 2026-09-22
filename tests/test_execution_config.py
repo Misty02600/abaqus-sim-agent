@@ -1,5 +1,3 @@
-import json
-
 import pytest
 from pydantic import ValidationError
 from tests.test_coding_amendments import _persist_base_state
@@ -8,6 +6,8 @@ from abaqus_sim_agent.coding.amendments import (
     CodingRunConfigPatch,
     append_operational_amendment,
 )
+from abaqus_sim_agent.coding.context_policy import CONTEXT_POLICY_VERSION
+from abaqus_sim_agent.coding.contracts import CapabilityDefinitionBinding
 from abaqus_sim_agent.coding.instructions import build_instructions
 from abaqus_sim_agent.coding.launch import LaunchManifest
 from abaqus_sim_agent.coding.model import (
@@ -25,63 +25,49 @@ def target_config(**changes):
     )
 
 
-def launch(tmp_path, version="coding-run-launch-v3"):
-    values = {
-        "schema_version": version,
-        "model_provider": DeepSeekGateway.OPENCODE_GO,
-        "model_name": "deepseek-v4-flash",
-        "http_retries": 10,
-        "skill_library": tmp_path,
-    }
-    if version.endswith("v3"):
-        values.update(
-            target_config().model_dump(
-                exclude={"model_provider", "model_name", "http_retries"}
-            )
-        )
-    return LaunchManifest(**values)
+def launch(tmp_path):
+    return LaunchManifest(
+        schema_version="coding-run-launch-v7",
+        question_protocol="ask_user_v1",
+        response_enabled=True,
+        capability_definitions=(
+            CapabilityDefinitionBinding(
+                capability_id="fixture",
+                definition_sha256="a" * 64,
+            ),
+        ),
+        context_policy_version=CONTEXT_POLICY_VERSION,
+        skill_library=tmp_path,
+        **target_config().model_dump(),
+    )
 
 
-def test_new_target_and_legacy_compatibility(tmp_path):
+def test_current_launch_roundtrip_and_question_protocol(tmp_path):
     assert target_config().model_settings() == {
-        "timeout": 60.0,
+        "timeout": 300.0,
         "extra_body": {"thinking": {"type": "enabled"}},
         "openai_reasoning_effort": "high",
     }
-    assert launch(tmp_path).effective_execution() == target_config()
-    for version in ("coding-run-launch-v1", "coding-run-launch-v2"):
-        original = launch(tmp_path, version).model_dump_json()
-        decoded = LaunchManifest.model_validate_json(original)
-        assert decoded.model_dump_json() == original
-        assert decoded.effective_execution().model_settings() == {"timeout": 60.0}
-        assert decoded.effective_execution().interaction_policy == "legacy"
-        assert not decoded.effective_execution(pure_edit=True).planning_enabled
-        assert "reasoning_policy" not in json.loads(original)
-        with pytest.raises(ValidationError, match="legacy launch"):
-            LaunchManifest.model_validate_json(
-                original[:-1] + ',"reasoning_policy":null}'
-            )
+    current = launch(tmp_path)
+    assert current.effective_execution() == target_config()
+    assert LaunchManifest.model_validate_json(current.model_dump_json()) == current
+    values = current.model_dump(mode="python")
+    without_question_protocol = dict(values)
+    without_question_protocol.pop("question_protocol")
+    with pytest.raises(ValidationError, match="response-enabled launch requires ask_user"):
+        LaunchManifest.model_validate(without_question_protocol)
 
 
-@pytest.mark.parametrize(
-    "field",
-    [
-        "reasoning_policy",
-        "http_timeout_seconds",
-        "planning_enabled",
-        "interaction_policy",
-    ],
-)
-def test_v3_rejects_missing_and_null_fields(tmp_path, field):
-    values = launch(tmp_path).model_dump(mode="json")
+def test_current_launch_rejects_missing_and_null_required_execution_field(tmp_path):
+    values = launch(tmp_path).model_dump(mode="python")
     for value in (None, "missing"):
         candidate = dict(values)
         if value == "missing":
-            candidate.pop(field)
+            candidate.pop("reasoning_policy")
         else:
-            candidate[field] = value
-        with pytest.raises(ValidationError, match="complete effective"):
-            LaunchManifest.model_validate_json(json.dumps(candidate))
+            candidate["reasoning_policy"] = value
+        with pytest.raises(ValidationError):
+            LaunchManifest.model_validate(candidate)
 
 
 @pytest.mark.parametrize(
@@ -92,8 +78,6 @@ def test_v3_rejects_missing_and_null_fields(tmp_path, field):
         {"extra_body": {"reasoning_effort": "low"}},
         {"thinking": {"type": "disabled"}},
         {"max_tokens": 2400},
-        {"extra_body": {"max_completion_tokens": 2400}},
-        {"timeout": 120.0},
     ],
 )
 def test_target_rejects_downstream_overrides(settings):

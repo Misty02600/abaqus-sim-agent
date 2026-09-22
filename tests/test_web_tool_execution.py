@@ -138,11 +138,11 @@ class _DeferredSuccessfulSolver:
         )
 
 
-def _deferred_solver_app(tmp_path: Path):
+def _background_solver_app(tmp_path: Path):
     release = threading.Event()
     runners: list[_DeferredSuccessfulSolver] = []
     model_calls: list[list] = []
-    solver_call_id = "solver-deferred-1"
+    solver_call_id = "solver-submit-1"
 
     def model_factory(**kwargs):
         def model(messages, info):
@@ -152,23 +152,44 @@ def _deferred_solver_app(tmp_path: Path):
                 for message in messages
                 for part in message.parts
                 if isinstance(part, ToolReturnPart)
-                and part.tool_name == "run_solver_job"
+                and part.tool_name == "solver_job"
             ]
             if not solver_returns:
                 return ModelResponse(
                     parts=[
                         ToolCallPart(
-                            "run_solver_job",
-                            {"job_name": "demo", "input_file": "demo.inp"},
+                            "solver_job",
+                            {
+                                "request": {
+                                    "action": "submit",
+                                    "job_name": "demo",
+                                    "input_file": "demo.inp",
+                                }
+                            },
                             tool_call_id=solver_call_id,
                         )
                     ]
                 )
-            [solver_return] = solver_returns
-            assert solver_return.tool_call_id == solver_call_id
-            if solver_return.outcome == "failed":
-                assert isinstance(solver_return.content, str)
-                assert solver_return.content
+            solver_return = solver_returns[-1]
+            assert isinstance(solver_return.content, dict)
+            if solver_return.content.get("submitted") is True:
+                return ModelResponse(
+                    parts=[
+                        ToolCallPart(
+                            "solver_job",
+                            {
+                                "request": {
+                                    "action": "wait",
+                                    "execution_id": solver_return.content[
+                                        "execution_id"
+                                    ],
+                                }
+                            },
+                            tool_call_id="solver-wait-1",
+                        )
+                    ]
+                )
+            if solver_return.content.get("succeeded") is not True:
                 name = next(
                     tool.name
                     for tool in info.output_tools
@@ -187,7 +208,6 @@ def _deferred_solver_app(tmp_path: Path):
                         )
                     ]
                 )
-            assert isinstance(solver_return.content, dict)
             assert solver_return.content["succeeded"] is True
             name = next(
                 tool.name
@@ -334,7 +354,7 @@ def test_running_solver_is_visible_and_can_be_cancelled_without_model_stop(
 
         thread.join(5)
         assert not thread.is_alive()
-        assert runner.cancelled.is_set()
+        assert runner.cancelled.wait(2)
         assert len(errors) == 1
         assert isinstance(errors[0], asyncio.CancelledError)
 
@@ -393,10 +413,10 @@ def test_restart_marks_unresolved_solver_for_reconcile_and_blocks_new_message(
         assert blocked.status_code == 409, blocked.text
 
 
-def test_deferred_solver_completion_auto_resumes_same_invocation(
+def test_background_solver_completion_returns_in_same_invocation(
     tmp_path: Path,
 ) -> None:
-    app, release, runners, model_calls, solver_call_id = _deferred_solver_app(tmp_path)
+    app, release, runners, model_calls, _solver_call_id = _background_solver_app(tmp_path)
     try:
         with TestClient(app, base_url="http://127.0.0.1") as client:
             login(client)
@@ -426,8 +446,8 @@ def test_deferred_solver_completion_auto_resumes_same_invocation(
             for _ in range(200):
                 candidate = client.get(f"/api/v1/runs/{run_id}").json()
                 if (
-                    candidate["view"]["status"] == "waiting_for_tool_execution"
-                    and not candidate["active"]
+                    candidate["tool_execution"] is not None
+                    and candidate["tool_execution"]["status"] == "running"
                 ):
                     waiting = candidate
                     break
@@ -439,7 +459,8 @@ def test_deferred_solver_completion_auto_resumes_same_invocation(
             [invocation_before] = app.state.controller.invocations.list(run_id)
             [execution_before] = app.state.controller.tool_executions.list(run_id)
             assert execution_before.invocation_id == invocation_before.invocation_id
-            assert execution_before.tool_call_id == solver_call_id
+            assert execution_before.tool_call_id is None
+            assert execution_before.tool_name == "solver_job"
 
             release.set()
             done = settled(client, run_id, status="completed")
@@ -451,19 +472,19 @@ def test_deferred_solver_completion_auto_resumes_same_invocation(
             [execution_after] = app.state.controller.tool_executions.list(run_id)
             assert invocation_after.invocation_id == invocation_before.invocation_id
             assert invocation_after.status == "completed"
-            assert invocation_after.resume_count == 1
+            assert invocation_after.resume_count == 0
             assert execution_after.status == "completed"
-            assert execution_after.tool_call_id == solver_call_id
+            assert execution_after.tool_call_id is None
             assert sum(runner.calls for runner in runners) == 1
-            assert len(model_calls) == 2
+            assert len(model_calls) == 3
     finally:
         release.set()
 
 
-def test_deferred_solver_completion_queues_resume_until_model_segment_releases(
+def test_background_solver_already_completed_wait_returns_immediately(
     tmp_path: Path,
 ) -> None:
-    app, release, runners, model_calls, solver_call_id = _deferred_solver_app(tmp_path)
+    app, release, runners, model_calls, _solver_call_id = _background_solver_app(tmp_path)
     release.set()
     with TestClient(app, base_url="http://127.0.0.1") as client:
         login(client)
@@ -489,17 +510,17 @@ def test_deferred_solver_completion_queues_resume_until_model_segment_releases(
         [invocation] = app.state.controller.invocations.list(run_id)
         [execution] = app.state.controller.tool_executions.list(run_id)
         assert invocation.status == "completed"
-        assert invocation.resume_count == 1
+        assert invocation.resume_count == 0
         assert execution.status == "completed"
-        assert execution.tool_call_id == solver_call_id
+        assert execution.tool_call_id is None
         assert sum(runner.calls for runner in runners) == 1
-        assert len(model_calls) == 2
+        assert len(model_calls) == 3
 
 
-def test_deferred_solver_cancel_resumes_same_invocation_without_retry(
+def test_background_solver_cancel_returns_failure_to_wait_call(
     tmp_path: Path,
 ) -> None:
-    app, release, runners, model_calls, solver_call_id = _deferred_solver_app(tmp_path)
+    app, release, runners, model_calls, _solver_call_id = _background_solver_app(tmp_path)
     try:
         with TestClient(app, base_url="http://127.0.0.1") as client:
             login(client)
@@ -522,7 +543,7 @@ def test_deferred_solver_cancel_resumes_same_invocation_without_retry(
             for _ in range(200):
                 candidate = client.get(f"/api/v1/runs/{run_id}").json()
                 if (
-                    candidate["view"]["status"] == "waiting_for_tool_execution"
+                    candidate["tool_execution"] is not None
                     and candidate["can_cancel_tool_execution"]
                 ):
                     waiting = candidate
@@ -556,10 +577,10 @@ def test_deferred_solver_cancel_resumes_same_invocation_without_retry(
             [execution_after] = app.state.controller.tool_executions.list(run_id)
             assert invocation_after.invocation_id == invocation_before.invocation_id
             assert invocation_after.status == "failed"
-            assert invocation_after.resume_count == 1
+            assert invocation_after.resume_count == 0
             assert execution_after.status == "cancelled"
-            assert execution_after.tool_call_id == solver_call_id
+            assert execution_after.tool_call_id is None
             assert sum(runner.calls for runner in runners) == 1
-            assert len(model_calls) == 2
+            assert len(model_calls) == 3
     finally:
         release.set()

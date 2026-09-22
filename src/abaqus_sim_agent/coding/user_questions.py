@@ -145,13 +145,15 @@ def register_ask_user(agent):
         """
         if not question.strip():
             raise ModelRetry("Provide a nonblank question.")
+        limit = ctx.deps.request.limits.clarification_limit
         if (
-            len(
+            limit is not None
+            and len(
                 load_questions(
                     ctx.deps.request.state_dir, ctx.deps.request.run_id
                 ).questions
             )
-            >= ctx.deps.request.budget.max_clarifications
+            >= limit
         ):
             raise ModelRetry(
                 "User question budget exhausted. Do not ask again; report the evidenced failure."
