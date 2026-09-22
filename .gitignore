@@ -228,6 +228,8 @@ __marimo__/
 # Runtime artifacts and Abaqus outputs
 artifacts/
 runs/
+/output/
+/tmp/
 *.odb
 *.dat
 *.sta

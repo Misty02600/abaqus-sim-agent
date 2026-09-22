@@ -23,7 +23,7 @@
 | [进程监督](../../../src/abaqus_sim_agent/evaluation/evidence_process.py) | 创建时进入不可继承句柄的kill-on-close Job，准确终止并等待成员退出；覆盖取消和父进程硬退出，不是OS沙箱 |
 | [worker](../../../src/abaqus_sim_agent/evaluation/evidence_worker.py) | 只打开已绑定原库的私有文件副本，不用hardlink；不重建索引；查询后再次核对原始依赖 |
 | [宿主校验](../../../src/abaqus_sim_agent/evaluation/evidence_receipt.py) | 独立核对receipt、原请求、依赖bytes、来源正文、范围、版本、公式关联、排序与真实预算；失败无部分证据 |
-| [回放入口](../../../src/abaqus_sim_agent/evaluation/runtime_evidence_replay.py) | 使用原16题/旧实际结果做工程等价回放，不另设质量门槛 |
+| 回放入口（已完成，结果见[验收报告](../../../benchmarks/rag/runtime_evidence_service_v1_20260912.md)） | 使用原16题/旧实际结果做工程等价回放（16/16），不另设质量门槛；独立回放模块已随计划完成删除，结论由报告封存 |
 
 `source_release` 是显式文档版本硬限制，不由runtime 2024推导；不具备所要求版本时不回退2026。
 allowed_sources只收窄固定Top4的交付，不额外召回或补位。observed_context始终标为Agent提供、未独立验证。
