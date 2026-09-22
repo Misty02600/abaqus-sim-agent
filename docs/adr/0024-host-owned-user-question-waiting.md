@@ -4,6 +4,9 @@
 
 已采纳。用户于2026-09-13确认PLAN-0007的整体迁移方案。
 
+其 ask_user、宿主持久待答与当前-schema 恢复决定继续有效；旧 launch/resume/profile 的产品读取兼容
+边界由 [ADR-0030](0030-drop-pre-release-coding-run-state-compatibility.md) 部分替代。
+
 ## 问题与决定
 
 旧needs_input是模型的结构化输出，不是宿主已经实现的持久等待状态。它给模型增加field_id/kind/summary等交接字段，却不能保证模型识别缺失参数；原CLI在主动执行预算与运行锁内同步读取答案，未答即失败，且任意Abaqus调用后都不能再问。

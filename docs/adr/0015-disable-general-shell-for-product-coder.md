@@ -4,6 +4,9 @@
 
 已采纳
 
+被替代：[ADR-0032](0032-restore-restricted-shell-for-product-coder.md) 为普通产品恢复受限 Shell；
+本文继续说明旧冻结 profile 的无 Shell 权限与命令 allowlist 不能充当沙箱的依据。
+
 ## 日期
 
 2026-08-27

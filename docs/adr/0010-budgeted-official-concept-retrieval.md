@@ -4,6 +4,9 @@
 
 已采纳
 
+显式启用、证据范围、journal 与评测结论继续有效；普通产品每 run 两次 Concept 查询上限由
+[ADR-0031](0031-remove-product-tool-call-count-limits.md) 部分替代。
+
 ## 日期
 
 2026-08-23

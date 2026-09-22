@@ -4,6 +4,9 @@
 
 已采纳
 
+API Catalog 的工具范围、来源、trace 与默认启用策略继续有效；普通产品的独立调用次数预算由
+[ADR-0031](0031-remove-product-tool-call-count-limits.md) 部分替代。
+
 ## 日期
 
 2026-08-23

@@ -4,6 +4,9 @@
 
 已采纳
 
+权限、syntax/API gate、证据分级与 vendor runtime 前检查顺序继续有效；普通产品 static preflight
+调用次数耗尽分支由 [ADR-0031](0031-remove-product-tool-call-count-limits.md) 部分替代。
+
 ## 日期
 
 2026-08-29

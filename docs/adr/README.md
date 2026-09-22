@@ -41,6 +41,8 @@
 | [0009：精确 Abaqus API Catalog](0009-exact-abaqus-api-catalog.md) | 已采纳；官方语义、静态声明与运行证据分开，普通产品调用次数上限由 0031 部分替代 |
 | [0010：显式受预算的官方概念检索](0010-budgeted-official-concept-retrieval.md) | 已采纳；可选证据、不补物理输入，普通产品次数上限由 0031 部分替代 |
 | [0022：独立比较 BM25、Dense、RRF 后再采用](0022-evaluate-bm25-dense-rrf-before-agent-adoption.md) | 已采纳；保留算法对照与采用门槛，不代表 RRF 已替换默认 Concept 路径 |
+| [0028：本机私有领域知识包绑定为只读内容快照](0028-bind-user-domain-knowledge-as-read-only-snapshots.md) | 已采纳；仅本机私有内容、run 快照与恢复绑定，不开放分发、任意代码插件或新权限；默认位置与发现方式由 0029 局部替代 |
+| [0029：从用户级应用数据目录发现本机私有知识包](0029-discover-private-knowledge-from-user-data.md) | 已采纳；`platformdirs` 用户数据根、受限 manifest 发现、显式 run 启用与 launch v6 绑定 |
 | [0031：普通产品不按低成本工具调用次数终止 CodingRun](0031-remove-product-tool-call-count-limits.md) | 已采纳；保留 usage/证据/单次边界，移除产品 lookup/preflight 次数终止 |
 
 ## 固定模型变更与诊断合同
