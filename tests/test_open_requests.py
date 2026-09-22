@@ -118,7 +118,9 @@ def test_text_question_finishes_without_files_or_verification_and_restores(tmp_p
         launch = LaunchManifest.model_validate_json(
             (tmp_path / "web/states" / rid / "launch.json").read_bytes()
         )
-        assert launch.schema_version == "coding-run-launch-v5"
+        assert launch.schema_version == "coding-run-launch-v7"
+        assert launch.capability_definitions
+        assert launch.context_policy_version == "deepseek-1m-tiered-summary-v1"
     other, again = open_request_app(tmp_path)
     with TestClient(other, base_url="http://127.0.0.1") as client:
         login(client)
@@ -157,7 +159,7 @@ def test_text_completion_cannot_hide_file_changes(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_v4_does_not_gain_response_output_and_v5_scopes_clarification(tmp_path):
+async def test_response_output_is_enabled_only_for_open_request_agent(tmp_path):
     config = ServerConfig(root=tmp_path / "host")
     (tmp_path / "workspace").mkdir()
     prepared = prepare_new_run(
@@ -166,7 +168,6 @@ async def test_v4_does_not_gain_response_output_and_v5_scopes_clarification(tmp_
         workspace=tmp_path / "workspace",
         state_dir=tmp_path / "state",
         execution=config.execution,
-        budget=config.budget,
         runtime=config.runtime,
     )
     observed = []
@@ -211,8 +212,4 @@ async def test_v4_does_not_gain_response_output_and_v5_scopes_clarification(tmp_
     assert "final_result_ResponseDecision" in observed[1][0]
     assert "CURRENT requested action" in observed[1][1]
     assert "creating only geometry needs no material or load" in observed[1][1]
-    old = prepared.launch.model_copy(update={"schema_version": "coding-run-launch-v4"})
-    assert (
-        LaunchManifest.model_validate_json(old.model_dump_json()).schema_version
-        == "coding-run-launch-v4"
-    )
+    assert prepared.launch.schema_version == "coding-run-launch-v7"

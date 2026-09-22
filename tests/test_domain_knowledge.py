@@ -4,12 +4,18 @@ from pathlib import Path
 
 import pytest
 
+from abaqus_sim_agent.coding.application import prepare_new_run
+from abaqus_sim_agent.coding.contracts import CodingRunBudget, RuntimeProfile
 from abaqus_sim_agent.coding.domain_knowledge import (
     DOMAIN_KNOWLEDGE_STATE_DIRECTORY,
     discover_domain_knowledge_packs,
     materialize_domain_knowledge_bundle,
     prepare_domain_knowledge_bundle,
     validate_domain_knowledge_bundle,
+)
+from abaqus_sim_agent.coding.model import (
+    DeepSeekGateway,
+    new_run_execution_config,
 )
 
 
@@ -191,3 +197,33 @@ def test_manifest_rejects_unsafe_or_unsupported_resources(
             workspace=workspace,
             packs_root=root,
         )
+
+
+def test_prepare_new_run_binds_selected_pack_to_launch_v7(tmp_path: Path) -> None:
+    root = tmp_path / "packs"
+    _write_pack(root)
+    workspace, state = _workspace_and_state(tmp_path)
+    prepared = prepare_new_run(
+        run_id="private-pack-run",
+        goal="Use the selected private reference.",
+        workspace=workspace,
+        state_dir=state,
+        execution=new_run_execution_config(
+            model_provider=DeepSeekGateway.OFFICIAL,
+            model_name="fixture-model",
+        ),
+        runtime=RuntimeProfile(launcher_path=tmp_path / "never-run.bat"),
+        **CodingRunBudget(
+            max_abaqus_calls=0,
+            max_solver_calls=0,
+        ).as_request_controls(),
+        knowledge_pack_ids=("flexible-electronics-fea",),
+        knowledge_packs_root=root,
+    )
+
+    assert prepared.launch.schema_version == "coding-run-launch-v7"
+    assert prepared.launch.allows_response()
+    assert prepared.launch.domain_knowledge is not None
+    assert prepared.launch.domain_knowledge.packs[0].pack_id == (
+        "flexible-electronics-fea"
+    )

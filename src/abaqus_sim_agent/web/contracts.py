@@ -1,12 +1,20 @@
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from ..coding.contracts import CodingRunBudget, CodingRunRequest, CodingRunUsage
+from ..coding.contracts import (
+    CodingRunLimits,
+    CodingRunRequest,
+    CodingRunUsage,
+    RuntimeExecutionPolicy,
+    RuntimePermission,
+)
+from ..coding.domain_knowledge import DomainKnowledgePackBinding
 from ..coding.launch import LaunchManifest
 from ..coding.read_model import CodingRunView, FileView, MessageView
 from ..coding.workspace import WorkspaceSnapshot
@@ -19,6 +27,9 @@ class StrictModel(BaseModel):
 class CreateRun(StrictModel):
     idempotency_key: UUID
     goal: str = Field(min_length=1, max_length=20000)
+    knowledge_pack_ids: tuple[str, ...] = Field(default=(), max_length=32)
+    abaqus_permission: RuntimePermission | None = None
+    solver_permission: RuntimePermission | None = None
 
     @field_validator("idempotency_key", mode="before")
     @classmethod
@@ -31,6 +42,23 @@ class CreateRun(StrictModel):
         if not value.strip():
             raise ValueError("任务目标不能为空")
         return value
+
+    @field_validator("knowledge_pack_ids", mode="before")
+    @classmethod
+    def valid_knowledge_pack_ids(cls, values: object) -> tuple[str, ...]:
+        if isinstance(values, list):
+            values = tuple(values)
+        if not isinstance(values, tuple) or not all(
+            isinstance(value, str) for value in values
+        ):
+            raise ValueError("知识包标识必须是字符串列表")
+        if len(values) != len(set(values)):
+            raise ValueError("知识包不能重复选择")
+        if any(
+            re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", value) is None for value in values
+        ):
+            raise ValueError("知识包标识格式不正确")
+        return values
 
 
 class RunCommand(StrictModel):
@@ -142,7 +170,7 @@ InvocationStatus = Literal[
 class AgentInvocation(StrictModel):
     """一次 Thread 请求对应的 Agent 执行记录；不拥有第二份对话历史。"""
 
-    schema_version: Literal["web-agent-invocation-v1"] = "web-agent-invocation-v1"
+    schema_version: Literal["web-agent-invocation-v2"] = "web-agent-invocation-v2"
     invocation_id: str = Field(pattern=r"^[0-9a-f]{32}$")
     thread_id: str
     source_message_id: str | None = Field(default=None, pattern=r"^[0-9a-f]{32}$")
@@ -158,7 +186,8 @@ class AgentInvocation(StrictModel):
     base_amendment_sequence: int = Field(ge=0)
     provider: str = Field(min_length=1)
     model: str = Field(min_length=1)
-    budget: CodingRunBudget
+    limits: CodingRunLimits
+    runtime_policy: RuntimeExecutionPolicy
     step_persistence_reference: str = Field(min_length=1)
     compatibility_continuation_id: str | None = Field(
         default=None, pattern=r"^[0-9a-f]{32}$"
@@ -201,15 +230,15 @@ ToolExecutionStatus = Literal[
 class ToolExecution(StrictModel):
     """宿主拥有的长时工具执行记录；Agent 对话与执行证据仍由各自原记录负责。"""
 
-    schema_version: Literal["web-tool-execution-v1"] = "web-tool-execution-v1"
+    schema_version: Literal["web-tool-execution-v2"] = "web-tool-execution-v2"
     execution_id: str = Field(pattern=r"^[0-9a-f]{32}$")
     thread_id: str
     invocation_id: str = Field(pattern=r"^[0-9a-f]{32}$")
-    tool_name: Literal["run_solver_job"] = "run_solver_job"
+    tool_name: Literal["run_solver_job", "solver_job"] = "run_solver_job"
     tool_call_id: str | None = None
     job_name: str = Field(min_length=1, max_length=80)
     input_file: str = Field(min_length=1)
-    timeout_seconds: float = Field(gt=0)
+    timeout_seconds: float | None = Field(default=None, gt=0)
     created_at: datetime
     updated_at: datetime
     started_at: datetime | None = None
@@ -292,7 +321,7 @@ class ThreadRecord(StrictModel):
 
 
 class Registration(StrictModel):
-    schema_version: Literal["web-registration-v1"] = "web-registration-v1"
+    schema_version: Literal["web-registration-v2"] = "web-registration-v2"
     request_digest: str
     created_at: datetime
     request: CodingRunRequest
@@ -327,7 +356,9 @@ class RunSnapshot(StrictModel):
     title: str
     title_version: int = 0
     reasoning_policy: str
-    budget: CodingRunBudget
+    limits: CodingRunLimits
+    runtime_policy: RuntimeExecutionPolicy
+    knowledge_packs: tuple[DomainKnowledgePackBinding, ...] = ()
     can_start: bool
     can_answer: bool
     can_continue: bool

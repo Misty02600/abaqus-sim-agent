@@ -16,6 +16,7 @@ from pydantic import SecretStr
 from starlette.background import BackgroundTask
 
 from ..coding.composition import ModelFactory, RunnerFactory
+from ..coding.domain_knowledge import DomainKnowledgeInventory
 from ..coding.model import create_deepseek_chat_model
 from ..coding.run_lock import CodingRunAlreadyLocked
 from ..execution import Abaqus2024Runner
@@ -166,6 +167,10 @@ def create_app(
     @app.get("/api/v1/runs", response_model=RunList)
     def list_runs():
         return controller.list_runs()
+
+    @app.get("/api/v1/knowledge-packs", response_model=DomainKnowledgeInventory)
+    def list_knowledge_packs():
+        return controller.list_knowledge_packs()
 
     @app.get("/api/v1/runs/{run_id}", response_model=RunSnapshot)
     def get_run(run_id: str):

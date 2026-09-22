@@ -4,7 +4,18 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..skills import skill_library_path
-from .contracts import CodingRunBudget, CodingRunRequest, RuntimeProfile
+from .context_policy import (
+    CONTEXT_POLICY_VERSION,
+    bind_filesystem_skills,
+)
+from .contracts import (
+    CodingRunLimits,
+    CodingRunRequest,
+    EvaluationToolLimits,
+    RuntimeExecutionPolicy,
+    RuntimeProfile,
+)
+from .domain_knowledge import prepare_domain_knowledge_bundle
 from .launch import LaunchManifest, apply_launch_amendments
 from .model import ModelExecutionConfig
 from .response_stream import StoppedReply, load_stopped_replies
@@ -40,8 +51,12 @@ def prepare_new_run(
     workspace: Path,
     state_dir: Path,
     execution: ModelExecutionConfig,
-    budget: CodingRunBudget,
     runtime: RuntimeProfile,
+    limits: CodingRunLimits | None = None,
+    runtime_policy: RuntimeExecutionPolicy | None = None,
+    evaluation_tool_limits: EvaluationToolLimits | None = None,
+    knowledge_pack_ids: tuple[str, ...] = (),
+    knowledge_packs_root: Path | None = None,
 ) -> PreparedCodingRun:
     resolved = WorkspaceResolver().resolve_interactive(
         run_id=run_id, workspace=workspace, state_dir=state_dir
@@ -52,12 +67,28 @@ def prepare_new_run(
         workspace=resolved.workspace,
         state_dir=resolved.state_dir,
         runtime=runtime,
-        budget=budget,
+        limits=limits or CodingRunLimits(),
+        runtime_policy=runtime_policy or RuntimeExecutionPolicy(),
+        evaluation_tool_limits=evaluation_tool_limits,
     )
+    domain_knowledge = prepare_domain_knowledge_bundle(
+        knowledge_pack_ids,
+        state_dir=resolved.state_dir,
+        workspace=resolved.workspace,
+        packs_root=knowledge_packs_root,
+    )
+    skill_library = skill_library_path().resolve()
     launch = LaunchManifest(
-        schema_version="coding-run-launch-v5",
+        schema_version="coding-run-launch-v7",
         question_protocol="ask_user_v1",
-        skill_library=skill_library_path().resolve(),
+        response_enabled=True,
+        domain_knowledge=domain_knowledge,
+        skill_library=skill_library,
+        capability_definitions=bind_filesystem_skills(
+            skill_library,
+            ("abaqus-2024-coding",),
+        ),
+        context_policy_version=CONTEXT_POLICY_VERSION,
         **execution.model_dump(),
     )
     return PreparedCodingRun(request, resolved.initial_snapshot, launch)
@@ -68,6 +99,8 @@ def prepare_resume(state_dir: Path) -> PreparedCodingRun:
     launch = LaunchManifest.model_validate_json(
         (state_dir / "launch.json").read_bytes()
     )
+    if launch.schema_version != "coding-run-launch-v7":
+        raise ValueError("pre-release CodingRun launch schema is not supported")
     return PreparedCodingRun(
         effective.request,
         effective.initial_snapshot,
