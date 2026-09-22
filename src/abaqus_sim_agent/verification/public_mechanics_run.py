@@ -308,7 +308,9 @@ def model_identity_errors(case: MechanicsCase, raw: dict) -> list[str]:
                         or radius > case.width + tolerance
                         or axial < -tolerance
                         or axial > case.length + tolerance
-                        or abs(radius * radius - axial * axial - case.radius * case.radius)
+                        or abs(
+                            radius * radius - axial * axial - case.radius * case.radius
+                        )
                         > surface_tol
                     ):
                         errors.append(
@@ -439,7 +441,10 @@ def model_identity_errors(case: MechanicsCase, raw: dict) -> list[str]:
                         and abs(axial - case.sample_axial_position) < tolerance
                     ):
                         junction_nodes += 1
-                    if abs(radius) < tolerance and abs(axial - sphere_pole_z) < tolerance:
+                    if (
+                        abs(radius) < tolerance
+                        and abs(axial - sphere_pole_z) < tolerance
+                    ):
                         pole_nodes += 1
                 if junction_nodes != 2:
                     errors.append("independent branched C-node pair mismatch")
@@ -454,8 +459,7 @@ def model_identity_errors(case: MechanicsCase, raw: dict) -> list[str]:
                 for element in raw["elements"].values():
                     points = [measured_nodes[int(n)] for n in element["nodes"]]
                     if all(
-                        abs(point[0] - case.radius) <= surface_tol
-                        for point in points
+                        abs(point[0] - case.radius) <= surface_tol for point in points
                     ):
                         cylinder_elements += 1
                     elif all(
@@ -510,9 +514,7 @@ def model_identity_errors(case: MechanicsCase, raw: dict) -> list[str]:
                 ):
                     errors.append("independent thermal-solid quarter-sector mismatch")
                     break
-                inner = (
-                    math.sqrt(max(0.0, 1.0 - z * z)) if z <= 0.7071 else 0.7071
-                )
+                inner = math.sqrt(max(0.0, 1.0 - z * z)) if z <= 0.7071 else 0.7071
                 if z <= 0.7:
                     outer = math.sqrt(max(0.0, 1.4**2 - z * z))
                 elif z <= 1.39:

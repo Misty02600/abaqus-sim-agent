@@ -257,9 +257,7 @@ def wait_for(path):
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows Job boundary")
-@pytest.mark.parametrize(
-    "mode", ["bad_json", "wrong_hash", "missing", "unavailable"]
-)
+@pytest.mark.parametrize("mode", ["bad_json", "wrong_hash", "missing", "unavailable"])
 @pytest.mark.asyncio
 async def test_receipt_failures_never_deliver_evidence(service, monkeypatch, mode):
     calls = fake_process(monkeypatch, mode)

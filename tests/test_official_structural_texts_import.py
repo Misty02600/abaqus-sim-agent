@@ -69,11 +69,17 @@ def test_build_official_text_source_inventory_preserves_curated_provenance(
         "simathe-c-strainmeas.htm",
         "simathe-c-stressmeas.htm",
     }
-    assert finite_strain_pages["simamod-c-conventions.htm"]["recommended_role"] == "core"
-    assert finite_strain_pages["simathe-c-strainmeas.htm"]["recommended_role"] == "theory"
+    assert (
+        finite_strain_pages["simamod-c-conventions.htm"]["recommended_role"] == "core"
+    )
+    assert (
+        finite_strain_pages["simathe-c-strainmeas.htm"]["recommended_role"] == "theory"
+    )
 
 
-def test_export_official_text_source_inventory_writes_metadata_only(tmp_path: Path) -> None:
+def test_export_official_text_source_inventory_writes_metadata_only(
+    tmp_path: Path,
+) -> None:
     docs_root = tmp_path / "docs"
     for index, spec in enumerate(DEFAULT_TEXT_SOURCES):
         _write_fake_page(
@@ -100,7 +106,9 @@ def test_export_official_text_source_inventory_writes_metadata_only(tmp_path: Pa
     }
 
 
-def test_export_official_text_source_inventory_rejects_overwrite(tmp_path: Path) -> None:
+def test_export_official_text_source_inventory_rejects_overwrite(
+    tmp_path: Path,
+) -> None:
     output = tmp_path / "inventory"
     output.mkdir()
 

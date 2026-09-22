@@ -151,8 +151,7 @@ def _background_solver_app(tmp_path: Path):
                 part
                 for message in messages
                 for part in message.parts
-                if isinstance(part, ToolReturnPart)
-                and part.tool_name == "solver_job"
+                if isinstance(part, ToolReturnPart) and part.tool_name == "solver_job"
             ]
             if not solver_returns:
                 return ModelResponse(
@@ -416,7 +415,9 @@ def test_restart_marks_unresolved_solver_for_reconcile_and_blocks_new_message(
 def test_background_solver_completion_returns_in_same_invocation(
     tmp_path: Path,
 ) -> None:
-    app, release, runners, model_calls, _solver_call_id = _background_solver_app(tmp_path)
+    app, release, runners, model_calls, _solver_call_id = _background_solver_app(
+        tmp_path
+    )
     try:
         with TestClient(app, base_url="http://127.0.0.1") as client:
             login(client)
@@ -484,7 +485,9 @@ def test_background_solver_completion_returns_in_same_invocation(
 def test_background_solver_already_completed_wait_returns_immediately(
     tmp_path: Path,
 ) -> None:
-    app, release, runners, model_calls, _solver_call_id = _background_solver_app(tmp_path)
+    app, release, runners, model_calls, _solver_call_id = _background_solver_app(
+        tmp_path
+    )
     release.set()
     with TestClient(app, base_url="http://127.0.0.1") as client:
         login(client)
@@ -520,7 +523,9 @@ def test_background_solver_already_completed_wait_returns_immediately(
 def test_background_solver_cancel_returns_failure_to_wait_call(
     tmp_path: Path,
 ) -> None:
-    app, release, runners, model_calls, _solver_call_id = _background_solver_app(tmp_path)
+    app, release, runners, model_calls, _solver_call_id = _background_solver_app(
+        tmp_path
+    )
     try:
         with TestClient(app, base_url="http://127.0.0.1") as client:
             login(client)

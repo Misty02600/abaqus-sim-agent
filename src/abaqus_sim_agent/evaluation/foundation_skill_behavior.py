@@ -41,8 +41,12 @@ from abaqus_sim_agent.execution import DEFAULT_ABAQUS_2024_LAUNCHER, Abaqus2024R
 from abaqus_sim_agent.skills import skill_library_path
 
 REPO_ROOT = Path(__file__).parents[3]
-DEFAULT_RUBRIC = REPO_ROOT / "benchmarks/coding/foundation_skill_behavior_rubric_v1.json"
-DEFAULT_PROTOCOL = REPO_ROOT / "benchmarks/coding/foundation_skill_behavior_protocol_v1.md"
+DEFAULT_RUBRIC = (
+    REPO_ROOT / "benchmarks/coding/foundation_skill_behavior_rubric_v1.json"
+)
+DEFAULT_PROTOCOL = (
+    REPO_ROOT / "benchmarks/coding/foundation_skill_behavior_protocol_v1.md"
+)
 EVALUATOR_VERSION = "linear-structural-fea-foundation-behavior-v1"
 Profile = Literal["control", "foundation"]
 TASK_INSTRUCTIONS = """
@@ -153,8 +157,7 @@ def observe_case(root: Path, case: SkillRoutingCase) -> dict[str, object]:
         "duplicate_load_call_count": len(load_ids) - len(loaded),
         "loaded_skill_body_bytes": _loaded_skill_body_bytes(load_ids),
         "runtime_requested": any(
-            call["tool"]
-            in {"run_cae_script", "run_solver_job", "run_abaqus_python"}
+            call["tool"] in {"run_cae_script", "run_solver_job", "run_abaqus_python"}
             for call in calls
         ),
         "analysis": analysis,
@@ -167,8 +170,14 @@ def _skill_hashes(profile: Profile) -> dict[str, str]:
     root = skill_library_path()
     ids = ["abaqus-2024-coding"]
     if profile == "foundation":
-        ids.extend(capability for capability in CAPABILITY_IDS if capability != "abaqus-2024-coding")
-    return {capability: file_digest(root / capability / "SKILL.md") for capability in ids}
+        ids.extend(
+            capability
+            for capability in CAPABILITY_IDS
+            if capability != "abaqus-2024-coding"
+        )
+    return {
+        capability: file_digest(root / capability / "SKILL.md") for capability in ids
+    }
 
 
 async def run_evaluation(
@@ -210,13 +219,18 @@ async def run_evaluation(
     skill_hashes = _skill_hashes(profile)
     root.mkdir(parents=True, exist_ok=False)
     _write_new(root / "cases.json", [case.model_dump(mode="json") for case in cases])
-    _write_new(root / "rubrics.json", [rubrics[case.case_id].model_dump(mode="json") for case in cases])
+    _write_new(
+        root / "rubrics.json",
+        [rubrics[case.case_id].model_dump(mode="json") for case in cases],
+    )
     manifest = {
         "evaluator_version": EVALUATOR_VERSION,
         "created_at": datetime.now(UTC).isoformat(),
         "profile": profile,
         "repetition": repetition,
-        "foundation_skill_profile": "linear_structural_fea_v1" if profile == "foundation" else "off",
+        "foundation_skill_profile": "linear_structural_fea_v1"
+        if profile == "foundation"
+        else "off",
         "case_source": DEFAULT_CASES.relative_to(REPO_ROOT).as_posix(),
         "case_source_sha256": file_digest(DEFAULT_CASES),
         "case_seal_sha256": file_digest(DEFAULT_SEAL),
@@ -255,7 +269,9 @@ async def run_evaluation(
             goal=case.goal,
             workspace=workspace,
             state_dir=state,
-            runtime=RuntimeProfile(launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()),
+            runtime=RuntimeProfile(
+                launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()
+            ),
             **budget.as_request_controls(),
         )
         initial = WorkspaceResolver(captured_cwd=workspace).snapshot(workspace)
@@ -264,7 +280,9 @@ async def run_evaluation(
             model_name=model_name,
             api_key=api_key,
             http_retries=http_retries,
-            conversation_id=request.run_id if gateway is DeepSeekGateway.OPENCODE_GO else None,
+            conversation_id=request.run_id
+            if gateway is DeepSeekGateway.OPENCODE_GO
+            else None,
         )
         dependencies = CodingAgentDependencies(
             request=request,
@@ -311,9 +329,13 @@ async def run_evaluation(
         for path in implementation_paths
     }
     if implementation_hashes != current_implementation:
-        raise RuntimeError("implementation changed during foundation behavior evaluation")
+        raise RuntimeError(
+            "implementation changed during foundation behavior evaluation"
+        )
     if skill_hashes != _skill_hashes(profile):
-        raise RuntimeError("Skill content changed during foundation behavior evaluation")
+        raise RuntimeError(
+            "Skill content changed during foundation behavior evaluation"
+        )
     load_cases(DEFAULT_CASES, DEFAULT_SEAL)
     if file_digest(DEFAULT_RUBRIC) != manifest["rubric_sha256"]:
         raise RuntimeError("behavior rubric changed during evaluation")

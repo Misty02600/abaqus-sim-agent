@@ -34,8 +34,12 @@ from abaqus_sim_agent.execution import DEFAULT_ABAQUS_2024_LAUNCHER, Abaqus2024R
 from abaqus_sim_agent.skills import skill_library_path
 
 REPO_ROOT = Path(__file__).parents[3]
-DEFAULT_CASES = REPO_ROOT / "benchmarks/coding/structural_topic_skill_routing_cases_v1.jsonl"
-DEFAULT_SEAL = REPO_ROOT / "benchmarks/coding/structural_topic_skill_routing_cases_v1.seal.json"
+DEFAULT_CASES = (
+    REPO_ROOT / "benchmarks/coding/structural_topic_skill_routing_cases_v1.jsonl"
+)
+DEFAULT_SEAL = (
+    REPO_ROOT / "benchmarks/coding/structural_topic_skill_routing_cases_v1.seal.json"
+)
 EVALUATOR_VERSION = "structural-mechanics-topic-skill-routing-v1"
 STRUCTURAL_TOPIC_PROFILE = "structural_mechanics_v1"
 CAPABILITY_IDS = (
@@ -124,14 +128,18 @@ def load_cases(
     raw = path.read_bytes()
     seal = json.loads(seal_path.read_text(encoding="utf-8"))
     if hashlib.sha256(raw).hexdigest() != seal["sha256"]:
-        raise ValueError("structural topic routing case file no longer matches the frozen seal")
+        raise ValueError(
+            "structural topic routing case file no longer matches the frozen seal"
+        )
     cases = tuple(
         StructuralTopicSkillRoutingCase.model_validate_json(line)
         for line in raw.decode("utf-8").splitlines()
         if line.strip()
     )
     if len(cases) != seal["case_count"]:
-        raise ValueError("structural topic routing case count no longer matches the frozen seal")
+        raise ValueError(
+            "structural topic routing case count no longer matches the frozen seal"
+        )
     if len({case.case_id for case in cases}) != len(cases):
         raise ValueError("structural topic routing case identifiers must be unique")
     if tuple(seal["capability_ids"]) != CAPABILITY_IDS:
@@ -170,7 +178,9 @@ def _loaded_skill_body_bytes(loaded: set[str]) -> int:
     )
 
 
-def observe_case(root: Path, case: StructuralTopicSkillRoutingCase) -> dict[str, object]:
+def observe_case(
+    root: Path, case: StructuralTopicSkillRoutingCase
+) -> dict[str, object]:
     state = root / case.case_id / "state"
     workspace = state.parent / "workspace"
     calls = _tool_calls(state)
@@ -185,9 +195,7 @@ def observe_case(root: Path, case: StructuralTopicSkillRoutingCase) -> dict[str,
     allowed = set(case.allowed_loads)
     forbidden = set(case.forbidden_loads)
     required_recall = (
-        len(loaded & required) / len(required)
-        if required
-        else float(not loaded)
+        len(loaded & required) / len(required) if required else float(not loaded)
     )
     analysis_path = workspace / "analysis.json"
     analysis: object = None
@@ -360,7 +368,9 @@ async def run_evaluation(
         observation["infrastructure_error_type"] = error
         observation["actual_abaqus_calls"] = dependencies.abaqus_calls
         observation["actual_solver_calls"] = dependencies.solver_calls
-        _write_new(state / "structural_topic_skill_routing_observation.json", observation)
+        _write_new(
+            state / "structural_topic_skill_routing_observation.json", observation
+        )
         observations.append(observation)
         print(
             f"{case.case_id}: loads={observation['load_sequence']}; "
@@ -371,13 +381,19 @@ async def run_evaluation(
         path.relative_to(REPO_ROOT).as_posix(): _sha256(path)
         for path in implementation_paths
     }:
-        raise RuntimeError("implementation changed during structural topic routing evaluation")
+        raise RuntimeError(
+            "implementation changed during structural topic routing evaluation"
+        )
     if skill_hashes != _skill_bindings():
-        raise RuntimeError("Skill content changed during structural topic routing evaluation")
+        raise RuntimeError(
+            "Skill content changed during structural topic routing evaluation"
+        )
     load_cases(cases_path, seal_path)
     report = {
         "manifest_sha256": _sha256(root / "manifest.json"),
-        "exact_route_passes": sum(bool(item["exact_route_pass"]) for item in observations),
+        "exact_route_passes": sum(
+            bool(item["exact_route_pass"]) for item in observations
+        ),
         "case_count": len(observations),
         "forbidden_loads_total": sum(
             _required_int(item, "forbidden_load_count") for item in observations

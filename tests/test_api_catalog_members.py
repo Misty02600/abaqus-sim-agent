@@ -200,6 +200,8 @@ def test_sidecar_roundtrip_and_hash_binding(
     (root / "members.jsonl").write_bytes(b"{}\n")
     with pytest.raises(ValueError, match="checksum"):
         ApiCatalog.open(root)
+
+
 def test_member_strict_lookup_and_manifest_contracts(tmp_path: Path) -> None:
     member = _members(_wheel(tmp_path))[0]
     with pytest.raises(ValidationError):

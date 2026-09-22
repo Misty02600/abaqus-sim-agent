@@ -59,12 +59,15 @@ class MechanicsCase(BaseModel):
     branch_sphere_radius: float = 0.0
     branch_center_axial_position: float = 0.0
     thermal_expansion: float = 0.0
-    axisymmetric_shell_profile: Literal[
-        "hyperbolic",
-        "sphere_cylinder",
-        "crown_knuckle_cylinder",
-        "branched_sphere_cylinder",
-    ] | None = None
+    axisymmetric_shell_profile: (
+        Literal[
+            "hyperbolic",
+            "sphere_cylinder",
+            "crown_knuckle_cylinder",
+            "branched_sphere_cylinder",
+        ]
+        | None
+    ) = None
     segments: tuple[tuple[float, float], ...] = ()
     distributed: bool = False
     refinement: bool = False
@@ -309,9 +312,7 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
                 "area_mean_s11": _m(
                     -33.333333333333336, "r-z截面积加权平均径向S11/MPa", 0.01
                 ),
-                "area_mean_s33": _m(
-                    100.0, "r-z截面积加权平均环向S33/MPa", 0.01
-                ),
+                "area_mean_s33": _m(100.0, "r-z截面积加权平均环向S33/MPa", 0.01),
             },
         ),
         MechanicsCase(

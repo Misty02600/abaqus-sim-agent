@@ -169,9 +169,7 @@ def observe_case(root: Path, case: SkillRoutingCase) -> dict[str, object]:
     allowed = set(case.allowed_loads)
     forbidden = set(case.forbidden_loads)
     required_recall = (
-        len(loaded & required) / len(required)
-        if required
-        else float(not loaded)
+        len(loaded & required) / len(required) if required else float(not loaded)
     )
     analysis_path = workspace / "analysis.json"
     analysis: object = None
@@ -358,7 +356,9 @@ async def run_evaluation(
     load_cases(cases_path, seal_path)
     report = {
         "manifest_sha256": _sha256(root / "manifest.json"),
-        "exact_route_passes": sum(bool(item["exact_route_pass"]) for item in observations),
+        "exact_route_passes": sum(
+            bool(item["exact_route_pass"]) for item in observations
+        ),
         "case_count": len(observations),
         "forbidden_loads_total": sum(
             _required_int(item, "forbidden_load_count") for item in observations

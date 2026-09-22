@@ -166,9 +166,7 @@ def test_method_directory_uses_public_receiver_names_and_keeps_callable_factorie
     assert value.browse_methods("Part", query="seed") == (
         ("Part.seedPart", "seed-part"),
     )
-    assert value.browse_methods("Assembly", query="set") == (
-        ("Assembly.Set", "set"),
-    )
+    assert value.browse_methods("Assembly", query="set") == (("Assembly.Set", "set"),)
     assert value.browse_methods("PartInstance", query="set") == ()
     assert value.browse_methods("MeshNodeArray", query="bounding") == (
         ("MeshNodeArray.getByBoundingBox", "bounding-box"),

@@ -23,9 +23,7 @@ def write_json(path: Path, value) -> None:
 
 def write_jsonl(path: Path, rows) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
-    )
+    path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
 
 
 def test_observer_separates_discovery_candidates_from_exact_delivery(tmp_path):
@@ -127,9 +125,7 @@ def test_observer_separates_discovery_candidates_from_exact_delivery(tmp_path):
         },
     )
 
-    observed = observer.observe_batch(
-        case_manifest_path=cases, run_manifest_path=runs
-    )
+    observed = observer.observe_batch(case_manifest_path=cases, run_manifest_path=runs)
     row = observed["rows"][0]
     assert row["catalog_attempts"] == 3
     assert row["catalog_budget_calls"] == 2
@@ -177,9 +173,7 @@ def test_observer_allows_missing_review_without_inventing_semantic_score(tmp_pat
         },
     )
 
-    observed = observer.observe_batch(
-        case_manifest_path=cases, run_manifest_path=runs
-    )
+    observed = observer.observe_batch(case_manifest_path=cases, run_manifest_path=runs)
     row = observed["rows"][0]
     assert row["review_status"] == "missing"
     assert row["main_api_path"] == "not_reviewed"

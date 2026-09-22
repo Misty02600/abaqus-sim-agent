@@ -44,7 +44,11 @@ def test_export_structural_example_pool_preserves_one_canonical_copy_per_script(
     for spec in DEFAULT_EXAMPLES:
         key = (spec.source_map, spec.page_name, spec.extraction_kind)
         scripts_by_page.setdefault(key, []).append(spec.script_name)
-    for (source_map, page_name, extraction_kind), script_names in scripts_by_page.items():
+    for (
+        source_map,
+        page_name,
+        extraction_kind,
+    ), script_names in scripts_by_page.items():
         map_root = docs_root / source_map
         map_root.mkdir(parents=True, exist_ok=True)
         if extraction_kind == "embedded-codeblock":
@@ -93,8 +97,13 @@ def test_export_structural_example_pool_preserves_one_canonical_copy_per_script(
     assert "explicit-dynamics" in by_script["gsi_channel_caemodel.py"]["cross_topics"]
     assert by_script["gsi_channel_caemodel_spring.py"]["primary_topic"] == "plasticity"
     assert by_script["gxi_circuit_caemodel.py"]["primary_topic"] == "explicit-dynamics"
-    assert by_script["gsi_frame_caemodel.py"]["primary_topic"] == "linear-structural-foundation"
-    assert by_script["pillar_fastener_std.py"]["teaching_tier"] == "complex-comprehensive"
+    assert (
+        by_script["gsi_frame_caemodel.py"]["primary_topic"]
+        == "linear-structural-foundation"
+    )
+    assert (
+        by_script["pillar_fastener_std.py"]["teaching_tier"] == "complex-comprehensive"
+    )
     assert by_script["alfano_2d_model.py"]["primary_topic"] == "interface-cohesive"
     assert by_script["alfano_2d_model.py"]["extraction_kind"] == "linked-resource"
     assert (
@@ -116,7 +125,9 @@ def test_linked_inventory_groups_repeated_resources(tmp_path: Path) -> None:
     exa_root.mkdir()
     bmk_root.mkdir()
     ver_root.mkdir()
-    _write_fake_linked_page(exa_root / "exa.htm", ["shared.py", "other.py", "shared.py"])
+    _write_fake_linked_page(
+        exa_root / "exa.htm", ["shared.py", "other.py", "shared.py"]
+    )
     _write_fake_linked_page(bmk_root / "bmk.htm", ["shared.py"])
 
     inventory = build_linked_example_inventory(

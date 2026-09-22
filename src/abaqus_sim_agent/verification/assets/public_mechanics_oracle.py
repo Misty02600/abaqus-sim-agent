@@ -42,7 +42,9 @@ def polygon_area(points):
 def area_weighted_axisymmetric_stress(stress, elements, nodes, component_index):
     by_element = {}
     for value in stress.values:
-        by_element.setdefault(int(value.elementLabel), []).append(float(value.data[component_index]))
+        by_element.setdefault(int(value.elementLabel), []).append(
+            float(value.data[component_index])
+        )
 
     weighted_sum = 0.0
     total_area = 0.0
@@ -132,11 +134,11 @@ def shell_gauss_surface_component(values, component_index, target_fraction):
         if not match:
             continue
         fraction = float(match.group(1))
-        by_fraction.setdefault(fraction, []).append(
-            float(value.data[component_index])
-        )
+        by_fraction.setdefault(fraction, []).append(float(value.data[component_index]))
     if len(by_fraction) < 2:
-        raise ValueError("Gauss shell stress needs at least two section-point fractions")
+        raise ValueError(
+            "Gauss shell stress needs at least two section-point fractions"
+        )
     points = sorted(
         (fraction, mean(samples)) for fraction, samples in by_fraction.items()
     )
@@ -145,10 +147,13 @@ def shell_gauss_surface_component(values, component_index, target_fraction):
     denominator = sum((fraction - mean_fraction) ** 2 for fraction, _ in points)
     if denominator <= 0.0:
         raise ValueError("degenerate shell section-point fractions")
-    slope = sum(
-        (fraction - mean_fraction) * (value - mean_value)
-        for fraction, value in points
-    ) / denominator
+    slope = (
+        sum(
+            (fraction - mean_fraction) * (value - mean_value)
+            for fraction, value in points
+        )
+        / denominator
+    )
     return mean_value + slope * (target_fraction - mean_fraction)
 
 
@@ -191,8 +196,7 @@ def inspect(path, c):
                 right = {
                     n
                     for n, p in nodes.items()
-                    if abs(p[0] - c["width"]) < 2e-4
-                    and abs(p[1] - c["length"]) < eps
+                    if abs(p[0] - c["width"]) < 2e-4 and abs(p[1] - c["length"]) < eps
                 }
             elif c.get("axisymmetric_shell_profile") == "sphere_cylinder":
                 left = {
@@ -261,7 +265,9 @@ def inspect(path, c):
                     ):
                         sphere_nodes.add(node)
                 if len(cylinder_nodes) != 1 or len(sphere_nodes) != 1:
-                    raise ValueError("branched-shell C nodes do not separate the two branches")
+                    raise ValueError(
+                        "branched-shell C nodes do not separate the two branches"
+                    )
                 left = cylinder_nodes
                 right = {
                     n
@@ -367,13 +373,17 @@ def inspect(path, c):
         elif c["family"] == "axisymmetric_shell":
             frame = frames[-1]
             if len(left) != 1 or len(right) != 1:
-                raise ValueError("one exact axisymmetric-shell QoI/support node required")
+                raise ValueError(
+                    "one exact axisymmetric-shell QoI/support node required"
+                )
             stress = frame.fieldOutputs["S"].getSubset(
                 position=ELEMENT_NODAL, readOnly=ON
             )
             labels = list(stress.componentLabels)
             s11_index = labels.index("S11")
-            selected_values = [value for value in stress.values if value.nodeLabel in left]
+            selected_values = [
+                value for value in stress.values if value.nodeLabel in left
+            ]
             if c.get("axisymmetric_shell_profile") == "branched_sphere_cylinder":
                 upper_cylinder_elements = {
                     label
@@ -383,9 +393,7 @@ def inspect(path, c):
                         abs(nodes[int(node)][0] - c["radius"]) < 2e-4
                         for node in element["nodes"]
                     )
-                    and mean(
-                        [nodes[int(node)][1] for node in element["nodes"]]
-                    )
+                    and mean([nodes[int(node)][1] for node in element["nodes"]])
                     > c["sample_axial_position"] + eps
                 }
                 if not upper_cylinder_elements:
@@ -427,7 +435,11 @@ def inspect(path, c):
         elif c["family"] == "skew_plate":
             frame = frames[-1]
             center_point = (
-                0.5 * (c["length"] + c["width"] * math.cos(math.radians(c["skew_angle_degrees"]))),
+                0.5
+                * (
+                    c["length"]
+                    + c["width"] * math.cos(math.radians(c["skew_angle_degrees"]))
+                ),
                 0.5 * c["width"] * math.sin(math.radians(c["skew_angle_degrees"])),
             )
             center_nodes = {
@@ -464,7 +476,8 @@ def inspect(path, c):
                 if getattr(v, "sectionPoint", None) is not None
                 and (
                     "sneg" in str(getattr(v.sectionPoint, "description", "")).lower()
-                    or "fraction = -" in str(getattr(v.sectionPoint, "description", "")).lower()
+                    or "fraction = -"
+                    in str(getattr(v.sectionPoint, "description", "")).lower()
                 )
             ]
             if not lower:
@@ -477,7 +490,9 @@ def inspect(path, c):
                 ]
             labels = list(stress.componentLabels)
             indices = [labels.index(name) for name in ("S11", "S22", "S12")]
-            s11, s22, s12 = [mean([float(v.data[index]) for v in lower]) for index in indices]
+            s11, s22, s12 = [
+                mean([float(v.data[index]) for v in lower]) for index in indices
+            ]
             values.update(
                 center_lower_max_principal=in_plane_max_principal(s11, s22, s12),
                 reaction_z=sum(component(frame, "RF", "RF3", boundary_nodes)),
@@ -487,9 +502,7 @@ def inspect(path, c):
             a_nodes = {
                 n
                 for n, p in nodes.items()
-                if abs(p[0] - c["radius"]) < eps
-                and abs(p[1]) < eps
-                and abs(p[2]) < eps
+                if abs(p[0] - c["radius"]) < eps and abs(p[1]) < eps and abs(p[2]) < eps
             }
             if len(a_nodes) != 1:
                 raise ValueError("one exact hemisphere A node required")
@@ -548,7 +561,9 @@ def inspect(path, c):
             )
             s22_index = list(stress.componentLabels).index("S22")
             d_values = [
-                float(v.data[s22_index]) for v in stress.values if v.nodeLabel in d_nodes
+                float(v.data[s22_index])
+                for v in stress.values
+                if v.nodeLabel in d_nodes
             ]
             x_sym = {n for n, p in nodes.items() if abs(p[0]) < eps}
             y_sym = {n for n, p in nodes.items() if abs(p[1]) < eps}
@@ -573,7 +588,9 @@ def inspect(path, c):
             )
             s22_index = list(stress.componentLabels).index("S22")
             d_values = [
-                float(v.data[s22_index]) for v in stress.values if v.nodeLabel in d_nodes
+                float(v.data[s22_index])
+                for v in stress.values
+                if v.nodeLabel in d_nodes
             ]
             if not d_values:
                 raise ValueError("thick-plate D-node stress output required")
@@ -628,11 +645,11 @@ def inspect(path, c):
             if len(frames) != 3:
                 raise ValueError("three independent ordered load steps required")
             for i, axis in enumerate("xyz"):
-                values[f"tip_u{i+1}_{axis}"] = max(
-                    component(frames[i], "U", f"U{i+1}", right)
+                values[f"tip_u{i + 1}_{axis}"] = max(
+                    component(frames[i], "U", f"U{i + 1}", right)
                 )
                 values[f"reaction_{axis}_{axis}"] = sum(
-                    component(frames[i], "RF", f"RF{i+1}", left)
+                    component(frames[i], "RF", f"RF{i + 1}", left)
                 )
         elastic = []
         expansion = []

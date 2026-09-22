@@ -38,14 +38,20 @@ def test_missing_input_behavior_accepts_appropriate_stop() -> None:
 
 
 def test_observer_keeps_zero_skill_load_semantically_ungraded(tmp_path: Path) -> None:
-    case = next(case for case in load_cases() if case.case_id == "existing-property-load-edit")
+    case = next(
+        case for case in load_cases() if case.case_id == "existing-property-load-edit"
+    )
     state = tmp_path / case.case_id / "state"
     workspace = state.parent / "workspace"
     state.mkdir(parents=True)
     workspace.mkdir()
     (state / "history.json").write_bytes(
         ModelMessagesTypeAdapter.dump_json(
-            [ModelResponse(parts=[ToolCallPart("read_file", {"path": "model_contract.txt"})])]
+            [
+                ModelResponse(
+                    parts=[ToolCallPart("read_file", {"path": "model_contract.txt"})]
+                )
+            ]
         )
     )
     (workspace / "analysis.json").write_text(

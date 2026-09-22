@@ -349,9 +349,9 @@ def export_official_text_source_inventory(
         source_release=source_release,
         sources=sources,
     )
-    inventory_bytes = (json.dumps(inventory, ensure_ascii=False, indent=2) + "\n").encode(
-        "utf-8"
-    )
+    inventory_bytes = (
+        json.dumps(inventory, ensure_ascii=False, indent=2) + "\n"
+    ).encode("utf-8")
 
     lines = [
         "# Abaqus 官方结构力学文本来源清单",

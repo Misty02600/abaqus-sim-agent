@@ -18,8 +18,7 @@ from abaqus_sim_agent.execution import Abaqus2024Runner, AbaqusExecutionResult
 def test_finds_direct_solver_lifecycle_calls(tmp_path: Path) -> None:
     script = tmp_path / "build_model.py"
     script.write_text(
-        "mdb.jobs['Job-1'].submit(consistencyChecking=OFF)\n"
-        "job.waitForCompletion()\n",
+        "mdb.jobs['Job-1'].submit(consistencyChecking=OFF)\njob.waitForCompletion()\n",
         encoding="utf-8",
     )
 

@@ -10,10 +10,18 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from abaqus_sim_agent.evaluation.behavior_measurement import CaseRubric, Verdict
 
 REPO_ROOT = Path(__file__).parents[3]
-DEFAULT_CASES = REPO_ROOT / "benchmarks/coding/foundation_public_mechanics_cases_v1.jsonl"
-DEFAULT_RUBRIC = REPO_ROOT / "benchmarks/coding/foundation_public_mechanics_rubric_v1.json"
-DEFAULT_SOURCES = REPO_ROOT / "benchmarks/coding/foundation_public_mechanics_sources_v1.json"
-DEFAULT_PROTOCOL = REPO_ROOT / "benchmarks/coding/foundation_public_mechanics_protocol_v1.md"
+DEFAULT_CASES = (
+    REPO_ROOT / "benchmarks/coding/foundation_public_mechanics_cases_v1.jsonl"
+)
+DEFAULT_RUBRIC = (
+    REPO_ROOT / "benchmarks/coding/foundation_public_mechanics_rubric_v1.json"
+)
+DEFAULT_SOURCES = (
+    REPO_ROOT / "benchmarks/coding/foundation_public_mechanics_sources_v1.json"
+)
+DEFAULT_PROTOCOL = (
+    REPO_ROOT / "benchmarks/coding/foundation_public_mechanics_protocol_v1.md"
+)
 DEFAULT_SEAL = REPO_ROOT / "benchmarks/coding/foundation_public_mechanics_v1.seal.json"
 
 BENCHMARK_VERSION = "foundation-public-mechanics-v1"
@@ -50,7 +58,9 @@ class PublicMechanicsCase(StrictModel):
     source_ids: tuple[str, ...] = Field(min_length=1)
     reference: MechanicsReference
     focus: tuple[
-        Literal["formulation", "modeling", "discretization", "postprocess", "verification"],
+        Literal[
+            "formulation", "modeling", "discretization", "postprocess", "verification"
+        ],
         ...,
     ] = Field(min_length=1)
     expected_behavior: str = Field(min_length=1)
@@ -128,7 +138,9 @@ def load_benchmark(
     rubrics = _read_rubrics(rubric_path)
     sources = SourceCatalog.model_validate_json(sources_path.read_bytes())
     if len(cases) != seal.case_count:
-        raise ValueError("public mechanics case count no longer matches its frozen seal")
+        raise ValueError(
+            "public mechanics case count no longer matches its frozen seal"
+        )
     case_ids = tuple(case.case_id for case in cases)
     if len(set(case_ids)) != len(case_ids):
         raise ValueError("duplicate public mechanics case id")

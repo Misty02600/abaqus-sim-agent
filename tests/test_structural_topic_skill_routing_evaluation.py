@@ -24,7 +24,10 @@ def test_structural_topic_routing_cases_are_frozen_and_cover_each_entry_point() 
     assert tuple(seal["capability_ids"]) == CAPABILITY_IDS
     required = {skill for case in cases for skill in case.required_loads}
     assert required == set(CAPABILITY_IDS)
-    assert next(case for case in cases if case.case_id == "local-name-only").required_loads == ()
+    assert (
+        next(case for case in cases if case.case_id == "local-name-only").required_loads
+        == ()
+    )
     assert all(case.required_loads == case.allowed_loads for case in cases)
 
 
@@ -36,7 +39,9 @@ def test_structural_topic_routing_seal_rejects_case_mutation(tmp_path: Path) -> 
         load_cases(cases_path, DEFAULT_SEAL)
 
 
-def test_structural_topic_observer_records_exact_and_duplicate_routing(tmp_path: Path) -> None:
+def test_structural_topic_observer_records_exact_and_duplicate_routing(
+    tmp_path: Path,
+) -> None:
     case = next(case for case in load_cases() if case.case_id == "contact-definition")
     state = tmp_path / case.case_id / "state"
     workspace = state.parent / "workspace"

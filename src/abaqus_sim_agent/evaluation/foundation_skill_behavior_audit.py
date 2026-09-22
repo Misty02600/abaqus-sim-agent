@@ -79,7 +79,10 @@ def _termination(
         failure = outcome.get("failure_stage")
         if outcome.get("status") == "completed":
             return "normal"
-        if failure == "clarification" and "appropriately_stopped" in rubric.accepted_completions:
+        if (
+            failure == "clarification"
+            and "appropriately_stopped" in rubric.accepted_completions
+        ):
             return "normal"
         mapping: dict[str, Termination] = {
             "model_budget": "model_budget",
@@ -88,7 +91,9 @@ def _termination(
             "timeout": "wall_budget",
             "provider": "provider",
         }
-        return mapping.get(failure, "unknown") if isinstance(failure, str) else "unknown"
+        return (
+            mapping.get(failure, "unknown") if isinstance(failure, str) else "unknown"
+        )
     return "unknown" if error else "environment"
 
 
@@ -180,7 +185,10 @@ def build_audit(batch: Path, annotations_path: Path) -> dict[str, object]:
         raise ValueError("invalid behavior batch")
     if manifest.get("evaluator_version") != EVALUATOR_VERSION:
         raise ValueError("unsupported behavior evaluator version")
-    if manifest.get("api_catalog_mode") != "off" or manifest.get("concept_retrieval_mode") != "off":
+    if (
+        manifest.get("api_catalog_mode") != "off"
+        or manifest.get("concept_retrieval_mode") != "off"
+    ):
         raise ValueError("behavior batch enabled an excluded retrieval channel")
     if manifest.get("planning_enabled") is not False:
         raise ValueError("behavior batch enabled Planning")
@@ -197,11 +205,15 @@ def build_audit(batch: Path, annotations_path: Path) -> dict[str, object]:
     by_observation = {item["case_id"]: item for item in observations}
     by_annotation = {item.case_id: item for item in annotations.cases}
     if set(rubrics) != set(by_observation) or set(rubrics) != set(by_annotation):
-        raise ValueError("rubrics, observations and annotations must cover the same cases")
+        raise ValueError(
+            "rubrics, observations and annotations must cover the same cases"
+        )
 
     trial_reports: list[dict[str, object]] = []
     for case_id, rubric in rubrics.items():
-        observation_path = batch / case_id / "state/foundation_behavior_observation.json"
+        observation_path = (
+            batch / case_id / "state/foundation_behavior_observation.json"
+        )
         recorded = _read(observation_path)
         if recorded != by_observation[case_id]:
             raise ValueError("per-case observation differs from frozen report")
@@ -225,10 +237,16 @@ def build_audit(batch: Path, annotations_path: Path) -> dict[str, object]:
                 "behavior_acceptance": behavior_acceptance,
                 "routing_cost": {
                     "load_sequence": by_observation[case_id]["load_sequence"],
-                    "forbidden_load_count": by_observation[case_id]["forbidden_load_count"],
+                    "forbidden_load_count": by_observation[case_id][
+                        "forbidden_load_count"
+                    ],
                     "load_call_count": by_observation[case_id]["load_call_count"],
-                    "duplicate_load_call_count": by_observation[case_id]["duplicate_load_call_count"],
-                    "loaded_skill_body_bytes": by_observation[case_id]["loaded_skill_body_bytes"],
+                    "duplicate_load_call_count": by_observation[case_id][
+                        "duplicate_load_call_count"
+                    ],
+                    "loaded_skill_body_bytes": by_observation[case_id][
+                        "loaded_skill_body_bytes"
+                    ],
                 },
             }
         )

@@ -264,7 +264,9 @@ def _check(path, c, m):
             else:
                 row = block.rows[0]
                 if len(row) != 3 or row[0].upper() != "TIE":
-                    errors.append("branched axisymmetric shell requires one MPC TIE row")
+                    errors.append(
+                        "branched axisymmetric shell requires one MPC TIE row"
+                    )
                 else:
                     tied = []
                     for token in row[1:]:
@@ -274,12 +276,16 @@ def _check(path, c, m):
                             else resolve(token, "*nset", block.scope)
                         )
                         if len(ids) != 1:
-                            errors.append("MPC TIE endpoints must each resolve to one node")
+                            errors.append(
+                                "MPC TIE endpoints must each resolve to one node"
+                            )
                             break
                         tied.append(next(iter(ids)))
                     if len(tied) == 2:
                         if tied[0] == tied[1] or any(n not in nodes for n in tied):
-                            errors.append("MPC TIE must connect two distinct material nodes")
+                            errors.append(
+                                "MPC TIE must connect two distinct material nodes"
+                            )
                         else:
                             junction_mpc_nodes = set(tied)
                             if math.dist(nodes[tied[0]], nodes[tied[1]]) > tolerance:
@@ -289,7 +295,9 @@ def _check(path, c, m):
 
     types = {str(e["type"]).upper() for e in elements.values()}
     element_blocks = [b for b in data if b.keyword == "*element"]
-    inp_types = {b.options["type"].upper() for b in element_blocks if "type" in b.options}
+    inp_types = {
+        b.options["type"].upper() for b in element_blocks if "type" in b.options
+    }
     permitted = (
         {"T3D2", "T3D3"}
         if c.family == "truss"
@@ -475,7 +483,9 @@ def _check(path, c, m):
             else:
                 outer = 1.0
             if r < inner - surface_tol or r > outer + surface_tol:
-                errors.append("thermal-solid node lies outside the declared radial profile")
+                errors.append(
+                    "thermal-solid node lies outside the declared radial profile"
+                )
                 break
     if c.family == "skew_plate":
         angle = math.radians(c.skew_angle_degrees)
@@ -554,15 +564,21 @@ def _check(path, c, m):
         a_nodes = set()
         for label, point in nodes.items():
             x, y, z = point
-            on_lower_flange = abs(y + 1.0) < tolerance and -1.0 - tolerance <= z <= tolerance
+            on_lower_flange = (
+                abs(y + 1.0) < tolerance and -1.0 - tolerance <= z <= tolerance
+            )
             on_web = abs(z) < tolerance and -1.0 - tolerance <= y <= 1.0 + tolerance
-            on_upper_flange = abs(y - 1.0) < tolerance and -tolerance <= z <= 1.0 + tolerance
+            on_upper_flange = (
+                abs(y - 1.0) < tolerance and -tolerance <= z <= 1.0 + tolerance
+            )
             if (
                 x < -tolerance
                 or x > c.length + tolerance
                 or not (on_lower_flange or on_web or on_upper_flange)
             ):
-                errors.append("Z-section node lies outside the declared shell midsurface")
+                errors.append(
+                    "Z-section node lies outside the declared shell midsurface"
+                )
                 break
             if math.dist(point, (2.5, -1.0, -1.0)) < tolerance:
                 a_nodes.add(label)
@@ -735,7 +751,9 @@ def _check(path, c, m):
                     )
                     <= surface_tol
                 )
-                if abs(out_of_plane) > tolerance or not (valid_cylinder or valid_sphere):
+                if abs(out_of_plane) > tolerance or not (
+                    valid_cylinder or valid_sphere
+                ):
                     errors.append(
                         "branched axisymmetric-shell node lies outside the declared midsurface"
                     )
@@ -752,7 +770,9 @@ def _check(path, c, m):
                     "branched axisymmetric shell must contain two coincident C nodes"
                 )
             if len(pole_nodes) != 1:
-                errors.append("branched axisymmetric shell must contain one sphere pole node")
+                errors.append(
+                    "branched axisymmetric shell must contain one sphere pole node"
+                )
             if junction_mpc_nodes is None or junction_mpc_nodes != junction_nodes:
                 errors.append("MPC TIE must connect exactly the two coincident C nodes")
 
@@ -776,25 +796,37 @@ def _check(path, c, m):
                 )
                 if is_cylinder:
                     cylinder_elements.add(label)
-                    if nodes[element_nodes[0]][1] >= nodes[element_nodes[1]][1] - tolerance:
+                    if (
+                        nodes[element_nodes[0]][1]
+                        >= nodes[element_nodes[1]][1] - tolerance
+                    ):
                         errors.append(
                             "branched cylinder shell connectivity must run bottom-to-top"
                         )
                 elif is_sphere:
                     sphere_elements.add(label)
-                    if nodes[element_nodes[0]][0] >= nodes[element_nodes[1]][0] - tolerance:
+                    if (
+                        nodes[element_nodes[0]][0]
+                        >= nodes[element_nodes[1]][0] - tolerance
+                    ):
                         errors.append(
                             "branched sphere shell connectivity must run pole-to-junction"
                         )
                 else:
-                    errors.append("branched axisymmetric shell element crosses branch geometry")
+                    errors.append(
+                        "branched axisymmetric shell element crosses branch geometry"
+                    )
             if not cylinder_elements or not sphere_elements:
-                errors.append("branched axisymmetric shell requires cylinder and sphere elements")
+                errors.append(
+                    "branched axisymmetric shell requires cylinder and sphere elements"
+                )
             if len(junction_nodes) == 2:
                 roles = []
                 for node in junction_nodes:
                     incident = {
-                        label for label, element in elements.items() if node in element["nodes"]
+                        label
+                        for label, element in elements.items()
+                        if node in element["nodes"]
                     }
                     roles.append(
                         (
@@ -961,9 +993,7 @@ def _check(path, c, m):
         if (
             len(odb_expansion) != 1
             or len(odb_expansion[0]) < 1
-            or not math.isclose(
-                odb_expansion[0][0], c.thermal_expansion, rel_tol=1e-7
-            )
+            or not math.isclose(odb_expansion[0][0], c.thermal_expansion, rel_tol=1e-7)
         ):
             errors.append("ODB thermal expansion coefficient mismatch")
     elif expansion_blocks:
@@ -1214,7 +1244,9 @@ def _check(path, c, m):
                 errors.append("Z-section shell thickness missing")
                 continue
             if set(b.options) - {"elset", "material"} or b.flags:
-                errors.append("Z-section shell offsets/orientation options are unsupported")
+                errors.append(
+                    "Z-section shell offsets/orientation options are unsupported"
+                )
             thickness = _number(b.rows[0][0])
             if not math.isclose(thickness, c.height, rel_tol=1e-7):
                 errors.append("Z-section shell thickness mismatch")
@@ -1232,8 +1264,13 @@ def _check(path, c, m):
                 for block in data
                 if block.keyword == "*orientation"
             }
-            if not b.options.get("orientation") or b.options.get("orientation") not in orientation_names:
-                errors.append("cylindrical shell section must use the declared orientation")
+            if (
+                not b.options.get("orientation")
+                or b.options.get("orientation") not in orientation_names
+            ):
+                errors.append(
+                    "cylindrical shell section must use the declared orientation"
+                )
             thickness = _number(b.rows[0][0])
             if not math.isclose(thickness, c.height, rel_tol=1e-7):
                 errors.append("cylindrical shell thickness mismatch")
@@ -1253,9 +1290,7 @@ def _check(path, c, m):
             if row[1].upper() == "ENCASTRE":
                 dofs = range(
                     1,
-                    7
-                    if c.family in {"beam", "shaft", "z_section_shell"}
-                    else 4,
+                    7 if c.family in {"beam", "shaft", "z_section_shell"} else 4,
                 )
                 value = 0
             elif row[1].upper() == "XSYMM":
@@ -1429,9 +1464,7 @@ def _check(path, c, m):
     elif c.family == "cylindrical_shell_patch":
         angle_tol = max(c.radius * 2e-5, tolerance)
         max_angle = math.radians(c.arc_angle_degrees)
-        clamp = {
-            n for n, p in nodes.items() if abs(math.atan2(p[1], p[0])) < angle_tol
-        }
+        clamp = {n for n, p in nodes.items() if abs(math.atan2(p[1], p[0])) < angle_tol}
         axial_edges = {
             n
             for n, p in nodes.items()
@@ -1460,23 +1493,33 @@ def _check(path, c, m):
         else:
             block = temperature_blocks[0]
             if block.options or block.flags or block.step != 0:
-                errors.append("thermal-solid temperature must be explicit in the static step")
+                errors.append(
+                    "thermal-solid temperature must be explicit in the static step"
+                )
             for row in block.rows:
                 if len(row) != 2:
-                    errors.append("thermal-solid temperature row must contain region and value")
+                    errors.append(
+                        "thermal-solid temperature row must contain region and value"
+                    )
                     continue
                 ids = resolve(row[0], "*nset", block.scope)
                 value = _number(row[1])
                 for label in ids:
                     if label in assigned:
-                        errors.append("thermal-solid node has duplicate temperature assignments")
+                        errors.append(
+                            "thermal-solid node has duplicate temperature assignments"
+                        )
                     assigned[label] = value
             if set(assigned) != set(nodes):
-                errors.append("thermal-solid temperature must cover every material node")
+                errors.append(
+                    "thermal-solid temperature must cover every material node"
+                )
             for label, value in assigned.items():
                 x, y, z = nodes[label]
                 expected_temperature = math.hypot(x, y) + z
-                if not math.isclose(value, expected_temperature, rel_tol=1e-7, abs_tol=1e-8):
+                if not math.isclose(
+                    value, expected_temperature, rel_tol=1e-7, abs_tol=1e-8
+                ):
                     errors.append("thermal-solid nodal temperature field mismatch")
                     break
     elif temperature_blocks:
@@ -1645,7 +1688,11 @@ def _check(path, c, m):
                 )
         elif c.family == "axisymmetric_shell":
             if c.axisymmetric_shell_profile == "branched_sphere_cylinder":
-                if effective["*cload"] or effective["*dsload"] or not effective["*dload"]:
+                if (
+                    effective["*cload"]
+                    or effective["*dsload"]
+                    or not effective["*dload"]
+                ):
                     errors.append(
                         "branched axisymmetric shell requires DLOAD pressure only"
                     )
@@ -1663,7 +1710,9 @@ def _check(path, c, m):
                         continue
                     ids = resolve(row[0], "*elset")
                     if loaded & ids:
-                        errors.append("branched axisymmetric shell pressure sets overlap")
+                        errors.append(
+                            "branched axisymmetric shell pressure sets overlap"
+                        )
                     loaded.update(ids)
                 expected_loaded = set()
                 for label, element in elements.items():
@@ -1697,7 +1746,9 @@ def _check(path, c, m):
                 or effective["*dsload"]
                 or len(effective["*dload"]) != 1
             ):
-                errors.append("axisymmetric shell requires one full-shell DLOAD pressure")
+                errors.append(
+                    "axisymmetric shell requires one full-shell DLOAD pressure"
+                )
                 continue
             row = effective["*dload"][0]
             if (
@@ -1878,17 +1929,21 @@ def _check(path, c, m):
                         lower_total += value
                     else:
                         upper_total += value
-            if not math.isclose(net_fz, 0.0, rel_tol=0.0, abs_tol=max(c.load * 1e-7, 1e-8)):
+            if not math.isclose(
+                net_fz, 0.0, rel_tol=0.0, abs_tol=max(c.load * 1e-7, 1e-8)
+            ):
                 errors.append("Z-section end loads must have zero resultant force")
             if not math.isclose(torque_x, c.load, rel_tol=1e-7):
                 errors.append("Z-section end torque magnitude/direction mismatch")
-            if not math.isclose(lower_total, -c.load / 2.0, rel_tol=1e-7) or not math.isclose(
-                upper_total, c.load / 2.0, rel_tol=1e-7
-            ):
+            if not math.isclose(
+                lower_total, -c.load / 2.0, rel_tol=1e-7
+            ) or not math.isclose(upper_total, c.load / 2.0, rel_tol=1e-7):
                 errors.append("Z-section flange shear resultants mismatch")
         elif c.family == "cylindrical_shell_patch":
             if effective["*dload"] or effective["*dsload"]:
-                errors.append("cylindrical shell edge moment must use nodal moments only")
+                errors.append(
+                    "cylindrical shell edge moment must use nodal moments only"
+                )
                 continue
             total_m3 = 0.0
             max_angle = math.radians(c.arc_angle_degrees)

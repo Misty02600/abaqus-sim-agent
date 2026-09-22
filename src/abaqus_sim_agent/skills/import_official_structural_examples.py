@@ -122,7 +122,13 @@ DEFAULT_EXAMPLES = (
         "contact",
         "gsi_channel_caemodel.py",
         "simagsa-c-appendixchannel.htm",
-        ("plasticity", "geometric-nonlinearity", "explicit-dynamics", "forming", "friction"),
+        (
+            "plasticity",
+            "geometric-nonlinearity",
+            "explicit-dynamics",
+            "forming",
+            "friction",
+        ),
         teaching_tier="complex-comprehensive",
     ),
     OfficialExampleSpec(
@@ -226,13 +232,13 @@ def _resource_name_from_href(href: str) -> str | None:
     return name if name.lower().endswith(".py") else None
 
 
-def _extract_embedded_script(page: Path, script_name: str) -> tuple[bytes, bytes, str | None]:
+def _extract_embedded_script(
+    page: Path, script_name: str
+) -> tuple[bytes, bytes, str | None]:
     raw = page.read_bytes()
     tree = BeautifulSoup(raw, "html.parser", from_encoding="utf-8")
     headings = [
-        node
-        for node in tree.find_all("h2")
-        if node.get_text(strip=True) == script_name
+        node for node in tree.find_all("h2") if node.get_text(strip=True) == script_name
     ]
     if len(headings) != 1:
         raise ValueError(f"expected one {script_name!r} heading in {page}")
@@ -326,7 +332,9 @@ def build_linked_example_inventory(
                         syntax_ok,
                         syntax_error,
                     )
-                exists, script_sha256, syntax_ok, syntax_error = resource_cache[script_name]
+                exists, script_sha256, syntax_ok, syntax_error = resource_cache[
+                    script_name
+                ]
                 record = records.setdefault(
                     script_name,
                     {
@@ -415,7 +423,9 @@ def export_structural_example_pool(
         docs_root,
         source_release=source_release,
     )
-    inventory_bytes = (json.dumps(inventory, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    inventory_bytes = (
+        json.dumps(inventory, ensure_ascii=False, indent=2) + "\n"
+    ).encode("utf-8")
     inventory_summary = {
         "path": "inventory.json",
         "source_maps": inventory["source_maps"],

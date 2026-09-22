@@ -97,9 +97,7 @@ def test_twenty_distinct_cases_and_independent_reference_formulas():
         100000 * 10 / polar_moment
     )
     assert cases[5].metrics["tip_u1"].target == pytest.approx(0.05)
-    assert cases[5].metrics["mean_s11"].target == pytest.approx(
-        200000 * 0.05 / 100
-    )
+    assert cases[5].metrics["mean_s11"].target == pytest.approx(200000 * 0.05 / 100)
     assert cases[5].metrics["reaction_x"].target == pytest.approx(-100 * 20 * 2)
     a, b, pressure = 20.0, 40.0, 100.0
     lame_a = pressure * a**2 / (b**2 - a**2)
@@ -119,7 +117,9 @@ def test_twenty_distinct_cases_and_independent_reference_formulas():
     assert all("analysis.json" not in c.goal() for c in cases)
     assert cases[7].case_id == "nafems-le6-skew-plate"
     assert cases[7].load == pytest.approx(700.0)
-    assert cases[7].metrics["center_lower_max_principal"].target == pytest.approx(0.802e6)
+    assert cases[7].metrics["center_lower_max_principal"].target == pytest.approx(
+        0.802e6
+    )
     assert cases[7].metrics["reaction_z"].target == pytest.approx(0.5 * 700.0)
     assert cases[8].refinement
     assert cases[9].refinement
@@ -316,7 +316,10 @@ Right,1,1,.05
     assert check(tmp_path, text, "plane-stress-uniform-tension", m) == []
     assert check(
         tmp_path,
-        text.replace("*Solid Section,elset=All,material=Steel\n2,", "*Solid Section,elset=All,material=Steel\n1,"),
+        text.replace(
+            "*Solid Section,elset=All,material=Steel\n2,",
+            "*Solid Section,elset=All,material=Steel\n1,",
+        ),
         "plane-stress-uniform-tension",
         m,
     )
@@ -857,7 +860,7 @@ def _z_section_shell_fixture():
 *Elset,elset=All
 1,2,3,4,5,6
 *Nset,nset=Fix
-{','.join(str(n) for n in fix)}
+{",".join(str(n) for n in fix)}
 *Shell Section,elset=All,material=Steel
 .1,
 *Material,name=Steel
@@ -918,7 +921,9 @@ def test_nafems_le5_z_section_cantilever_contract(tmp_path):
 
     wrong_element = deepcopy(measurement)
     wrong_element["elements"]["1"]["type"] = "S4R"
-    wrong_element["elements"]["1"]["nodes"] = wrong_element["elements"]["1"]["nodes"][:4]
+    wrong_element["elements"]["1"]["nodes"] = wrong_element["elements"]["1"]["nodes"][
+        :4
+    ]
     assert check(tmp_path, text, case_id, wrong_element)
 
 
@@ -1519,7 +1524,7 @@ def _le11_thermal_solid_fixture():
 *Node
 {node_rows}
 *Element,type=C3D20,elset=All
-1,{','.join(str(label) for label in points)}
+1,{",".join(str(label) for label in points)}
 *Nset,nset=Y0
 1,2,3,4,5,6,7,8
 *Nset,nset=X0

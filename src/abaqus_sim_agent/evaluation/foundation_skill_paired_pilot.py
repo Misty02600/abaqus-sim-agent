@@ -211,9 +211,7 @@ def build_trial_plan(
     trials: list[PilotTrial] = []
     for repetition in range(1, repetitions + 1):
         profiles: tuple[Profile, Profile] = (
-            ("control", "foundation")
-            if repetition % 2
-            else ("foundation", "control")
+            ("control", "foundation") if repetition % 2 else ("foundation", "control")
         )
         for case in cases:
             for profile in profiles:
@@ -287,8 +285,7 @@ def _observe_trial(trial_root: Path, trial: PilotTrial) -> dict[str, object]:
         "duplicate_load_call_count": len(load_ids) - len(set(load_ids)),
         "loaded_skill_body_bytes": _loaded_skill_body_bytes(load_ids),
         "runtime_requested": any(
-            call["tool"]
-            in {"run_cae_script", "run_solver_job", "run_abaqus_python"}
+            call["tool"] in {"run_cae_script", "run_solver_job", "run_abaqus_python"}
             for call in calls
         ),
         "analysis": analysis,
@@ -339,7 +336,11 @@ async def run_pilot(
     _write_new(
         root / "agent_cases.json",
         [
-            {"case_id": case.case_id, "case_kind": case.case_kind, **agent_case_payload(case)}
+            {
+                "case_id": case.case_id,
+                "case_kind": case.case_kind,
+                **agent_case_payload(case),
+            }
             for case in cases
         ],
     )
@@ -396,7 +397,9 @@ async def run_pilot(
             goal=case.goal,
             workspace=workspace,
             state_dir=state,
-            runtime=RuntimeProfile(launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()),
+            runtime=RuntimeProfile(
+                launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()
+            ),
             **budget.as_request_controls(),
         )
         initial = WorkspaceResolver(captured_cwd=workspace).snapshot(workspace)
@@ -405,7 +408,9 @@ async def run_pilot(
             model_name=model_name,
             api_key=api_key,
             http_retries=http_retries,
-            conversation_id=request.run_id if gateway is DeepSeekGateway.OPENCODE_GO else None,
+            conversation_id=request.run_id
+            if gateway is DeepSeekGateway.OPENCODE_GO
+            else None,
         )
         dependencies = CodingAgentDependencies(
             request=request,

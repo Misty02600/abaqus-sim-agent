@@ -54,7 +54,9 @@ def test_current_launch_roundtrip_and_question_protocol(tmp_path):
     values = current.model_dump(mode="python")
     without_question_protocol = dict(values)
     without_question_protocol.pop("question_protocol")
-    with pytest.raises(ValidationError, match="response-enabled launch requires ask_user"):
+    with pytest.raises(
+        ValidationError, match="response-enabled launch requires ask_user"
+    ):
         LaunchManifest.model_validate(without_question_protocol)
 
 

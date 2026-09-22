@@ -332,9 +332,7 @@ class ApiCatalog:
                     continue
             else:
                 rank = 0
-            candidates.append(
-                (rank, method_folded, public_name, card.card_id)
-            )
+            candidates.append((rank, method_folded, public_name, card.card_id))
 
         candidates.sort()
         return tuple(
