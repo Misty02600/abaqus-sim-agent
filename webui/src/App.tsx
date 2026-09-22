@@ -28,6 +28,14 @@ import { RunStatusBar } from "./RunStatusBar";
 import { CommandPalette, type QuickAction } from "./CommandPalette";
 import { WorkspaceExplorer } from "./WorkspaceExplorer";
 import { ThreadListPrimitive } from "@assistant-ui/react";
+import type { components } from "./api/schema";
+
+type KnowledgeInventory = components["schemas"]["DomainKnowledgeInventory"];
+type PermissionMode = "deny" | "allow" | "allow_with_limit";
+
+function permission(mode: PermissionMode, limit: number) {
+  return mode === "allow_with_limit" ? { mode, limit } : { mode };
+}
 
 const SIDEBAR_MIN = 220;
 const SIDEBAR_MAX = 520;
@@ -81,6 +89,15 @@ export default function App() {
     [notice, setNotice] = useState(""),
     [selectedArtifactPath, setSelectedArtifactPath] = useState<string | null>(null);
   const [composerMention, setComposerMention] = useState<ComposerMention | null>(null);
+  const [knowledgeInventory, setKnowledgeInventory] =
+    useState<KnowledgeInventory | null>(null);
+  const [selectedKnowledgePackIds, setSelectedKnowledgePackIds] = useState<
+    string[]
+  >([]);
+  const [abaqusPermission, setAbaqusPermission] = useState<PermissionMode>("allow");
+  const [abaqusLimit, setAbaqusLimit] = useState(10);
+  const [solverPermission, setSolverPermission] = useState<PermissionMode>("deny");
+  const [solverLimit, setSolverLimit] = useState(3);
   const shortcutActions = useRef<QuickAction[]>([]);
   useEffect(() => {
     if (!notice) return;
@@ -169,6 +186,15 @@ export default function App() {
       if (order === listSequence.current) setError(errorText(error));
     }
   }, []);
+  const listKnowledgePacks = useCallback(async () => {
+    try {
+      setKnowledgeInventory(
+        await request<KnowledgeInventory>("/knowledge-packs"),
+      );
+    } catch (error) {
+      setError(errorText(error));
+    }
+  }, []);
   useEffect(() => {
     const connect = () => {
       setReady(false);
@@ -177,6 +203,7 @@ export default function App() {
         .then(() => {
           setReady(true);
           void list();
+          void listKnowledgePacks();
         })
         .catch((e) => setAuthError(errorText(e)));
     };
@@ -186,7 +213,7 @@ export default function App() {
     };
     addEventListener("hashchange", changed);
     return () => removeEventListener("hashchange", changed);
-  }, [list]);
+  }, [list, listKnowledgePacks]);
   useEffect(() => {
     const pop = () => setId(selectedId());
     addEventListener("popstate", pop);
@@ -218,14 +245,30 @@ export default function App() {
     setBusy(true);
     setError("");
     try {
-      const key = commandId("new", "create", goal);
+      const knowledgePackIds = [...selectedKnowledgePackIds].sort();
+      const key = commandId(
+        "new",
+        "create",
+        JSON.stringify({
+          goal,
+          knowledgePackIds,
+          abaqusPermission,
+          abaqusLimit,
+          solverPermission,
+          solverLimit,
+        }),
+      );
       messageId = `web-${key.replaceAll("-", "")}:goal`;
       const next = await request<Snapshot>("/runs", {
         idempotency_key: key,
         goal,
+        knowledge_pack_ids: knowledgePackIds,
+        abaqus_permission: permission(abaqusPermission, abaqusLimit),
+        solver_permission: permission(solverPermission, solverLimit),
       });
       clearCommand("new", "create");
       saved = true;
+      setSelectedKnowledgePackIds([]);
       navigate(next.view.run_id);
       const startKey = commandId(next.view.run_id, "start");
       await request(runPath(next.view.run_id) + "/start", {
@@ -735,6 +778,115 @@ export default function App() {
           <main>
             {!id ? (
               <section className="new-task">
+                <div className="knowledge-picker">
+                  <div className="row">
+                    <div>
+                      <strong>本机私有知识包</strong>
+                      <p className="muted small">
+                        只对新会话生效；未选择时保持关闭。
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="subtle"
+                      disabled={busy}
+                      onClick={() => void listKnowledgePacks()}
+                    >
+                      刷新
+                    </button>
+                  </div>
+                  {knowledgeInventory?.packs.length ? (
+                    <div className="knowledge-pack-list">
+                      {knowledgeInventory.packs.map((pack) => (
+                        <label key={pack.pack_id}>
+                          <input
+                            type="checkbox"
+                            checked={selectedKnowledgePackIds.includes(
+                              pack.pack_id,
+                            )}
+                            disabled={busy}
+                            onChange={(event) =>
+                              setSelectedKnowledgePackIds((current) =>
+                                event.target.checked
+                                  ? [...current, pack.pack_id]
+                                  : current.filter((id) => id !== pack.pack_id),
+                              )
+                            }
+                          />
+                          <span>
+                            <strong>{pack.pack_id}</strong>
+                            <small>
+                              {pack.release} · {pack.summary}
+                            </small>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="muted small">尚未发现可用知识包。</p>
+                  )}
+                  {knowledgeInventory?.issues.map((issue) => (
+                    <p className="error small" key={issue.directory}>
+                      {issue.directory}：{issue.error}
+                    </p>
+                  ))}
+                </div>
+                <div className="runtime-policy-picker">
+                  <div>
+                    <strong>运行权限</strong>
+                    <p className="muted small">只影响新会话；Solver 默认禁用。</p>
+                  </div>
+                  <label>
+                    <span>Abaqus</span>
+                    <select
+                      value={abaqusPermission}
+                      disabled={busy}
+                      onChange={(event) =>
+                        setAbaqusPermission(event.target.value as PermissionMode)
+                      }
+                    >
+                      <option value="deny">禁止</option>
+                      <option value="allow">允许，不限次数</option>
+                      <option value="allow_with_limit">允许有限次数</option>
+                    </select>
+                    {abaqusPermission === "allow_with_limit" && (
+                      <input
+                        type="number"
+                        min={1}
+                        value={abaqusLimit}
+                        disabled={busy}
+                        onChange={(event) =>
+                          setAbaqusLimit(Math.max(1, Number(event.target.value)))
+                        }
+                      />
+                    )}
+                  </label>
+                  <label>
+                    <span>Solver</span>
+                    <select
+                      value={solverPermission}
+                      disabled={busy}
+                      onChange={(event) =>
+                        setSolverPermission(event.target.value as PermissionMode)
+                      }
+                    >
+                      <option value="deny">禁止</option>
+                      <option value="allow">允许，不限次数</option>
+                      <option value="allow_with_limit">允许有限次数</option>
+                    </select>
+                    {solverPermission === "allow_with_limit" && (
+                      <input
+                        type="number"
+                        min={1}
+                        value={solverLimit}
+                        disabled={busy}
+                        onChange={(event) =>
+                          setSolverLimit(Math.max(1, Number(event.target.value)))
+                        }
+                      />
+                    )}
+                  </label>
+                </div>
                 <Composer cacheKey="new" disabled={busy} />
               </section>
             ) : !snapshot ? (

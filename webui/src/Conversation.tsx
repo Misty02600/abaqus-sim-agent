@@ -21,6 +21,7 @@ const names: Record<string, string> = {
   ask_user: "补充信息",
   run_cae_script: "CAE 建模",
   run_solver_job: "Standard 求解",
+  solver_job: "Standard 求解",
   run_abaqus_python: "结果提取",
   write_file: "写入文件",
   edit_file: "修改文件",
@@ -70,6 +71,7 @@ function Tool({
   const runtime = [
     "run_cae_script",
     "run_solver_job",
+    "solver_job",
     "run_abaqus_python",
   ].includes(toolName);
   const record: Record<string, unknown> =

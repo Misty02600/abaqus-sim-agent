@@ -6,6 +6,15 @@ function tokenCount(value: number) {
   return value >= 1000 ? `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}k` : `${value}`;
 }
 
+function countLimit(value: Snapshot["limits"]["model_requests"]) {
+  return value?.mode === "limited" ? value.value : "不限";
+}
+
+function runtimeLimit(value: Snapshot["runtime_policy"]["abaqus"]) {
+  if (!value || value.mode === "deny") return "禁用";
+  return value.mode === "allow_with_limit" ? value.limit : "不限";
+}
+
 export function RunStatusBar({
   snapshot,
   connected,
@@ -75,9 +84,9 @@ export function RunStatusBar({
           className="usage-summary"
           title="框架已记录的累计用量，不代表全部HTTP尝试次数。"
         >
-          请求 {usage?.model_requests ?? 0}/{snapshot.budget.max_model_requests} ·
-          Abaqus {usage?.abaqus_calls ?? 0}/{snapshot.budget.max_abaqus_calls} ·
-          Solver {usage?.solver_calls ?? 0}/{snapshot.budget.max_solver_calls}
+          请求 {usage?.model_requests ?? 0}/{countLimit(snapshot.limits.model_requests)} ·
+          Abaqus {usage?.abaqus_calls ?? 0}/{runtimeLimit(snapshot.runtime_policy.abaqus)} ·
+          Solver {usage?.solver_calls ?? 0}/{runtimeLimit(snapshot.runtime_policy.solver)}
         </span>
         <span
           className={`context-usage ${context.warning ? "warning" : ""}`}
@@ -88,9 +97,8 @@ export function RunStatusBar({
             ? ""
             : ` / ${tokenCount(context.warning_threshold_tokens)} 提醒`}
         </span>
-        <span title="已保存的累计活动时间；等待用户答复不计入。">
-          {(usage?.wall_time_seconds ?? 0).toFixed(1)}/
-          {snapshot.budget.wall_time_seconds}s
+        <span title="已保存的累计活动时间；等待用户或外部 Abaqus 进程不计入。">
+          活动 {(usage?.wall_time_seconds ?? 0).toFixed(1)}s
         </span>
       </div>
     </div>

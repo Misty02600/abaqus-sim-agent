@@ -584,6 +584,65 @@ main {
   width: min(var(--chat-content-max-width), calc(100% - 64px));
   margin: auto;
 }
+.knowledge-picker {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.knowledge-picker > .row {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.knowledge-picker p {
+  margin: 3px 0 0;
+}
+.knowledge-pack-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+.knowledge-pack-list label {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.knowledge-pack-list label:hover {
+  background: var(--bg-hover);
+}
+.knowledge-pack-list label span {
+  display: grid;
+  gap: 2px;
+}
+.knowledge-pack-list label small {
+  color: var(--text-muted);
+}
+.runtime-policy-picker {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.runtime-policy-picker p {
+  margin: 3px 0 0;
+}
+.runtime-policy-picker label {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr) 96px;
+  gap: 10px;
+  align-items: center;
+}
+.runtime-policy-picker select,
+.runtime-policy-picker input {
+  min-width: 0;
+}
 .new-task .composer label {
   position: absolute;
   width: 1px;

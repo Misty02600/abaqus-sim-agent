@@ -40,6 +40,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/knowledge-packs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Knowledge Packs */
+        get: operations["list_knowledge_packs_api_v1_knowledge_packs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/runs/{run_id}": {
         parameters: {
             query?: never;
@@ -460,53 +477,14 @@ export interface components {
              */
             abaqus_calls_before_answer: number;
         };
-        /** CodingRunBudget */
-        CodingRunBudget: {
-            /**
-             * Max Clarifications
-             * @default 2
-             */
-            max_clarifications: number;
-            /**
-             * Max Model Requests
-             * @default 30
-             */
-            max_model_requests: number;
-            /**
-             * Max Api Lookup Calls
-             * @default 4
-             */
-            max_api_lookup_calls: number;
-            /**
-             * Max Concept Lookup Calls
-             * @default 2
-             */
-            max_concept_lookup_calls: number;
-            /**
-             * Max Diagnostic Retrieval Calls
-             * @default 2
-             */
-            max_diagnostic_retrieval_calls: number;
-            /**
-             * Max Static Preflight Calls
-             * @default 12
-             */
-            max_static_preflight_calls: number;
-            /**
-             * Max Abaqus Calls
-             * @default 9
-             */
-            max_abaqus_calls: number;
-            /**
-             * Max Solver Calls
-             * @default 3
-             */
-            max_solver_calls: number;
-            /**
-             * Wall Time Seconds
-             * @default 2700
-             */
-            wall_time_seconds: number;
+        /** CodingRunLimits */
+        CodingRunLimits: {
+            /** Model Requests */
+            model_requests?: components["schemas"]["UnlimitedLimit"] | components["schemas"]["LimitedCount"];
+            /** Clarifications */
+            clarifications?: components["schemas"]["UnlimitedLimit"] | components["schemas"]["LimitedCount"];
+            /** Active Wall */
+            active_wall?: components["schemas"]["UnlimitedLimit"] | components["schemas"]["LimitedDuration"];
         };
         /** CodingRunOutcome */
         CodingRunOutcome: {
@@ -565,10 +543,24 @@ export interface components {
              */
             input_tokens: number;
             /**
+             * Cache Write Tokens
+             * @default 0
+             */
+            cache_write_tokens: number;
+            /**
+             * Cache Read Tokens
+             * @default 0
+             */
+            cache_read_tokens: number;
+            /**
              * Output Tokens
              * @default 0
              */
             output_tokens: number;
+            /** Provider Details */
+            provider_details?: {
+                [key: string]: number;
+            };
             /**
              * Tool Calls
              * @default 0
@@ -661,7 +653,10 @@ export interface components {
              * @default {
              *       "model_requests": 0,
              *       "input_tokens": 0,
+             *       "cache_write_tokens": 0,
+             *       "cache_read_tokens": 0,
              *       "output_tokens": 0,
+             *       "provider_details": {},
              *       "tool_calls": 0,
              *       "api_lookup_calls": 0,
              *       "concept_lookup_calls": 0,
@@ -738,6 +733,86 @@ export interface components {
             idempotency_key: string;
             /** Goal */
             goal: string;
+            /**
+             * Knowledge Pack Ids
+             * @default []
+             */
+            knowledge_pack_ids: string[];
+            /** Abaqus Permission */
+            abaqus_permission?: (components["schemas"]["RuntimeDenied"] | components["schemas"]["RuntimeAllowed"] | components["schemas"]["RuntimeAllowedWithLimit"]) | null;
+            /** Solver Permission */
+            solver_permission?: (components["schemas"]["RuntimeDenied"] | components["schemas"]["RuntimeAllowed"] | components["schemas"]["RuntimeAllowedWithLimit"]) | null;
+        };
+        /** DomainKnowledgeFileBinding */
+        DomainKnowledgeFileBinding: {
+            /** Relative Path */
+            relative_path: string;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Sha256 */
+            sha256: string;
+        };
+        /** DomainKnowledgeInventory */
+        DomainKnowledgeInventory: {
+            /** Root */
+            root: string;
+            /**
+             * Packs
+             * @default []
+             */
+            packs: components["schemas"]["DomainKnowledgePackInfo"][];
+            /**
+             * Issues
+             * @default []
+             */
+            issues: components["schemas"]["DomainKnowledgePackIssue"][];
+        };
+        /** DomainKnowledgePackBinding */
+        DomainKnowledgePackBinding: {
+            /** Pack Id */
+            pack_id: string;
+            /** Release */
+            release: string;
+            /** Summary */
+            summary: string;
+            /** Entrypoints */
+            entrypoints: string[];
+            /**
+             * Compatibility
+             * @default []
+             */
+            compatibility: string[];
+            /** Manifest Sha256 */
+            manifest_sha256: string;
+            /** Files */
+            files: components["schemas"]["DomainKnowledgeFileBinding"][];
+            /** Pack Digest */
+            pack_digest: string;
+            /** Snapshot Relative Path */
+            snapshot_relative_path: string;
+        };
+        /** DomainKnowledgePackInfo */
+        DomainKnowledgePackInfo: {
+            /** Pack Id */
+            pack_id: string;
+            /** Release */
+            release: string;
+            /** Summary */
+            summary: string;
+            /** Entrypoints */
+            entrypoints: string[];
+            /**
+             * Compatibility
+             * @default []
+             */
+            compatibility: string[];
+        };
+        /** DomainKnowledgePackIssue */
+        DomainKnowledgePackIssue: {
+            /** Directory */
+            directory: string;
+            /** Error */
+            error: string;
         };
         /** ExecutionEvidenceVerification */
         ExecutionEvidenceVerification: {
@@ -801,6 +876,26 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** LimitedCount */
+        LimitedCount: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "limited";
+            /** Value */
+            value: number;
+        };
+        /** LimitedDuration */
+        LimitedDuration: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "limited";
+            /** Seconds */
+            seconds: number;
         };
         /** LiveReply */
         LiveReply: {
@@ -938,7 +1033,13 @@ export interface components {
             title_version: number;
             /** Reasoning Policy */
             reasoning_policy: string;
-            budget: components["schemas"]["CodingRunBudget"];
+            limits: components["schemas"]["CodingRunLimits"];
+            runtime_policy: components["schemas"]["RuntimeExecutionPolicy"];
+            /**
+             * Knowledge Packs
+             * @default []
+             */
+            knowledge_packs: components["schemas"]["DomainKnowledgePackBinding"][];
             /** Can Start */
             can_start: boolean;
             /** Can Answer */
@@ -987,6 +1088,45 @@ export interface components {
              */
             context_usage: components["schemas"]["ContextUsage"];
         };
+        /** RuntimeAllowed */
+        RuntimeAllowed: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "allow";
+        };
+        /** RuntimeAllowedWithLimit */
+        RuntimeAllowedWithLimit: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "allow_with_limit";
+            /** Limit */
+            limit: number;
+        };
+        /** RuntimeDenied */
+        RuntimeDenied: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "deny";
+        };
+        /** RuntimeExecutionPolicy */
+        RuntimeExecutionPolicy: {
+            /** Abaqus */
+            abaqus?: components["schemas"]["RuntimeDenied"] | components["schemas"]["RuntimeAllowed"] | components["schemas"]["RuntimeAllowedWithLimit"];
+            /** Solver */
+            solver?: components["schemas"]["RuntimeDenied"] | components["schemas"]["RuntimeAllowed"] | components["schemas"]["RuntimeAllowedWithLimit"];
+            /** Cae Timeout */
+            cae_timeout?: components["schemas"]["UnlimitedLimit"] | components["schemas"]["LimitedDuration"];
+            /** Abaqus Python Timeout */
+            abaqus_python_timeout?: components["schemas"]["UnlimitedLimit"] | components["schemas"]["LimitedDuration"];
+            /** Solver Timeout */
+            solver_timeout?: components["schemas"]["UnlimitedLimit"] | components["schemas"]["LimitedDuration"];
+        };
         /** SessionInfo */
         SessionInfo: {
             /** Csrf Token */
@@ -1031,10 +1171,10 @@ export interface components {
         ToolExecution: {
             /**
              * Schema Version
-             * @default web-tool-execution-v1
+             * @default web-tool-execution-v2
              * @constant
              */
-            schema_version: "web-tool-execution-v1";
+            schema_version: "web-tool-execution-v2";
             /** Execution Id */
             execution_id: string;
             /** Thread Id */
@@ -1044,9 +1184,9 @@ export interface components {
             /**
              * Tool Name
              * @default run_solver_job
-             * @constant
+             * @enum {string}
              */
-            tool_name: "run_solver_job";
+            tool_name: "run_solver_job" | "solver_job";
             /** Tool Call Id */
             tool_call_id?: string | null;
             /** Job Name */
@@ -1054,7 +1194,7 @@ export interface components {
             /** Input File */
             input_file: string;
             /** Timeout Seconds */
-            timeout_seconds: number;
+            timeout_seconds?: number | null;
             /**
              * Created At
              * Format: date-time
@@ -1148,6 +1288,14 @@ export interface components {
              * @default 0
              */
             changed_count: number;
+        };
+        /** UnlimitedLimit */
+        UnlimitedLimit: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "unlimited";
         };
         /** ValidationError */
         ValidationError: {
@@ -1311,6 +1459,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_knowledge_packs_api_v1_knowledge_packs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DomainKnowledgeInventory"];
                 };
             };
         };

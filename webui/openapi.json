@@ -113,6 +113,24 @@
         }
       }
     },
+    "/api/v1/knowledge-packs": {
+      "get": {
+        "summary": "List Knowledge Packs",
+        "operationId": "list_knowledge_packs_api_v1_knowledge_packs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainKnowledgeInventory"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/runs/{run_id}": {
       "get": {
         "summary": "Get Run",
@@ -1322,66 +1340,66 @@
         ],
         "title": "ClarificationEvent"
       },
-      "CodingRunBudget": {
+      "CodingRunLimits": {
         "properties": {
-          "max_clarifications": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Max Clarifications",
-            "default": 2
+          "model_requests": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/UnlimitedLimit"
+              },
+              {
+                "$ref": "#/components/schemas/LimitedCount"
+              }
+            ],
+            "title": "Model Requests",
+            "discriminator": {
+              "propertyName": "mode",
+              "mapping": {
+                "limited": "#/components/schemas/LimitedCount",
+                "unlimited": "#/components/schemas/UnlimitedLimit"
+              }
+            }
           },
-          "max_model_requests": {
-            "type": "integer",
-            "minimum": 1.0,
-            "title": "Max Model Requests",
-            "default": 30
+          "clarifications": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/UnlimitedLimit"
+              },
+              {
+                "$ref": "#/components/schemas/LimitedCount"
+              }
+            ],
+            "title": "Clarifications",
+            "discriminator": {
+              "propertyName": "mode",
+              "mapping": {
+                "limited": "#/components/schemas/LimitedCount",
+                "unlimited": "#/components/schemas/UnlimitedLimit"
+              }
+            }
           },
-          "max_api_lookup_calls": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Max Api Lookup Calls",
-            "default": 4
-          },
-          "max_concept_lookup_calls": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Max Concept Lookup Calls",
-            "default": 2
-          },
-          "max_diagnostic_retrieval_calls": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Max Diagnostic Retrieval Calls",
-            "default": 2
-          },
-          "max_static_preflight_calls": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Max Static Preflight Calls",
-            "default": 12
-          },
-          "max_abaqus_calls": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Max Abaqus Calls",
-            "default": 9
-          },
-          "max_solver_calls": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Max Solver Calls",
-            "default": 3
-          },
-          "wall_time_seconds": {
-            "type": "number",
-            "exclusiveMinimum": 0.0,
-            "title": "Wall Time Seconds",
-            "default": 2700.0
+          "active_wall": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/UnlimitedLimit"
+              },
+              {
+                "$ref": "#/components/schemas/LimitedDuration"
+              }
+            ],
+            "title": "Active Wall",
+            "discriminator": {
+              "propertyName": "mode",
+              "mapping": {
+                "limited": "#/components/schemas/LimitedDuration",
+                "unlimited": "#/components/schemas/UnlimitedLimit"
+              }
+            }
           }
         },
         "additionalProperties": false,
         "type": "object",
-        "title": "CodingRunBudget"
+        "title": "CodingRunLimits"
       },
       "CodingRunOutcome": {
         "properties": {
@@ -1496,11 +1514,30 @@
             "title": "Input Tokens",
             "default": 0
           },
+          "cache_write_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Cache Write Tokens",
+            "default": 0
+          },
+          "cache_read_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Cache Read Tokens",
+            "default": 0
+          },
           "output_tokens": {
             "type": "integer",
             "minimum": 0.0,
             "title": "Output Tokens",
             "default": 0
+          },
+          "provider_details": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Provider Details"
           },
           "tool_calls": {
             "type": "integer",
@@ -1661,7 +1698,10 @@
             "default": {
               "model_requests": 0,
               "input_tokens": 0,
+              "cache_write_tokens": 0,
+              "cache_read_tokens": 0,
               "output_tokens": 0,
+              "provider_details": {},
               "tool_calls": 0,
               "api_lookup_calls": 0,
               "concept_lookup_calls": 0,
@@ -1830,6 +1870,73 @@
             "maxLength": 20000,
             "minLength": 1,
             "title": "Goal"
+          },
+          "knowledge_pack_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "title": "Knowledge Pack Ids",
+            "default": []
+          },
+          "abaqus_permission": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/RuntimeDenied"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RuntimeAllowed"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RuntimeAllowedWithLimit"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "mode",
+                  "mapping": {
+                    "allow": "#/components/schemas/RuntimeAllowed",
+                    "allow_with_limit": "#/components/schemas/RuntimeAllowedWithLimit",
+                    "deny": "#/components/schemas/RuntimeDenied"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Abaqus Permission"
+          },
+          "solver_permission": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/RuntimeDenied"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RuntimeAllowed"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RuntimeAllowedWithLimit"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "mode",
+                  "mapping": {
+                    "allow": "#/components/schemas/RuntimeAllowed",
+                    "allow_with_limit": "#/components/schemas/RuntimeAllowedWithLimit",
+                    "deny": "#/components/schemas/RuntimeDenied"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Solver Permission"
           }
         },
         "additionalProperties": false,
@@ -1839,6 +1946,202 @@
           "goal"
         ],
         "title": "CreateRun"
+      },
+      "DomainKnowledgeFileBinding": {
+        "properties": {
+          "relative_path": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Relative Path"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "maximum": 2097152.0,
+            "minimum": 0.0,
+            "title": "Size Bytes"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "relative_path",
+          "size_bytes",
+          "sha256"
+        ],
+        "title": "DomainKnowledgeFileBinding"
+      },
+      "DomainKnowledgeInventory": {
+        "properties": {
+          "root": {
+            "type": "string",
+            "title": "Root"
+          },
+          "packs": {
+            "items": {
+              "$ref": "#/components/schemas/DomainKnowledgePackInfo"
+            },
+            "type": "array",
+            "title": "Packs",
+            "default": []
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/DomainKnowledgePackIssue"
+            },
+            "type": "array",
+            "title": "Issues",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "root"
+        ],
+        "title": "DomainKnowledgeInventory"
+      },
+      "DomainKnowledgePackBinding": {
+        "properties": {
+          "pack_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$",
+            "title": "Pack Id"
+          },
+          "release": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Release"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Summary"
+          },
+          "entrypoints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Entrypoints"
+          },
+          "compatibility": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 64,
+            "title": "Compatibility",
+            "default": []
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Manifest Sha256"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/DomainKnowledgeFileBinding"
+            },
+            "type": "array",
+            "maxItems": 512,
+            "minItems": 1,
+            "title": "Files"
+          },
+          "pack_digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Pack Digest"
+          },
+          "snapshot_relative_path": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Snapshot Relative Path"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "pack_id",
+          "release",
+          "summary",
+          "entrypoints",
+          "manifest_sha256",
+          "files",
+          "pack_digest",
+          "snapshot_relative_path"
+        ],
+        "title": "DomainKnowledgePackBinding"
+      },
+      "DomainKnowledgePackInfo": {
+        "properties": {
+          "pack_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$",
+            "title": "Pack Id"
+          },
+          "release": {
+            "type": "string",
+            "title": "Release"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "entrypoints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Entrypoints"
+          },
+          "compatibility": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Compatibility",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "pack_id",
+          "release",
+          "summary",
+          "entrypoints"
+        ],
+        "title": "DomainKnowledgePackInfo"
+      },
+      "DomainKnowledgePackIssue": {
+        "properties": {
+          "directory": {
+            "type": "string",
+            "title": "Directory"
+          },
+          "error": {
+            "type": "string",
+            "title": "Error"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "directory",
+          "error"
+        ],
+        "title": "DomainKnowledgePackIssue"
       },
       "ExecutionEvidenceVerification": {
         "properties": {
@@ -1972,6 +2275,48 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "LimitedCount": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "const": "limited",
+            "title": "Mode",
+            "default": "limited"
+          },
+          "value": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "title": "LimitedCount"
+      },
+      "LimitedDuration": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "const": "limited",
+            "title": "Mode",
+            "default": "limited"
+          },
+          "seconds": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Seconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "seconds"
+        ],
+        "title": "LimitedDuration"
       },
       "LiveReply": {
         "properties": {
@@ -2285,8 +2630,19 @@
             "type": "string",
             "title": "Reasoning Policy"
           },
-          "budget": {
-            "$ref": "#/components/schemas/CodingRunBudget"
+          "limits": {
+            "$ref": "#/components/schemas/CodingRunLimits"
+          },
+          "runtime_policy": {
+            "$ref": "#/components/schemas/RuntimeExecutionPolicy"
+          },
+          "knowledge_packs": {
+            "items": {
+              "$ref": "#/components/schemas/DomainKnowledgePackBinding"
+            },
+            "type": "array",
+            "title": "Knowledge Packs",
+            "default": []
           },
           "can_start": {
             "type": "boolean",
@@ -2379,12 +2735,165 @@
           "workspace",
           "title",
           "reasoning_policy",
-          "budget",
+          "limits",
+          "runtime_policy",
           "can_start",
           "can_answer",
           "can_continue"
         ],
         "title": "RunSnapshot"
+      },
+      "RuntimeAllowed": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "const": "allow",
+            "title": "Mode",
+            "default": "allow"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RuntimeAllowed"
+      },
+      "RuntimeAllowedWithLimit": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "const": "allow_with_limit",
+            "title": "Mode",
+            "default": "allow_with_limit"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "limit"
+        ],
+        "title": "RuntimeAllowedWithLimit"
+      },
+      "RuntimeDenied": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "const": "deny",
+            "title": "Mode",
+            "default": "deny"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RuntimeDenied"
+      },
+      "RuntimeExecutionPolicy": {
+        "properties": {
+          "abaqus": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RuntimeDenied"
+              },
+              {
+                "$ref": "#/components/schemas/RuntimeAllowed"
+              },
+              {
+                "$ref": "#/components/schemas/RuntimeAllowedWithLimit"
+              }
+            ],
+            "title": "Abaqus",
+            "discriminator": {
+              "propertyName": "mode",
+              "mapping": {
+                "allow": "#/components/schemas/RuntimeAllowed",
+                "allow_with_limit": "#/components/schemas/RuntimeAllowedWithLimit",
+                "deny": "#/components/schemas/RuntimeDenied"
+              }
+            }
+          },
+          "solver": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RuntimeDenied"
+              },
+              {
+                "$ref": "#/components/schemas/RuntimeAllowed"
+              },
+              {
+                "$ref": "#/components/schemas/RuntimeAllowedWithLimit"
+              }
+            ],
+            "title": "Solver",
+            "discriminator": {
+              "propertyName": "mode",
+              "mapping": {
+                "allow": "#/components/schemas/RuntimeAllowed",
+                "allow_with_limit": "#/components/schemas/RuntimeAllowedWithLimit",
+                "deny": "#/components/schemas/RuntimeDenied"
+              }
+            }
+          },
+          "cae_timeout": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/UnlimitedLimit"
+              },
+              {
+                "$ref": "#/components/schemas/LimitedDuration"
+              }
+            ],
+            "title": "Cae Timeout",
+            "discriminator": {
+              "propertyName": "mode",
+              "mapping": {
+                "limited": "#/components/schemas/LimitedDuration",
+                "unlimited": "#/components/schemas/UnlimitedLimit"
+              }
+            }
+          },
+          "abaqus_python_timeout": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/UnlimitedLimit"
+              },
+              {
+                "$ref": "#/components/schemas/LimitedDuration"
+              }
+            ],
+            "title": "Abaqus Python Timeout",
+            "discriminator": {
+              "propertyName": "mode",
+              "mapping": {
+                "limited": "#/components/schemas/LimitedDuration",
+                "unlimited": "#/components/schemas/UnlimitedLimit"
+              }
+            }
+          },
+          "solver_timeout": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/UnlimitedLimit"
+              },
+              {
+                "$ref": "#/components/schemas/LimitedDuration"
+              }
+            ],
+            "title": "Solver Timeout",
+            "discriminator": {
+              "propertyName": "mode",
+              "mapping": {
+                "limited": "#/components/schemas/LimitedDuration",
+                "unlimited": "#/components/schemas/UnlimitedLimit"
+              }
+            }
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RuntimeExecutionPolicy"
       },
       "SessionInfo": {
         "properties": {
@@ -2495,9 +3004,9 @@
         "properties": {
           "schema_version": {
             "type": "string",
-            "const": "web-tool-execution-v1",
+            "const": "web-tool-execution-v2",
             "title": "Schema Version",
-            "default": "web-tool-execution-v1"
+            "default": "web-tool-execution-v2"
           },
           "execution_id": {
             "type": "string",
@@ -2515,7 +3024,10 @@
           },
           "tool_name": {
             "type": "string",
-            "const": "run_solver_job",
+            "enum": [
+              "run_solver_job",
+              "solver_job"
+            ],
             "title": "Tool Name",
             "default": "run_solver_job"
           },
@@ -2542,8 +3054,15 @@
             "title": "Input File"
           },
           "timeout_seconds": {
-            "type": "number",
-            "exclusiveMinimum": 0.0,
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Timeout Seconds"
           },
           "created_at": {
@@ -2704,7 +3223,6 @@
           "invocation_id",
           "job_name",
           "input_file",
-          "timeout_seconds",
           "created_at",
           "updated_at"
         ],
@@ -2814,6 +3332,19 @@
         "additionalProperties": false,
         "type": "object",
         "title": "ToolSummary"
+      },
+      "UnlimitedLimit": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "const": "unlimited",
+            "title": "Mode",
+            "default": "unlimited"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "UnlimitedLimit"
       },
       "ValidationError": {
         "properties": {
