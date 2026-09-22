@@ -30,6 +30,7 @@ def build_instructions(
     interaction_policy: Literal["legacy", "workspace_facts_first"] = "legacy",
     question_protocol: Literal["legacy_decision", "ask_user_v1"] = "legacy_decision",
     response_enabled: bool = False,
+    general_shell_enabled: bool = False,
 ) -> str:
     if interaction_policy not in ("legacy", "workspace_facts_first"):
         raise ValueError("unknown interaction policy")
@@ -211,14 +212,28 @@ automatic Skill or Catalog updates.
             "have inspected the relevant runtime evidence. You may return failed with "
             "the evidenced stage when the task cannot be completed within budget."
         )
+    shell_instructions = (
+        "A general coding shell is available for repository work, tests, and ordinary "
+        "Python. Never launch any Abaqus release through it; use run_cae_script, "
+        "solver_job, or run_abaqus_python."
+        if general_shell_enabled
+        else "No generic shell or host-Python execution tool is exposed; use the "
+        "workspace file tools for code inspection."
+    )
+    solver_instructions = (
+        "Use `solver_job` with `action=submit` to start Solver and receive an "
+        "execution ID. You may do independent work after submission, but call "
+        "`solver_job` with `action=wait` before reading Solver outputs or ending "
+        "the run."
+        if general_shell_enabled
+        else "Use `run_solver_job` for the Solver stage."
+    )
     instructions = f"""
 You are completing one Abaqus 2024 coding run in this workspace:
 {request.workspace}
 
 Use relative paths for workspace files. Never launch Abaqus through the generic
-shell or host Python; use the three Abaqus runtime tools. No generic shell or
-host-Python execution tool is exposed; use the workspace file tools for code
-inspection.
+shell or host Python; use the typed Abaqus runtime tools. {shell_instructions}
 
 {clarification_entry}
 
@@ -255,7 +270,8 @@ code so that the release-specific runtime boundaries are available.
 
 {probe_instructions}
 
-Keep authoring, solver, and ODB extraction separate. {artifact_instructions}
+Keep authoring, solver, and ODB extraction separate. {solver_instructions}
+{artifact_instructions}
 Use runtime and verifier evidence to make the smallest relevant repair, and do
 not spend the finite tool budget on an unchanged retry without a reason.
 When exact evidence proves that an attribute is absent or a keyword is invalid,
@@ -319,12 +335,21 @@ stages were completed. Text delivery is not execution or factual verification.
     return instructions
 
 
-def _runtime_script_policy_instructions(request: CodingRunRequest) -> str:
+def _runtime_script_policy_instructions(
+    request: CodingRunRequest,
+    *,
+    background_solver_enabled: bool,
+) -> str:
     policy = request.runtime_script_policy
     entries = (
         ("run_cae_script", policy.allowed_cae_scripts),
         ("run_abaqus_python", policy.allowed_abaqus_python_scripts),
-        ("run_solver_job input_file", policy.allowed_solver_inputs),
+        (
+            "solver_job submit input_file"
+            if background_solver_enabled
+            else "run_solver_job input_file",
+            policy.allowed_solver_inputs,
+        ),
     )
     restricted = [(label, paths) for label, paths in entries if paths is not None]
     if not restricted:
