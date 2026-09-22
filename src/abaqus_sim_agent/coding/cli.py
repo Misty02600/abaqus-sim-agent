@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import io
 import json
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, cast
@@ -13,8 +15,8 @@ from pydantic import SecretStr
 from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.amendments import (
     CodingRunAmendmentLedger,
-    CodingRunBudgetPatch,
     CodingRunConfigPatch,
+    RuntimeExecutionPolicyPatch,
     append_operational_amendment,
     append_task_revision,
 )
@@ -29,12 +31,20 @@ from abaqus_sim_agent.coding.concept_lookup import (
     concept_index_binding,
     open_concept_index,
 )
+from abaqus_sim_agent.coding.context_policy import (
+    CONTEXT_POLICY_VERSION,
+    bind_filesystem_skills,
+)
 from abaqus_sim_agent.coding.contracts import (
     ApiCatalogBinding,
-    CodingRunBudget,
     CodingRunRequest,
     CodingRunStatus,
     ConceptIndexBinding,
+    LimitedDuration,
+    RuntimeAllowed,
+    RuntimeAllowedWithLimit,
+    RuntimeDenied,
+    RuntimeExecutionPolicy,
     RuntimeProfile,
     RuntimeScriptPolicy,
 )
@@ -43,6 +53,10 @@ from abaqus_sim_agent.coding.diagnostic_retrieval import DiagnosticRetrievalMode
 from abaqus_sim_agent.coding.document_policy_binding import (
     DocumentPolicyBinding,
     load_document_policy_spec,
+)
+from abaqus_sim_agent.coding.domain_knowledge import (
+    discover_domain_knowledge_packs,
+    prepare_domain_knowledge_bundle,
 )
 from abaqus_sim_agent.coding.edit_scope import ReferenceEditScope
 from abaqus_sim_agent.coding.execution_verifier import ExecutionEvidenceVerifier
@@ -140,6 +154,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--skills-dir",
         type=Path,
         help="Agent Skill library; defaults to the installed package library",
+    )
+    parser.add_argument(
+        "--knowledge-pack",
+        action="append",
+        metavar="PACK_ID",
+        help="Enable one installed private domain knowledge pack; repeatable",
+    )
+    parser.add_argument(
+        "--list-knowledge-packs",
+        action="store_true",
+        help="List private domain knowledge packs installed for this user and exit",
     )
     parser.add_argument(
         "--model-provider",
@@ -251,20 +276,24 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         help="Repeatable production INP path for the runtime allowlist",
     )
-    parser.add_argument("--max-clarifications", type=int)
     parser.add_argument(
         "--edit-scope-file",
         type=Path,
         help="Trusted single-reference-edit-v1 JSON; pure editing, no execution",
     )
-    parser.add_argument("--max-model-requests", type=int)
-    parser.add_argument("--max-api-lookup-calls", type=int)
-    parser.add_argument("--max-concept-lookup-calls", type=int)
-    parser.add_argument("--max-diagnostic-retrieval-calls", type=int)
-    parser.add_argument("--max-static-preflight-calls", type=int)
-    parser.add_argument("--max-abaqus-calls", type=int)
-    parser.add_argument("--max-solver-calls", type=int)
-    parser.add_argument("--wall-time-seconds", type=float)
+    parser.add_argument(
+        "--abaqus-permission",
+        choices=("deny", "allow", "allow_with_limit"),
+    )
+    parser.add_argument("--abaqus-limit", type=int)
+    parser.add_argument(
+        "--solver-permission",
+        choices=("deny", "allow", "allow_with_limit"),
+    )
+    parser.add_argument("--solver-limit", type=int)
+    parser.add_argument("--cae-timeout-seconds", type=float)
+    parser.add_argument("--abaqus-python-timeout-seconds", type=float)
+    parser.add_argument("--solver-timeout-seconds", type=float)
     parser.add_argument(
         "--amendment-reason",
         help="Audit reason for resume-time configuration or task changes",
@@ -273,7 +302,20 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
+    _configure_cli_output()
     raise SystemExit(run_cli())
+
+
+def _configure_cli_output(*streams: io.TextIOWrapper) -> None:
+    """让重定向/宿主捕获的CLI文本使用UTF-8，交互式Windows Console保持原编码。"""
+    selected = streams or tuple(
+        stream
+        for stream in (sys.stdout, sys.stderr)
+        if isinstance(stream, io.TextIOWrapper)
+    )
+    for stream in selected:
+        if isinstance(stream, io.TextIOWrapper) and not stream.isatty():
+            stream.reconfigure(encoding="utf-8", errors="backslashreplace")
 
 
 @dataclass
@@ -285,6 +327,8 @@ class _ConsoleQuestion:
 
 def run_cli(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.list_knowledge_packs:
+        return _print_knowledge_packs()
     key = None
     while True:
         result = _run_cli_once(args, key)
@@ -398,6 +442,7 @@ def _run_cli_once(
                     "launch document policy differs from immutable request"
                 )
             document_policy_mode = document_binding.mode if document_binding else "off"
+            domain_knowledge = launch.domain_knowledge
         else:
             fresh_goal = _resolve_goal(args.goal, args.request_file)
             fresh_run_id = args.run_id or f"run-{uuid4().hex[:12]}"
@@ -444,6 +489,7 @@ def _run_cli_once(
             static_cache_dir = args.static_preflight_cache_dir
             document_policy_mode = args.document_policy_mode or "off"
             document_binding = None
+            domain_knowledge = None
             if (document_policy_mode == "bounded_v1") != (
                 args.document_policy_spec is not None
             ):
@@ -538,7 +584,7 @@ def _run_cli_once(
                     if args.edit_scope_file is not None
                     else None
                 ),
-                budget=_effective_fresh_budget(args),
+                runtime_policy=_effective_fresh_runtime_policy(args),
             )
             execution = new_run_execution_config(
                 model_provider=model_provider,
@@ -548,7 +594,7 @@ def _run_cli_once(
                 if args.http_timeout_seconds is not None
                 else DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS,
                 reasoning_policy=args.reasoning_policy,
-                planning_enabled=(args.planning if args.planning is not None else True)
+                planning_enabled=(args.planning if args.planning is not None else False)
                 and request.edit_scope is None,
             )
             use_questions = not (
@@ -558,11 +604,27 @@ def _run_cli_once(
                 or request.concept_index
                 or static_binding
             )
+            domain_knowledge = prepare_domain_knowledge_bundle(
+                tuple(args.knowledge_pack or ()),
+                state_dir=request.state_dir,
+                workspace=request.workspace,
+            )
+            schema_version = "coding-run-launch-v7"
+            resolved_skill_library = skill_library.resolve(strict=True)
             launch = _LaunchManifest(
-                schema_version="coding-run-launch-v5"
-                if use_questions
-                else "coding-run-launch-v3",
+                schema_version=schema_version,
                 **({"question_protocol": "ask_user_v1"} if use_questions else {}),
+                **(
+                    {
+                        "response_enabled": use_questions,
+                        "domain_knowledge": domain_knowledge,
+                        "capability_definitions": bind_filesystem_skills(
+                            resolved_skill_library,
+                            ("abaqus-2024-coding",),
+                        ),
+                        "context_policy_version": CONTEXT_POLICY_VERSION,
+                    }
+                ),
                 document_policy=document_binding,
                 model_provider=model_provider,
                 model_name=model_name,
@@ -571,7 +633,7 @@ def _run_cli_once(
                     mode="python",
                     exclude={"model_provider", "model_name", "http_retries"},
                 ),
-                skill_library=skill_library.resolve(strict=True),
+                skill_library=resolved_skill_library,
                 api_catalog_dir=(
                     api_catalog_dir.resolve(strict=True)
                     if api_catalog_dir is not None
@@ -619,6 +681,13 @@ def _run_cli_once(
             f"reasoning_policy={execution_config.reasoning_policy})"
         )
         print(f"Question protocol: {launch.question_protocol or 'legacy_decision'}")
+        if domain_knowledge is not None:
+            print(
+                "Knowledge packs: "
+                + ", ".join(
+                    f"{pack.pack_id}@{pack.release}" for pack in domain_knowledge.packs
+                )
+            )
 
         async def execute() -> int | _ConsoleQuestion:
             async with open_coding_run(
@@ -670,6 +739,8 @@ def _validate_resume_arguments(args: argparse.Namespace) -> None:
         "--launcher": args.launcher,
         "--edit-scope-file": args.edit_scope_file,
         "--skills-dir": args.skills_dir,
+        "--knowledge-pack": args.knowledge_pack,
+        "--list-knowledge-packs": args.list_knowledge_packs or None,
         "--api-catalog-dir": args.api_catalog_dir,
         "--api-catalog-mode": args.api_catalog_mode,
         "--concept-index-dir": args.concept_index_dir,
@@ -723,23 +794,12 @@ def _append_requested_amendments(
 def _config_patch_from_args(
     args: argparse.Namespace,
 ) -> CodingRunConfigPatch | None:
-    budget_values = {
-        "max_clarifications": args.max_clarifications,
-        "max_model_requests": args.max_model_requests,
-        "max_api_lookup_calls": args.max_api_lookup_calls,
-        "max_concept_lookup_calls": args.max_concept_lookup_calls,
-        "max_diagnostic_retrieval_calls": args.max_diagnostic_retrieval_calls,
-        "max_static_preflight_calls": args.max_static_preflight_calls,
-        "max_abaqus_calls": args.max_abaqus_calls,
-        "max_solver_calls": args.max_solver_calls,
-        "wall_time_seconds": args.wall_time_seconds,
-    }
-    provided_budget = {
-        name: value for name, value in budget_values.items() if value is not None
-    }
     values: dict[str, object] = {}
-    if provided_budget:
-        values["budget"] = CodingRunBudgetPatch.model_validate(provided_budget)
+    runtime_policy = _runtime_policy_values(args)
+    if runtime_policy:
+        values["runtime_policy"] = RuntimeExecutionPolicyPatch.model_validate(
+            runtime_policy
+        )
     if args.model_provider is not None:
         values["model_provider"] = args.model_provider
     if args.model is not None:
@@ -751,11 +811,41 @@ def _config_patch_from_args(
     return CodingRunConfigPatch.model_validate(values)
 
 
-def _effective_fresh_budget(args: argparse.Namespace) -> CodingRunBudget:
-    patch = _config_patch_from_args(args)
-    if patch is None or patch.budget is None:
-        return CodingRunBudget()
-    return patch.budget.apply(CodingRunBudget())
+def _effective_fresh_runtime_policy(args: argparse.Namespace) -> RuntimeExecutionPolicy:
+    values = _runtime_policy_values(args)
+    if not values:
+        return RuntimeExecutionPolicy()
+    return RuntimeExecutionPolicyPatch.model_validate(values).apply(
+        RuntimeExecutionPolicy()
+    )
+
+
+def _runtime_policy_values(args: argparse.Namespace) -> dict[str, object]:
+    values: dict[str, object] = {}
+    for name in ("abaqus", "solver"):
+        permission = getattr(args, f"{name}_permission")
+        limit = getattr(args, f"{name}_limit")
+        if limit is not None:
+            if permission not in {None, "allow_with_limit"}:
+                raise ValueError(f"--{name}-limit conflicts with --{name}-permission")
+            values[name] = RuntimeAllowedWithLimit(limit=limit)
+        elif permission == "allow_with_limit":
+            raise ValueError(
+                f"--{name}-permission=allow_with_limit requires --{name}-limit"
+            )
+        elif permission == "allow":
+            values[name] = RuntimeAllowed()
+        elif permission == "deny":
+            values[name] = RuntimeDenied()
+    for field, argument in (
+        ("cae_timeout", "cae_timeout_seconds"),
+        ("abaqus_python_timeout", "abaqus_python_timeout_seconds"),
+        ("solver_timeout", "solver_timeout_seconds"),
+    ):
+        seconds = getattr(args, argument)
+        if seconds is not None:
+            values[field] = LimitedDuration(seconds=seconds)
+    return values
 
 
 def _apply_launch_amendments(
@@ -769,7 +859,30 @@ def _load_launch_manifest(state_dir: Path) -> _LaunchManifest:
     path = state_dir / "launch.json"
     if not path.is_file():
         raise ValueError("run predates resumable CLI state: launch.json is missing")
-    return _LaunchManifest.model_validate_json(path.read_text(encoding="utf-8"))
+    launch = _LaunchManifest.model_validate_json(path.read_text(encoding="utf-8"))
+    if launch.schema_version != "coding-run-launch-v7":
+        raise ValueError("pre-release CodingRun launch schema is not supported")
+    return launch
+
+
+def _print_knowledge_packs() -> int:
+    try:
+        inventory = discover_domain_knowledge_packs()
+    except (OSError, ValueError) as exc:
+        print(f"error: {exc}")
+        return 1
+    print(f"Knowledge pack root: {inventory.root}")
+    if not inventory.packs:
+        print("No valid knowledge packs installed.")
+    for pack in inventory.packs:
+        compatibility = ", ".join(pack.compatibility) or "unspecified"
+        print(
+            f"- {pack.pack_id}@{pack.release}: {pack.summary} "
+            f"[compatibility: {compatibility}]"
+        )
+    for issue in inventory.issues:
+        print(f"! {issue.directory}: {issue.error}")
+    return 1 if inventory.issues else 0
 
 
 def _load_api_catalog(

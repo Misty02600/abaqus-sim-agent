@@ -1,15 +1,24 @@
+import io
 import json
 import zipfile
 from pathlib import Path
 
 import pytest
-from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart
+from pydantic import ValidationError
+from pydantic_ai.messages import (
+    ModelMessage,
+    ModelRequest,
+    ModelResponse,
+    ToolCallPart,
+    ToolReturnPart,
+)
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
 from abaqus_sim_agent.api_catalog import ApiCatalog, ApiMethodCard
 from abaqus_sim_agent.coding.amendments import load_amendment_ledger
 from abaqus_sim_agent.coding.cli import (
     _api_catalog_binding,
+    _configure_cli_output,
     _LaunchManifest,
     _load_answers,
     _load_api_catalog,
@@ -49,13 +58,25 @@ def test_parser_leaves_workspace_unset_for_cwd_default() -> None:
     assert args.allowed_cae_script is None
     assert args.allowed_abaqus_python_script is None
     assert args.allowed_solver_input is None
+    assert args.knowledge_pack is None
 
 
 def test_product_cli_uses_execution_evidence_not_plate_oracle() -> None:
     assert isinstance(_product_verifier(), ExecutionEvidenceVerifier)
 
 
-def test_resume_parser_reuses_immutable_launch_manifest(tmp_path: Path) -> None:
+def test_noninteractive_cli_output_is_utf8() -> None:
+    raw = io.BytesIO()
+    stream = io.TextIOWrapper(raw, encoding="gbk")
+
+    _configure_cli_output(stream)
+    stream.write("中文知识包")
+    stream.flush()
+
+    assert raw.getvalue().decode("utf-8") == "中文知识包"
+
+
+def test_resume_parser_rejects_pre_release_launch_manifest(tmp_path: Path) -> None:
     state_dir = tmp_path / "state"
     state_dir.mkdir()
     args = build_parser().parse_args(["--resume", str(state_dir)])
@@ -85,19 +106,147 @@ def test_resume_parser_reuses_immutable_launch_manifest(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="diagnostic-retrieval-mode"):
         _validate_resume_arguments(diagnostic_override)
 
-    manifest = _LaunchManifest(
-        model_provider=DeepSeekGateway.OPENCODE_GO,
-        model_name="deepseek-v4-flash",
-        http_retries=10,
-        skill_library=tmp_path.resolve(),
-        diagnostic_retrieval_mode="advisory",
+    knowledge_override = build_parser().parse_args(
+        ["--resume", str(state_dir), "--knowledge-pack", "private-fea"]
     )
+    with pytest.raises(ValueError, match="knowledge-pack"):
+        _validate_resume_arguments(knowledge_override)
+
     (state_dir / "launch.json").write_text(
-        manifest.model_dump_json(indent=2),
+        json.dumps(
+            {
+                "schema_version": "coding-run-launch-v6",
+                "model_provider": DeepSeekGateway.OPENCODE_GO.value,
+                "model_name": "deepseek-v4-flash",
+            }
+        ),
         encoding="utf-8",
     )
 
-    assert _load_launch_manifest(state_dir) == manifest
+    with pytest.raises(ValidationError, match="coding-run-launch-v7"):
+        _load_launch_manifest(state_dir)
+
+
+def test_cli_binds_and_reads_selected_private_knowledge_pack(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace = tmp_path / "workspace"
+    state = tmp_path / "state"
+    root = tmp_path / "packs"
+    pack = root / "private-fea"
+    workspace.mkdir()
+    pack.mkdir(parents=True)
+    (pack / "README.md").write_text("private CLI sentinel", encoding="utf-8")
+    (pack / "pack.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "domain-knowledge-pack-v1",
+                "pack_id": "private-fea",
+                "release": "1",
+                "summary": "CLI private reference",
+                "entrypoints": ["README.md"],
+                "compatibility": [],
+                "resources": [
+                    {
+                        "path": "README.md",
+                        "kind": "guide",
+                        "title": None,
+                        "source": {
+                            "kind": "original",
+                            "title": "fixture",
+                            "reference": None,
+                            "version": None,
+                            "license": None,
+                            "notes": None,
+                        },
+                        "validation": {
+                            "content_review": "unreviewed",
+                            "runtime": "not_run",
+                            "physics": "not_checked",
+                            "task_benefit": "not_evaluated",
+                            "evidence_ids": [],
+                            "notes": None,
+                        },
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    observed: dict[str, object] = {}
+
+    def model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        returned = [
+            part
+            for message in messages
+            if isinstance(message, ModelRequest)
+            for part in message.parts
+            if isinstance(part, ToolReturnPart)
+            and part.tool_name == "knowledge_read_file"
+        ]
+        if not returned:
+            observed["tools"] = {tool.name for tool in info.function_tools}
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "knowledge_read_file",
+                        {"path": "private-fea/README.md"},
+                        tool_call_id="read-private-cli",
+                    )
+                ]
+            )
+        observed["content"] = returned[-1].content
+        output = next(
+            tool for tool in info.output_tools if tool.name.endswith("ResponseDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output.name,
+                    {"status": "response", "summary": "Read private CLI reference."},
+                )
+            ]
+        )
+
+    class _Client:
+        async def close(self) -> None:
+            return None
+
+    monkeypatch.setattr(
+        "abaqus_sim_agent.coding.domain_knowledge.domain_knowledge_packs_root",
+        lambda: root,
+    )
+    monkeypatch.setattr(
+        "abaqus_sim_agent.coding.cli.take_gateway_api_key_from_environment",
+        lambda _provider: "test-key",
+    )
+    monkeypatch.setattr(
+        "abaqus_sim_agent.coding.cli.create_deepseek_chat_model",
+        lambda **_kwargs: (FunctionModel(model), _Client()),
+    )
+
+    result = run_cli(
+        [
+            "--goal",
+            "Read the selected private reference.",
+            "--workspace",
+            str(workspace),
+            "--state-dir",
+            str(state),
+            "--run-id",
+            "cli-private-pack",
+            "--knowledge-pack",
+            "private-fea",
+        ]
+    )
+
+    assert result == 0
+    launch = _load_launch_manifest(state)
+    assert launch.schema_version == "coding-run-launch-v7"
+    assert launch.domain_knowledge is not None
+    assert launch.domain_knowledge.packs[0].pack_id == "private-fea"
+    assert "knowledge_read_file" in observed["tools"]
+    assert "private CLI sentinel" in str(observed["content"])
 
 
 def test_diagnostic_advisory_requires_a_concept_index() -> None:
@@ -216,16 +365,16 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
         [
             "--resume",
             str(state_dir),
-            "--wall-time-seconds",
+            "--solver-permission",
+            "allow",
+            "--solver-timeout-seconds",
             "5400",
-            "--max-model-requests",
-            "40",
             "--model",
             "deepseek-v4-flash" if gateway == "opencode-go" else "amended-model",
             "--http-retries",
             "7",
             "--amendment-reason",
-            "User expanded the interrupted run budget",
+            "User authorized Solver for the interrupted run",
         ]
     )
 
@@ -247,8 +396,8 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
     assert (state_dir / "request.json").read_bytes() == immutable_request
     assert (state_dir / "launch.json").read_bytes() == immutable_launch
     effective = load_request_for_resume(state_dir)
-    assert effective.budget.wall_time_seconds == 5400
-    assert effective.budget.max_model_requests == 40
+    assert effective.runtime_policy.solver.mode == "allow"
+    assert effective.runtime_policy.timeout_seconds("solver") == 5400
     ledger = load_amendment_ledger(state_dir, run_id="cli-resume-test")
     assert ledger.sequence == 1
     assert ledger.amendments[0].kind == "operational"

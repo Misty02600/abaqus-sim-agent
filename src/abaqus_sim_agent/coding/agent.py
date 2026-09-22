@@ -8,6 +8,7 @@ from typing import Any, Literal
 from pydantic_ai import Agent, DeferredToolRequests, RunContext, ToolOutput
 from pydantic_ai.models import Model
 from pydantic_ai_harness import Coder, Skills, StepPersistence, ToolGuardrail
+from pydantic_ai_harness.compaction import ClearToolResults, WarnNearLimits
 from pydantic_ai_harness.guardrails import GuardrailResult, ToolCallInfo
 from pydantic_ai_harness.planning import Planning
 from pydantic_ai_harness.repo_context import RepoContext
@@ -32,6 +33,7 @@ from abaqus_sim_agent.coding.concept_lookup import (
 from abaqus_sim_agent.coding.concept_lookup import (
     register_document_lookup_tool as _register_document_lookup_tool,
 )
+from abaqus_sim_agent.coding.context_policy import build_context_policy
 from abaqus_sim_agent.coding.contracts import (
     CodingRunRequest,
     FailedDecision,
@@ -93,7 +95,11 @@ _LINEAR_STRUCTURAL_FEA_FOUNDATION_SKILLS = (
     "linear-structural-fea-verification",
 )
 
-__all__ = ["CODER_GENERAL_SHELL_POLICY_VERSION", "create_abaqus_coding_agent"]
+__all__ = [
+    "CODER_GENERAL_SHELL_POLICY_VERSION",
+    "PRODUCT_CODER_SHELL_POLICY_VERSION",
+    "create_abaqus_coding_agent",
+]
 
 
 def _production_python_syntax_guard(
@@ -177,14 +183,17 @@ def create_abaqus_coding_agent(
     immutable_workspace_paths: tuple[str, ...] = (),
     probe_protocol_mode: _ProbeProtocolMode = "off",
     probe_target_scripts: tuple[str, ...] | None = None,
-    planning_enabled: bool = True,
+    planning_enabled: bool = False,
     task_instructions: str | None = None,
     step_store: StepStore | None = None,
     execution_config: ModelExecutionConfig | None = None,
     question_protocol: QuestionProtocol = "legacy_decision",
     foundation_skill_profile: Literal["off", "linear_structural_fea_v1"] = "off",
     knowledge_resources_dir: Path | None = None,
+    knowledge_allowed_patterns: tuple[str, ...] = ("*.md", "*.py"),
     response_enabled: bool = False,
+    product_coding_tools: bool = False,
+    context_policy_enabled: bool = False,
 ) -> Agent[_CodingAgentDependencies, CodingAgentOutput]:
     """组装只在指定工作区活动的 Abaqus 2024 Coding Agent。
 
@@ -210,7 +219,7 @@ def create_abaqus_coding_agent(
             validated 结论采用到 production 脚本前阻断后续诊断与 Solver。
         probe_target_scripts: typed probe 可以采用到的 production Python
             脚本；``None`` 表示不增加任务级 allowlist。
-        planning_enabled: 是否向模型暴露 ``write_plan`` 工具。
+        planning_enabled: 是否向模型暴露 Harness Planning 工具。
         task_instructions: 可选的任务专用缺项和完成条件；未提供时使用开放任务要求。
         execution_config: 可选的宿主有效配置，统一推理、Planning与交互策略；
             未提供时保持历史调用方行为。
@@ -218,9 +227,12 @@ def create_abaqus_coding_agent(
             ``FileStepStore``，与模型可写 workspace 隔离。
         foundation_skill_profile: 显式 ``linear_structural_fea_v1`` 时为受控评测
             暴露五个线性结构基础 deferred Skills；默认 ``off``，保持产品现状。
-        knowledge_resources_dir: 显式评测的只读资料目录；调用者负责冻结内容。
-            仅新增读取工具，不执行资料；尚无普通 CLI/launch/resume 绑定。
+        knowledge_resources_dir: 宿主准备的只读资料目录；仅新增读取工具，不执行资料。
+            产品调用方传入 run 绑定快照的临时物化副本，显式评测调用方负责自行冻结内容。
+        knowledge_allowed_patterns: 只读资料工具允许访问的文本文件 glob。
         response_enabled: 新普通会话是否允许无文件的文字答复完成；固定任务及旧会话默认关闭。
+        product_coding_tools: 是否启用普通产品的受限 Shell 与后台 Solver 工具。
+        context_policy_enabled: 是否启用 launch v7 的 1M tiered compaction。
 
     Returns:
         配置完成、但尚未运行的单 Agent 实例。
@@ -250,22 +262,40 @@ def create_abaqus_coding_agent(
     apply_harness_windows_newline_hash_patch()
     apply_harness_windows_shell_tree_patch()
     apply_harness_windows_jsonl_append_patch()
-    # Coder 0.24.0 always creates a Shell capability. Keep its constructor
-    # allowlist narrow, then remove the capability fail-closed in _configure_coder.
+    product_shell_enabled = product_coding_tools
+    if product_shell_enabled and (
+        question_protocol != "ask_user_v1"
+        or not response_enabled
+        or task_instructions is not None
+    ):
+        raise ValueError(
+            "product coding tools require an open ask_user response session"
+        )
     coder = Coder[_CodingAgentDependencies](
         request.workspace,
-        allowed_commands=("python",),
+        allowed_commands=(),
         subagents=(),
     )
-    _configure_coder(
+    coder = _configure_coder(
         coder,
         request.workspace,
         planning_enabled=planning_enabled,
+        shell_enabled=product_shell_enabled,
+        context_policy_enabled=context_policy_enabled,
     )
     capabilities: list[Any] = [
         coder,
         StepPersistence(store=step_store or _create_step_store(request.state_dir)),
     ]
+    if context_policy_enabled:
+        capabilities.insert(1, build_context_policy())
+    if product_shell_enabled:
+        capabilities.append(
+            ToolGuardrail[_CodingAgentDependencies](
+                guard=_abaqus_launcher_shell_guard,
+                tools=("run_command", "start_command"),
+            )
+        )
     if request.edit_scope is not None:
         capabilities.append(ReferenceEditCapability())
     if (
@@ -367,6 +397,7 @@ def create_abaqus_coding_agent(
                     knowledge_resources_dir,
                     workspace=request.workspace,
                     state_dir=request.state_dir,
+                    allowed_patterns=knowledge_allowed_patterns,
                 )
             ]
             if knowledge_resources_dir is not None
@@ -395,6 +426,7 @@ def create_abaqus_coding_agent(
             interaction_policy=execution_config.interaction_policy
             if execution_config
             else "legacy",
+            general_shell_enabled=product_shell_enabled,
         )
         + (
             "\n\n" + KNOWLEDGE_INSTRUCTIONS
@@ -426,6 +458,7 @@ def create_abaqus_coding_agent(
             probe_target_scripts=probe_target_scripts,
             api_catalog_mode=resolved_api_catalog_mode,
             diagnostic_retrieval_mode=diagnostic_retrieval_mode,
+            background_solver_enabled=product_shell_enabled,
         )
     if resolved_api_catalog_mode in {"full", "full_with_discovery"}:
         _register_api_lookup_tool(agent)
@@ -444,21 +477,21 @@ def _configure_coder(
     workspace: Path,
     *,
     planning_enabled: bool,
-) -> None:
-    shell_capabilities = [
-        capability for capability in coder.capabilities if isinstance(capability, Shell)
-    ]
+    shell_enabled: bool,
+    context_policy_enabled: bool,
+) -> Coder[_CodingAgentDependencies]:
+    shell_capabilities: list[Shell[_CodingAgentDependencies]] = []
+
+    def find_shell(capability):
+        if isinstance(capability, Shell):
+            shell_capabilities.append(capability)
+
+    coder.apply(find_shell)
     if len(shell_capabilities) != 1:
         raise RuntimeError(
-            "Expected exactly one Harness Shell capability before enforcing "
-            "the no-general-shell policy"
+            "Expected exactly one Harness Shell capability before applying the "
+            "product shell policy"
         )
-    blocked_shell = shell_capabilities[0]
-    coder.capabilities = [
-        capability
-        for capability in coder.capabilities
-        if capability is not blocked_shell
-    ]
 
     has_repo_context = any(
         (workspace / name).exists()
@@ -472,14 +505,33 @@ def _configure_coder(
             ".grok",
         )
     )
-    for capability in coder.capabilities:
+
+    def configure(capability):
+        if context_policy_enabled and isinstance(
+            capability, (ClearToolResults, WarnNearLimits)
+        ):
+            return None
+        if isinstance(capability, Shell):
+            if not shell_enabled:
+                return None
+            capability.denied_commands = ("abaqus", "abq")
+            capability.denied_env_patterns = LLM_API_KEY_ENV_PATTERNS
+            return capability
         if isinstance(capability, RepoContext) and not has_repo_context:
-            capability.autoload_instructions = False
-            capability.expose_inventory_tool = False
+            return None
         elif isinstance(capability, Planning):
-            capability.tools = ("write_plan",) if planning_enabled else ()
-            capability.guidance = (
-                "After all required user input is known, use write_plan at most "
-                "once for a genuinely multi-stage task. Keep it concise; do not "
-                "rewrite or administratively update the plan during repair."
-            )
+            if not planning_enabled:
+                return None
+            if not shell_enabled:
+                capability.tools = ("write_plan",)
+                capability.guidance = (
+                    "After all required user input is known, use write_plan at most "
+                    "once for a genuinely multi-stage task. Keep it concise; do not "
+                    "rewrite or administratively update the plan during repair."
+                )
+        return capability
+
+    configured = coder.visit_and_replace(configure)
+    if not isinstance(configured, Coder):
+        raise RuntimeError("Harness Coder lost its composition while applying policy")
+    return configured
