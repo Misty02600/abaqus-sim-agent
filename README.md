@@ -11,13 +11,14 @@
 
 - 只有一个 LLM Agent。旧多 Agent Protocol、Graph State、`StructuredModelPort` 和 Mock Executor 源码
   已清理；历史决定与实验记录保留，不代表当前实现。
-- Agent 只能通过 `run_cae_script`、`run_solver_job`、`run_abaqus_python` 启动 Abaqus。
-  Harness 通用 Shell 已移除，宿主专用 oracle 入口不向模型暴露。脚本仍是普通动态 Python，
+- 普通产品 Agent 使用 Harness 工作区 Shell 完成正常编码任务，但直接 `abaqus*` / `abq*` launcher 会被拒绝；
+  Abaqus 通过 `run_cae_script`、`solver_job(action=submit|wait)`、`run_abaqus_python` 运行。宿主专用 oracle
+  入口不向模型暴露。脚本仍是普通动态 Python，
   这些限制不是 OS 沙箱或不可信租户隔离。
 - 工作区必须是已解析的 ASCII 路径，state/evidence 位于工作区之外。宿主约束路径、Job 名、调用预算、
   超时进程树和 artifact freshness，并保留原始 stdout/stderr bytes 与执行记录。
 - 缺少会改变物理问题的输入时必须澄清，不能从模板或检索结果补造材料、尺寸、载荷等参数。
-- 新普通会话通过 `ask_user(question)`交接必要输入；launch v5可直接交付typed文字答复，文件/执行请求仍返回`ready_for_verification`或`failed`；
+- 新普通会话通过 `ask_user(question)`交接必要输入；launch v7 可直接交付 typed 文字答复，并绑定 context policy、Skill digest 与可选私有知识快照；文件/执行请求仍返回`ready_for_verification`或`failed`；
   新CLI可显式组合API Catalog；旧run、Gold及其他未迁移profile保留`needs_input`协议。普通 CLI 的
   `execution_evidence` 验收 fresh 交付物、Python 3.10 语法和最后一次已使用的 runtime stage，
   **不证明物理正确，也不覆盖全部自然语言语义**。固定 evaluator 才使用独立 INP/ODB `task_oracle`。
@@ -38,7 +39,7 @@
 
 ```console
 uv sync --all-groups
-uv run --no-sync pytest -q -m "not abaqus"
+uv run --no-sync pytest -q
 uv run --no-sync ruff check .
 uv run --no-sync basedpyright
 uv run --no-sync abaqus-sim-agent --help
@@ -64,15 +65,17 @@ uv run --no-sync abaqus-sim-agent-web --root D:\abaqus-web --model-provider open
 
 启动前在宿主环境配置 `OPENCODE_API_KEY`；默认官方网关使用 `DEEPSEEK_API_KEY`。打开终端打印的完整
 本地会话链接。根目录必须是 ASCII 路径，下面分开保存 `workspaces/`、`states/`、`registry/` 和临时缓存；
-每个任务从空工作区开始。默认每题30个模型请求、9次 Abaqus（含最多3次 Solver）、2次提问和2700秒活动时间。
-模型配置由启动参数决定，页面只读；Go/Flash使用现有 enabled/high、Planning、HTTP60秒和10次额外SDK重试。
+每个任务从空工作区开始。普通产品不限制模型请求、提问、低成本工具或 active wall；Abaqus 默认允许，
+Solver 默认禁止，创建会话时可改为允许或允许有限次数。Go/Flash 使用 enabled/high、HTTP 300 秒和 4 次
+SDK request retry，普通产品默认关闭 Planning。
 
 页面已支持基础多轮对话：首次点击“发送”直接开始，回复后可在同一会话继续追问或追加要求；
 Enter发送、Shift+Enter换行，草稿按会话保存在当前浏览器会话中。历史从宿主恢复，追加消息沿用原工作区和
-累计预算。当前处理期间可编辑草稿，处理结束后发送。回复支持流式逐步显示和复制，会话可重命名；“停止回复”只在模型请求阶段可用，
-停止后保留已收到的内容，可继续或发送新消息。`run_solver_job` 在 Web 中会离开模型工作段并作为独立
-`ToolExecution` 运行；状态栏显示 Job、已用时间和当前状态，运行详情保留 PID、退出码与错误。当前宿主仍持有
-进程控制句柄时可以取消这一次 Solver；求解期间不接受新的 Agent 消息，也不提供消息插队。
+累计用量。当前处理期间可编辑草稿，处理结束后发送。回复支持流式逐步显示和复制，会话可重命名；“停止回复”只在模型请求阶段可用，
+停止后保留已收到的内容，可继续或发送新消息。`solver_job(action=submit)` 在 Web 中作为独立
+`ToolExecution` 运行并立即把 execution ID 返回模型；模型可继续独立工作，需要结果时再调用 `action=wait`。
+状态栏显示 Job、已用时间和当前状态，运行详情保留 PID、退出码与错误。当前宿主仍持有进程控制句柄时可以
+取消这一次 Solver；当前 Agent run 结束前必须等待已提交的 Solver。
 消息和澄清答复先由宿主持久化，再调度执行；若已保存但未启动，页面提示显式继续。普通Web追加消息保存到
 `thread.json`并作为同一CodingRun history上的continuation执行，不推进task revision；每条新消息仍以提交前的
 workspace/execution状态划定本段fresh evidence。显式修改任务合同的CLI `--goal` amendment继续建立task revision。
@@ -84,11 +87,12 @@ workspace/execution状态划定本段fresh evidence。显式修改任务合同�
 
 新普通CLI/Web会话可仅回答问题，不要求生成文件或调用Abaqus；页面显示“已回答”，不赋予执行验收范围。
 只做一个环节时，不要求其他环节的材料、载荷或边界条件；只在当前请求确实依赖缺失事实时澄清。
-旧launch v1–v4与固定Gold保持原协议。见[请求范围与文字交付](docs/adr/0026-scope-requests-and-text-responses.md)。
+开发期旧产品 state 不迁移；固定 Gold、trial 与报告仍保留原合同和证据。见
+[ADR-0030](docs/adr/0030-drop-pre-release-coding-run-state-compatibility.md)。
 
 当前只接受本机单用户访问，每个服务只有一个主动工作段，忙时拒绝第二个执行。浏览器断开不停止任务；
-正常关闭服务会等待当前模型工作段；页面的停止按钮会关闭当前模型请求并保存中断状态。长时 Solver 不占用
-模型工作段，结束后自动把结果交回原 invocation 和原 tool call，不创建用户 continuation，也不重复提交。
+正常关闭服务会等待当前模型工作段；页面的停止按钮会关闭当前模型请求并保存中断状态。Solver submit
+立即返回 execution ID；模型调用 wait 后普通 await 终态，等待不消耗 token 或 active wall，也不重复提交。
 服务在 Solver 运行中关闭时会终止本机控制句柄并转为 `needs_reconcile`；重启后不按 PID/Job 重新附着，
 也不会自动重跑。本版没有文件上传。文本预览上限256 KiB，
 网页下载上限200 MiB；更大文件从本地工作区读取。HTML/SVG仅作为附件下载。
@@ -137,25 +141,27 @@ uv run --no-sync abaqus-sim-agent --resume <STATE_DIR> --cancel-question <QUESTI
 
 答复ID必须匹配该run当前问题；同ID同答复幂等，不同答复不覆盖。待答期间修改goal/配置须先显式撤销问题。
 已执行Abaqus后收到新工程答复，会形成新task revision，旧产物不能验收新要求；未决runtime reconcile优先。
-新CLI普通会话使用launch v5/resume v5，旧`--answers`、旧Gold及显式可选profile保留旧协议。
+新普通 CLI/Web 会话使用 launch v7，绑定 context policy 与实际 filesystem Skill digest；不兼容的开发期
+state 显式拒绝。旧 Gold 及显式评测 profile 的历史证据保留，不回填新默认。
 这证明问答交接可运行，不保证模型一定识别缺参，也不构成外部Job恢复；见[ADR-0024](docs/adr/0024-host-owned-user-question-waiting.md)。
 
 `--launcher` 可覆盖默认 `D:\SIMULIA\Commands\abq2024.bat`；`--state-dir` 可指定工作区外的证据目录，
 未指定时使用本机应用数据目录。建议始终显式指定工作区；省略时会使用 CLI 启动目录。
 领域 Skill 默认来自[包内资源](src/abaqus_sim_agent/skills/abaqus-2024-coding/SKILL.md)。
 
-默认 run 预算为30个模型请求、9次 Abaqus 调用（其中最多3次 Solver）、2次澄清、2700秒活动 wall time。
-可用 `--max-model-requests`、`--max-abaqus-calls`、`--max-solver-calls`、
-`--max-clarifications`、`--wall-time-seconds` 显式调整。HTTP 超时默认60秒，
-`--http-retries` 默认10次额外 SDK 重试；这与任务重跑不同，实验应记录实际配置。
+普通产品的 model requests、clarification、lookup/preflight 与 active wall 均为 unlimited。Abaqus/Solver 使用
+`--abaqus-permission` / `--solver-permission` 配置 `deny`、`allow` 或 `allow_with_limit`，有限模式配合
+`--abaqus-limit` / `--solver-limit`。三个 Abaqus runtime 默认无进程 timeout，可分别用
+`--cae-timeout-seconds`、`--abaqus-python-timeout-seconds`、`--solver-timeout-seconds` 设置有限值。
+HTTP timeout 默认 300 秒，`--http-retries` 默认 4 次 SDK request retry。
 
-新建 Go / `deepseek-v4-flash` run 显式开启 thinking、reasoning effort=`high`，保留 Planning，
+新建 Go / `deepseek-v4-flash` run 显式开启 thinking、reasoning effort=`high`，普通产品默认关闭 Planning，
 不另加低单响应输出上限。`--http-timeout-seconds`、`--reasoning-policy`、`--planning/--no-planning`
 只用于新run；其他网关仍使用provider-default推理，不静默切换网关。新run允许先读取工作区中用户提供的事实，
 确认必需输入缺失后澄清，仍禁止补造物理参数或据其推进建模/执行。
 
-有效配置写入 immutable `launch.json` v3。旧v1/v2续跑保持原provider-default语义且不改写文件；
-新推理策略在同一run内固定，模型/provider amendment与该策略不兼容时在写入前拒绝。
+有效模型、context policy 与 Skill 定义绑定写入 immutable `launch.json` v7；旧开发期 launch 不迁移。
+新推理策略在同一 run 内固定，模型/provider amendment 与该策略不兼容时在写入前拒绝。
 旧评测profile与历史结果保持原样；新领域任务目前仍为[离线候选](docs/plans/todo/0006-domain-task-evaluation-baseline.md)，
 不能把旧零重试成绩当作新high配置成绩，也不能仅凭请求字段声称服务端已验证执行high。
 
@@ -168,16 +174,16 @@ uv run --no-sync abaqus-sim-agent --resume <STATE_DIR> --cancel-question <QUESTI
 uv run abaqus-sim-agent --resume <state-directory>
 
 uv run abaqus-sim-agent --resume <state-directory> `
-  --wall-time-seconds 5400 `
-  --max-model-requests 50 `
-  --amendment-reason "用户调整本次运行预算"
+  --solver-permission allow_with_limit `
+  --solver-limit 2 `
+  --amendment-reason "用户批准本次运行使用 Solver"
 
 uv run abaqus-sim-agent --resume <state-directory> `
   --goal "<新的明确任务要求>" `
   --amendment-reason "用户修改任务合同"
 ```
 
-预算、provider/model、HTTP retry 修改写入 typed amendment，累计用量不清零。新 goal 建立 task revision，
+runtime permission/timeout、provider/model、HTTP retry 修改写入 typed amendment，累计用量不清零。新 goal 建立 task revision，
 保留对话但重新捕获 workspace snapshot、划定执行证据范围并验收。没有新 amendment 的 terminal run 不重开；
 workspace 漂移、损坏的 effect ledger、同 state 并发或未决 Abaqus effect 不能通过 resume 绕过。
 详见[续跑边界](docs/adr/0020-resume-coding-runs-with-harness-step-persistence.md)与
@@ -195,15 +201,64 @@ Go的DeepSeek适配沿用Pydantic AI原生profile，将已保存的thinking内�
 | 能力 | 启用方式与边界 |
 |---|---|
 | Exact API Catalog | `--api-catalog-dir <目录>` 配合 `--api-catalog-mode full`、`full_with_discovery`、`automatic_verified_only` 或 `automatic_exact_signature`；只传目录时默认 full。分别提供主动精确查证、额外的 receiver 方法目录、错误触发 verified note 或紧凑签名。 |
-| 官方文档工具 | `--concept-index-dir <索引> --concept-retrieval-mode tool`；`search_abaqus_docs` 按需查询，也允许零查询，默认最多2次。 |
+| 官方文档工具 | `--concept-index-dir <索引> --concept-retrieval-mode tool`；`search_abaqus_docs` 按需查询，也允许零查询，普通产品不设调用次数上限。 |
 | Solver diagnostic advisory | `--diagnostic-retrieval-mode advisory --concept-index-dir <含BM25的索引>`；仅为符合条件的Solver诊断附加RRF证据，不替换原runtime状态。 |
 | 分级静态检查 | `--static-preflight-mode advisory` 或 `enforced_verified`；后者要求固定abqpy wheel、外部cache与task-owned生产脚本allowlist，拒绝发生在Abaqus预算前。 |
 | 有界文档查证 | `--document-policy-mode bounded_v1 --document-policy-spec <spec.json> --concept-retrieval-mode tool`；同一Coder执行精确引用回评与最多一次补查，使用spec中的独立后端，不同时注册旧文档工具。 |
 | 纯引用编辑 | `--edit-scope-file <trusted-scope.json>`；调用方冻结原文/hash和一个Python表达式区间，仅允许引用替换，不暴露Abaqus运行工具。 |
+| 本机私有领域知识包 | `--knowledge-pack <pack_id>` 可重复；只从当前用户应用数据目录发现 strict manifest，创建 run 时快照，恢复不回读源目录。Web 在新会话页显式勾选。 |
 
-新CLI单独启用Catalog时支持ask_user_v1，查询预算与去重随问答恢复累计，旧保存run按原launch协议恢复。
+### 本机私有领域知识包
+
+知识包不进入仓库、wheel 或公开 benchmark。宿主用 `platformdirs` 解析当前用户的数据目录；先运行下面的命令
+查看本机实际根目录和已识别包：
+
+```console
+uv run --no-sync abaqus-sim-agent --list-knowledge-packs
+```
+
+在输出根目录下建立 `<pack_id>/pack.json` 和资源文件。目录名必须等于 `pack_id`；首版 manifest 示例：
+
+```json
+{
+  "schema_version": "domain-knowledge-pack-v1",
+  "pack_id": "flexible-electronics-fea",
+  "release": "2026.09.1",
+  "summary": "柔性电子结构与材料建模参考",
+  "entrypoints": ["README.md"],
+  "compatibility": ["Abaqus 2024", "reference-only"],
+  "resources": [
+    {
+      "path": "README.md",
+      "kind": "guide",
+      "source": {
+        "kind": "original",
+        "title": "本机维护者整理"
+      }
+    }
+  ]
+}
+```
+
+允许的资源是 manifest 明确列出的 UTF-8 `.md`、`.txt`、`.py`、`.inp`、`.json`、`.yaml`、`.yml`；
+它们只作为参考文本，不会执行或注册为 Skill。CLI 显式选择：
+
+```powershell
+uv run --no-sync abaqus-sim-agent `
+  --goal "使用柔性电子参考资料完成当前建模请求" `
+  --workspace D:\abaqus-runs\flexible-electronics `
+  --knowledge-pack flexible-electronics-fea
+```
+
+发现包不代表自动启用；未传参数时保持关闭。新 run 会把实际 bytes 和 digest 快照到 workspace 外的 state；
+resume、Web continuation 和 task revision 继续使用原快照，不能重新传 `--knowledge-pack` 换包。读取资料、
+离线 schema/path 测试或单次模型观察都不证明内容专业正确、Abaqus 2024 兼容或任务物理通过。完整边界见
+[知识接入](docs/architecture/knowledge-access.md)与
+[ADR-0029](docs/adr/0029-discover-private-knowledge-from-user-data.md)。
+
+新 CLI 单独启用 Catalog 时支持 ask_user_v1，查询 usage、去重和证据随问答恢复累计。
 `full_with_discovery` 已接入产品 CLI 和恢复：`discover_abaqus_api` 按已知 receiver 列出方法名称与 Card ID，
-模型应继续 `lookup_abaqus_api` 读取证据；候选不会记为已读卡片。两工具共用 API 预算，journal 保留查询、
+模型应继续 `lookup_abaqus_api` 读取证据；候选不会记为已读卡片。journal 保留查询、
 计数与实际交付内容。该目录工具不是下面的 BM25/E5 自然语言发现实验，详见
 [知识接入与恢复边界](docs/architecture/knowledge-access.md)。
 没有Python异常类型的CAE错误，只有在宿主确认非超时失败、frame指向本次执行hash匹配的工作区脚本，
@@ -310,7 +365,19 @@ API 意图准备、评测专用语义发现和历史失败反馈各有独立实�
 
 ## 测试与真实任务评测
 
-离线测试覆盖合同、权限、预算、进程证据、恢复、检索和评分器。真实模型行为测试与持证任务另行运行，
+默认 `pytest` 只运行当前产品主路径与核心合同；检索/证据处理、可选策略等低层组件回归，以及评测基础设施和
+持证 Abaqus 集成测试显式分层，避免日常回归反复执行与本次产品改动无关的内部算法或冻结试验：
+
+```console
+uv run --no-sync pytest -q
+uv run --no-sync pytest -q -m component
+uv run --no-sync pytest -q -m evaluation
+```
+
+持证集成测试需要先设置 `ABAQUS_LICENSED_TESTS=1`，再运行 `pytest -m abaqus`；这会使用本机许可证。
+`component` 仍由 CI 和发布检查显式运行；`evaluation` 可独立复核冻结 evaluator、benchmark 与研究回归。
+一次性实验的历史证据由版本化 benchmark/report 与 Git 历史保留，不额外维护一套历史 pytest。
+真实模型行为测试与持证任务另行运行，
 分别记录实际调用和验收结果。
 
 评测系统本身的离线自测使用Pydantic Evals：固定12个假任务、轮内并发1/2、逐例落盘与模拟审查，

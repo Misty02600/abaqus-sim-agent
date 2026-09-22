@@ -2,10 +2,10 @@
 
 ## 当前实现是什么
 
-首轮没有持久 Job Service 或 Job ledger。`run_solver_job` 是一次有界、同步的本机工具调用：校验工作区内
-INP 和 ASCII Job 名，先写 Harness started tool effect 与输入 hash/Job 标识，启动 Abaqus/Standard，等待
-进程结束或 timeout，保存日志、完整 execution journal 和 artifact delta，再把证据交给 Coder 与宿主
-verifier。
+当前没有持久 Job Service 或 Job ledger。普通产品用 `solver_job(action=submit)` 校验工作区内 INP 和 ASCII
+Job 名、预留权限/预算并启动后台 Abaqus/Standard，立即返回 execution ID；`action=wait` 再等待进程结束或
+timeout，保存日志、完整 execution journal 和 artifact delta，并把证据交给 Coder 与宿主 verifier。冻结
+profile 的一步式 Solver 工具仍按其批次合同运行。
 
 ```mermaid
 stateDiagram-v2
@@ -32,8 +32,8 @@ interactive
 
 runner 使用参数序列而不是拼接用户 shell 字符串；`cwd` 固定为 canonical workspace。
 
-这里描述的是经 `run_solver_job` 的宿主路径。CAE 脚本内部直接 submit 仍可能绕过它；当前是协议禁止，
-确定性脚本检查尚未实施，见 [PLAN-0011](../../plans/todo/0011-block-solver-submit-inside-cae-script.md)。
+这里描述的是经宿主 Solver 工具的路径。CAE runtime 前会拒绝 AST 中直接出现的 `.submit(...)` 和
+`.waitForCompletion(...)`；该策略面向常见误写，不识别 `getattr`、`exec` 或运行时重绑定等动态绕行。
 
 ## 分层成功语义
 

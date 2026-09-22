@@ -9,8 +9,8 @@ effective launch 为准。这里解释实际职责，不维护另一份依赖版
 |---|---|---|
 | Python 3.12 / uv / uv_build | 宿主、依赖、项目内 `.venv`、包构建 | 不等于 Abaqus vendor Python 3.10 |
 | Pydantic | strict 请求、配置、决策、证据和 outcome | 类型校验不能证明物理意图正确 |
-| Pydantic AI 2.33.0 | 模型/provider、原生 tool loop、typed output、deferred tools、usage | 当前只有一个产品 Coder；以后可在同一生态内做 typed handoff 或 agent delegation |
-| Harness 0.24.0 | workspace coding、Skills、StepPersistence；可选 SubAgents | 当前显式 `subagents=()`；产品装配移除 Shell，精确版本补丁与合同测试保护 Windows 文件行为 |
+| Pydantic AI 2.43.0 | 模型/provider、原生 tool loop、typed output、deferred tools、usage | 当前只有一个产品 Coder；以后可在同一生态内做 typed handoff 或 agent delegation |
+| Harness 0.31.0 | workspace coding、Shell、Skills、StepPersistence；可选 Planning/SubAgents | 当前显式 `subagents=()`、普通产品默认移除 Planning；Shell 拒绝直接 Abaqus launcher 并剥离 Provider 凭据；版本补丁继续保护已复现的 Windows JSONL 追加与进程树终止问题，换行 hash 已使用上游实现 |
 | CodingRunService / asyncio | 问答、累计预算、修订、恢复、verifier 反馈 | 本地文件后端宿主，不是 durable scheduler |
 | FastAPI / Uvicorn / REST + SSE | 本地 Web 命令、只读快照和变更通知 | 只监听回环地址；SSE 不传递运行真值或逐 token 恢复日志 |
 | React / TypeScript / assistant-ui | Thread、消息、工具、产物与验证展示 | ExternalStore 消费宿主投影，不运行 Agent 或拥有产品状态 |
@@ -27,7 +27,8 @@ effective launch 为准。这里解释实际职责，不维护另一份依赖版
 ## 模型配置与兼容
 
 模型工厂支持显式 DeepSeek / OpenCode 网关，不隐藏切换 provider。当前目标 Go/V4-Flash 新 run 使用
-typed `ModelExecutionConfig` 保存 thinking enabled/high、Planning、HTTP 重试与超时等有效设置；
+typed `ModelExecutionConfig` 保存 thinking enabled/high、Planning 开关、HTTP 重试与超时等有效设置；普通产品
+默认关闭 Planning，冻结 profile 保留原设置；
 旧 launch 按兼容视图读取，不能套新默认后声称复现旧请求。
 
 Go adapter 已恢复框架原生 `reasoning_content` 历史回传，不再沿用禁用回传的旧说明；不补造历史缺失推理。
@@ -79,7 +80,7 @@ SubAgents API 仍可能随小版本变化，因此任何采用都需要锁版本
 ## 已采纳或条件触发的技术
 
 FastAPI + assistant-ui 已被 [ADR-0025](../adr/0025-local-web-workbench-over-coding-run.md)采纳用于本地
-工作台；本地 API/UI、Thread continuation、模型预览和 deferred Solver 已完成工程实现。它仍是本机单用户
+工作台；本地 API/UI、Thread continuation、模型预览和后台 Solver submit/wait 已完成工程实现。它仍是本机单用户
 文件后端，PLAN-0010 的真实 Web 主线尚未执行，不能写成远程部署或已证明稳定建模收益。
 
 LangGraph、DBOS、业务 SQLAlchemy/Alembic、PostgreSQL、Redis/Celery、远程 worker 和 Job Service

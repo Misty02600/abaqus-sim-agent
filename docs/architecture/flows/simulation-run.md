@@ -2,13 +2,13 @@
 
 ## 这条流程保证什么
 
-宿主拥有请求、预算与终态；Agent 提出代码、问题、文字答复和验收请求。新普通 CLI/Web 使用 launch v5
+宿主拥有请求、limits、runtime policy 与终态；Agent 提出代码、问题、文字答复和验收请求。新普通 CLI/Web 使用 launch v7
 与 `ask_user_v1`，旧 run/Gold/未迁移 profile 按保存的 legacy 协议执行。以下状态是宿主语义，不是
 LangGraph 节点。
 
 ## 首次执行与用户待答
 
-1. CLI 或 Web 共享应用入口解析 workspace/state、模型、runtime、预算与可选知识绑定，取得同 state 的 OS 独占锁。
+1. CLI 或 Web 共享应用入口解析 workspace/state、模型、runtime policy、limits 与可选知识绑定，取得同 state 的 OS 独占锁。
 2. 保存基础 request/launch 与 initial snapshot，组装 Coder、工具和对应 scope 的 verifier。
 3. Agent 可先读工作区事实；物理输入不足时提出 `ask_user(question)`。问题与其他工具/final 混发，
    宿主在副作用前整轮拒绝，不能只靠顺序执行屏障。
@@ -24,7 +24,7 @@ legacy `needs_input` 继续使用原 `field_id`、answers 与预先澄清条件�
 
 ## 当前请求范围与文字答复
 
-launch v5 的 `ResponseDecision` 可以直接交付问题、讨论或局部步骤的完整文字答案；该路径保存
+launch v7 的 `ResponseDecision` 可以直接交付问题、讨论或局部步骤的完整文字答案；该路径保存
 `completion_kind=response`，不运行 verifier，也不声称文件、执行或物理验收通过。当前请求若需要文件或
 Abaqus 执行，仍须返回非空 manifest 并经过对应执行验收；当前 revision 已记录 runtime 或终态工作区变化时，
 宿主拒绝用文字答复绕过验收。澄清只围绕当前请求实际依赖的缺失事实，不要求补齐无关阶段参数。
@@ -32,26 +32,25 @@ Abaqus 执行，仍须返回非空 manifest 并经过对应执行验收；当前
 ## 编码、运行与修复
 
 1. Coder 编写普通 Abaqus Python，可按显式 profile 获取知识证据或静态诊断。
-2. 三个 runtime 工具先检查路径、可选 allowlist 和策略，再预留预算；执行前记录输入指纹和 tool effect。
+2. 三个 runtime 工具先检查 permission，再检查路径、可选 allowlist 和策略；外部副作用开始前预留有限 allowance，并记录输入指纹和 tool effect。
 3. runner 运行固定 CAE/Solver/Abaqus Python launcher，记录 raw logs、execution result 和文件变化。
-4. 宿主保存 execution journal；Coder 收到当前诊断后修复，所有调用继续累计预算。
+4. 宿主保存 execution journal；Coder 收到当前诊断后修复，所有调用继续累计 usage。
 5. ready decision 必须声明 deliverable manifest；宿主验收通过才写 completed outcome，否则反馈当前 scope
    的失败证据继续有界修复。模型最终输出的 schema 错误不是工作区 artifact 损坏的证据。
 
-建模 → Solver → ODB 提取是阶段合同。当前路径 policy 不能静态阻断 CAE 脚本内直接 submit，
-该缺口见 [PLAN-0011](../../plans/todo/0011-block-solver-submit-inside-cae-script.md)。
+建模 → Solver → ODB 提取是阶段合同。CAE runtime 前的最小 AST policy 会拒绝直接出现的
+`.submit(...)` / `.waitForCompletion(...)`，且不消耗 Abaqus 预算；动态方法查找等绕行不在该策略范围内。
 Solver 超时、进程 0 和 stage success 的区别见 [Job 生命周期](job-lifecycle.md)。
 
-## Web Solver 的 deferred 交接
+## Solver 的提交与等待
 
-Web 中的 `run_solver_job` 以原 Pydantic AI `tool_call_id` 保存 deferred frontier，随后释放模型工作段与 state
-锁；宿主 `ToolExecution` 在独立事件循环运行 Solver，页面只读显示 Job、状态、耗时、PID 和当前宿主是否仍可
-取消。求解期间不能发送新的 Agent 消息。
+新普通会话调用 `solver_job(action=submit)` 时，宿主校验 INP、权限和预算，随后在 CLI 事件循环 task 或 Web
+`ToolExecution` 中启动 Solver 并立即返回 execution ID。模型可以继续独立的文件、知识或 Shell 工作，但不应
+修改本次 Solver 的输入与输出路径。
 
-Solver 到达终态后，宿主核对 invocation、tool call、execution journal 和 workspace artifact delta，再用
-`DeferredToolResults` 恢复同一 Agent invocation。这个过程不创建用户消息、task revision 或第二次 Solver
-调用。服务重启只自动消费完整持久化的终态结果；仍在运行、结果缺失或证据不一致均进入
-`needs_reconcile`，不会从文件重新附着外部进程。
+需要结果时，模型调用 `solver_job(action=wait, execution_id=...)` 普通 await 同一后台任务；终态结果继续写入
+execution journal，并经过 diagnostics、artifact delta 和 verifier。当前 run 有 pending execution 时，宿主拒绝
+模型终态并要求先 wait。服务重启不从文件重新附着活动进程；结果缺失或证据不一致进入 `needs_reconcile`。
 
 ## 中断与继续
 
@@ -69,7 +68,7 @@ API lookup/discovery journal 与 snapshot 合并恢复计数、去重和实际�
 ## Amendment 与 task revision
 
 - 普通 resume 继续同一个 revision，累计 usage/active wall 保留；两次执行之间的用户等待不计活动预算。
-- operational amendment 在 immutable base 上叠加允许的预算/provider 等配置，不清零用量，也不能任意改变
+- operational amendment 在 immutable base 上叠加允许的 runtime policy/provider 等配置，不清零用量，也不能任意改变
   run 内推理策略、工具列表或知识绑定。不兼容修订应在写 ledger 前拒绝。
 - 新 goal 形成 task revision，保存旧 outcome，捕获新 freshness 基线和 execution offset。旧产物或旧阶段
   记录不能直接验收新任务。

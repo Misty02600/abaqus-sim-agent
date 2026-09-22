@@ -16,18 +16,18 @@
 
 - 唯一产品 Agent 是 `abaqus_2024_coder`，使用 Pydantic AI 原生 tool loop、typed output、依赖注入与 Harness Coder/Skills/StepPersistence。Runner、verifier、evaluator、查询工具和宿主 service 均不是 Agent。
 - Agent 在单一工作区编写普通动态 Abaqus Python；不强制 DeckDraft/ChangeSet 或确定性 renderer。包内领域 Skill 是产品提示与知识资源，和本文件的仓库维护指令分开。
-- `CodingRunService` 拥有会话、预算、恢复与最终 outcome。新普通 CLI/Web 使用 `ask_user(question)` 和原生 deferred tools；宿主保存 `waiting_for_user` 后释放运行锁，用户等待不消耗 active wall。旧 run、Gold 和未迁移 profile 按保存的协议恢复，不能静默换协议。
+- `CodingRunService` 拥有会话、limits、runtime policy、usage、恢复与最终 outcome。新普通 CLI/Web 使用 `ask_user(question)`；宿主保存 `waiting_for_user` 后释放运行锁，用户等待不消耗 active wall。普通产品的模型请求、提问、低成本工具和 active wall 均 unlimited；固定评测可显式有限。项目仍处于开发期，不承诺 pre-release 产品 run/state 的向后兼容或迁移；不兼容 state 必须显式拒绝，不能猜测升级。冻结 Gold、trial、seal 和报告仍保留原合同与证据，不回填新协议。
 - 缺少会改变物理问题的必要输入时先澄清，不能根据常见值、模板或检索结果补造参数。新会话可以先读工作区事实；Abaqus API、文件名等实现问题由 Agent 处理。旧 Gold 的预先澄清条件保持原合同。
 - `ready_for_verification` 只申请验收，必须声明非空、无重复的工作区相对交付物 manifest。普通 CLI 的 `execution_evidence` 验证 fresh 交付物、fresh Python 的 3.10 语法和每种已用 runtime 的最后一次 stage；不证明完整自然语言语义或物理正确。固定 evaluator 才注入模型不可见的 `task_oracle`。
-- 模型可见 Abaqus 执行入口只有 `run_cae_script`、`run_solver_job`、`run_abaqus_python`。装配必须找到并移除 Harness 唯一 Shell，否则 fail-closed；不得注册通用 `run_command`、宿主 Python 或 `run_trusted_abaqus_python`。
-- 建模脚本应只生成模型与 INP，求解经独立 Solver 工具，提取经 Abaqus Python/odbAccess。当前 CAE 脚本内部提交 Job 仍主要靠协议约束，确定性阻断尚在 [PLAN-0011](docs/plans/todo/0011-block-solver-submit-inside-cae-script.md)；不得宣传为代码已完全强制。
-- 模型脚本和输入位于已解析的 ASCII 工作区，state/evidence 位于工作区外；校验路径归属、后缀、Job 名及可选逐工具文件 allowlist。运行预算、准确进程树终止、raw stdout/stderr bytes 和 artifact freshness 必须保留。这些边界不是 OS 沙箱或不可信租户隔离。
-- 恢复必须保留累计预算、原始 freshness 基线、execution provenance、协议和知识绑定。同一 state 使用 OS 独占锁；未决 Abaqus tool effect 停在 `needs_reconcile`，禁止盲目重跑。不得把文件后端续跑称为外部 Job exactly-once、PID 重新附着或完整 durable workflow。
-- Task revision 与 operational amendment 分开：新任务建立新验收基线，旧 outcome 归档；预算或 provider 修订不能清零已消耗用量。损坏 ledger 不猜测修复，不用 event log 推断缺失的副作用记录。
-- 新普通会话使用 launch v5：当前请求可以交付 `ResponseDecision` 文字答复，文件或执行请求仍须走非空 manifest 与宿主 verifier；当前 revision 已有执行或终态工作区变化时不能用文字答复绕过验收。
-- 本地 Web 工作台复用 `coding/application.py`、`composition.py` 和 `CodingRunService`。命令使用 REST，SSE 只通知重取；Web registry、Thread、invocation 和 `ToolExecution` 是管理记录，不覆盖 CodingRun 的 request、预算、runtime evidence、verification 或 outcome。
+- 新普通产品会话是标准 Harness Coder：保留工作区 Shell，但按配置路径和 `abaqus*` / `abq*` 版本化名称拒绝直接启动 vendor launcher；Abaqus 执行使用 `run_cae_script`、`solver_job(action=submit|wait)`、`run_abaqus_python`。冻结 evaluator 继续使用各自保存的工具合同；`run_trusted_abaqus_python` 永不注册给模型。
+- 建模脚本应只生成模型与 INP，求解经独立 Solver 工具，提取经 Abaqus Python/odbAccess。宿主在 CAE runtime 前确定性拒绝 AST 中直接出现的 `.submit(...)` 和 `.waitForCompletion(...)`；`getattr`、`exec` 和运行时重绑定等动态绕行不在该最小策略覆盖范围内，不得宣传为 Python 沙箱。
+- 模型脚本和输入位于已解析的 ASCII 工作区，state/evidence 位于工作区外；校验路径归属、后缀、Job 名及可选逐工具文件 allowlist。runtime permission/allowance、准确进程树终止、raw stdout/stderr bytes 和 artifact freshness 必须保留。这些边界不是 OS 沙箱或不可信租户隔离。
+- 恢复必须保留累计 usage/allowance、原始 freshness 基线、execution provenance、协议、context policy 和知识/Skill 绑定。同一 state 使用 OS 独占锁；未决 Abaqus tool effect 停在 `needs_reconcile`，禁止盲目重跑。不得把文件后端续跑称为外部 Job exactly-once、PID 重新附着或完整 durable workflow。
+- Task revision 与 operational amendment 分开：新任务建立新验收基线，旧 outcome 归档；runtime policy 或 provider 修订不能清零已消耗用量。损坏 ledger 不猜测修复，不用 event log 推断缺失的副作用记录。
+- 新普通会话使用 launch v7，绑定 1M context policy 与 filesystem Skill digest：当前请求可以交付 `ResponseDecision` 文字答复，文件或执行请求仍须走非空 manifest 与宿主 verifier；当前 revision 已有执行或终态工作区变化时不能用文字答复绕过验收。
+- 本地 Web 工作台复用 `coding/application.py`、`composition.py` 和 `CodingRunService`。命令使用 REST，SSE 只通知重取；Web registry、Thread、invocation 和 `ToolExecution` 是管理记录，不覆盖 CodingRun 的 request、limits/runtime policy、runtime evidence、verification 或 outcome。
 - Web 普通追加消息先持久化到 Thread，再以 `continuation_id` 恢复同一 CodingRun history；它不推进 task revision，但每段单独捕获 workspace/execution baseline，旧产物和旧执行不能冒充 fresh evidence。显式任务合同变化仍使用 amendment/task revision。
-- Web `run_solver_job` 以原 tool call 持久化 deferred frontier，并由宿主 `ToolExecution` 在模型工作段外运行；当前宿主可观察和取消仍受控的进程树，重启中的活动 Solver 转 `needs_reconcile`，不承诺跨进程重附着或 exactly-once。
+- 新普通会话的 `solver_job(action=submit)` 由宿主 `ToolExecution` 或 CLI 后台 task 启动并立即返回 execution ID；模型可完成独立工作，再用 `action=wait` 普通等待结果。pending Solver 存在时不能结束当前 run；当前宿主可观察和取消仍受控的进程树，重启中的活动 Solver 转 `needs_reconcile`，不承诺跨进程重附着或 exactly-once。
 
 ## 知识与评测
 

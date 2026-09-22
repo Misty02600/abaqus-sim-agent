@@ -16,11 +16,11 @@ typed runtime tools；组件图见 [总览](overview.md)。
 |---|---|---|
 | workspace 与 initial snapshot | workspace resolver、宿主首次启动；新 task revision 建立新的验收基线 | Coder 读写文件，runner/verifier 核对输入和变化 |
 | immutable request / base launch | CLI、Web 或 evaluator composition | 恢复核对原合同，amendment 形成 effective overlay，不改写原实验请求 |
-| turn、revision、usage、active wall | CodingRunService | 模型只接收允许的上下文，不能重置预算或直接写 outcome |
+| turn、revision、usage、active wall | CodingRunService | 普通产品只观察 usage；固定评测可有限，模型不能重置或直接写 outcome |
 | 模型 history、settled snapshot、tool effect | Pydantic AI/Harness 与宿主持久化适配 | resume 选择可继续边界，未决 vendor effect 触发 `needs_reconcile` |
 | 问题、history 关联、用户答复 | 宿主问答组件 | Console 在执行锁外取答；锁内按 ID 持久化和消费 |
 | Web Thread、invocation 与命令回执 | Web registry/controller | 记录用户消息、执行关联与传输幂等；不拥有预算、verification 或 outcome |
-| Web Solver `ToolExecution` | Web controller 与独立 Solver 事件循环 | 记录原 tool call、进程观察、取消和终态结果；CodingRun 只在核对 frontier 后消费 |
+| Web Solver `ToolExecution` | Web controller 与独立 Solver 事件循环 | submit 记录 execution ID、进程观察、取消和终态结果；wait 读取同一结果，不使用 deferred frontier |
 | 子进程与原始执行观察 | Abaqus runner | 工具保存 execution journal，模型收到诊断，verifier 独立判断 scope |
 | 查询、计数、实际已交付证据 | run-scoped dependencies 与查询 journal | resume 合并记录；候选、读卡和参数分别恢复 |
 | outcome 与 verification | Service 聚合宿主 verifier 结果 | 当前 outcome 是投影，历史 revision 结果保留；Agent 不能宣告成功 |
@@ -56,8 +56,8 @@ Catalog 与文档索引是显式选择的外部知识数据，和 run state 分�
 - Web 实例另持有 management root 单实例锁，并只允许一个主动模型工作段；SSE 断开不取消工作段。
 - 普通 Web 消息先保存 Thread，再以 `continuation_id` 调用同一 CodingRun；消息与 terminal execution link 间的
   短双写窗口通过显式 continue 补链，不重新调用模型。
-- Web Solver 释放 CodingRun state 锁后由 `ToolExecution` 运行；终态结果必须与 deferred frontier、execution
-  journal 和 workspace delta 一致才恢复 Agent。宿主重启把未完成记录转为 `needs_reconcile`。
+- Web Solver 由 `ToolExecution` 在专用事件循环运行；submit 立即把 execution ID 返回仍活动的 Agent，wait
+  再消费终态结果并写入 execution journal。宿主重启把未完成记录转为 `needs_reconcile`。
 - atomic JSON、append journal 与 Harness snapshot 分别保存宿主状态和步骤证据；它们不是一个数据库事务。
 - 恢复要求当前 workspace 指纹匹配持久边界。损坏 tool-effect ledger 失败关闭，不通过 event log 猜造副作用状态。
 - 未决 Abaqus effect 先进入 `needs_reconcile`。当前不会查询原 PID、重新附着、自动重提或通过人工对账解锁。
@@ -82,7 +82,7 @@ Catalog 与文档索引是显式选择的外部知识数据，和 run state 分�
 ## 已实施 Web 与未采用拓展
 
 [ADR-0025](../adr/0025-local-web-workbench-over-coding-run.md)已选择 FastAPI + assistant-ui 的本地工作台。
-API、页面、Thread continuation、模型预览和 deferred Solver 已完成离线工程实现；两条真实 Web 主线仍在
+API、页面、Thread continuation、模型预览和后台 Solver submit/wait 已完成离线工程实现；两条真实 Web 主线仍在
 [PLAN-0010](../plans/todo/0010-local-web-workbench.md)，不能由工程接线外推为真实建模或物理收益。
 数据库 Job ledger、durable scheduler、多 worker 和远程执行没有因该 Web 决定自动获选。
 

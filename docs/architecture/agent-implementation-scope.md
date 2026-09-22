@@ -13,18 +13,19 @@ Coder，不构成多 Agent。Runner、verifier、evaluator 与用户问答组件
 
 | 能力 | 可以做什么 | 执行边界 |
 |---|---|---|
-| Harness 文件工具 | 在 canonical workspace 读、搜索、创建和修改普通文件 | 当前装配显式 `subagents=()`；移除唯一 Shell，否则 fail-closed |
+| Harness 文件与 Shell 工具 | 在 canonical workspace 读写、搜索并运行普通编码命令 | 当前装配显式 `subagents=()`；普通产品保留 Shell，直接 Abaqus launcher 被 guardrail 拒绝；固定 evaluator 按自身工具表运行 |
 | 包内领域 Skill | 获取运行方式、物理澄清、诊断与停止条件 | Skill 是指导，不是兼容性或任务成功证明 |
-| `run_cae_script` | 在 CAE kernel 执行工作区 Python | `.py`、路径、预算、超时与可选逐工具 allowlist |
-| `run_solver_job` | 从已有 `.inp` 启动 Standard Job | INP 路径、ASCII Job 名、总运行/Solver 预算与可选 allowlist |
-| `run_abaqus_python` | 在 vendor Python 使用 odbAccess | 工作区 `.py`、路径、预算、超时与可选 allowlist |
+| `run_cae_script` | 在 CAE kernel 执行工作区 Python | `.py`、路径、Abaqus permission、默认无限 timeout 与可选逐工具 allowlist |
+| `solver_job` | `submit` 从已有 `.inp` 启动后台 Standard Job；`wait` 按 execution ID 等待结果 | submit 消耗一次 Solver allowance 并立即返回；wait 不重复计数，pending execution 阻止 run 终态 |
+| `run_abaqus_python` | 在 vendor Python 使用 odbAccess | 工作区 `.py`、Abaqus permission、默认无限 timeout 与可选 allowlist |
 | `ask_user` | 交接无法从现有事实确定的必要物理信息 | 新协议不能同轮混发问题与其他工具/final；宿主整轮拒绝后者 |
 | 可选知识工具 | exact lookup、receiver discovery、文档或只读资料 | 各有显式开关；当前接线和证据类型见 [知识接入](knowledge-access.md) |
 
-宿主的 `run_trusted_abaqus_python` 不注册给模型。禁止建模脚本内部提交 Job 是当前阶段合同，但 runtime
-script policy 目前只约束可执行路径，不能保证脚本内不会调用 submit；
-[PLAN-0011](../plans/todo/0011-block-solver-submit-inside-cae-script.md)记录了尚未实施的硬门。
-普通动态 Python 的这些工具限制不构成 OS 沙箱或不可信租户隔离。
+宿主的 `run_trusted_abaqus_python` 不注册给模型。冻结 evaluator 可继续声明 `run_solver_job`，普通产品
+使用 `solver_job`；两者的执行结果进入同一 journal/verifier。`run_cae_script` 在 permission、static preflight 和外部进程前
+解析 Python 3.10 AST，并拒绝直接出现的 `.submit(...)` / `.waitForCompletion(...)` 调用；Job 创建和
+`writeInput(...)` 保持允许。该最小策略不追踪 `getattr`、`exec` 或运行时重绑定，普通动态 Python 的这些
+工具限制不构成 OS 沙箱或不可信租户隔离。
 
 ## 模型交接与宿主终态
 
@@ -48,8 +49,8 @@ CLI 对新会话可先读取工作区事实再提问；缺失材料、尺寸、�
 
 ## 显式约束与实验 profile
 
-- `RuntimeScriptPolicy` 按三种入口分别限制精确相对路径；拒绝在 probe 状态、预算预留和 runner 前发生，
-  返回 `RuntimeScriptPolicyDenied`，不消耗 Abaqus 预算。null 保持工作区路径边界。
+- `RuntimeScriptPolicy` 按三种入口分别限制精确相对路径；拒绝在 probe 状态、allowance 预留和 runner 前发生，
+  返回 `RuntimeScriptPolicyDenied`。null 保持工作区路径边界。
 - ACI 默认 off。`enforced_verified` 要求 task-owned production allowlist：写入前检查完整 Python 3.10
   候选，运行前按当前 hash 复核，再按冻结 evidence 分类 API blocker；未知 SWIG/type 仅 warning。
   checker 不可用或预算耗尽 fail-closed，旧 advisory 保留原兼容行为。

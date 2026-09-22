@@ -65,8 +65,9 @@ plate CPS4R、3D bar C3D8R、beam B31 的参考与 oracle 都有持证记录，A
 
 Web 路线采用 FastAPI + assistant-ui，见 [ADR-0025](../adr/0025-local-web-workbench-over-coding-run.md)。
 [三路 UI 接线比较](../research/ui-three-way-comparison-20260913.md)使用真宿主/假模型，
-不能当已完成 Web 产品或仿真功能。产品工作由已有 PLAN-0009/0010 验收，
-CAE 脚本内 Solver 阻断由 PLAN-0011 跟踪，见 [计划索引](../plans/todo/README.md)。
+不能当已完成 Web 产品或仿真功能。产品工作由已有 PLAN-0009/0010 验收。CAE 脚本内常见 Solver 生命周期
+调用的最小 AST 阻断已有离线合同测试，见 [PLAN-0011 完成记录](../plans/done/0011-block-solver-submit-inside-cae-script.md)；
+该证据不证明动态 Python 无法绕行，也不等于持证仿真验证。
 
 ## 维护规则
 
