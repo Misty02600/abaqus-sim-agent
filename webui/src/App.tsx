@@ -16,7 +16,6 @@ import {
 } from "./api/client";
 import { useRun } from "./useRun";
 import { Conversation } from "./Conversation";
-import { Artifacts } from "./Artifacts";
 import { Composer, type ComposerMention } from "./Composer";
 import { WorkbenchRuntime, type Delivery } from "./WorkbenchRuntime";
 import { ConversationList } from "./ConversationList";
@@ -30,7 +29,10 @@ import {
   type RuntimePermission,
 } from "./RuntimePolicyEditor";
 import { CommandPalette, type QuickAction } from "./CommandPalette";
-import { WorkspaceExplorer } from "./WorkspaceExplorer";
+import {
+  WorkspaceExplorer,
+  type WorkspaceOpenFile,
+} from "./WorkspaceExplorer";
 import { DirectoryPicker } from "./DirectoryPicker";
 import { ThreadListPrimitive } from "@assistant-ui/react";
 import type { components } from "./api/schema";
@@ -88,15 +90,13 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(desktop);
   const [sidebarWidth, setSidebarWidth] = useState(initialSidebarWidth);
   const [filesOpen, setFilesOpen] = useState(true),
-    [artifactsOpen, setArtifactsOpen] = useState(false),
     [detailsOpen, setDetailsOpen] = useState(false),
     [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false),
     [commandOpen, setCommandOpen] = useState(false),
-    [notice, setNotice] = useState(""),
-    [selectedArtifactPath, setSelectedArtifactPath] = useState<string | null>(
-      null,
-    );
+    [notice, setNotice] = useState("");
+  const [workspaceOpenFile, setWorkspaceOpenFile] =
+    useState<WorkspaceOpenFile | null>(null);
   const [composerMention, setComposerMention] =
     useState<ComposerMention | null>(null);
   const [knowledgeInventory, setKnowledgeInventory] =
@@ -198,8 +198,7 @@ export default function App() {
     setDetailsOpen(false);
     setDirectoryPickerOpen(false);
     setFilesOpen(true);
-    setArtifactsOpen(false);
-    setSelectedArtifactPath(null);
+    setWorkspaceOpenFile(null);
     setComposerMention(null);
   }, [id]);
   const selected = useRef(id);
@@ -577,14 +576,22 @@ export default function App() {
       nonce: (current?.nonce ?? 0) + 1,
     }));
   }
-  function openArtifact(path: string) {
-    if (!snapshot?.view.files?.some((file) => file.relative_path === path)) {
+  function openWorkspaceFile(path: string) {
+    const file = snapshot?.view.files?.find(
+      (candidate) => candidate.relative_path === path,
+    );
+    if (!snapshot || !file) {
       setError(`当前修订的可见文件中找不到 ${path}`);
       return;
     }
     setSidebarOpen(true);
-    setArtifactsOpen(true);
-    setSelectedArtifactPath(path);
+    setFilesOpen(true);
+    setWorkspaceOpenFile((current) => ({
+      runId: snapshot.view.run_id,
+      path,
+      sizeBytes: file.size_bytes,
+      nonce: (current?.nonce ?? 0) + 1,
+    }));
   }
   function startSidebarResize(event: ReactPointerEvent<HTMLDivElement>) {
     if (!desktop || !sidebarOpen) return;
@@ -806,34 +813,10 @@ export default function App() {
                     .map((file) => file.id)
                     .join(",")}
                   onMention={mentionWorkspaceFile}
+                  openFile={workspaceOpenFile}
                 />
               ) : (
                 <p className="empty">选择会话后查看文件</p>
-              ))}
-          </section>
-          <section
-            className={`files-section artifacts-section ${artifactsOpen ? "" : "is-collapsed"}`}
-          >
-            <div className="files-heading">
-              <button
-                className="section-toggle"
-                aria-expanded={artifactsOpen}
-                onClick={() => setArtifactsOpen(!artifactsOpen)}
-              >
-                <Icon name="chevron" />
-                <span>任务产物</span>
-                <small>{snapshot?.view.files?.length ?? 0}</small>
-              </button>
-            </div>
-            {artifactsOpen &&
-              (snapshot ? (
-                <Artifacts
-                  snapshot={snapshot}
-                  selectedPath={selectedArtifactPath}
-                  onSelectedPathChange={setSelectedArtifactPath}
-                />
-              ) : (
-                <p className="empty">选择会话后查看产物</p>
               ))}
           </section>
           <div
@@ -1114,7 +1097,7 @@ export default function App() {
                     </form>
                   )}
                   <Conversation
-                    onOpenFile={openArtifact}
+                    onOpenFile={openWorkspaceFile}
                     runId={snapshot.view.run_id}
                     files={snapshot.view.files ?? []}
                     canPreview={!snapshot.active}

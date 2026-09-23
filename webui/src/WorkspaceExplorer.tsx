@@ -31,6 +31,13 @@ type DirectoryState = {
   truncated: boolean;
 };
 
+export type WorkspaceOpenFile = {
+  runId: string;
+  path: string;
+  sizeBytes: number | null;
+  nonce: number;
+};
+
 const EMPTY_DIRECTORY: DirectoryState = {
   loading: false,
   error: "",
@@ -53,10 +60,12 @@ export function WorkspaceExplorer({
   runId,
   filesVersion,
   onMention,
+  openFile,
 }: {
   runId: string;
   filesVersion: string;
   onMention: (path: string) => void;
+  openFile?: WorkspaceOpenFile | null;
 }) {
   const [directories, setDirectories] = useState<Record<string, DirectoryState>>({});
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set([""]));
@@ -117,6 +126,17 @@ export function WorkspaceExplorer({
     // loadDirectory intentionally uses the fresh runId after a session switch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId]);
+
+  useEffect(() => {
+    if (!openFile || openFile.runId !== runId) return;
+    const name = openFile.path.replaceAll("\\", "/").split("/").at(-1);
+    setSelected({
+      relative_path: openFile.path,
+      name: name || openFile.path,
+      kind: "file",
+      size_bytes: openFile.sizeBytes,
+    });
+  }, [openFile, runId]);
 
   useEffect(() => {
     for (const path of expanded) loadDirectory(path, true);
@@ -324,9 +344,9 @@ export function WorkspaceExplorer({
       {selected && (
         <SidePanel title={selected.relative_path} onClose={() => setSelected(null)}>
           <div className="preview workspace-preview">
-            <p className="preview-meta">
-              工作区实时文件{selected.size_bytes === null ? "" : ` · ${formatSize(selected.size_bytes)}`} · 非验收产物
-            </p>
+            {selected.size_bytes !== null && (
+              <p className="preview-meta">{formatSize(selected.size_bytes)}</p>
+            )}
             <button
               type="button"
               className="workspace-preview-mention"
