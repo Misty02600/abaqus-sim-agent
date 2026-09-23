@@ -62,6 +62,7 @@ from abaqus_sim_agent.coding.response_stream import (
     MAX_PREVIEW,
     LiveReply,
     ModelResponseControl,
+    RunCancellationControl,
     StoppedReply,
     UserStoppedError,
     public_response_text,
@@ -149,6 +150,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
     observer: ProgressObserver | None = None
     stream_model: bool = False
     response_control: ModelResponseControl | None = None
+    run_control: RunCancellationControl | None = None
     _view_stopped: bytes | None = field(default=None, init=False, repr=False)
     _response_id: str = field(default="", init=False)
     _response_number: int = field(default=0, init=False)
@@ -269,6 +271,8 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                             request_limit=self.request.limits.request_limit,
                         ),
                     ) as agent_run:
+                        if self.run_control:
+                            self.run_control.bind(agent_run.cancel)
                         self._deferred_input = None
                         self._pending_question = None
                         previous_node_completed = False
@@ -291,6 +295,8 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                                     await self._request_with_display(_node, agent_run)
                                 previous_node_completed = True
                         finally:
+                            if self.run_control:
+                                self.run_control.unbind()
                             history = self._persist_history_json(
                                 agent_run.all_messages_json()
                             )
@@ -643,6 +649,11 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                         started,
                     )
         except (RunCancelled, UserStoppedError) as exc:
+            if self.run_control and self.run_control.requested:
+                self._save_resume_state(
+                    "interrupted", shared_usage, clarifications, started, error=exc
+                )
+                raise asyncio.CancelledError("宿主正在删除会话") from exc
             if self.response_control is None or not self.response_control.requested:
                 self._save_resume_state(
                     "interrupted", shared_usage, clarifications, started, error=exc

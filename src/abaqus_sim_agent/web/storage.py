@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import re
 from datetime import UTC, datetime
 from pathlib import Path
@@ -31,6 +32,42 @@ def plain_path(path: Path, *, directory: bool | None = None) -> Path:
     if path.exists() and directory is not None and path.is_dir() != directory:
         raise WebError("unsafe_path", "路径类型不正确", 400)
     return path
+
+
+def selected_workspace(value: str | Path, managed_root: Path) -> Path:
+    """校验用户选择的现有工程目录，保持整个宿主管理根与工程互不包含。"""
+    path = local_directory(value)
+    if not str(path).isascii():
+        raise WebError(
+            "ascii_workspace", "工作区路径须只包含 ASCII 字符，请选择英文路径。", 400
+        )
+    root = managed_root.resolve()
+    if path == root or path.is_relative_to(root) or root.is_relative_to(path):
+        raise WebError(
+            "workspace_overlap", "工作区不能包含宿主管理目录，也不能位于其中。", 400
+        )
+    if not os.access(path, os.W_OK):
+        raise WebError("workspace_readonly", "所选目录不可写。", 400)
+    return path
+
+
+def local_directory(value: str | Path) -> Path:
+    raw = str(value)
+    path = Path(raw)
+    if (
+        not path.is_absolute()
+        or raw.startswith(("\\\\", "//"))
+        or "\x00" in raw
+        or any(":" in part for part in path.parts[1:])
+    ):
+        raise WebError("invalid_directory", "请选择本机绝对目录路径。", 400)
+    path = plain_path(path, directory=True)
+    try:
+        if not path.exists():
+            raise WebError("directory_not_found", "目录不存在。", 404)
+        return path.resolve(strict=True)
+    except OSError as exc:
+        raise WebError("directory_unavailable", "无法访问这个目录。", 400) from exc
 
 
 def digest(model: BaseModel) -> str:
@@ -64,6 +101,8 @@ class RunRegistry:
         return plain_path(self.root / "states" / run_id, directory=True)
 
     def load(self, run_id: str) -> Registration:
+        if self.deletion_pending(run_id):
+            raise WebError("run_deleted", "会话已进入永久删除流程。", 410)
         file = plain_path(self.directory(run_id) / "registration.json", directory=False)
         if not file.exists():
             raise WebError("not_found", "任务不存在或初始化尚未完成", 404)
@@ -71,10 +110,14 @@ class RunRegistry:
         request = data.request
         if (
             request.run_id != run_id
-            or request.workspace != self.root / "workspaces" / run_id
             or request.state_dir != self.root / "states" / run_id
         ):
             raise WebError("registration_corrupt", "任务路径与登记不一致")
+        if data.workspace_kind == "managed":
+            if request.workspace != self.root / "workspaces" / run_id:
+                raise WebError("registration_corrupt", "托管工作区路径与登记不一致")
+        elif selected_workspace(request.workspace, self.root) != request.workspace:
+            raise WebError("registration_corrupt", "所选工作区路径与登记不一致")
         plain_path(request.workspace, directory=True)
         plain_path(request.state_dir, directory=True)
         return data
@@ -83,8 +126,14 @@ class RunRegistry:
         return sorted(
             p.name
             for p in (self.root / "registry").iterdir()
-            if RUN_ID.fullmatch(p.name)
+            if RUN_ID.fullmatch(p.name) and not self.deletion_pending(p.name)
         )
+
+    def deletion_pending(self, run_id: str) -> bool:
+        self.directory(run_id)
+        return plain_path(
+            self.root / "control" / "deletions" / f"{run_id}.json", directory=False
+        ).exists()
 
 
 class ThreadStore:
@@ -405,7 +454,9 @@ class ToolExecutionStore:
         return execution
 
     def list(self, run_id: str) -> tuple[ToolExecution, ...]:
-        directory = self._directory(run_id)
+        directory = plain_path(
+            self.registry.directory(run_id) / "tool-executions", directory=True
+        )
         executions = []
         for path in directory.glob("*.json"):
             execution = ToolExecution.model_validate_json(

@@ -330,7 +330,7 @@ def test_boundaries_and_corrupt_ledger(tmp_path):
         assert (
             client.post(
                 "/api/v1/runs",
-                json={"idempotency_key": str(uuid4()), "goal": "x", "workspace": "C:/"},
+                json={"idempotency_key": str(uuid4()), "goal": "x", "state_dir": "C:/"},
             ).status_code
             == 422
         )

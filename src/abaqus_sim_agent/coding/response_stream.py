@@ -1,4 +1,4 @@
-"""公开回复投影和模型请求停止控制，不拥有运行工具或最终验收。"""
+"""公开回复投影与宿主取消入口，不拥有运行工具或最终验收。"""
 
 import asyncio
 import json
@@ -21,6 +21,44 @@ MAX_PREVIEW = 65_536
 
 class UserStoppedError(RuntimeError):
     pass
+
+
+class RunCancellationControl:
+    """把宿主删除请求交给当前 AgentRun 的原生取消入口。"""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._requested = False
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._cancel: Callable[[], None] | None = None
+
+    @property
+    def requested(self) -> bool:
+        with self._lock:
+            return self._requested
+
+    def bind(self, cancel: Callable[[], None]) -> None:
+        with self._lock:
+            self._loop = asyncio.get_running_loop()
+            self._cancel = cancel
+            if self._requested:
+                self._loop.call_soon(cancel)
+
+    def unbind(self) -> None:
+        with self._lock:
+            self._cancel = None
+            self._loop = None
+
+    def request_cancel(self) -> bool:
+        """请求取消；返回是否已交给 AgentRun，未绑定时由宿主取消外层任务。"""
+        with self._lock:
+            if self._requested:
+                return True
+            self._requested = True
+            if self._loop is None or self._cancel is None:
+                return False
+            self._loop.call_soon_threadsafe(self._cancel)
+            return True
 
 
 class LiveReply(BaseModel):

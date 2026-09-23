@@ -25,7 +25,7 @@ from .execution_verifier import ExecutionEvidenceVerification
 from .launch import LaunchManifest
 from .model import DeepSeekGateway, create_deepseek_chat_model
 from .progress import ProgressObserver
-from .response_stream import ModelResponseControl
+from .response_stream import ModelResponseControl, RunCancellationControl
 from .resume import create_step_store
 from .service import CodingRunService, ProgressSink
 from .static_preflight import AbqpyBasedPyrightPreflight, PreparedAbqpySource
@@ -56,6 +56,7 @@ async def open_coding_run(
     observer: ProgressObserver | None = None,
     stream_model: bool = False,
     response_control: ModelResponseControl | None = None,
+    run_control: RunCancellationControl | None = None,
     model_factory: ModelFactory = create_deepseek_chat_model,
     runner_factory: RunnerFactory = Abaqus2024Runner,
 ) -> AsyncIterator[CodingRunService[ExecutionEvidenceVerification]]:
@@ -150,6 +151,7 @@ async def open_coding_run(
                 observer=observer,
                 stream_model=stream_model,
                 response_control=response_control,
+                run_control=run_control,
                 resume=resume,
                 step_store=store,
                 launch_manifest_json=(

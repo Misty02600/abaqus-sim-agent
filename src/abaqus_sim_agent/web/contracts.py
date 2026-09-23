@@ -30,6 +30,7 @@ class CreateRun(StrictModel):
     knowledge_pack_ids: tuple[str, ...] = Field(default=(), max_length=32)
     abaqus_permission: RuntimePermission | None = None
     solver_permission: RuntimePermission | None = None
+    workspace: str | None = Field(default=None, min_length=1, max_length=4096)
 
     @field_validator("idempotency_key", mode="before")
     @classmethod
@@ -110,6 +111,12 @@ class RenameCommand(RunCommand):
         if not value.strip():
             raise ValueError("名称不能为空")
         return value.strip()
+
+
+class DeleteRunResponse(StrictModel):
+    run_id: str
+    deleted: Literal[True] = True
+    workspace: str
 
 
 class DisplayMetadata(StrictModel):
@@ -321,7 +328,8 @@ class ThreadRecord(StrictModel):
 
 
 class Registration(StrictModel):
-    schema_version: Literal["web-registration-v2"] = "web-registration-v2"
+    schema_version: Literal["web-registration-v3"] = "web-registration-v3"
+    workspace_kind: Literal["managed", "selected"]
     request_digest: str
     created_at: datetime
     request: CodingRunRequest
@@ -387,6 +395,7 @@ class CommandResponse(StrictModel):
 class RunIssue(StrictModel):
     run_id: str
     message: str
+    can_retry_delete: bool = False
 
 
 class RunList(StrictModel):
@@ -422,6 +431,21 @@ class WorkspaceDirectory(StrictModel):
     run_id: str
     path: str
     items: tuple[WorkspaceEntry, ...]
+    truncated: bool = False
+
+
+class DirectoryChoice(StrictModel):
+    name: str
+    path: str
+
+
+class DirectoryBrowse(StrictModel):
+    path: str | None = None
+    parent_path: str | None = None
+    directories: tuple[DirectoryChoice, ...] = ()
+    drives: tuple[DirectoryChoice, ...] | None = None
+    selectable: bool = False
+    selection_error: str | None = None
     truncated: bool = False
 
 

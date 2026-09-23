@@ -4,7 +4,8 @@ import asyncio
 import hashlib
 import logging
 import threading
-from collections.abc import Callable
+import time
+from collections.abc import Awaitable, Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
@@ -55,7 +56,11 @@ from ..coding.read_model import (
     project_checkpoint,
     read_coding_view,
 )
-from ..coding.response_stream import ModelResponseControl, UserStoppedError
+from ..coding.response_stream import (
+    ModelResponseControl,
+    RunCancellationControl,
+    UserStoppedError,
+)
 from ..coding.resume import (
     STEP_PERSISTENCE_DIRECTORY,
     CodingRunResumeError,
@@ -76,6 +81,7 @@ from .contracts import (
     CommandResponse,
     ContextUsage,
     CreateRun,
+    DeleteRunResponse,
     DisplayMetadata,
     MessageCommand,
     Registration,
@@ -91,6 +97,7 @@ from .contracts import (
     ToolExecutionList,
     WebError,
 )
+from .deletion import RunDeletionStore
 from .storage import (
     InvocationStore,
     RunRegistry,
@@ -99,7 +106,10 @@ from .storage import (
     digest,
     plain_path,
     save_model,
+    selected_workspace,
 )
+
+DELETE_STOP_TIMEOUT_SECONDS = 20.0
 
 
 @dataclass(frozen=True)
@@ -138,7 +148,7 @@ class ServerConfig:
 
 
 class _ToolExecutionRunner(DeferredSolverRunner):
-    """把 Solver 生命周期投影到 Web ToolExecution；其余运行入口原样委托。"""
+    """投影 Solver 生命周期，并在 Agent 取消传播前保留 runtime 收尾错误。"""
 
     def __init__(
         self,
@@ -153,13 +163,31 @@ class _ToolExecutionRunner(DeferredSolverRunner):
         self._invocation_id = invocation_id
 
     async def run_cae_script(self, *args, **kwargs):
-        return await self._base.run_cae_script(*args, **kwargs)
+        return await self._runtime_stage(self._base.run_cae_script(*args, **kwargs))
 
     async def run_abaqus_python(self, *args, **kwargs):
-        return await self._base.run_abaqus_python(*args, **kwargs)
+        return await self._runtime_stage(self._base.run_abaqus_python(*args, **kwargs))
 
     async def run_trusted_abaqus_python(self, *args, **kwargs):
-        return await self._base.run_trusted_abaqus_python(*args, **kwargs)
+        return await self._runtime_stage(
+            self._base.run_trusted_abaqus_python(*args, **kwargs)
+        )
+
+    async def _runtime_stage(
+        self, operation: Awaitable[AbaqusExecutionResult]
+    ) -> AbaqusExecutionResult:
+        try:
+            return await operation
+        except Exception as exc:
+            # AgentRun.cancel() can surface RunCancelled even if a tool's cleanup
+            # failed. Capture this fact at the runner boundary before that translation.
+            with self._controller._mutex:
+                control = self._controller._run_controls.get(self._run_id)
+                if control is not None and control.requested:
+                    self._controller._delete_errors[self._run_id] = (
+                        f"Abaqus 执行收尾失败：{type(exc).__name__}"
+                    )
+            raise
 
     async def run_solver_job(
         self,
@@ -255,6 +283,15 @@ class RunController:
         self.threads = ThreadStore(self.registry)
         self.invocations = InvocationStore(self.registry)
         self.tool_executions = ToolExecutionStore(self.registry)
+        self.deletions = RunDeletionStore(self.registry)
+        self._deleting: set[str] = set()
+        self._work_tasks: dict[
+            str, tuple[asyncio.AbstractEventLoop, asyncio.Task[None]]
+        ] = {}
+        self._solver_tasks: dict[str, asyncio.Task[AbaqusExecutionResult]] = {}
+        self._delete_errors: dict[str, str] = {}
+        self._run_controls: dict[str, RunCancellationControl] = {}
+        self._cancelled_for_delete: set[str] = set()
         self.model_factory, self.runner_factory = model_factory, runner_factory
         self._mutex = threading.RLock()
         self._active: str | None = None
@@ -429,6 +466,8 @@ class RunController:
     ) -> tuple[ToolExecution, Future[AbaqusExecutionResult]]:
         normalized_input = input_file.replace("\\", "/")
         with self._mutex:
+            if run_id in self._deleting:
+                raise WebError("run_deleting", "正在删除会话。")
             if self._closing:
                 raise WebError("closing", "服务正在退出", 503)
             loop = self._tool_loop
@@ -499,7 +538,7 @@ class RunController:
             loop = self._tool_loop
             assert loop is not None
             future = asyncio.run_coroutine_threadsafe(
-                self._execute_solver_execution(execution, runner),
+                self._tracked_solver_execution(execution, runner),
                 loop,
             )
             self._tool_tasks[execution.execution_id] = future
@@ -570,7 +609,7 @@ class RunController:
 
     def _queue_deferred_resume(self, run_id: str, execution_id: str) -> None:
         with self._mutex:
-            if self._closing:
+            if self._closing or run_id in self._deleting:
                 return
             execution = self.tool_executions.load(run_id, execution_id)
             if execution.tool_call_id is None or execution.status not in {
@@ -688,6 +727,7 @@ class RunController:
                 observer=lambda event: self._publish(run_id, prepared, event),
                 stream_model=self.config.stream_model,
                 response_control=self._response_control,
+                run_control=self._run_controls.get(run_id),
                 model_factory=self.model_factory,
                 runner_factory=self._runner_factory_for_invocation(
                     run_id, invocation.invocation_id
@@ -713,7 +753,7 @@ class RunController:
             )
 
         try:
-            asyncio.run(execute())
+            asyncio.run(self._cancellable_work(run_id, execute))
         except UserStoppedError:
             if invocation is not None and invocation.status not in {
                 "completed",
@@ -1010,6 +1050,8 @@ class RunController:
     def create(self, command: CreateRun) -> RunSnapshot:
         run_id = "web-" + command.idempotency_key.hex
         with self._mutex:
+            if self.registry.deletion_pending(run_id):
+                raise WebError("run_deleted", "此会话标识已删除，请新建会话。", 410)
             if self._closing:
                 raise WebError("closing", "服务正在退出", 503)
             directory = self.registry.directory(run_id)
@@ -1020,12 +1062,20 @@ class RunController:
                         "idempotency_conflict", "相同创建标识不能提交不同目标"
                     )
                 return self.snapshot(run_id)
-            directory.mkdir()
-            workspace = plain_path(
-                self.registry.root / "workspaces" / run_id, directory=True
+            workspace = (
+                selected_workspace(command.workspace, self.registry.root)
+                if command.workspace is not None
+                else plain_path(
+                    self.registry.root / "workspaces" / run_id, directory=True
+                )
             )
+            conflict = self._workspace_conflict(workspace)
+            if conflict:
+                raise WebError("workspace_busy", conflict)
+            directory.mkdir()
             state = self.registry.state_dir(run_id)
-            workspace.mkdir()
+            if command.workspace is None:
+                workspace.mkdir()
             state.mkdir()
             controls = self.config.request_controls()
             base_runtime_policy = controls["runtime_policy"]
@@ -1051,6 +1101,9 @@ class RunController:
             )
             with CodingRunFileLock(state):
                 registration = Registration(
+                    workspace_kind="selected"
+                    if command.workspace is not None
+                    else "managed",
                     request_digest=digest(command),
                     created_at=datetime.now(UTC),
                     request=prepared.request,
@@ -1059,7 +1112,48 @@ class RunController:
                 )
                 save_model(directory / "registration.json", registration)
                 self.threads.initialize(run_id, created_at=registration.created_at)
-            return self.snapshot(run_id)
+        return self.snapshot(run_id)
+
+    def _workspace_conflict(
+        self, workspace: Path, run_id: str | None = None
+    ) -> str | None:
+        """在 Web 调度锁内检查重叠目录的其他会话，不提供跨进程工作区锁。"""
+        if workspace.is_relative_to(self.registry.root):
+            return None  # Managed run folders are disjoint; selected roots cannot overlap them.
+        for peer_id in self.registry.ids():
+            if peer_id == run_id:
+                continue
+            try:
+                peer = self.registry.load(peer_id)
+            except (ValueError, OSError, WebError):
+                continue
+            other = peer.request.workspace
+            if not (
+                workspace == other
+                or workspace.is_relative_to(other)
+                or other.is_relative_to(workspace)
+            ):
+                continue
+            if self._active == peer_id:
+                return "这个工作区的另一会话正在执行，请等待它结束。"
+            if self.deletions.stop_pending(peer_id):
+                return "这个工作区的另一会话尚未完成删除收尾。"
+            try:
+                executions = self.tool_executions.list(peer_id)
+                resume_path = peer.request.state_dir / "resume_state.json"
+                resume = (
+                    load_resume_state(peer.request.state_dir)
+                    if resume_path.exists()
+                    else None
+                )
+            except (ValueError, OSError, WebError):
+                return "这个工作区的另一会话记录不可用，请先核查。"
+            if any(
+                item.status in {"starting", "running", "needs_reconcile"}
+                for item in executions
+            ) or (resume is not None and resume.status == "needs_reconcile"):
+                return "这个工作区的另一会话仍有未结束或待核查的执行。"
+        return None
 
     def list_knowledge_packs(self) -> DomainKnowledgeInventory:
         return discover_domain_knowledge_packs(self.config.knowledge_packs_root)
@@ -1235,11 +1329,18 @@ class RunController:
                 and view.phase != "stopped"
             ):
                 view = view.model_copy(update={"error": receipt_error})
+            workspace_conflict = self._workspace_conflict(
+                registration.request.workspace, run_id
+            )
+            deletion_stopping = self.deletions.stop_pending(run_id)
             free = (
                 not active
                 and not external_busy
                 and self._active is None
                 and not self._closing
+                and workspace_conflict is None
+                and run_id not in self._deleting
+                and not deletion_stopping
             )
             usable = view.status != "unavailable"
             launch = (
@@ -1270,12 +1371,16 @@ class RunController:
                 else registration.request
             )
             message_block = None
-            if launch.schema_version != "coding-run-launch-v7":
+            if run_id in self._deleting or deletion_stopping:
+                message_block = "会话删除尚未完成，请重试删除。"
+            elif launch.schema_version != "coding-run-launch-v7":
                 message_block = "旧会话不支持追加消息，请新建会话。"
             elif tool_needs_reconcile:
                 message_block = "Solver 外部执行状态未知，请先核查运行状态与产物。"
             elif not usable or view.status == "needs_reconcile":
                 message_block = "请先核查宿主记录或未决执行。"
+            elif workspace_conflict:
+                message_block = workspace_conflict
             elif not free:
                 message_block = "正在处理，请等待当前回复结束。"
             elif view.question and view.question.pending:
@@ -1365,10 +1470,226 @@ class RunController:
                 unavailable.append(
                     RunIssue(run_id=run_id, message="任务登记不可用，请检查本地记录。")
                 )
+        unavailable.extend(
+            RunIssue(
+                run_id=item.run_id,
+                message="会话删除尚未完成，可重试清理记录。",
+                can_retry_delete=True,
+            )
+            for item in self.deletions.incomplete()
+        )
         return RunList(
             runs=tuple(sorted(runs, key=lambda x: x.created_at, reverse=True)),
             unavailable=tuple(unavailable),
         )
+
+    async def _cancellable_work(
+        self, run_id: str, execute: Callable[[], Awaitable[None]]
+    ) -> None:
+        task = asyncio.current_task()
+        assert task is not None
+        with self._mutex:
+            if run_id in self._deleting:
+                raise asyncio.CancelledError("会话正在删除")
+            self._work_tasks[run_id] = (asyncio.get_running_loop(), task)
+            self._run_controls[run_id] = RunCancellationControl()
+            self._cancelled_for_delete.discard(run_id)
+            self._delete_errors.pop(run_id, None)
+        try:
+            await execute()
+        except Exception as exc:
+            with self._mutex:
+                control = self._run_controls.get(run_id)
+                if control is not None and control.requested:
+                    self._delete_errors[run_id] = f"执行收尾失败：{type(exc).__name__}"
+            raise
+        finally:
+            with self._mutex:
+                control = self._run_controls.get(run_id)
+                if (
+                    control is not None
+                    and control.requested
+                    and run_id not in self._delete_errors
+                ):
+                    self._cancelled_for_delete.add(run_id)
+                self._work_tasks.pop(run_id, None)
+                self._run_controls.pop(run_id, None)
+
+    async def _tracked_solver_execution(
+        self, execution: ToolExecution, runner: Abaqus2024Runner
+    ) -> AbaqusExecutionResult:
+        task = asyncio.current_task()
+        assert task is not None
+        with self._mutex:
+            self._solver_tasks[execution.execution_id] = task
+        try:
+            with self._mutex:
+                if execution.thread_id in self._deleting:
+                    self.tool_executions.update(
+                        execution,
+                        status="cancelled",
+                        cancel_requested=True,
+                        finished_at=datetime.now(UTC),
+                    )
+                    raise asyncio.CancelledError("会话正在删除")
+            return await self._execute_solver_execution(execution, runner)
+        except Exception as exc:
+            with self._mutex:
+                current = self.tool_executions.load(
+                    execution.thread_id, execution.execution_id
+                )
+                if execution.thread_id in self._deleting or current.cancel_requested:
+                    self._delete_errors[execution.thread_id] = (
+                        f"Solver 收尾失败：{type(exc).__name__}"
+                    )
+            raise
+        finally:
+            with self._mutex:
+                self._solver_tasks.pop(execution.execution_id, None)
+
+    async def _finish_solvers_for_deletion(self, run_id: str) -> None:
+        with self._mutex:
+            tasks = []
+            for item in self.tool_executions.list(run_id):
+                if item.execution_id in self._solver_tasks:
+                    self.tool_executions.update(item, cancel_requested=True)
+                    tasks.append(self._solver_tasks[item.execution_id])
+        for task in tasks:
+            if not task.done() and not task.cancelling():
+                task.cancel("删除会话")
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+    def delete(self, run_id: str, command: RunCommand) -> DeleteRunResponse:
+        """等待当前宿主的执行和清理结束，再永久删除会话记录；工程文件保留。"""
+        del command  # DELETE is idempotent by immutable run identity.
+        with self._mutex:
+            if self._closing:
+                raise WebError("closing", "服务正在退出，请稍后重试。", 503)
+            receipt = self.deletions.load(run_id)
+            if receipt is not None:
+                if receipt.state != "deleted":
+                    try:
+                        receipt = self.deletions.purge(run_id, receipt.workspace)
+                    except (OSError, CodingRunAlreadyLocked) as exc:
+                        raise WebError(
+                            "delete_incomplete", "会话记录尚未清理完成，请重试。"
+                        ) from exc
+                return DeleteRunResponse(run_id=run_id, workspace=receipt.workspace)
+            if run_id in self._deleting:
+                raise WebError("run_deleting", "会话正在删除，请稍后重试。")
+            if run_id in self._delete_errors:
+                raise WebError(
+                    "delete_cleanup_failed",
+                    self._delete_errors[run_id] + "；记录未删除。",
+                )
+            registration = self.registry.load(run_id)
+            snapshot = self.snapshot(run_id)
+            owned_work = self._active == run_id
+            if (
+                self.deletions.stop_pending(run_id)
+                and not owned_work
+                and run_id not in self._cancelled_for_delete
+            ):
+                raise WebError(
+                    "delete_unresolved", "上次删除未能确认执行已结束，记录已保留。"
+                )
+            if snapshot.active and not owned_work:
+                raise WebError("delete_busy", "会话正由其他宿主使用，暂时无法删除。")
+            if not owned_work and snapshot.view.status in {
+                "needs_reconcile",
+                "unavailable",
+            }:
+                raise WebError(
+                    "delete_unresolved", "无法确认会话的执行状态，记录未删除。"
+                )
+            if not owned_work and run_id not in self._cancelled_for_delete:
+                if snapshot.command_uncertain:
+                    raise WebError(
+                        "delete_unresolved", "执行状态尚未确认，记录未删除。"
+                    )
+                self.deletions.check_inactive_execution(registration.request)
+            for execution in self.tool_executions.list(run_id):
+                if (
+                    execution.status == "needs_reconcile"
+                    or (
+                        execution.status in {"starting", "running"}
+                        and execution.execution_id not in self._tool_tasks
+                        and execution.execution_id not in self._solver_tasks
+                    )
+                    or (
+                        execution.status in {"failed", "timed_out"}
+                        and execution.result_sha256 is None
+                    )
+                ):
+                    raise WebError(
+                        "delete_unresolved", "无法确认外部执行是否结束，记录未删除。"
+                    )
+            if owned_work or any(
+                item.status in {"starting", "running"}
+                for item in self.tool_executions.list(run_id)
+            ):
+                self.deletions.begin_stop(run_id)
+            self._deleting.add(run_id)
+            self._deferred_resume_queue = {
+                key: value
+                for key, value in self._deferred_resume_queue.items()
+                if value[0] != run_id
+            }
+            work = self._future if owned_work else None
+            current = self._work_tasks.get(run_id)
+            control = self._run_controls.get(run_id)
+            native_cancel = control.request_cancel() if control is not None else False
+            if current is not None and not native_cancel:
+                loop, task = current
+
+                def cancel_work() -> None:
+                    if not task.done() and not task.cancelling():
+                        task.cancel("删除会话")
+
+                loop.call_soon_threadsafe(cancel_work)
+            solver_loop = self._tool_loop
+            solver_cleanup = (
+                asyncio.run_coroutine_threadsafe(
+                    self._finish_solvers_for_deletion(run_id), solver_loop
+                )
+                if solver_loop is not None
+                else None
+            )
+        self.changed(run_id)
+        deadline = time.monotonic() + DELETE_STOP_TIMEOUT_SECONDS
+        try:
+            if solver_cleanup is not None:
+                solver_cleanup.result(timeout=max(0.0, deadline - time.monotonic()))
+            if work is not None:
+                work.result(timeout=max(0.0, deadline - time.monotonic()))
+            with self._mutex:
+                if run_id in self._delete_errors:
+                    raise WebError(
+                        "delete_cleanup_failed",
+                        self._delete_errors[run_id] + "；记录未删除，请检查后重试。",
+                    )
+                self.deletions.confirm_stopped(run_id)
+                self.deletions.purge(run_id, str(registration.request.workspace))
+                self._views.pop(run_id, None)
+                self._effective.pop(run_id, None)
+                self._cancelled_for_delete.discard(run_id)
+            return DeleteRunResponse(
+                run_id=run_id, workspace=str(registration.request.workspace)
+            )
+        except TimeoutError as exc:
+            raise WebError(
+                "delete_pending", "执行仍在结束中，记录未删除，请稍后重试。"
+            ) from exc
+        except (OSError, CodingRunAlreadyLocked) as exc:
+            raise WebError(
+                "delete_incomplete",
+                "会话记录尚未清理完成，可能被其他进程占用，请重试。",
+            ) from exc
+        finally:
+            with self._mutex:
+                self._deleting.discard(run_id)
+            self.changed(run_id)
 
     def _display(self, run_id: str, registration: Registration) -> DisplayMetadata:
         path = plain_path(
@@ -1945,6 +2266,7 @@ class RunController:
                 observer=lambda event: self._publish(run_id, prepared, event),
                 stream_model=self.config.stream_model,
                 response_control=self._response_control,
+                run_control=self._run_controls.get(run_id),
                 model_factory=self.model_factory,
                 runner_factory=self._runner_factory_for_invocation(
                     run_id, invocation.invocation_id
@@ -1994,7 +2316,7 @@ class RunController:
                 return
 
         try:
-            asyncio.run(execute())
+            asyncio.run(self._cancellable_work(run_id, execute))
             receipt = receipt.model_copy(update={"state": "settled"})
         except asyncio.CancelledError:
             if invocation is not None and invocation.status not in {
@@ -2010,12 +2332,12 @@ class RunController:
                     usage_after=current_view.usage
                     if current_view is not None
                     else None,
-                    last_error="Solver execution cancelled by host",
+                    last_error="Execution cancelled by host",
                 )
             receipt = receipt.model_copy(
                 update={
                     "state": "rejected",
-                    "error": "Solver 已停止；当前执行段已中断，可核查状态后继续。",
+                    "error": "当前执行段已中断，可核查状态后继续。",
                 }
             )
         except UserStoppedError:

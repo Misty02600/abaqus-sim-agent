@@ -27,6 +27,8 @@ from .contracts import (
     ArtifactPage,
     CommandResponse,
     CreateRun,
+    DeleteRunResponse,
+    DirectoryBrowse,
     MessageCommand,
     RenameCommand,
     RunCommand,
@@ -44,6 +46,7 @@ from .contracts import (
     WorkspaceSearch,
 )
 from .controller import RunController, ServerConfig
+from .directories import browse_directories
 from .events import ViewEvents
 from .workspace import list_workspace, search_workspace, workspace_preview
 
@@ -168,6 +171,12 @@ def create_app(
     def list_runs():
         return controller.list_runs()
 
+    @app.get("/api/v1/directories", response_model=DirectoryBrowse)
+    def directories(
+        path: str | None = Query(default=None, min_length=1, max_length=4096),
+    ):
+        return browse_directories(controller.registry.root, path)
+
     @app.get("/api/v1/knowledge-packs", response_model=DomainKnowledgeInventory)
     def list_knowledge_packs():
         return controller.list_knowledge_packs()
@@ -175,6 +184,10 @@ def create_app(
     @app.get("/api/v1/runs/{run_id}", response_model=RunSnapshot)
     def get_run(run_id: str):
         return controller.snapshot(run_id)
+
+    @app.delete("/api/v1/runs/{run_id}", response_model=DeleteRunResponse)
+    def delete_run(run_id: str, body: RunCommand):
+        return controller.delete(run_id, body)
 
     @app.get(
         "/api/v1/runs/{run_id}/tool-executions",

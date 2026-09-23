@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import functools
 import hashlib
 import os
 import subprocess
 import threading
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from importlib import import_module
 from importlib.metadata import PackageNotFoundError, version
 from types import ModuleType
@@ -13,7 +14,7 @@ from typing import Protocol, cast
 from anyio import to_thread
 
 HARNESS_WINDOWS_NEWLINE_HASH_PATCH_VERSION = "harness-0.24.0-windows-newline-hash-v1"
-HARNESS_WINDOWS_SHELL_TREE_PATCH_VERSION = "harness-0.24.0-0.31.0-windows-shell-tree-v2"
+HARNESS_WINDOWS_SHELL_TREE_PATCH_VERSION = "harness-0.24.0-0.31.0-windows-shell-tree-v3"
 HARNESS_WINDOWS_JSONL_APPEND_PATCH_VERSION = (
     "harness-0.24.0-0.31.0-windows-jsonl-append-v2"
 )
@@ -30,6 +31,10 @@ _JSONL_PATCH_INSTALL_LOCK = threading.Lock()
 
 class _ContentHashModule(Protocol):
     _content_hash: Callable[[str], str]
+
+
+class _ShellCommandClass(Protocol):
+    run_command: Callable[..., Awaitable[str]]
 
 
 def apply_harness_windows_newline_hash_patch(
@@ -94,8 +99,9 @@ def apply_harness_windows_shell_tree_patch(
 
     上游 ``ShellToolset`` 的超时和后台清理路径使用 POSIX process-group
     API；Windows 不提供 ``os.getpgid``/``os.killpg``，因此超时会把整个
-    Agent run 变成基础设施异常。本补丁只替换已复现版本的私有终止方法，
-    使用 Windows ``taskkill /T /F`` 终止准确 PID 的进程树。
+    Agent run 变成基础设施异常。本补丁仅作用于已复现版本，终止路径
+    使用 Windows ``taskkill /T /F`` 终止准确 PID 的进程树；0.31.0 另修复
+    前台命令的 task-group 退出吞掉取消请求后继续等待进程的问题。
 
     Args:
         platform_name: 用于测试的平台名；默认读取 ``os.name``。
@@ -136,6 +142,17 @@ def apply_harness_windows_shell_tree_patch(
         "_kill_process_group",
         kill_process_group,
     )
+    if (harness_version or version("pydantic-ai-harness")) == "0.31.0" and hasattr(
+        shell_toolset_class, "run_command"
+    ):
+        from .harness_shell import run_command
+
+        shell_module = import_module("pydantic_ai_harness.shell._toolset")
+        shell_commands = cast(_ShellCommandClass, shell_toolset_class)
+        original = shell_commands.run_command
+        # Keep the native tool description/schema and error-to-ModelRetry adapter.
+        patched = functools.wraps(original)(shell_module._recoverable(run_command))
+        shell_commands.run_command = patched
     setattr(
         shell_toolset_class,
         _SHELL_PATCH_MARKER,
