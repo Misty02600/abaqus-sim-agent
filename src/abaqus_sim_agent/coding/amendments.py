@@ -84,6 +84,9 @@ class CodingRunAmendment(_StrictModel):
     submitted_after_turn: int | None = Field(
         default=None, ge=0, exclude_if=lambda v: v is None
     )
+    operation_id: str | None = Field(
+        default=None, pattern=r"^[0-9a-f]{32}$", exclude_if=lambda v: v is None
+    )
 
     @model_validator(mode="after")
     def check_kind_payload(self) -> "CodingRunAmendment":
@@ -91,6 +94,8 @@ class CodingRunAmendment(_StrictModel):
             raise ValueError("conversation metadata must include id and turn")
         if self.message_id is not None and self.kind != "task_revision":
             raise ValueError("conversation messages require a task revision")
+        if self.operation_id is not None and self.kind != "operational":
+            raise ValueError("operation id requires an operational amendment")
         if self.kind == "operational":
             if self.config is None or self.goal is not None:
                 raise ValueError("operational amendment requires only config")
@@ -111,9 +116,11 @@ class CodingRunAmendment(_StrictModel):
 
 
 class CodingRunAmendmentLedger(_StrictModel):
-    schema_version: Literal["coding-run-amendments-v1", "coding-run-amendments-v2"] = (
-        AMENDMENT_SCHEMA_VERSION
-    )
+    schema_version: Literal[
+        "coding-run-amendments-v1",
+        "coding-run-amendments-v2",
+        "coding-run-amendments-v3",
+    ] = AMENDMENT_SCHEMA_VERSION
     run_id: str
     amendments: tuple[CodingRunAmendment, ...] = ()
 
@@ -124,8 +131,20 @@ class CodingRunAmendmentLedger(_StrictModel):
         ]
         if len(ids) != len(set(ids)):
             raise ValueError("conversation message ids must be unique")
-        if ids and self.schema_version != "coding-run-amendments-v2":
+        if ids and self.schema_version not in {
+            "coding-run-amendments-v2",
+            "coding-run-amendments-v3",
+        }:
             raise ValueError("conversation metadata requires amendments v2")
+        operation_ids = [
+            item.operation_id
+            for item in self.amendments
+            if item.operation_id is not None
+        ]
+        if len(operation_ids) != len(set(operation_ids)):
+            raise ValueError("operational amendment ids must be unique")
+        if operation_ids and self.schema_version != "coding-run-amendments-v3":
+            raise ValueError("operation ids require amendments v3")
         expected_sequence = 1
         expected_revision = 0
         for amendment in self.amendments:
@@ -217,12 +236,18 @@ def append_operational_amendment(
     *,
     patch: CodingRunConfigPatch,
     reason: str,
+    operation_id: str | None = None,
+    allow_pending_question: bool = False,
+    expected_sequence: int | None = None,
 ) -> CodingRunAmendment:
     return _append_amendment(
         state_dir,
         kind="operational",
         reason=reason,
         config=patch,
+        operation_id=operation_id,
+        allow_pending_question=allow_pending_question,
+        expected_sequence=expected_sequence,
     )
 
 
@@ -271,11 +296,22 @@ def _append_amendment(
     reason: str,
     config: CodingRunConfigPatch | None = None,
     goal: str | None = None,
+    operation_id: str | None = None,
+    allow_pending_question: bool = False,
+    expected_sequence: int | None = None,
 ) -> CodingRunAmendment:
     resolved = state_dir.resolve(strict=True)
     with CodingRunFileLock(resolved) as lock:
         return _append_amendment_locked(
-            resolved, lock=lock, kind=kind, reason=reason, config=config, goal=goal
+            resolved,
+            lock=lock,
+            kind=kind,
+            reason=reason,
+            config=config,
+            goal=goal,
+            operation_id=operation_id,
+            allow_pending_question=allow_pending_question,
+            expected_sequence=expected_sequence,
         )
 
 
@@ -289,13 +325,72 @@ def _append_amendment_locked(
     goal: str | None = None,
     resolving_question: bool = False,
     message_id: str | None = None,
+    operation_id: str | None = None,
+    allow_pending_question: bool = False,
+    expected_sequence: int | None = None,
 ) -> CodingRunAmendment:
-    """在调用方持有锁时追加修订；仅答复事务可跳过待答检查。"""
+    """在调用方持有锁时追加修订，并对宿主操作提供幂等重放。
+
+    Args:
+        resolved: 已解析且存在的 state 目录。
+        lock: 调用方持有的同一 state OS 锁。
+        kind: operational 配置覆盖或 task revision。
+        reason: 写入模型续跑提示和审计记录的原因。
+        config: 可选配置覆盖。
+        goal: task revision 的新任务目标。
+        resolving_question: 答复事务内部追加 task revision 时跳过待答门禁。
+        message_id: Web Thread 消息 ID，仅用于 task revision 兼容记录。
+        operation_id: operational amendment 的宿主幂等 ID。
+        allow_pending_question: 允许只改运行配置并保留当前待答问题。
+        expected_sequence: 可选的乐观并发 amendment sequence。
+
+    Returns:
+        新追加或按 operation_id 找到的既有修订。
+
+    Raises:
+        ValueError: 状态、待答门禁、幂等内容或修订合同不一致。
+    """
     lock.assert_held(resolved)
     from abaqus_sim_agent.coding.resume import load_resume_state
 
     persisted = load_resume_state(resolved)
-    if not resolving_question and persisted.question_protocol == "ask_user_v1":
+    request_path = resolved / "request.json"
+    initial_path = resolved / "initial_snapshot.json"
+    if not request_path.is_file() or not initial_path.is_file():
+        raise FileNotFoundError("CodingRun state is missing request or snapshot")
+    request = CodingRunRequest.model_validate_json(
+        request_path.read_text(encoding="utf-8")
+    )
+    if request.state_dir != resolved:
+        raise ValueError("request.json state_dir does not match amendment target")
+    ledger = load_amendment_ledger(resolved, run_id=request.run_id)
+    if operation_id is not None:
+        existing = next(
+            (
+                amendment
+                for amendment in ledger.amendments
+                if amendment.operation_id == operation_id
+            ),
+            None,
+        )
+        if existing is not None:
+            if (
+                existing.kind != kind
+                or existing.reason != reason
+                or existing.config != config
+                or existing.goal != goal
+            ):
+                raise ValueError(
+                    "operation id was already used for a different amendment"
+                )
+            return existing
+    if expected_sequence is not None and ledger.sequence != expected_sequence:
+        raise ValueError("amendment sequence changed before append")
+    if (
+        not resolving_question
+        and not allow_pending_question
+        and persisted.question_protocol == "ask_user_v1"
+    ):
         from .user_questions import load_questions
 
         questions = load_questions(resolved, persisted.run_id).questions
@@ -311,19 +406,9 @@ def _append_amendment_locked(
             )
     if persisted.status == "needs_reconcile":
         raise ValueError("cannot amend a run that requires runtime reconciliation")
-    request_path = resolved / "request.json"
-    initial_path = resolved / "initial_snapshot.json"
-    if not request_path.is_file() or not initial_path.is_file():
-        raise FileNotFoundError("CodingRun state is missing request or snapshot")
-    request = CodingRunRequest.model_validate_json(
-        request_path.read_text(encoding="utf-8")
-    )
-    if request.state_dir != resolved:
-        raise ValueError("request.json state_dir does not match amendment target")
     initial_snapshot = WorkspaceSnapshot.model_validate_json(
         initial_path.read_text(encoding="utf-8")
     )
-    ledger = load_amendment_ledger(resolved, run_id=request.run_id)
     workspace_snapshot: WorkspaceSnapshot | None = None
     execution_start_index: int | None = None
     if kind == "task_revision":
@@ -344,11 +429,15 @@ def _append_amendment_locked(
         created_at=datetime.now(UTC),
         message_id=message_id,
         submitted_after_turn=persisted.turn if message_id is not None else None,
+        operation_id=operation_id,
     )
+    schema_version = ledger.schema_version
+    if operation_id is not None:
+        schema_version = "coding-run-amendments-v3"
+    elif message_id is not None and schema_version == "coding-run-amendments-v1":
+        schema_version = "coding-run-amendments-v2"
     updated = CodingRunAmendmentLedger(
-        schema_version="coding-run-amendments-v2"
-        if message_id is not None
-        else ledger.schema_version,
+        schema_version=schema_version,
         run_id=request.run_id,
         amendments=(*ledger.amendments, amendment),
     )

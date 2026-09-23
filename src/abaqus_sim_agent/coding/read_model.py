@@ -578,19 +578,35 @@ def read_coding_view(
         prepared.amendment_sequence is not None
         and prepared.amendment_sequence != state.amendment_sequence
     ):
-        # A new task revision is authoritative only when the host resumes and captures its checkpoint.
-        view = view.model_copy(
-            update={
-                "status": "interrupted",
-                "phase": "revision_pending",
-                "outcome": None,
-                "verification": None,
-                "files": (),
-                "question": None,
-                "amendment_sequence": prepared.amendment_sequence,
-                "task_revision": prepared.task_revision
-                if prepared.task_revision is not None
-                else state.task_revision,
-            }
+        effective_revision = (
+            prepared.task_revision
+            if prepared.task_revision is not None
+            else state.task_revision
         )
+        if (
+            effective_revision == state.task_revision
+            and state.status == "waiting_for_user"
+            and view.question is not None
+            and view.question.pending
+        ):
+            # An operational amendment changes future execution only. Keep the
+            # host-owned pending question available until its answer resumes the run.
+            view = view.model_copy(
+                update={"amendment_sequence": prepared.amendment_sequence}
+            )
+        else:
+            # A new task revision (or an idle configuration continuation) becomes
+            # authoritative only after the host captures its next checkpoint.
+            view = view.model_copy(
+                update={
+                    "status": "interrupted",
+                    "phase": "revision_pending",
+                    "outcome": None,
+                    "verification": None,
+                    "files": (),
+                    "question": None,
+                    "amendment_sequence": prepared.amendment_sequence,
+                    "task_revision": effective_revision,
+                }
+            )
     return view

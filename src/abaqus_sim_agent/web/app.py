@@ -34,6 +34,7 @@ from .contracts import (
     RunCommand,
     RunList,
     RunSnapshot,
+    RuntimePolicyCommand,
     SessionInfo,
     SessionInput,
     StopCommand,
@@ -188,6 +189,10 @@ def create_app(
     @app.delete("/api/v1/runs/{run_id}", response_model=DeleteRunResponse)
     def delete_run(run_id: str, body: RunCommand):
         return controller.delete(run_id, body)
+
+    @app.post("/api/v1/runs/{run_id}/runtime-policy", response_model=RunSnapshot)
+    def update_runtime_policy(run_id: str, body: RuntimePolicyCommand):
+        return controller.update_runtime_policy(run_id, body)
 
     @app.get(
         "/api/v1/runs/{run_id}/tool-executions",

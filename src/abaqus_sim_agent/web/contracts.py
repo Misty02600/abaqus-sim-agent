@@ -113,6 +113,13 @@ class RenameCommand(RunCommand):
         return value.strip()
 
 
+class RuntimePolicyCommand(RunCommand):
+    expected_task_revision: int = Field(ge=0)
+    expected_amendment_sequence: int = Field(ge=0)
+    abaqus: RuntimePermission
+    solver: RuntimePermission
+
+
 class DeleteRunResponse(StrictModel):
     run_id: str
     deleted: Literal[True] = True
@@ -341,7 +348,7 @@ class CommandReceipt(StrictModel):
     schema_version: Literal["web-command-v1"] = "web-command-v1"
     command_id: UUID
     digest: str
-    action: Literal["start", "answer", "continue", "message", "stop"]
+    action: Literal["start", "answer", "continue", "message", "stop", "runtime_policy"]
     state: Literal["accepted", "settled", "rejected"]
     answer_saved: bool = False
     message_saved: bool = False
@@ -379,6 +386,8 @@ class RunSnapshot(StrictModel):
     stop_requested: bool = False
     tool_execution: ToolExecution | None = None
     can_cancel_tool_execution: bool = False
+    can_update_runtime_policy: bool = False
+    runtime_policy_block_reason: str | None = None
     context_usage: ContextUsage = ContextUsage()
 
 

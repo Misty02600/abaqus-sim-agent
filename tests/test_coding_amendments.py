@@ -114,6 +114,58 @@ def test_operational_amendment_is_strict_atomic_overlay(
         RuntimeExecutionPolicyPatch.model_validate({"solver_timeout": None})
 
 
+def test_operational_amendment_operation_id_is_idempotent_and_sequence_checked(
+    tmp_path: Path,
+) -> None:
+    request = _persist_base_state(tmp_path)
+    patch = CodingRunConfigPatch(
+        runtime_policy=RuntimeExecutionPolicyPatch.model_validate(
+            {"solver": {"mode": "allow_with_limit", "limit": 2}}
+        )
+    )
+    operation_id = "a" * 32
+
+    first = append_operational_amendment(
+        request.state_dir,
+        patch=patch,
+        reason="Web runtime permission change",
+        operation_id=operation_id,
+        expected_sequence=0,
+    )
+    replay = append_operational_amendment(
+        request.state_dir,
+        patch=patch,
+        reason="Web runtime permission change",
+        operation_id=operation_id,
+        expected_sequence=0,
+    )
+
+    assert replay == first
+    ledger = load_amendment_ledger(request.state_dir, run_id=request.run_id)
+    assert ledger.schema_version == "coding-run-amendments-v3"
+    assert ledger.sequence == 1
+    with pytest.raises(ValueError, match="different amendment"):
+        append_operational_amendment(
+            request.state_dir,
+            patch=CodingRunConfigPatch(
+                runtime_policy=RuntimeExecutionPolicyPatch.model_validate(
+                    {"solver": {"mode": "deny"}}
+                )
+            ),
+            reason="Web runtime permission change",
+            operation_id=operation_id,
+        )
+    with pytest.raises(ValueError, match="sequence changed"):
+        append_operational_amendment(
+            request.state_dir,
+            patch=patch,
+            reason="Another Web permission change",
+            operation_id="b" * 32,
+            expected_sequence=0,
+        )
+    assert load_amendment_ledger(request.state_dir, run_id=request.run_id).sequence == 1
+
+
 def test_invalid_runtime_policy_patch_does_not_replace_committed_ledger(
     tmp_path: Path,
 ) -> None:

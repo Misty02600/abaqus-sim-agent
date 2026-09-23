@@ -15,6 +15,11 @@ from uuid import uuid4
 
 from pydantic import SecretStr
 
+from ..coding.amendments import (
+    CodingRunConfigPatch,
+    RuntimeExecutionPolicyPatch,
+    append_operational_amendment,
+)
 from ..coding.application import (
     ConversationMessage,
     PreparedCodingRun,
@@ -90,6 +95,7 @@ from .contracts import (
     RunIssue,
     RunList,
     RunSnapshot,
+    RuntimePolicyCommand,
     StopCommand,
     ThreadMessage,
     ToolExecution,
@@ -1370,6 +1376,34 @@ class RunController:
                 if run_id in self._effective
                 else registration.request
             )
+            runtime_policy_block = None
+            if run_id in self._deleting or deletion_stopping:
+                runtime_policy_block = "会话删除尚未完成。"
+            elif launch.schema_version != "coding-run-launch-v7":
+                runtime_policy_block = "旧会话不支持修改运行权限。"
+            elif active or external_busy:
+                runtime_policy_block = "当前工作段仍在执行。"
+            elif (
+                view.status == "registered"
+                or not (registration.request.state_dir / "resume_state.json").is_file()
+            ):
+                runtime_policy_block = "首条消息尚未建立可修订的运行状态。"
+            elif self._closing:
+                runtime_policy_block = "服务正在退出。"
+            elif workspace_conflict:
+                runtime_policy_block = workspace_conflict
+            elif not usable or view.status == "needs_reconcile":
+                runtime_policy_block = "请先核查宿主记录或未决执行。"
+            elif tool_execution is not None and tool_execution.status in {
+                "starting",
+                "running",
+                "needs_reconcile",
+            }:
+                runtime_policy_block = "当前 Solver 执行尚未结束或需要核查。"
+            elif view.status == "waiting_for_tool_execution":
+                runtime_policy_block = "当前 Solver 结果尚未由 Agent 消费。"
+            elif uncertain or view.phase == "execution_unknown":
+                runtime_policy_block = "上次执行状态尚未确认。"
             message_block = None
             if run_id in self._deleting or deletion_stopping:
                 message_block = "会话删除尚未完成，请重试删除。"
@@ -1442,6 +1476,8 @@ class RunController:
                     and tool_execution.status in {"starting", "running"}
                     and tool_execution.execution_id in self._tool_tasks
                 ),
+                can_update_runtime_policy=runtime_policy_block is None,
+                runtime_policy_block_reason=runtime_policy_block,
                 context_usage=ContextUsage(
                     latest_input_tokens=view.latest_model_input_tokens,
                     warning_threshold_tokens=self.config.context_warning_threshold_tokens,
@@ -1721,6 +1757,105 @@ class RunController:
             save_model(self.registry.directory(run_id) / "display.json", updated)
             self.changed(run_id)
             return self.snapshot(run_id)
+
+    def update_runtime_policy(
+        self, run_id: str, command: RuntimePolicyCommand
+    ) -> RunSnapshot:
+        """保存只影响未来 runtime 提交的 operational amendment。
+
+        Args:
+            run_id: Web 会话标识。
+            command: 带当前 revision/sequence 的完整 Abaqus 与 Solver 权限。
+
+        Returns:
+            应用修订后的最新宿主快照。
+
+        Raises:
+            WebError: 命令冲突、快照过期、状态不允许或修订写入失败。
+        """
+        with self._mutex:
+            registration = self.registry.load(run_id)
+            path = self._receipt_path(run_id, command)
+            accepted_replay = False
+            prior: CommandReceipt | None = None
+            payload_hash = hashlib.sha256(
+                ("runtime_policy" + command.model_dump_json()).encode()
+            ).hexdigest()
+            if path.exists():
+                prior = CommandReceipt.model_validate_json(path.read_bytes())
+                if prior.action != "runtime_policy" or prior.digest != payload_hash:
+                    raise WebError("command_conflict", "相同命令标识不能修改为不同权限")
+                if prior.state == "settled":
+                    return self.snapshot(run_id)
+                if prior.state == "rejected":
+                    raise WebError(
+                        "runtime_policy_rejected",
+                        prior.error or "运行权限修改未保存，请使用新命令重试。",
+                    )
+                accepted_replay = True
+            snapshot = self.snapshot(run_id)
+            if not accepted_replay:
+                if snapshot.view.task_revision != command.expected_task_revision:
+                    raise WebError("revision_conflict", "任务修订已改变，请刷新")
+                if (
+                    snapshot.view.amendment_sequence
+                    != command.expected_amendment_sequence
+                ):
+                    raise WebError("amendment_conflict", "运行配置已改变，请刷新")
+                if not snapshot.can_update_runtime_policy:
+                    raise WebError(
+                        "runtime_policy_unavailable",
+                        snapshot.runtime_policy_block_reason
+                        or "当前状态不允许修改运行权限。",
+                    )
+                receipt = CommandReceipt(
+                    command_id=command.command_id,
+                    digest=payload_hash,
+                    action="runtime_policy",
+                    state="accepted",
+                )
+                save_model(path, receipt)
+            else:
+                assert prior is not None
+                receipt = prior
+            if (
+                snapshot.runtime_policy.abaqus == command.abaqus
+                and snapshot.runtime_policy.solver == command.solver
+            ):
+                save_model(path, receipt.model_copy(update={"state": "settled"}))
+                return snapshot
+            try:
+                append_operational_amendment(
+                    registration.request.state_dir,
+                    patch=CodingRunConfigPatch(
+                        runtime_policy=RuntimeExecutionPolicyPatch(
+                            abaqus=command.abaqus,
+                            solver=command.solver,
+                        )
+                    ),
+                    reason="User changed Web runtime permissions for future submissions.",
+                    operation_id=command.command_id.hex,
+                    allow_pending_question=True,
+                    expected_sequence=command.expected_amendment_sequence,
+                )
+            except (
+                OSError,
+                ValueError,
+                CodingRunResumeError,
+                CodingRunAlreadyLocked,
+            ) as exc:
+                message = "运行权限未保存，会话状态可能已改变，请刷新后重试。"
+                save_model(
+                    path,
+                    receipt.model_copy(update={"state": "rejected", "error": message}),
+                )
+                raise WebError("runtime_policy_conflict", message) from exc
+            self._views.pop(run_id, None)
+            self._effective.pop(run_id, None)
+            save_model(path, receipt.model_copy(update={"state": "settled"}))
+            updated = self.snapshot(run_id)
+        self.changed(run_id)
+        return updated
 
     def stop(self, run_id: str, command: StopCommand) -> CommandResponse:
         with self._mutex:
