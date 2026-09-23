@@ -29,6 +29,7 @@ EVALUATION_TEST_FILES = frozenset(
         "test_retrieval_input_inventory.py",
         "test_retrieval_reproduction.py",
         "test_response_diagnostic.py",
+        "test_runtime_feedback_repair.py",
         "test_simple_modeling_batch.py",
         "test_task_baseline.py",
         "test_task_baseline_pilot.py",

@@ -410,6 +410,10 @@ the catalog/probe provenance is in
 
 ## Historical advisory and enforced Abaqus ACI
 
+This section preserves superseded experiments. ADR-0038 removed both execution
+modes from the current product; their old configuration and results remain
+historical evidence rather than a runnable current profile.
+
 The optional preflight does not install abqpy into Abaqus. It unpacks the pinned
 2024.10 wheel outside the Agent workspace and runs BasedPyright before a new
 production CAE or extraction script hash enters vendor runtime. Raw diagnostics
@@ -447,7 +451,7 @@ blockers for additional B31 runtime failure families. Its one formal B31 batch
 had three pre-file Go timeouts and zero syntax/API/Abaqus calls, so it supplies
 no Product adoption evidence and does not replace v7. No fourth attempt was run.
 
-Run the enforced opt-in treatment with:
+The historical enforced treatment was launched with:
 
 ```powershell
 uv run --group eval python -m abaqus_sim_agent.evaluation.beam_tension `
@@ -469,6 +473,26 @@ The replacement evidence is in
 [`abaqus_aci_enforced_policy_v1_20260829.json`](abaqus_aci_enforced_policy_v1_20260829.json)
 and
 [`beam_tension_b31_aci_enforced_evaluation_20260829.json`](beam_tension_b31_aci_enforced_evaluation_20260829.json).
+
+## Current non-blocking runtime feedback pilot
+
+The current contract always checks Python 3.10 syntax before CAE/Abaqus Python
+execution. Optional BasedPyright analysis has only `off`/`on`; diagnostics and
+analyzer availability accompany the actual runtime result and never form a
+separate acknowledgement or API blocker.
+
+The frozen v1 pilot ran off/on in reversed order over two repetitions with Catalog off. See
+[`runtime_feedback_repair_protocol_v1.md`](runtime_feedback_repair_protocol_v1.md) and the
+[qualification record](runtime_feedback_repair_qualification_20260923.md). Qualification established 4/4 licensed broken
+baselines and a two-hit/two-miss static stratum. The subsequent
+[real-model exploratory paired pilot](runtime_feedback_repair_paired_v1_20260923.md)
+produced 1 win / 7 ties / 0 losses, with lower request/runtime counts but higher
+token usage. Its source seal did not cover the complete Agent chain, so it keeps
+static feedback default off and does not expand to full mechanics.
+
+The current runner emits the [v2 protocol](runtime_feedback_repair_protocol_v2.md): both arms bind the same required
+Catalog in `automatic_verified_only`, while only BasedPyright remains off/on. It does not alter or combine the v1 evidence.
+Use `python -m abaqus_sim_agent.evaluation.runtime_feedback_repair --help` for the required paths.
 
 ## Corrected from-scratch Catalog ablation
 

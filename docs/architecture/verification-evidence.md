@@ -60,6 +60,13 @@ plate CPS4R、3D bar C3D8R、beam B31 的参考与 oracle 都有持证记录，A
   有部分分支可运行，尚未获得行为资格；工程完成与默认 off 并不矛盾。
 - [官方脚本与只读资料](../../benchmarks/coding/knowledge_reference_resources_20260915.md)：
   只读工厂接线和一份适配脚本的 licensed 最小验证；无新真实 Agent 采用收益。
+- [runtime feedback repair 资格记录](../../benchmarks/coding/runtime_feedback_repair_qualification_20260923.md)：
+  四个坏样本均由 Abaqus 2024 复现失败，静态层形成两项命中和两项未命中；后续
+  [真实模型 exploratory paired pilot](../../benchmarks/coding/runtime_feedback_repair_paired_v1_20260923.md)为
+  1 win / 7 tie / 0 loss，但 token 成本上升、唯一 win 未跨重复稳定，且 source seal 未覆盖完整 Agent 调用链；
+  不支持默认开启、普遍收益或严格因果声明。
+- [runtime feedback repair v2 协议](../../benchmarks/coding/runtime_feedback_repair_protocol_v2.md)：后续配对在两臂
+  固定同一 mandatory Catalog / `automatic_verified_only`，只比较 BasedPyright off/on；尚无新的真实模型成绩。
 
 ## 已采纳、尚待产品实施
 
