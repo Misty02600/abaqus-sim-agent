@@ -39,7 +39,7 @@ export function RunStatusBar({
     snapshot.can_answer ? "可回答" : null,
     snapshot.can_start ? "可启动" : null,
     snapshot.can_continue ? "可继续" : null,
-    snapshot.can_stop ? "可停止回复" : null,
+    snapshot.can_stop ? "可停止任务" : null,
   ].filter(Boolean);
   return (
     <div className="composer-statusbar" aria-label="当前配置与累计用量">

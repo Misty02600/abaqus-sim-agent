@@ -101,7 +101,15 @@ def test_delete_active_model_waits_for_stream_to_close(tmp_path):
         with TestClient(app, base_url="http://127.0.0.1") as client:
             login(client)
             rid = launch(client)
-            poll(client, rid, lambda s: s["can_stop"])
+            poll(
+                client,
+                rid,
+                lambda s: bool(
+                    s["can_stop"]
+                    and s["view"].get("live_reply")
+                    and s["view"]["live_reply"]["text"]
+                ),
+            )
             response = delete(client, rid)
             assert response.status_code == 200, response.text
             assert flow.closed.is_set()

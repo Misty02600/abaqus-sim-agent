@@ -98,7 +98,7 @@ class MessageCommand(RunCommand):
 
 
 class StopCommand(RunCommand):
-    expected_request_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+    expected_operation_id: str = Field(pattern=r"^[0-9a-f]{32}$")
 
 
 class RenameCommand(RunCommand):
@@ -381,6 +381,7 @@ class RunSnapshot(StrictModel):
     message_block_reason: str | None = None
     command_uncertain: bool = False
     active: bool = False
+    active_operation_id: str | None = None
     model_request_id: str | None = None
     can_stop: bool = False
     stop_requested: bool = False

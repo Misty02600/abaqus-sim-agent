@@ -473,18 +473,18 @@ export default function App() {
     if (saved) setRenaming(false);
   }
   async function stop() {
-    if (!snapshot?.model_request_id || busy || !snapshot.can_stop) return;
+    if (!snapshot?.active_operation_id || busy || !snapshot.can_stop) return;
     setBusy(true);
     setError("");
     try {
       const key = commandId(
         snapshot.view.run_id,
         "stop",
-        snapshot.model_request_id,
+        snapshot.active_operation_id,
       );
       await request(runPath(snapshot.view.run_id) + "/stop", {
         command_id: key,
-        expected_request_id: snapshot.model_request_id,
+        expected_operation_id: snapshot.active_operation_id,
       });
       clearCommand(snapshot.view.run_id, "stop");
       await refresh();
@@ -695,9 +695,9 @@ export default function App() {
     },
     {
       id: "stop",
-      label: "停止模型回复",
+      label: "停止当前任务",
       disabled: busy || !snapshot?.can_stop,
-      hint: "仅模型回复阶段；不取消Abaqus作业",
+      hint: "中断当前 Agent 和前台工具；后台 Solver 继续运行",
       run: stop,
     },
     {

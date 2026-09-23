@@ -357,9 +357,16 @@ def test_running_solver_is_visible_and_can_be_cancelled_without_model_stop(
         assert len(errors) == 1
         assert isinstance(errors[0], asyncio.CancelledError)
 
-        terminal = client.get(
-            f"/api/v1/runs/{run_id}/tool-executions/{running['execution_id']}"
-        ).json()
+        terminal = None
+        for _ in range(100):
+            candidate = client.get(
+                f"/api/v1/runs/{run_id}/tool-executions/{running['execution_id']}"
+            ).json()
+            if candidate["status"] == "cancelled":
+                terminal = candidate
+                break
+            threading.Event().wait(0.02)
+        assert terminal is not None
         assert terminal["status"] == "cancelled"
         assert terminal["cancel_requested"] is True
         assert terminal["finished_at"] is not None

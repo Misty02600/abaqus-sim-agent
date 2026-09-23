@@ -688,8 +688,40 @@ async def select_resume_history(
     def is_deferred_effect(effect: ToolEffectRecord) -> bool:
         return deferred_tool_effect == (effect.tool_name, effect.tool_call_id)
 
+    state_path = request.state_dir / "resume_state.json"
+    user_stopped = bool(
+        fallback
+        and state_path.is_file()
+        and load_resume_state(request.state_dir).last_error_type == "UserStoppedError"
+    )
+
+    def is_stopped_solver_wait(effect: ToolEffectRecord) -> bool:
+        if not user_stopped or effect.tool_name != "solver_job":
+            return False
+        for message in reversed(fallback):
+            if not isinstance(message, ModelResponse):
+                continue
+            for part in message.parts:
+                if (
+                    isinstance(part, ToolCallPart)
+                    and part.tool_name == effect.tool_name
+                    and part.tool_call_id == effect.tool_call_id
+                ):
+                    try:
+                        request_value = part.args_as_dict().get("request")
+                    except ValueError:
+                        return False
+                    return bool(
+                        isinstance(request_value, dict)
+                        and request_value.get("action") == "wait"
+                        and isinstance(request_value.get("execution_id"), str)
+                    )
+        return False
+
     unresolved_for_resume = tuple(
-        effect for effect in unresolved if not is_deferred_effect(effect)
+        effect
+        for effect in unresolved
+        if not is_deferred_effect(effect) and not is_stopped_solver_wait(effect)
     )
     runtime_effects = tuple(
         effect
@@ -702,19 +734,14 @@ async def select_resume_history(
         sorted({effect.tool_name for effect in unresolved_for_resume})
     )
 
-    state_path = request.state_dir / "resume_state.json"
-    if (
-        fallback
-        and state_path.is_file()
-        and load_resume_state(request.state_dir).last_error_type == "UserStoppedError"
-    ):
+    if user_stopped:
         # Reconcile effects first. Keep the native interrupted response for context;
         # Pydantic AI closes out its unexecuted tool calls when the next prompt arrives.
         if isinstance(fallback[-1], ModelResponse):
             fallback = (*fallback[:-1], replace(fallback[-1], state="interrupted"))
         return ResumeHistory(
             messages=fallback,
-            prompt="The user explicitly resumed after stopping a model response. Preserve the partial reply as context; do not assume any unexecuted tool call completed.",
+            prompt="The user explicitly resumed after stopping the current task. Preserve partial public text and completed work as context. A stopped solver_job wait has no submission side effect; query the same execution ID again instead of assuming its result or resubmitting the job.",
             source="history_fallback",
             prior_step_run_id=latest_run.run_id,
             unresolved_non_runtime_tools=unresolved_names,

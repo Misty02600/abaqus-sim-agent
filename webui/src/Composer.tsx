@@ -77,9 +77,9 @@ export function Composer({
             type="button"
             disabled={!stop.enabled || stop.requested}
             onClick={stop.onStop}
-            title="停止当前模型回复；不取消Abaqus运行"
+            title="停止当前 Agent 和前台工具；后台 Solver 继续运行"
           >
-            {stop.requested ? "正在停止…" : "停止回复"}
+            {stop.requested ? "正在停止…" : "停止任务"}
           </button>
         ) : (
           <ComposerPrimitive.Send

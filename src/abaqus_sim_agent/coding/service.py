@@ -649,28 +649,42 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                         started,
                     )
         except (RunCancelled, UserStoppedError) as exc:
-            if self.run_control and self.run_control.requested:
+            if self.run_control and self.run_control.delete_requested:
                 self._save_resume_state(
                     "interrupted", shared_usage, clarifications, started, error=exc
                 )
                 raise asyncio.CancelledError("宿主正在删除会话") from exc
-            if self.response_control is None or not self.response_control.requested:
+            user_stopped = bool(
+                (self.run_control and self.run_control.user_stop_requested)
+                or (self.response_control and self.response_control.requested)
+            )
+            if not user_stopped:
                 self._save_resume_state(
                     "interrupted", shared_usage, clarifications, started, error=exc
                 )
                 raise CodingRunInfrastructureError(str(exc)) from exc
-            stopped = StoppedReply(
-                request_id=self._response_id,
-                text=self._public_text,
-                turn=turn,
-                response_number=self._response_number,
-                task_revision=self._current_task_revision,
+            cleanup_error = self.run_control.cleanup_error if self.run_control else None
+            if cleanup_error:
+                error = RuntimeError(f"停止当前任务时执行收尾失败：{cleanup_error}")
+                self._save_resume_state(
+                    "interrupted", shared_usage, clarifications, started, error=error
+                )
+                raise CodingRunInfrastructureError(str(error)) from exc
+            if self.response_control and self.response_control.requested:
+                stopped = StoppedReply(
+                    request_id=self._response_id,
+                    text=self._public_text,
+                    turn=turn,
+                    response_number=self._response_number,
+                    task_revision=self._current_task_revision,
+                )
+                self._append_event(
+                    "model_response_stopped", stopped.model_dump(mode="json")
+                )
+                self._view_stopped = stopped.model_dump_json().encode()
+            error = UserStoppedError(
+                "用户已停止当前任务；已有工作、后台作业和用量保留。"
             )
-            self._append_event(
-                "model_response_stopped", stopped.model_dump(mode="json")
-            )
-            self._view_stopped = stopped.model_dump_json().encode()
-            error = UserStoppedError("用户已停止当前模型回复；已有文件和用量保留。")
             self._save_resume_state(
                 "interrupted", shared_usage, clarifications, started, error=error
             )
@@ -703,6 +717,18 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                 verification=verification,
             )
         except asyncio.CancelledError as exc:
+            if self.run_control and self.run_control.user_stop_requested:
+                error = UserStoppedError(
+                    "用户已停止当前任务；已有工作、后台作业和用量保留。"
+                )
+                self._save_resume_state(
+                    "interrupted",
+                    shared_usage,
+                    clarifications,
+                    started,
+                    error=error,
+                )
+                raise error from exc
             self._append_event(
                 "infrastructure_interrupted",
                 {"type": type(exc).__name__, "message": str(exc)},

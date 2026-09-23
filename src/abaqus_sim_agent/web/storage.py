@@ -9,6 +9,7 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from ..coding.persistence import write_text_atomic
+from ..coding.workspace import WorkspaceSnapshot
 from ..execution import AbaqusExecutionResult
 from .contracts import (
     AgentInvocation,
@@ -433,6 +434,14 @@ class ToolExecutionStore:
             self._result_directory(run_id) / f"{execution_id}.json", directory=False
         )
 
+    def _workspace_path(self, run_id: str, execution_id: str) -> Path:
+        if re.fullmatch(r"[0-9a-f]{32}", execution_id) is None:
+            raise WebError("tool_execution_not_found", "工具执行记录不存在", 404)
+        return plain_path(
+            self._result_directory(run_id) / f"{execution_id}.workspace.json",
+            directory=False,
+        )
+
     def create(self, execution: ToolExecution) -> ToolExecution:
         self.registry.load(execution.thread_id)
         path = self._path(execution.thread_id, execution.execution_id)
@@ -518,6 +527,30 @@ class ToolExecutionStore:
             raise WebError(
                 "tool_execution_corrupt",
                 f"Solver 结果记录无法读取：{exc}",
+            ) from exc
+
+    def save_workspace_snapshot(
+        self, execution: ToolExecution, snapshot: WorkspaceSnapshot
+    ) -> None:
+        self.load(execution.thread_id, execution.execution_id)
+        write_text_atomic(
+            self._workspace_path(execution.thread_id, execution.execution_id),
+            snapshot.model_dump_json(indent=2),
+        )
+
+    def load_workspace_snapshot(
+        self, run_id: str, execution_id: str
+    ) -> WorkspaceSnapshot | None:
+        self.load(run_id, execution_id)
+        path = self._workspace_path(run_id, execution_id)
+        if not path.is_file():
+            return None
+        try:
+            return WorkspaceSnapshot.model_validate_json(path.read_bytes())
+        except ValueError as exc:
+            raise WebError(
+                "tool_execution_corrupt",
+                f"Solver 工作区终态无法读取：{exc}",
             ) from exc
 
     def update(self, execution: ToolExecution, **changes: object) -> ToolExecution:

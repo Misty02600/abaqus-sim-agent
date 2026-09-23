@@ -1151,6 +1151,8 @@ export interface components {
              * @default false
              */
             active: boolean;
+            /** Active Operation Id */
+            active_operation_id?: string | null;
             /** Model Request Id */
             model_request_id?: string | null;
             /**
@@ -1255,8 +1257,8 @@ export interface components {
              * Format: uuid
              */
             command_id: string;
-            /** Expected Request Id */
-            expected_request_id: string;
+            /** Expected Operation Id */
+            expected_operation_id: string;
         };
         /** TimelinePage */
         TimelinePage: {

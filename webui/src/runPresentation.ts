@@ -57,8 +57,8 @@ export function currentAction(snapshot: Snapshot): {
   if (snapshot.active) {
     if (snapshot.stop_requested)
       return {
-        title: "正在停止回复",
-        hint: "保存已收到的内容后，可继续或发送新消息。",
+        title: "正在停止任务",
+        hint: "宿主正在结束当前 Agent 和前台工具；后台 Solver 保持运行。",
         tone: "neutral",
       };
     const phase: Record<string, string> = {
@@ -71,8 +71,8 @@ export function currentAction(snapshot: Snapshot): {
     return {
       title: phase[view.phase ?? ""] ?? "正在处理",
       hint: snapshot.can_stop
-        ? "可以编辑草稿；停止回复后可发送新消息。"
-        : "可以编辑草稿，当前阶段不提供模型停止操作。",
+        ? "可以编辑草稿；停止当前任务后可继续或发送新消息。"
+        : "可以编辑草稿，当前阶段尚不能停止。",
       tone: "neutral",
     };
   }
@@ -119,7 +119,7 @@ export function currentAction(snapshot: Snapshot): {
       title: runLabel(view),
       hint:
         view.phase === "stopped"
-          ? "已收到的回复保留。可发送新消息，或继续未完成的请求。"
+          ? "已有回复、文件和用量保留。后台作业可继续管理。"
           : "已有上下文与用量保留；按可用操作继续或补充要求。",
       tone: "neutral",
     };

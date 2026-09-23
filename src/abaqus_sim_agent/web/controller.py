@@ -71,9 +71,11 @@ from ..coding.resume import (
     CodingRunResumeError,
     load_effective_run_for_resume,
     load_resume_state,
+    write_resume_state,
 )
 from ..coding.run_lock import CodingRunAlreadyLocked, CodingRunFileLock
 from ..coding.user_questions import UserAnswerInput, WaitingForUser
+from ..coding.workspace import WorkspaceResolver
 from ..execution import (
     DEFAULT_ABAQUS_2024_LAUNCHER,
     Abaqus2024Runner,
@@ -190,9 +192,11 @@ class _ToolExecutionRunner(DeferredSolverRunner):
             with self._controller._mutex:
                 control = self._controller._run_controls.get(self._run_id)
                 if control is not None and control.requested:
-                    self._controller._delete_errors[self._run_id] = (
-                        f"Abaqus 执行收尾失败：{type(exc).__name__}"
-                    )
+                    control.record_cleanup_error(exc)
+                    if control.delete_requested:
+                        self._controller._delete_errors[self._run_id] = (
+                            f"Abaqus 执行收尾失败：{type(exc).__name__}"
+                        )
             raise
 
     async def run_solver_job(
@@ -450,7 +454,7 @@ class RunController:
         with self._mutex:
             future = self._tool_tasks.get(execution_id)
         if future is not None:
-            return await asyncio.wrap_future(future)
+            return await asyncio.shield(asyncio.wrap_future(future))
         resolution = self._resolve_solver_execution(run_id, execution_id)
         if resolution.result is not None:
             return resolution.result
@@ -640,6 +644,7 @@ class RunController:
         )
         self._active = run_id
         self._response_control = ModelResponseControl()
+        self._run_controls[run_id] = RunCancellationControl()
         try:
             self._future = self._pool.submit(
                 self._resume_deferred_tool_work,
@@ -650,6 +655,7 @@ class RunController:
         except Exception:
             self._active = None
             self._response_control = None
+            self._run_controls.pop(run_id, None)
             raise
         self._deferred_resume_queue.pop(execution_id, None)
 
@@ -824,6 +830,22 @@ class RunController:
                 self._launch_next_deferred_resume_locked()
             self.changed(run_id)
 
+    def _record_tool_workspace_snapshot(self, execution: ToolExecution) -> bool:
+        try:
+            registration = self.registry.load(execution.thread_id)
+            snapshot = WorkspaceResolver(
+                captured_cwd=registration.request.workspace
+            ).snapshot(registration.request.workspace)
+            with self._mutex:
+                self.tool_executions.save_workspace_snapshot(execution, snapshot)
+        except (OSError, ValueError, WebError):
+            logging.getLogger(__name__).exception(
+                "Could not record terminal Solver workspace: %s",
+                execution.execution_id,
+            )
+            return False
+        return True
+
     async def _execute_solver_execution(
         self,
         execution: ToolExecution,
@@ -862,6 +884,9 @@ class RunController:
         except asyncio.CancelledError:
             finished = datetime.now(UTC)
             cancelled_execution: ToolExecution | None = None
+            workspace_recorded = self._closing or self._record_tool_workspace_snapshot(
+                execution
+            )
             with self._mutex:
                 current = self.tool_executions.load(run_id, execution.execution_id)
                 if current.status != "needs_reconcile":
@@ -880,6 +905,8 @@ class RunController:
                             "宿主关闭时终止了本地控制句柄；Solver 状态需要核查。"
                             if self._closing
                             else "Solver 执行已由宿主取消。"
+                            if workspace_recorded
+                            else "Solver 已取消，但未能记录工作区终态。"
                         ),
                     )
             self.changed(run_id)
@@ -892,6 +919,7 @@ class RunController:
             raise
         except Exception as exc:
             finished = datetime.now(UTC)
+            workspace_recorded = self._record_tool_workspace_snapshot(execution)
             with self._mutex:
                 current = self.tool_executions.load(run_id, execution.execution_id)
                 self.tool_executions.update(
@@ -904,12 +932,16 @@ class RunController:
                             finished - (current.started_at or current.created_at)
                         ).total_seconds(),
                     ),
-                    error=f"{type(exc).__name__}: {exc}",
+                    error=(
+                        f"{type(exc).__name__}: {exc}"
+                        + ("" if workspace_recorded else "；未能记录工作区终态")
+                    ),
                 )
             self.changed(run_id)
             raise
         else:
             finished = datetime.now(UTC)
+            workspace_recorded = self._record_tool_workspace_snapshot(execution)
             result_json = result.model_dump_json()
             status = (
                 "timed_out"
@@ -939,8 +971,10 @@ class RunController:
                     stderr_raw_path=str(result.stderr_raw_path),
                     error=(
                         None
-                        if status == "completed"
+                        if status == "completed" and workspace_recorded
                         else "Solver 执行未通过当前阶段成功判定。"
+                        if workspace_recorded
+                        else "Solver 已结束，但未能记录工作区终态。"
                     ),
                 )
             self.changed(run_id)
@@ -1292,6 +1326,10 @@ class RunController:
                 tool_execution is not None
                 and tool_execution.status == "needs_reconcile"
             )
+            tool_running = bool(
+                tool_execution is not None
+                and tool_execution.status in {"starting", "running"}
+            )
             receipt_dir = plain_path(
                 self.registry.directory(run_id) / "commands", directory=True
             )
@@ -1368,6 +1406,7 @@ class RunController:
                 free
                 and usable
                 and not tool_needs_reconcile
+                and not tool_running
                 and (view.status == "interrupted" or pending_message is not None)
                 and not (view.question and view.question.pending)
             )
@@ -1413,6 +1452,8 @@ class RunController:
                 message_block = "Solver 外部执行状态未知，请先核查运行状态与产物。"
             elif not usable or view.status == "needs_reconcile":
                 message_block = "请先核查宿主记录或未决执行。"
+            elif tool_running:
+                message_block = "后台 Solver 仍在运行；等待结束或单独取消求解后再继续。"
             elif workspace_conflict:
                 message_block = workspace_conflict
             elif not free:
@@ -1457,18 +1498,26 @@ class RunController:
                 message_block_reason=message_block,
                 active=active or external_busy,
                 command_uncertain=uncertain,
+                active_operation_id=(
+                    self._run_controls[run_id].operation_id
+                    if active
+                    and run_id in self._run_controls
+                    and self._run_controls[run_id].bound
+                    else None
+                ),
                 model_request_id=self._response_control.request_id
                 if active and self._response_control
                 else None,
                 can_stop=bool(
                     active
-                    and self._response_control
-                    and self._response_control.request_id
+                    and run_id in self._run_controls
+                    and self._run_controls[run_id].bound
+                    and not self._run_controls[run_id].requested
                 ),
                 stop_requested=bool(
                     active
-                    and self._response_control
-                    and self._response_control.requested
+                    and run_id in self._run_controls
+                    and self._run_controls[run_id].user_stop_requested
                 ),
                 tool_execution=tool_execution,
                 can_cancel_tool_execution=bool(
@@ -1528,28 +1577,23 @@ class RunController:
             if run_id in self._deleting:
                 raise asyncio.CancelledError("会话正在删除")
             self._work_tasks[run_id] = (asyncio.get_running_loop(), task)
-            self._run_controls[run_id] = RunCancellationControl()
+            control = self._run_controls.setdefault(run_id, RunCancellationControl())
             self._cancelled_for_delete.discard(run_id)
             self._delete_errors.pop(run_id, None)
         try:
             await execute()
         except Exception as exc:
             with self._mutex:
-                control = self._run_controls.get(run_id)
-                if control is not None and control.requested:
+                if control.delete_requested:
                     self._delete_errors[run_id] = f"执行收尾失败：{type(exc).__name__}"
             raise
         finally:
             with self._mutex:
-                control = self._run_controls.get(run_id)
-                if (
-                    control is not None
-                    and control.requested
-                    and run_id not in self._delete_errors
-                ):
+                if control.delete_requested and run_id not in self._delete_errors:
                     self._cancelled_for_delete.add(run_id)
                 self._work_tasks.pop(run_id, None)
-                self._run_controls.pop(run_id, None)
+                if self._run_controls.get(run_id) is control:
+                    self._run_controls.pop(run_id, None)
 
     async def _tracked_solver_execution(
         self, execution: ToolExecution, runner: Abaqus2024Runner
@@ -1874,16 +1918,14 @@ class RunController:
                     error=prior.error,
                     snapshot=self.snapshot(run_id),
                 )
-            control = self._response_control
+            control = self._run_controls.get(run_id)
             if (
                 self._active != run_id
                 or control is None
-                or (
-                    control.request_id != command.expected_request_id
-                    and not control.requested
-                )
+                or control.operation_id != command.expected_operation_id
+                or not control.bound
             ):
-                raise WebError("stop_conflict", "当前不在可停止的模型回复阶段，请刷新")
+                raise WebError("stop_conflict", "当前工作段已改变或不能停止，请刷新")
             receipt = CommandReceipt(
                 command_id=command.command_id,
                 digest=payload_hash,
@@ -1891,17 +1933,21 @@ class RunController:
                 state="accepted",
             )
             save_model(path, receipt)
-            if not control.stop(command.expected_request_id):
+            if not control.request_cancel("user_stop"):
                 save_model(
                     path,
                     receipt.model_copy(
                         update={
                             "state": "rejected",
-                            "error": "模型阶段已改变，本次停止未执行。",
+                            "error": "工作段已改变，本次停止未执行。",
                         }
                     ),
                 )
-                raise WebError("stop_conflict", "模型阶段已改变，请刷新")
+                raise WebError("stop_conflict", "工作段已改变，请刷新")
+            response_control = self._response_control
+            request_id = response_control.request_id if response_control else None
+            if response_control is not None and request_id is not None:
+                response_control.stop(request_id)
             save_model(path, receipt.model_copy(update={"state": "settled"}))
             self.changed(run_id)
             return CommandResponse(
@@ -1918,6 +1964,57 @@ class RunController:
             / f"{command.command_id.hex}.json",
             directory=False,
         )
+
+    def _accept_stopped_solver_workspace(self, registration: Registration) -> None:
+        run_id = registration.request.run_id
+        with CodingRunFileLock(registration.request.state_dir):
+            state = load_resume_state(registration.request.state_dir)
+            if (
+                state.status != "interrupted"
+                or state.last_error_type != "UserStoppedError"
+            ):
+                return
+            current = WorkspaceResolver(
+                captured_cwd=registration.request.workspace
+            ).snapshot(registration.request.workspace)
+            if current == state.workspace_snapshot:
+                return
+            stopped = [
+                item
+                for item in self.invocations.list(run_id)
+                if item.status == "stopped"
+            ]
+            if not stopped:
+                return
+            invocation = stopped[-1]
+            terminal = [
+                item
+                for item in self.tool_executions.list(run_id)
+                if item.invocation_id == invocation.invocation_id
+                and item.status in {"completed", "failed", "cancelled", "timed_out"}
+                and item.finished_at is not None
+            ]
+            if not terminal:
+                return
+            latest = max(terminal, key=lambda item: item.finished_at or item.updated_at)
+            recorded = self.tool_executions.load_workspace_snapshot(
+                run_id, latest.execution_id
+            )
+            if recorded != current:
+                raise WebError(
+                    "workspace_changed",
+                    "停止后工作区出现了未被 Solver 终态记录覆盖的变化，请先核查文件。",
+                )
+            write_resume_state(
+                registration.request.state_dir,
+                state.model_copy(
+                    update={
+                        "workspace_snapshot": current,
+                        "updated_at": datetime.now(UTC),
+                    }
+                ),
+            )
+        self._views.pop(run_id, None)
 
     def command(
         self,
@@ -1962,6 +2059,8 @@ class RunController:
                     ),
                     snapshot=snapshot,
                 )
+            if action in {"continue", "message"}:
+                self._accept_stopped_solver_workspace(registration)
             snapshot = self.snapshot(run_id)
             saved_message = self._saved_message(run_id, command)
             if action == "message" and saved_message is not None:
@@ -2091,6 +2190,7 @@ class RunController:
             self._views[run_id] = snapshot.view
             self._active = run_id
             self._response_control = ModelResponseControl()
+            self._run_controls[run_id] = RunCancellationControl()
             try:
                 self._future = self._pool.submit(
                     self._work, run_id, registration, action, command, receipt
@@ -2098,6 +2198,7 @@ class RunController:
             except Exception:
                 self._active = None
                 self._response_control = None
+                self._run_controls.pop(run_id, None)
                 save_model(
                     path,
                     receipt.model_copy(

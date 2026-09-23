@@ -5,6 +5,7 @@ import json
 import threading
 from collections.abc import Callable
 from pathlib import Path
+from typing import Literal
 from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -24,18 +25,41 @@ class UserStoppedError(RuntimeError):
 
 
 class RunCancellationControl:
-    """把宿主删除请求交给当前 AgentRun 的原生取消入口。"""
+    """把宿主停止请求交给当前 AgentRun，并保留请求来源与收尾错误。"""
 
     def __init__(self) -> None:
         self._lock = threading.Lock()
         self._requested = False
+        self._source: Literal["user_stop", "delete"] | None = None
         self._loop: asyncio.AbstractEventLoop | None = None
         self._cancel: Callable[[], None] | None = None
+        self._cleanup_error: str | None = None
+        self.operation_id = uuid4().hex
 
     @property
     def requested(self) -> bool:
         with self._lock:
             return self._requested
+
+    @property
+    def bound(self) -> bool:
+        with self._lock:
+            return self._loop is not None and self._cancel is not None
+
+    @property
+    def user_stop_requested(self) -> bool:
+        with self._lock:
+            return self._source == "user_stop"
+
+    @property
+    def delete_requested(self) -> bool:
+        with self._lock:
+            return self._source == "delete"
+
+    @property
+    def cleanup_error(self) -> str | None:
+        with self._lock:
+            return self._cleanup_error
 
     def bind(self, cancel: Callable[[], None]) -> None:
         with self._lock:
@@ -49,16 +73,23 @@ class RunCancellationControl:
             self._cancel = None
             self._loop = None
 
-    def request_cancel(self) -> bool:
-        """请求取消；返回是否已交给 AgentRun，未绑定时由宿主取消外层任务。"""
+    def request_cancel(self, source: Literal["user_stop", "delete"] = "delete") -> bool:
+        """请求取消并返回是否已交给当前 AgentRun。"""
         with self._lock:
             if self._requested:
-                return True
+                if source == "delete":
+                    self._source = "delete"
+                return self._loop is not None and self._cancel is not None
             self._requested = True
+            self._source = source
             if self._loop is None or self._cancel is None:
                 return False
             self._loop.call_soon_threadsafe(self._cancel)
             return True
+
+    def record_cleanup_error(self, exc: Exception) -> None:
+        with self._lock:
+            self._cleanup_error = f"{type(exc).__name__}: {exc}"
 
 
 class LiveReply(BaseModel):

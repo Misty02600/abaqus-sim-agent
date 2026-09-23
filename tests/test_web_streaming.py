@@ -178,6 +178,7 @@ def test_stop_closes_request_preserves_partial_and_allows_followup(
                 rid,
                 lambda x: (
                     x["can_stop"]
+                    and x["model_request_id"] is not None
                     and (
                         before_header
                         or bool(
@@ -189,7 +190,7 @@ def test_stop_closes_request_preserves_partial_and_allows_followup(
             )
             body = {
                 "command_id": str(uuid4()),
-                "expected_request_id": active["model_request_id"],
+                "expected_operation_id": active["active_operation_id"],
             }
             assert client.post(f"/api/v1/runs/{rid}/stop", json=body).status_code == 202
             stopped = settled(client, rid, status="interrupted")
@@ -407,7 +408,7 @@ def test_go_http_streaming_adapter_retry_and_transport_close(
                         f"/api/v1/runs/{rid}/stop",
                         json={
                             "command_id": str(uuid4()),
-                            "expected_request_id": active["model_request_id"],
+                            "expected_operation_id": active["active_operation_id"],
                         },
                     ).status_code
                     == 202

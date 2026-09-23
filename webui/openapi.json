@@ -2960,6 +2960,17 @@
             "title": "Active",
             "default": false
           },
+          "active_operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Operation Id"
+          },
           "model_request_id": {
             "anyOf": [
               {
@@ -3299,17 +3310,17 @@
             "format": "uuid",
             "title": "Command Id"
           },
-          "expected_request_id": {
+          "expected_operation_id": {
             "type": "string",
             "pattern": "^[0-9a-f]{32}$",
-            "title": "Expected Request Id"
+            "title": "Expected Operation Id"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
           "command_id",
-          "expected_request_id"
+          "expected_operation_id"
         ],
         "title": "StopCommand"
       },
