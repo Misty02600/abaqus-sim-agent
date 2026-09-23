@@ -77,11 +77,13 @@ SDK request retry，普通产品默认关闭 Planning。
 
 页面已支持基础多轮对话：首次点击“发送”直接开始，回复后可在同一会话继续追问或追加要求；
 Enter发送、Shift+Enter换行，草稿按会话保存在当前浏览器会话中。历史从宿主恢复，追加消息沿用原工作区和
-累计用量。当前处理期间可编辑草稿，处理结束后发送。回复支持流式逐步显示和复制，会话可重命名；“停止回复”只在模型请求阶段可用，
-停止后保留已收到的内容，可继续或发送新消息。`solver_job(action=submit)` 在 Web 中作为独立
+累计用量。当前处理期间可编辑草稿，处理结束后发送。回复支持流式逐步显示和复制，会话可重命名；“停止任务”
+会中断当前 Agent 工作段及其前台工具，停止后保留已收到的回复、文件和用量，可继续或发送新消息。已经后台化
+的 Solver 不随该操作取消，仍可从状态栏单独“取消求解”。`solver_job(action=submit)` 在 Web 中作为独立
 `ToolExecution` 运行并立即把 execution ID 返回模型；模型可继续独立工作，需要结果时再调用 `action=wait`。
 状态栏显示 Job、已用时间和当前状态，运行详情保留 PID、退出码与错误。当前宿主仍持有进程控制句柄时可以
-取消这一次 Solver；当前 Agent run 结束前必须等待已提交的 Solver。
+取消这一次 Solver；正常完成当前 Agent run 前必须等待已提交的 Solver，用户中断当前工作段时后台求解可继续。
+后台 Solver 运行期间不会启动新 Agent 工作段；到终态且工作区与宿主记录精确匹配后才允许继续。
 消息和澄清答复先由宿主持久化，再调度执行；若已保存但未启动，页面提示显式继续。普通Web追加消息保存到
 `thread.json`并作为同一CodingRun history上的continuation执行，不推进task revision；每条新消息仍以提交前的
 workspace/execution状态划定本段fresh evidence。显式修改任务合同的CLI `--goal` amendment继续建立task revision。
@@ -97,7 +99,8 @@ workspace/execution状态划定本段fresh evidence。显式修改任务合同�
 [ADR-0030](docs/adr/0030-drop-pre-release-coding-run-state-compatibility.md)。
 
 当前只接受本机单用户访问，每个服务只有一个主动工作段，忙时拒绝第二个执行。浏览器断开不停止任务；
-正常关闭服务会等待当前模型工作段；页面的停止按钮会关闭当前模型请求并保存中断状态。Solver submit
+正常关闭服务会等待当前 Agent 工作段；页面的停止按钮按活动 operation ID 取消当前 Agent 与前台工具并保存
+中断状态，过期按钮不能取消后来的工作段。Solver submit
 立即返回 execution ID；模型调用 wait 后普通 await 终态，等待不消耗 token 或 active wall，也不重复提交。
 服务在 Solver 运行中关闭时会终止本机控制句柄并转为 `needs_reconcile`；重启后不按 PID/Job 重新附着，
 也不会自动重跑。本版没有文件上传。文本预览上限256 KiB，

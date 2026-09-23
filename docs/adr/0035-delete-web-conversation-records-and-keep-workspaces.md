@@ -43,3 +43,7 @@
 扩展 [ADR-0025](0025-local-web-workbench-over-coding-run.md) 的会话操作，沿用
 [ADR-0027](0027-decouple-web-thread-messages-from-task-revisions.md) 的状态所有权，以及
 [ADR-0034](0034-bind-selected-workspaces-for-web-runs.md) 的工程目录与宿主记录分离。
+
+其中对当时“停止回复”按钮仅作用于模型请求的描述，已由
+[ADR-0036](0036-interrupt-web-work-segments-and-manage-background-jobs-separately.md) 局部替代；本 ADR 的删除
+收尾、永久清理和工程文件保留决定不变。

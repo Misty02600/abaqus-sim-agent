@@ -58,6 +58,13 @@ Provider/API 异常或 task cancellation 保存 `interrupted`。`--resume` 核�
 workspace 指纹、累计宿主状态和 Harness settled snapshot，在同一 conversation 开启新 turn。
 已完成文件工具和执行证据可继续使用；首次响应尚未形成时使用原始 goal。
 
+Web 用户停止按当前 operation ID 取消整个 Agent 工作段：模型请求和前台文件、Shell、CAE、Abaqus Python
+工具沿 Pydantic AI `AgentRun.cancel()` 收尾。模型已产生的公开部分回复会作为 incomplete message 保存；只有
+工具而没有公开文字时只保存停止边界。收尾成功后状态为 `interrupted`、阶段为 `stopped`，不形成 outcome；
+收尾失败保持基础设施中断。已经由 `solver_job(action=submit)` 后台化的 Solver 不随主停止取消，仍可按
+execution ID 观察或单独取消；停止正在进行的 `wait` 只结束前台等待。Solver 活动期间不启动新工作段，终态
+workspace snapshot 与当前目录精确匹配后才推进恢复边界。继续会建立新的工作段，不是恢复暂停栈。
+
 恢复必须先判断是否存在未决 Abaqus effect：只有 started、没有 terminal 证据时，进入 `needs_reconcile`，
 不发新模型请求，也不自动重跑 runtime。损坏 ledger 失败关闭，不从其他日志猜造执行状态。
 同 state 锁阻止第二个执行段，恢复不会重新捕获当前工作区来冒充最初 freshness 基线。
@@ -99,6 +106,7 @@ Gold 从空工作区开始；verified-seed change 先核对 source 和 hash，�
 - [ADR-0025](../../adr/0025-local-web-workbench-over-coding-run.md)、
   [ADR-0026](../../adr/0026-scope-requests-and-text-responses.md)、
   [ADR-0027](../../adr/0027-decouple-web-thread-messages-from-task-revisions.md)：Web、文字答复与 continuation。
+- [ADR-0036](../../adr/0036-interrupt-web-work-segments-and-manage-background-jobs-separately.md)：Web 工作段中断与后台作业边界。
 - [Service](../../../src/abaqus_sim_agent/coding/service.py)、[问答](../../../src/abaqus_sim_agent/coding/user_questions.py)、
   [恢复](../../../src/abaqus_sim_agent/coding/resume.py)、[修订](../../../src/abaqus_sim_agent/coding/amendments.py)、
   [Web controller](../../../src/abaqus_sim_agent/web/controller.py)。

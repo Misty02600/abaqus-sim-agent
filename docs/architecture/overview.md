@@ -29,6 +29,7 @@ Web 主线仍未执行。外部 Job 对账、数据库控制面、多进程 Coor
 | `--resume`、显式 amendment / task revision | 同一 conversation 继续，或修订配置/任务 | 继承累计 usage；runtime policy 可修订，新任务换验收基线；未决 runtime 停在 `needs_reconcile` | [恢复](../../src/abaqus_sim_agent/coding/resume.py)、[修订](../../src/abaqus_sim_agent/coding/amendments.py) |
 | Web runtime policy amendment | 在已有会话中修改未来 Abaqus/Solver 提交权限 | 仅空闲且无需对账时可写；待答问题保留，不自动继续或取消执行，累计 usage 不重置 | [Web controller](../../src/abaqus_sim_agent/web/controller.py)、[ADR-0021](../adr/0021-use-amendments-and-task-revisions-for-continuation.md) |
 | Web Thread message / continuation | 在同一会话 history 上追加普通消息 | 不推进 task revision；每段独立划定 workspace/execution evidence baseline | [Web storage](../../src/abaqus_sim_agent/web/storage.py)、[ADR-0027](../adr/0027-decouple-web-thread-messages-from-task-revisions.md) |
+| Web 停止当前任务 | 中断当前 Agent 工作段及其前台工具，保留已完成工作和累计状态 | 按 operation ID 防止过期停止；后台 Solver 继续运行并单独取消，终态 workspace 精确匹配后再继续 | [取消控制](../../src/abaqus_sim_agent/coding/response_stream.py)、[ADR-0036](../adr/0036-interrupt-web-work-segments-and-manage-background-jobs-separately.md) |
 | Web 删除会话 | 确认后结束本宿主受控执行，永久删除会话记录 | 工程文件保留，无回收站；不删除尚无法确认的外部执行记录 | [删除存储](../../src/abaqus_sim_agent/web/deletion.py)、[ADR-0035](../adr/0035-delete-web-conversation-records-and-keep-workspaces.md) |
 | Harness 文件与 Shell 工具 | 普通仓库编码、检查、测试和后台命令 | Shell 固定 workspace 并剥离 Provider 凭据；直接 Abaqus launcher 被拒绝，不构成 OS 沙箱 | [Agent](../../src/abaqus_sim_agent/coding/agent.py)、[ADR-0032](../adr/0032-restore-restricted-shell-for-product-coder.md) |
 | 1M context policy | DeepSeek history 超过 960K 时先清旧 tool result、再按需摘要 | summary 只改模型 history；typed capability activation 被保留，launch v7 绑定 Skill digest | [context policy](../../src/abaqus_sim_agent/coding/context_policy.py)、[PLAN-0012](../plans/done/0012-agent-runtime-budget-and-context-policy.md) |
@@ -92,6 +93,8 @@ Harness 文件存储，同一 state 有 OS 独占锁。文件记录支持本地�
 - 恢复要求 workspace 和保存的边界一致；未决 Abaqus effect 不自动重跑，也没有人工 reconcile 后解锁或 PID 重新附着。
 - Web Solver 只在当前宿主仍持有进程控制句柄时支持取消；服务重启不重新附着活动 Solver。Web registry、
   Thread 与 CodingRun state 分属不同文件域，不具有数据库事务语义。
+- Web 主停止只能取消仍绑定当前 `AgentRun` 的工作段；已后台化的 Solver 保留独立生命周期。停止不是暂停，
+  也不保证终止脱离宿主管理的外部进程。
 - 工作台工程接线和浏览器确定性场景通过，不代表 PLAN-0010 的真实 Provider/Abaqus 主线已经验收。
 - 固定 plate/bar/beam 与模型变更案例只证明各自冻结合同。不同 Prompt、协议或批次的成绩不能合并成当前成功率。
 - 知识接线、命中、读卡、任务采纳和物理收益需要分别验证。当前支持结论与历史证据由

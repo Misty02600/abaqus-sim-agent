@@ -88,12 +88,13 @@ The advisory is recorded rather than applying a forced major-version override.
 
 Reply actions now use assistant-ui's Copy primitive. Conversation titles are
 versioned display metadata under the registry; changing a title does not amend
-the user request. The Stop action carries the current model-request identity so
-a stale click cannot cancel a later request.
-This stops only that model request. Solver cancellation is a separate action for
-executions still controlled by the current host. There is no Web stop command for
-CAE, Abaqus Python or foreground/background Shell commands, and no standalone
-whole-task stop or pause/resume control.
+the user request. The Stop action carries the current active-operation identity
+so a stale click cannot cancel a later work segment. It cancels the current Agent
+run and its foreground tools, waits for their cleanup, and preserves completed
+work plus cumulative usage. A submitted background Solver keeps running and has
+its own cancellation action. A new Agent segment stays blocked until that Solver
+reaches a terminal state and the workspace exactly matches its recorded terminal
+snapshot. Stop ends the current segment; it is not pause/resume.
 
 Conversation deletion is a separate confirmed operation: the host cancels and
 drains its owned execution before permanently removing state/registry records.
@@ -106,7 +107,9 @@ final-output summaries update an in-memory snapshot (coalesced at 50 ms); SSE
 still invalidates snapshots rather than replaying append-only token offsets.
 Thinking parts and ordinary tool arguments are not exposed as streamed prose.
 The live preview is replaced by persisted history at checkpoints. On user stop,
-partial public text is kept as an explicitly incomplete reply, not an outcome.
+partial public text is kept as an explicitly incomplete reply, not an outcome;
+stopping during a foreground tool records the same interrupted boundary without
+inventing an assistant message.
 
 The controlled `adapters.threadList` integration in pinned assistant-ui 0.15.19
 is marked experimental/deprecated upstream. It is isolated in WorkbenchRuntime

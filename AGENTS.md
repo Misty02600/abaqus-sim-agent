@@ -29,6 +29,7 @@
 - 本地 Web 工作台复用 `coding/application.py`、`composition.py` 和 `CodingRunService`。命令使用 REST，SSE 只通知重取；Web registry、Thread、invocation 和 `ToolExecution` 是管理记录，不覆盖 CodingRun 的 request、limits/runtime policy、runtime evidence、verification 或 outcome。
 - Web 会话可使用托管空目录或显式选择已有本机 ASCII 工作区；创建后固定绑定，文件原地读写。所选目录与管理根互不包含，state/evidence 仍由宿主保存；目录接线与边界见 ADR-0034。
 - Web 删除会话先完成本宿主受控执行的收尾，再永久清理会话记录；托管或选定的工程文件始终保留。最小删除回执仅用于幂等和失败重试，不是回收站；见 ADR-0035。
+- Web 主停止操作按活动 operation ID 中断当前 Agent 工作段，并通过 `AgentRun.cancel()` 传播到模型和前台工具；成功收尾后保存 `interrupted/stopped`，保留文件、history 与累计 usage。已后台化的 Solver 不随主停止取消，继续由独立 ToolExecution 观察或取消；其运行期间不启动新 Agent 工作段，终态后只按宿主记录的精确 workspace snapshot 接回。删除会话仍执行完整收尾。见 ADR-0036。
 - Web 普通追加消息先持久化到 Thread，再以 `continuation_id` 恢复同一 CodingRun history；它不推进 task revision，但每段单独捕获 workspace/execution baseline，旧产物和旧执行不能冒充 fresh evidence。显式任务合同变化仍使用 amendment/task revision。
 - 新普通会话的 `solver_job(action=submit)` 由宿主 `ToolExecution` 或 CLI 后台 task 启动并立即返回 execution ID；模型可完成独立工作，再用 `action=wait` 普通等待结果。pending Solver 存在时不能结束当前 run；当前宿主可观察和取消仍受控的进程树，重启中的活动 Solver 转 `needs_reconcile`，不承诺跨进程重附着或 exactly-once。
 

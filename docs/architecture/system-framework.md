@@ -79,6 +79,9 @@ Catalog 与文档索引是显式选择的外部知识数据，和 run state 分�
 - 未决 Abaqus effect 先进入 `needs_reconcile`。当前不会查询原 PID、重新附着、自动重提或通过人工对账解锁。
 - 宿主还活着时，timeout/cancellation 会终止准确 PID 的进程树并保存能取得的日志；宿主/机器崩溃后的
   外部进程管理没有同等保证，见 [Job 生命周期](flows/job-lifecycle.md)。
+- Web 主停止通过当前 operation ID 和 `AgentRun.cancel()` 结束模型或前台工具，等待工具收尾后才投影为
+  stopped。后台 Solver 保留 ToolExecution 生命周期和独立取消入口；运行期间阻止新 Agent 工作段，终态
+  workspace snapshot 精确匹配后才能继续。删除会话才组合两条取消路径。
 
 ## 依赖和装配
 
