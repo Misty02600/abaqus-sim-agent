@@ -92,6 +92,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/runs/{run_id}/runtime-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Update Runtime Policy */
+        post: operations["update_runtime_policy_api_v1_runs__run_id__runtime_policy_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/runs/{run_id}/tool-executions": {
         parameters: {
             query?: never;
@@ -1153,6 +1170,13 @@ export interface components {
              */
             can_cancel_tool_execution: boolean;
             /**
+             * Can Update Runtime Policy
+             * @default false
+             */
+            can_update_runtime_policy: boolean;
+            /** Runtime Policy Block Reason */
+            runtime_policy_block_reason?: string | null;
+            /**
              * @default {
              *       "warning": false
              *     }
@@ -1197,6 +1221,22 @@ export interface components {
             abaqus_python_timeout?: components["schemas"]["UnlimitedLimit"] | components["schemas"]["LimitedDuration"];
             /** Solver Timeout */
             solver_timeout?: components["schemas"]["UnlimitedLimit"] | components["schemas"]["LimitedDuration"];
+        };
+        /** RuntimePolicyCommand */
+        RuntimePolicyCommand: {
+            /**
+             * Command Id
+             * Format: uuid
+             */
+            command_id: string;
+            /** Expected Task Revision */
+            expected_task_revision: number;
+            /** Expected Amendment Sequence */
+            expected_amendment_sequence: number;
+            /** Abaqus */
+            abaqus: components["schemas"]["RuntimeDenied"] | components["schemas"]["RuntimeAllowed"] | components["schemas"]["RuntimeAllowedWithLimit"];
+            /** Solver */
+            solver: components["schemas"]["RuntimeDenied"] | components["schemas"]["RuntimeAllowed"] | components["schemas"]["RuntimeAllowedWithLimit"];
         };
         /** SessionInfo */
         SessionInfo: {
@@ -1638,6 +1678,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DeleteRunResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_runtime_policy_api_v1_runs__run_id__runtime_policy_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RuntimePolicyCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunSnapshot"];
                 };
             };
             /** @description Validation Error */

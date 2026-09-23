@@ -45,6 +45,10 @@ proxy preserves the origin; the Python API still checks session and CSRF.
   connection, usage, verification and capability facts. Disabled operations remain
   visible with the state-based reason. A running Solver uses the host ToolExecution
   snapshot for status, elapsed time, PID/details and current-process cancellation.
+- `RuntimePolicyEditor.tsx` updates the host-owned Abaqus/Solver permissions by
+  operational amendment. It shows cumulative usage and total limits; saving does
+  not run the model, reset usage, or cancel an existing execution. The host keeps
+  pending questions and rejects edits while execution is active or unresolved.
 - `CommandPalette.tsx` provides session search and local shortcuts. It dispatches
   the same state-checked handlers as the visible controls and owns no run state.
 - `api/client.ts` handles session/CSRF and retry IDs; generated types are the API

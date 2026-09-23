@@ -751,6 +751,47 @@ main {
 .runtime-policy-picker input {
   min-width: 0;
 }
+.runtime-policy-editor {
+  display: grid;
+  gap: 14px;
+}
+.runtime-policy-editor > p {
+  margin-bottom: 0;
+}
+.runtime-policy-editor > label {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) minmax(150px, 1.2fr) 90px;
+  align-items: center;
+  gap: 10px;
+}
+.runtime-policy-editor label > span {
+  display: grid;
+  gap: 2px;
+}
+.runtime-policy-editor label small {
+  color: var(--text-dim);
+  font-size: 10px;
+}
+.runtime-policy-editor select,
+.runtime-policy-editor input {
+  min-width: 0;
+  padding: 8px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.runtime-policy-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.runtime-policy-heading {
+  margin-top: 18px;
+}
+.runtime-policy-heading h3 {
+  margin: 0;
+}
 .workspace {
   flex: 1;
   min-height: 0;
@@ -1625,5 +1666,8 @@ dd {
   .model-info {
     max-width: 75%;
     font-size: 10px;
+  }
+  .runtime-policy-editor > label {
+    grid-template-columns: 1fr;
   }
 }

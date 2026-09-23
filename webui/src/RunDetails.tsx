@@ -18,7 +18,13 @@ function runtimeAllowance(
   return `${used} / 不限`;
 }
 
-export function RunDetails({ snapshot }: { snapshot: Snapshot }) {
+export function RunDetails({
+  snapshot,
+  onEditRuntimePolicy,
+}: {
+  snapshot: Snapshot;
+  onEditRuntimePolicy: () => void;
+}) {
   const view = snapshot.view;
   const context = snapshot.context_usage;
   const execution = snapshot.tool_execution;
@@ -89,6 +95,25 @@ export function RunDetails({ snapshot }: { snapshot: Snapshot }) {
           </dl>
         </>
       )}
+      <div className="row runtime-policy-heading">
+        <h3>运行权限</h3>
+        <button
+          type="button"
+          disabled={!snapshot.can_update_runtime_policy}
+          title={
+            snapshot.can_update_runtime_policy
+              ? "修改后续 Abaqus 和 Solver 提交权限"
+              : (snapshot.runtime_policy_block_reason ?? "当前不能修改运行权限")
+          }
+          onClick={onEditRuntimePolicy}
+        >
+          修改权限
+        </button>
+      </div>
+      {!snapshot.can_update_runtime_policy &&
+        snapshot.runtime_policy_block_reason && (
+          <p className="muted small">{snapshot.runtime_policy_block_reason}</p>
+        )}
       <dl>
         <dt>模型请求</dt>
         <dd>

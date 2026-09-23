@@ -25,6 +25,10 @@ import { SidePanel } from "./SidePanel";
 import { RunDetails } from "./RunDetails";
 import { RunSummary } from "./RunSummary";
 import { RunStatusBar } from "./RunStatusBar";
+import {
+  RuntimePolicyEditor,
+  type RuntimePermission,
+} from "./RuntimePolicyEditor";
 import { CommandPalette, type QuickAction } from "./CommandPalette";
 import { WorkspaceExplorer } from "./WorkspaceExplorer";
 import { DirectoryPicker } from "./DirectoryPicker";
@@ -110,6 +114,8 @@ export default function App() {
     sessionStorage.getItem(WORKSPACE_DRAFT_KEY),
   );
   const [directoryPickerOpen, setDirectoryPickerOpen] = useState(false);
+  const [runtimePolicyOpen, setRuntimePolicyOpen] = useState(false);
+  const [runtimePolicyError, setRuntimePolicyError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<{
     runId: string;
     title: string;
@@ -121,6 +127,8 @@ export default function App() {
     if (path) sessionStorage.setItem(WORKSPACE_DRAFT_KEY, path);
     else sessionStorage.removeItem(WORKSPACE_DRAFT_KEY);
     setDirectoryPickerOpen(false);
+    setRuntimePolicyOpen(false);
+    setRuntimePolicyError("");
   }
   const shortcutActions = useRef<QuickAction[]>([]);
   useEffect(() => {
@@ -512,6 +520,48 @@ export default function App() {
       setBusy(false);
     }
   }
+  function openRuntimePolicy() {
+    if (!snapshot?.can_update_runtime_policy || busy) return;
+    setDetailsOpen(false);
+    setRuntimePolicyError("");
+    setRuntimePolicyOpen(true);
+  }
+  async function updateRuntimePolicy(
+    abaqus: RuntimePermission,
+    solver: RuntimePermission,
+    expectedTaskRevision: number,
+    expectedAmendmentSequence: number,
+  ): Promise<boolean> {
+    if (!snapshot || busy) return false;
+    const runId = snapshot.view.run_id;
+    const payload = {
+      expected_task_revision: expectedTaskRevision,
+      expected_amendment_sequence: expectedAmendmentSequence,
+      abaqus,
+      solver,
+    };
+    setBusy(true);
+    setRuntimePolicyError("");
+    try {
+      const key = commandId(runId, "runtime-policy", JSON.stringify(payload));
+      await request(runPath(runId) + "/runtime-policy", {
+        command_id: key,
+        ...payload,
+      });
+      clearCommand(runId, "runtime-policy");
+      setRuntimePolicyOpen(false);
+      setNotice("运行权限已更新，只影响后续提交。累计用量保持不变。");
+      await refresh();
+      await list();
+      return true;
+    } catch (cause) {
+      if (selected.current === runId) setRuntimePolicyError(errorText(cause));
+      await refresh();
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
   function openRename() {
     if (!snapshot || busy) return;
     setNewTitle(snapshot.title.slice(0, 120));
@@ -608,6 +658,14 @@ export default function App() {
       keywords: "验收 结果 模型 推理 预算 配置",
       disabled: !snapshot,
       run: () => setDetailsOpen(true),
+    },
+    {
+      id: "runtime-policy",
+      label: "修改运行权限",
+      keywords: "Abaqus Solver 授权 限额",
+      disabled: busy || !snapshot?.can_update_runtime_policy,
+      hint: snapshot?.runtime_policy_block_reason ?? "只影响未来提交",
+      run: openRuntimePolicy,
     },
     {
       id: "rename",
@@ -1191,7 +1249,25 @@ export default function App() {
         )}
         {detailsOpen && snapshot && (
           <SidePanel title="运行详情" onClose={() => setDetailsOpen(false)}>
-            <RunDetails snapshot={snapshot} />
+            <RunDetails
+              snapshot={snapshot}
+              onEditRuntimePolicy={openRuntimePolicy}
+            />
+          </SidePanel>
+        )}
+        {runtimePolicyOpen && snapshot && (
+          <SidePanel
+            title="修改运行权限"
+            closeDisabled={busy}
+            onClose={() => setRuntimePolicyOpen(false)}
+          >
+            <RuntimePolicyEditor
+              snapshot={snapshot}
+              busy={busy}
+              error={runtimePolicyError}
+              onSave={updateRuntimePolicy}
+              onCancel={() => setRuntimePolicyOpen(false)}
+            />
           </SidePanel>
         )}
       </div>

@@ -265,6 +265,55 @@
         }
       }
     },
+    "/api/v1/runs/{run_id}/runtime-policy": {
+      "post": {
+        "summary": "Update Runtime Policy",
+        "operationId": "update_runtime_policy_api_v1_runs__run_id__runtime_policy_post",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuntimePolicyCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/runs/{run_id}/tool-executions": {
       "get": {
         "summary": "Tool Executions",
@@ -2947,6 +2996,22 @@
             "title": "Can Cancel Tool Execution",
             "default": false
           },
+          "can_update_runtime_policy": {
+            "type": "boolean",
+            "title": "Can Update Runtime Policy",
+            "default": false
+          },
+          "runtime_policy_block_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Runtime Policy Block Reason"
+          },
           "context_usage": {
             "$ref": "#/components/schemas/ContextUsage",
             "default": {
@@ -3123,6 +3188,79 @@
         "additionalProperties": false,
         "type": "object",
         "title": "RuntimeExecutionPolicy"
+      },
+      "RuntimePolicyCommand": {
+        "properties": {
+          "command_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Command Id"
+          },
+          "expected_task_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Task Revision"
+          },
+          "expected_amendment_sequence": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Amendment Sequence"
+          },
+          "abaqus": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RuntimeDenied"
+              },
+              {
+                "$ref": "#/components/schemas/RuntimeAllowed"
+              },
+              {
+                "$ref": "#/components/schemas/RuntimeAllowedWithLimit"
+              }
+            ],
+            "title": "Abaqus",
+            "discriminator": {
+              "propertyName": "mode",
+              "mapping": {
+                "allow": "#/components/schemas/RuntimeAllowed",
+                "allow_with_limit": "#/components/schemas/RuntimeAllowedWithLimit",
+                "deny": "#/components/schemas/RuntimeDenied"
+              }
+            }
+          },
+          "solver": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RuntimeDenied"
+              },
+              {
+                "$ref": "#/components/schemas/RuntimeAllowed"
+              },
+              {
+                "$ref": "#/components/schemas/RuntimeAllowedWithLimit"
+              }
+            ],
+            "title": "Solver",
+            "discriminator": {
+              "propertyName": "mode",
+              "mapping": {
+                "allow": "#/components/schemas/RuntimeAllowed",
+                "allow_with_limit": "#/components/schemas/RuntimeAllowedWithLimit",
+                "deny": "#/components/schemas/RuntimeDenied"
+              }
+            }
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "command_id",
+          "expected_task_revision",
+          "expected_amendment_sequence",
+          "abaqus",
+          "solver"
+        ],
+        "title": "RuntimePolicyCommand"
       },
       "SessionInfo": {
         "properties": {
