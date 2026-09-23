@@ -46,6 +46,15 @@ typed runtime tools；组件图见 [总览](overview.md)。
 `cache/` 和 `control/`。`registry/<run_id>/thread.json`、invocation、命令回执和 `ToolExecution` 是 Web 管理
 记录；对应 `states/<run_id>` 仍由 CodingRun 合同拥有。两类文件的顺序由恢复协议协调，不是数据库事务。
 
+新会话默认在 `workspaces/<run_id>` 创建空目录，也可显式选择已有本机 ASCII 目录并原地读写；所选目录
+与整个管理根互不包含，会话建立后不可切换。registration v3 明确保存目录来源，加载时复核路径；旧 v2
+登记明确拒绝，不猜测升级。目录浏览 API 只列出有界子目录，不读取文件内容或创建运行。已有文件进入原始
+workspace snapshot，仍按 fresh evidence 合同验收，见 [ADR-0034](../adr/0034-bind-selected-workspaces-for-web-runs.md)。
+
+Web 确认删除会话后，先等待本宿主模型/工具和 Solver 实际收尾，再在 state 锁内永久清理该会话的 state
+和 registry；工程目录及文件保留。`control/deletions` 只保存最小幂等/清理回执，不是回收站。无法确认的
+外部执行和未决 effect 不通过删除记录掩盖，见 [ADR-0035](../adr/0035-delete-web-conversation-records-and-keep-workspaces.md)。
+
 Catalog 与文档索引是显式选择的外部知识数据，和 run state 分开；可恢复产品入口核对 request/launch 中的
 内容绑定。显式工厂的只读参考资料尚无同等 launch 快照保证，见 [知识接入](knowledge-access.md)。
 
@@ -54,6 +63,8 @@ Catalog 与文档索引是显式选择的外部知识数据，和 run state 分�
 - 一个 state 目录只允许一个持有 OS 非阻塞文件锁的活动工作段。锁 handle 不传给子进程；锁文件存在不表示持锁。
 - 待答释放执行锁，答复写入和继续执行重新取锁。锁按 state 隔离，不保证不同 run 共用 workspace 的事务隔离。
 - Web 实例另持有 management root 单实例锁，并只允许一个主动模型工作段；SSE 断开不取消工作段。
+- 同一 Web 实例中的重叠工程目录若有另一活动会话、未完成 Solver 或待核查执行，则拒绝相关新建/执行；
+  这不提供跨 CLI、其他 Web 根或外部编辑器的工作区锁。
 - 普通 Web 消息先保存 Thread，再以 `continuation_id` 调用同一 CodingRun；消息与 terminal execution link 间的
   短双写窗口通过显式 continue 补链，不重新调用模型。
 - Web Solver 由 `ToolExecution` 在专用事件循环运行；submit 立即把 execution ID 返回仍活动的 Agent，wait

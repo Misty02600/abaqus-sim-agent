@@ -2,6 +2,8 @@
 
 ## 状态与证据
 
+目录范围后来由 [ADR-0034](0034-bind-selected-workspaces-for-web-runs.md) 局部替代；下面保留首版当时的背景与决定。
+
 已采纳（Accepted），2026-09-13。接受依据：用户在明确方案后回复“可以。计入计划，评估”。采用 FastAPI + React/TypeScript + assistant-ui，通信为 REST + 轻量 SSE 变更通知；采纳时产品尚未实施。实施与验收分别由[PLAN-0008：组件接线资格](../plans/done/0008-assistant-ui-integration-qualification.md)、[PLAN-0009：任务API](../plans/done/0009-coding-run-web-api.md)、[PLAN-0010：工作台集成](../plans/todo/0010-local-web-workbench.md)拥有。本节保留当时接受依据，后续落实见文末。
 
 落实更新：用户随后授权三路隔离比较，PLAN-0008已完成；下面的未验证描述保留为采纳时依据，最新证据见末尾“落实与确认”。

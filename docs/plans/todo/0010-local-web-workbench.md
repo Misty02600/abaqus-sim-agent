@@ -2,7 +2,7 @@
 
 | 状态 | 最后更新 |
 |---|---|
-| 进行中：工作台工程实现与提交整理完成，两条新真实主线仍待执行 | 2026-09-16 |
+| 进行中：工作台工程实现继续补齐现有目录、删除会话和响应式体验；两条新真实主线仍待执行 | 2026-09-23 |
 
 ## 背景与依赖
 
@@ -25,7 +25,9 @@
 - 模型或Abaqus执行中不接受普通消息；waiting使用问题表单，interrupted使用后端允许的继续，terminal会话可追加下一条消息。界面不提供暂停、编辑/分叉、重新生成、任意模型配置或运行中自由追加；Web Solver另有当前宿主控制范围内的状态、耗时与取消。
 - 接入FastAPI同源静态构建。Node仅用于开发/构建；验证干净安装的CLI与Web两种入口，防止本机node_modules/var引用变成运行依赖。UI改动使用自身锁文件和来源/许可证记录，不复制官方原型资产。
 
-首版边界维持本地单用户、单模型工作段、空workspace新建、ask_user_v1和execution_evidence。后续按用户授权增加了公开回复流、会话内OBJ几何预览、已有PNG独立展示及Web Solver deferred执行；上传、结果场/云图、任意`.cae`导入、数据库/队列和多用户仍不纳入。
+首版边界维持本地单用户、单模型工作段、ask_user_v1和execution_evidence。新会话可使用托管空workspace
+或显式选择已有ASCII目录，创建后固定绑定；后续按用户授权增加了公开回复流、会话内OBJ几何预览、已有PNG
+独立展示、Web Solver submit/wait和永久删除会话记录。上传、结果场/云图、任意`.cae`导入、数据库/队列和多用户仍不纳入。
 
 ## 评估
 
@@ -75,8 +77,8 @@ Ruff、前端typecheck/build和独立wheel安装检查通过。Edge真实浏览�
 顺序、同页fragment重新认证、迟到响应以及空文件/超大文件显示边界。截图位于`output/playwright/`，原始
 记录位于`var/audits/web-implementation/browser-*`；模型为FunctionModel，Abaqus调用为0。
 
-两条真实任务尚未启动。拟沿用已明确的缺厚度板/完整三维杆需求内容，改为完整内联goal以匹配空工作区Web
-入口；这是独立Web观察，不继承旧pair spec授权或成绩。每题30个模型请求、9次Abaqus（含最多3次Solver）、
+两条真实任务尚未启动。拟沿用已明确的缺厚度板/完整三维杆需求内容，使用独立托管空工作区和完整内联goal；
+这是独立Web观察，不继承旧pair spec授权或成绩。每题30个模型请求、9次Abaqus（含最多3次Solver）、
 2次提问、2700秒活动时间；Go/Flash enabled_high、Planning开、HTTP60秒/额外重试10。每题只启动一次，
 失败保留、不自动补跑或续跑；实际提问由用户确认答案。本计划保持进行中，直到真实主线验收要求达到。
 
@@ -96,6 +98,17 @@ Ruff、前端typecheck/build和独立wheel安装检查通过。Edge真实浏览�
 
 2026-09-16把Web Solver从模型工作段中分离为宿主持久`ToolExecution`：状态、耗时、PID和当前宿主取消能力进入快照与页面；完成后以原tool call恢复同一AgentInvocation，不创建用户continuation或重复Solver。成功、Solver早于模型段释放完成的竞态、取消、重启待核查均有端到端覆盖。最终全仓离线1112通过、47项按许可证或本机固定资源条件跳过；Ruff、格式、BasedPyright、TypeScript production build和wheel通过。真实浏览器验证了求解状态、递增耗时、取消及详情；本轮没有执行新的真实Provider或持证长时Solver取消。
 
+2026-09-23按实际使用反馈完成侧栏折叠、900px断点、窗口缩放、文件弹窗和首次启动错误显示修复；输入框按
+Pi单行起步并自动增长。新增已有工作区选择和永久删除会话：前者原地读写工程并保持state在外，后者先完成
+本宿主模型/工具/Solver收尾再永久清理记录，工程文件保留；registration升级为v3，旧v2明确拒绝。工作区与
+删除语义见ADR-0034/0035，Pi及Harness改编来源和MIT许可证已进入包内记录。真实Chromium覆盖原生窗口缩放、
+路径负例、已有文件baseline、问答/交付、删除确认/失败重试/多标签和窄屏；FunctionModel与假进程不构成真实
+Provider/Abaqus验收。当前质量门：默认smoke 96通过；component 653通过、8项因固定abqpy/持证资源缺失跳过；
+evaluation 436通过；Ruff、格式、BasedPyright、前端production build和wheel检查通过。
+
+本轮实现拆为可回滚提交：`59e3725`保存工作区绑定、删除生命周期、受控取消与后端回归，`e6616ae`保存
+响应式布局、Pi风格输入、目录/删除交互、生成API与构建许可证接线；架构、ADR和计划由随后文档提交收口。
+
 本工作树已完成差异审查并拆为可回滚提交：`d3577f0`保存共享CodingRun/FastAPI/deferred Solver后端与测试，`c259596`保存assistant-ui前端、模型预览、第三方资产与构建接线；架构、ADR落实和本计划由随后独立文档提交收口。Abaqus replay、浏览器截图、node_modules、构建静态目录和wheel均按生成物忽略。
 
 ## 后续剩余工作
@@ -106,7 +119,7 @@ Ruff、前端typecheck/build和独立wheel安装检查通过。Edge真实浏览�
 
 1. 冻结当次Web profile、需求、答案和预算后，分别执行一次缺厚度板与完整三维杆真实主线；失败、中断、Provider timeout和Abaqus错误均原样保留，不自动补跑。
 2. 核对页面展示、宿主state、原始日志、artifact freshness和verification一致，并另做数值/物理审查；`execution_evidence`不能替代物理判断。
-3. 合并回原工作区前，先单独处理原工作区已有未提交内容，不能用合并覆盖或夹带它们。
+3. 后续集成继续保留原工作区已有未提交内容，不能用合并覆盖或夹带它们。
 
 ### 可继续做、但不阻塞当前计划关闭
 

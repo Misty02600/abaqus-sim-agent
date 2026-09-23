@@ -20,6 +20,8 @@
 | [0026：按请求范围支持文字回答与局部执行](0026-scope-requests-and-text-responses.md) | 已采纳；新普通会话 launch v5 允许无文件文字交付，文件/执行验收边界保持不变 |
 | [0032：为普通产品 Coder 恢复受限通用 Shell](0032-restore-restricted-shell-for-product-coder.md) | 已采纳；普通产品具备标准 Coding Shell，直接 Abaqus launcher 仍被拒绝 |
 | [0033：用一个 Solver 工具分离提交与等待](0033-split-solver-submit-and-wait-actions.md) | 已采纳；普通产品 submit 返回 execution ID，wait 普通 await，Web/CLI 共用语义 |
+| [0034：Web 会话绑定用户选择的已有工作区](0034-bind-selected-workspaces-for-web-runs.md) | 已采纳；保留空目录选项，所选目录原地读写，状态仍由宿主管理；局部替代 0025 的目录范围 |
+| [0035：永久删除 Web 会话记录并保留工程文件](0035-delete-web-conversation-records-and-keep-workspaces.md) | 已采纳；确认后结束受控执行并删除记录，无回收站，保留工程与最小幂等回执 |
 
 ## 验收、恢复与人机交接
 

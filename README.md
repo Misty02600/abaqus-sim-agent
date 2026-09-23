@@ -65,9 +65,13 @@ uv run --no-sync abaqus-sim-agent-web --root D:\abaqus-web --model-provider open
 
 启动前在宿主环境配置 `OPENCODE_API_KEY`；默认官方网关使用 `DEEPSEEK_API_KEY`。打开终端打印的完整
 本地会话链接。根目录必须是 ASCII 路径，下面分开保存 `workspaces/`、`states/`、`registry/` 和临时缓存；
-每个任务从空工作区开始。普通产品不限制模型请求、提问、低成本工具或 active wall；Abaqus 默认允许，
+新会话可自动创建空工作区，也可通过“选择文件夹”使用已有本机 ASCII 目录，文件原地读写；会话建立后目录
+固定，所选目录不能包含宿主管理根或位于其中。现有文件会进入验收基线，state/evidence 仍由管理根保存。
+Web 登记格式现为 v3，旧 v2 明确拒绝读取，不自动迁移。普通产品不限制模型请求、提问、低成本工具或 active wall；Abaqus 默认允许，
 Solver 默认禁止，创建会话时可改为允许或允许有限次数。Go/Flash 使用 enabled/high、HTTP 300 秒和 4 次
 SDK request retry，普通产品默认关闭 Planning。
+
+会话列表支持确认后永久删除记录，保留工程文件；活动执行由宿主先收尾，失败时显示错误并允许重试。
 
 页面已支持基础多轮对话：首次点击“发送”直接开始，回复后可在同一会话继续追问或追加要求；
 Enter发送、Shift+Enter换行，草稿按会话保存在当前浏览器会话中。历史从宿主恢复，追加消息沿用原工作区和

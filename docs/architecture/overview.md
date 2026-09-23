@@ -21,13 +21,14 @@ Web 主线仍未执行。外部 Job 对账、数据库控制面、多进程 Coor
 | 能力 / 入口 | 对外含义 | 重要边界 | 实现 |
 |---|---|---|---|
 | `abaqus-sim-agent` | 在指定或启动目录工作区执行开放 coding goal | 默认不预设板、单元、文件名或物理答案；完成只表示执行证据通过 | [CLI](../../src/abaqus_sim_agent/coding/cli.py) |
-| `abaqus-sim-agent-web` | 在固定 ASCII 管理根下创建本地会话、发送消息、回答问题并查看执行与产物 | 仅本机单用户、一个主动模型工作段；REST 写入，SSE 只通知重取 | [Web app](../../src/abaqus_sim_agent/web/app.py)、[controller](../../src/abaqus_sim_agent/web/controller.py) |
+| `abaqus-sim-agent-web` | 创建本地会话，使用托管空目录或选择已有 ASCII 工作区，发送消息、回答问题并查看执行与产物 | 会话固定目录，state/evidence 仍在管理根；仅本机单用户、一个主动模型工作段，REST 写入、SSE 通知重取 | [Web app](../../src/abaqus_sim_agent/web/app.py)、[ADR-0034](../adr/0034-bind-selected-workspaces-for-web-runs.md) |
 | `CodingRunRequest` / `CodingRunOutcome` | strict 请求、limits、runtime policy、产物、验收 scope 和终态 | 普通产品 limits unlimited；模型只申请验收，最终 outcome 归宿主 | [合同](../../src/abaqus_sim_agent/coding/contracts.py) |
 | `CodingRunService.run_step` | 执行一个宿主工作段，返回 outcome 或 `WaitingForUser` | 新问答协议用该入口；旧 `run` 保留 settled-result 契约 | [Service](../../src/abaqus_sim_agent/coding/service.py) |
 | `ResponseDecision` | 对当前问题、讨论或局部请求交付纯文字 | `verification_scope=null`；已有运行或终态工作区变化时不能绕过验收 | [合同](../../src/abaqus_sim_agent/coding/contracts.py) |
 | `ask_user`、`--answer-file`、`--cancel-question` | 持久待答、按问题 ID 回答或取消 | 等待释放锁、不计 active wall；同 ID 同答幂等，冲突答复拒绝覆盖 | [问答](../../src/abaqus_sim_agent/coding/user_questions.py) |
 | `--resume`、显式 amendment / task revision | 同一 conversation 继续，或修订配置/任务 | 继承累计 usage；runtime policy 可修订，新任务换验收基线；未决 runtime 停在 `needs_reconcile` | [恢复](../../src/abaqus_sim_agent/coding/resume.py)、[修订](../../src/abaqus_sim_agent/coding/amendments.py) |
 | Web Thread message / continuation | 在同一会话 history 上追加普通消息 | 不推进 task revision；每段独立划定 workspace/execution evidence baseline | [Web storage](../../src/abaqus_sim_agent/web/storage.py)、[ADR-0027](../adr/0027-decouple-web-thread-messages-from-task-revisions.md) |
+| Web 删除会话 | 确认后结束本宿主受控执行，永久删除会话记录 | 工程文件保留，无回收站；不删除尚无法确认的外部执行记录 | [删除存储](../../src/abaqus_sim_agent/web/deletion.py)、[ADR-0035](../adr/0035-delete-web-conversation-records-and-keep-workspaces.md) |
 | Harness 文件与 Shell 工具 | 普通仓库编码、检查、测试和后台命令 | Shell 固定 workspace 并剥离 Provider 凭据；直接 Abaqus launcher 被拒绝，不构成 OS 沙箱 | [Agent](../../src/abaqus_sim_agent/coding/agent.py)、[ADR-0032](../adr/0032-restore-restricted-shell-for-product-coder.md) |
 | 1M context policy | DeepSeek history 超过 960K 时先清旧 tool result、再按需摘要 | summary 只改模型 history；typed capability activation 被保留，launch v7 绑定 Skill digest | [context policy](../../src/abaqus_sim_agent/coding/context_policy.py)、[PLAN-0012](../plans/done/0012-agent-runtime-budget-and-context-policy.md) |
 | 三个 typed Abaqus 阶段 | CAE 建模、Solver submit/wait、Abaqus Python 提取 | Abaqus 默认 allow、Solver 默认 deny；可允许有限次数，进程 timeout 默认 unlimited；普通会话的 `solver_job` 分离提交和等待 | [工具](../../src/abaqus_sim_agent/coding/runtime_tools.py)、[ADR-0033](../adr/0033-split-solver-submit-and-wait-actions.md) |
