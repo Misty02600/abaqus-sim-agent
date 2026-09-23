@@ -19,6 +19,7 @@ from tests.test_web_tool_execution import _background_solver_app
 from tests.test_web_workbench import (
     Client,
     answer_body,
+    api_catalog_dir,
     configured_app,
     create,
     login,
@@ -192,7 +193,11 @@ def test_delete_active_vendor_stage_cancels_before_removing_state(
         return FunctionModel(model), Client()
 
     app = create_app(
-        ServerConfig(root=tmp_path / "web", stream_model=False),
+        ServerConfig(
+            root=tmp_path / "web",
+            api_catalog_dir=api_catalog_dir(tmp_path),
+            stream_model=False,
+        ),
         api_key=SecretStr("fixture"),
         model_factory=factory,
         runner_factory=lambda *a, **kw: Runner(),
@@ -350,7 +355,11 @@ def test_delete_shell_terminates_parent_and_child_processes(tmp_path, tool_name)
         return FunctionModel(model), Client()
 
     app = create_app(
-        ServerConfig(root=tmp_path / "web", stream_model=False),
+        ServerConfig(
+            root=tmp_path / "web",
+            api_catalog_dir=api_catalog_dir(tmp_path),
+            stream_model=False,
+        ),
         api_key=SecretStr("fixture"),
         model_factory=factory,
     )

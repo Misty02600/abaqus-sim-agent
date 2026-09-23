@@ -14,7 +14,13 @@ from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models.function import FunctionModel
 from tests.test_web_streaming import poll
 from tests.test_web_tool_execution import _background_solver_app
-from tests.test_web_workbench import Client, create, login, settled
+from tests.test_web_workbench import (
+    Client,
+    api_catalog_dir,
+    create,
+    login,
+    settled,
+)
 
 from abaqus_sim_agent.web.app import create_app
 from abaqus_sim_agent.web.controller import ServerConfig
@@ -55,7 +61,11 @@ def test_stop_current_task_cancels_foreground_runtime_and_waits_for_cleanup(
         return FunctionModel(model), Client()
 
     app = create_app(
-        ServerConfig(root=tmp_path / "web", stream_model=False),
+        ServerConfig(
+            root=tmp_path / "web",
+            api_catalog_dir=api_catalog_dir(tmp_path),
+            stream_model=False,
+        ),
         api_key=SecretStr("fixture"),
         model_factory=model_factory,
         runner_factory=lambda *args, **kwargs: Runner(),
