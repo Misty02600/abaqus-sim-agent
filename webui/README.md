@@ -24,7 +24,8 @@ the first session GET establishes the local browser cookie and CSRF automaticall
   created or model run started by browsing folders.
 - `WorkspaceExplorer.tsx` refreshes expanded folders when the host file manifest
   changes and discards superseded directory responses, so new files appear after
-  a run settles without a manual refresh.
+  a run settles without a manual refresh. It is the single file surface: tree,
+  search, `@` mention and live preview. Tool-card file buttons open this same view.
 - `Composer.tsx` wraps native Composer Root/Input/Send primitives; keyboard, IME, resizing and send availability come from the library. It only hydrates/persists the scoped draft and renders question context.
   The Pi-inspired input starts at one line with the send action beside it, grows
   with the draft, then scrolls internally at 200px (or 30dvh in short windows).
@@ -36,9 +37,9 @@ the first session GET establishes the local browser cookie and CSRF automaticall
 - `ConversationList.tsx` uses native ThreadList and ThreadListItem primitives for listing, selection, titles and keyboard navigation.
 - `useRun.ts` fetches snapshots after SSE notifications; stale responses cannot
   overwrite another selected task. It never starts model work.
-- `Artifacts.tsx`, `SidePanel.tsx` and `TurnWrittenFiles.tsx` expose current-revision
-  files on demand, with text and PNG previews. `Conversation.tsx` and
-  `ModelPreview.tsx` additionally render fresh OBJ artifacts from the current CAE
+- `SidePanel.tsx` and `TurnWrittenFiles.tsx` expose workspace files on demand without
+  a duplicate artifact list or freshness badge. `Conversation.tsx` and
+  `ModelPreview.tsx` render fresh OBJ artifacts from the current CAE
   tool card through Online 3D Viewer. They never infer freshness locally or read
   CAE/ODB directly.
 - `RunStatusBar.tsx`, `RunSummary.tsx` and `RunDetails.tsx` render host phase,

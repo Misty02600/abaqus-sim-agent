@@ -52,7 +52,7 @@ Windows 的 Just recipes 需要 PowerShell 7.4+（`pwsh`）；直接运行上述
 ## 本地 Web 工作台
 
 已接入 FastAPI、React/TypeScript 和 assistant-ui ExternalStore。页面接受任意问题、解释请求、局部步骤或完整任务，支持文字答复、必要澄清、显式继续、
-工具记录、宿主验收与用量，以及文本、已有 PNG、当前CAE工具产生的fresh OBJ几何预览和下载。CLI 与 Web 共用同一个 CodingRunService，
+工具记录、宿主验收与用量，以及工作区文本/图片、当前CAE工具产生的fresh OBJ几何预览。CLI 与 Web 共用同一个 CodingRunService，
 不增加 Agent、运行工具或物理成功判定。当前工程验收使用确定性模型；两条新真实 Web 仿真主线仍待独立执行。
 
 源码运行需要 Node.js 22+ 构建一次；构建后的 wheel 自带页面，运行它无需 Node：
