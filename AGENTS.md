@@ -27,6 +27,7 @@
 - Web 会话在无活动/待核查执行时可用 operational amendment 修改 Abaqus/Solver 权限；待答问题保持，修改不自动继续也不取消已有执行，只影响未来提交。有限次数是累计总上限，usage/allowance 不清零。
 - 新普通会话使用 launch v7，绑定 1M context policy 与 filesystem Skill digest：当前请求可以交付 `ResponseDecision` 文字答复，文件或执行请求仍须走非空 manifest 与宿主 verifier；当前 revision 已有执行或终态工作区变化时不能用文字答复绕过验收。
 - 本地 Web 工作台复用 `coding/application.py`、`composition.py` 和 `CodingRunService`。命令使用 REST，SSE 只通知重取；Web registry、Thread、invocation 和 `ToolExecution` 是管理记录，不覆盖 CodingRun 的 request、limits/runtime policy、runtime evidence、verification 或 outcome。
+- Web CLI 固定回环监听，服务 started 后默认打开普通本机 URL，`--no-open` 可关闭；页面通过 GET session 无感建立 HttpOnly cookie 与 CSRF，不使用终端 fragment token。非回环部署仍未开放；见 ADR-0037。
 - Web 会话可使用托管空目录或显式选择已有本机 ASCII 工作区；创建后固定绑定，文件原地读写。所选目录与管理根互不包含，state/evidence 仍由宿主保存；目录接线与边界见 ADR-0034。
 - Web 删除会话先完成本宿主受控执行的收尾，再永久清理会话记录；托管或选定的工程文件始终保留。最小删除回执仅用于幂等和失败重试，不是回收站；见 ADR-0035。
 - Web 主停止操作按活动 operation ID 中断当前 Agent 工作段，并通过 `AgentRun.cancel()` 传播到模型和前台工具；成功收尾后保存 `interrupted/stopped`，保留文件、history 与累计 usage。已后台化的 Solver 不随主停止取消，继续由独立 ToolExecution 观察或取消；其运行期间不启动新 Agent 工作段，终态后只按宿主记录的精确 workspace snapshot 接回。删除会话仍执行完整收尾。见 ADR-0036。

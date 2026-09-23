@@ -63,8 +63,9 @@ uv run --no-sync python scripts/build_web.py
 uv run --no-sync abaqus-sim-agent-web --root D:\abaqus-web --model-provider opencode-go
 ```
 
-启动前在宿主环境配置 `OPENCODE_API_KEY`；默认官方网关使用 `DEEPSEEK_API_KEY`。打开终端打印的完整
-本地会话链接。根目录必须是 ASCII 路径，下面分开保存 `workspaces/`、`states/`、`registry/` 和临时缓存；
+启动前在宿主环境配置 `OPENCODE_API_KEY`；默认官方网关使用 `DEEPSEEK_API_KEY`。服务就绪后默认打开
+普通本机地址 `http://127.0.0.1:8765/`，使用 `--no-open` 可关闭自动打开。页面会无感建立本地浏览器会话，
+不需要复制终端 token。根目录必须是 ASCII 路径，下面分开保存 `workspaces/`、`states/`、`registry/` 和临时缓存；
 新会话可自动创建空工作区，也可通过“选择文件夹”使用已有本机 ASCII 目录，文件原地读写；会话建立后目录
 固定，所选目录不能包含宿主管理根或位于其中。现有文件会进入验收基线，state/evidence 仍由管理根保存。
 Web 登记格式现为 v3，旧 v2 明确拒绝读取，不自动迁移。普通产品不限制模型请求、提问、低成本工具或 active wall；Abaqus 默认允许，

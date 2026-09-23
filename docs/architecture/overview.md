@@ -21,7 +21,7 @@ Web 主线仍未执行。外部 Job 对账、数据库控制面、多进程 Coor
 | 能力 / 入口 | 对外含义 | 重要边界 | 实现 |
 |---|---|---|---|
 | `abaqus-sim-agent` | 在指定或启动目录工作区执行开放 coding goal | 默认不预设板、单元、文件名或物理答案；完成只表示执行证据通过 | [CLI](../../src/abaqus_sim_agent/coding/cli.py) |
-| `abaqus-sim-agent-web` | 创建本地会话，使用托管空目录或选择已有 ASCII 工作区，发送消息、回答问题并查看执行与产物 | 会话固定目录，state/evidence 仍在管理根；仅本机单用户、一个主动模型工作段，REST 写入、SSE 通知重取 | [Web app](../../src/abaqus_sim_agent/web/app.py)、[ADR-0034](../adr/0034-bind-selected-workspaces-for-web-runs.md) |
+| `abaqus-sim-agent-web` | 从普通回环 URL 创建本地会话，使用托管空目录或选择已有 ASCII 工作区，发送消息、回答问题并查看执行与产物 | started 后默认打开浏览器；无感 session + CSRF，仅本机单用户、一个主动模型工作段，REST 写入、SSE 通知重取 | [Web app](../../src/abaqus_sim_agent/web/app.py)、[ADR-0037](../adr/0037-open-loopback-web-with-plain-local-url.md) |
 | `CodingRunRequest` / `CodingRunOutcome` | strict 请求、limits、runtime policy、产物、验收 scope 和终态 | 普通产品 limits unlimited；模型只申请验收，最终 outcome 归宿主 | [合同](../../src/abaqus_sim_agent/coding/contracts.py) |
 | `CodingRunService.run_step` | 执行一个宿主工作段，返回 outcome 或 `WaitingForUser` | 新问答协议用该入口；旧 `run` 保留 settled-result 契约 | [Service](../../src/abaqus_sim_agent/coding/service.py) |
 | `ResponseDecision` | 对当前问题、讨论或局部请求交付纯文字 | `verification_scope=null`；已有运行或终态工作区变化时不能绕过验收 | [合同](../../src/abaqus_sim_agent/coding/contracts.py) |

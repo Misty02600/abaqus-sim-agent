@@ -10,6 +10,9 @@
 通用执行 verifier，固定 evaluator 装配对应物理 verifier。宿主调用一个 Coder，Coder 使用文件工具和三个
 typed runtime tools；组件图见 [总览](overview.md)。
 
+Web CLI 在服务 started 后默认打开普通 `127.0.0.1` URL。浏览器首次 GET session 时无感取得进程内 cookie
+和 CSRF；用户不管理启动 token。非回环地址、远程密码登录和代理部署不在当前入口合同内。
+
 ## 谁拥有哪些状态
 
 | 状态或资源 | 初始化 / 持续维护者 | 其他组件如何使用 |

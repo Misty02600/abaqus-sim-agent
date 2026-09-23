@@ -11,9 +11,9 @@ This generates `openapi.json` and `src/api/schema.ts`, runs `npm ci`, checks
 TypeScript, builds assets and publishes the index last into the Python package.
 Do not edit the generated schema. CI rejects a stale generated API.
 
-For development, start the Python Web command on port 8765, run `npm run dev`,
-and open the dev origin with the terminal's `#session=...` fragment. The Vite
-proxy preserves the origin; the Python API still checks session and CSRF.
+For development, start the Python Web command on port 8765 with `--no-open`, run
+`npm run dev`, and open the plain dev origin. The Vite proxy preserves the origin;
+the first session GET establishes the local browser cookie and CSRF automatically.
 
 - `App.tsx` owns page selection, first-message send, follow-up messages, answers,
   explicit continuation, the Pi-inspired workbench layout and global shortcuts.
