@@ -22,6 +22,27 @@ Reused or adapted source:
 - `app/globals.css`
   - Reused the dark visual-token values and Catppuccin mask treatment as design input for `src/style.css`.
   - The current product remains dark-theme only; Pi's theme runtime was not imported.
+- `components/ChatInput.tsx` -> `src/Composer.tsx`, `src/style.css`
+  - Adapted the single-row starting height, inline send action, 14px rounded
+    input shell and 200px height cap from the same audited commit.
+  - Autosizing, submission and IME remain assistant-ui primitives; this app uses
+    a nine-row native cap plus a 200px / 30dvh CSS cap for short windows.
+  - Kept host question context, scoped drafts and the existing model-only stop;
+    Pi attachments, steer/follow-up queues and session controls were not imported.
+- `components/DirectoryPicker.tsx` -> `src/DirectoryPicker.tsx`
+  - Adapted drive/parent navigation, typed-path confirmation and selection flow.
+  - Uses generated API types, the existing portal dialog, Chinese labels and CSS
+    tokens; guards stale responses and displays host eligibility reasons.
+- `app/api/cwd/browse/route.ts`, `lib/directory-browser.ts` ->
+  `src/abaqus_sim_agent/web/directories.py`
+  - Adapted the Windows drive enumeration and immediate-child listing approach
+    to Python/FastAPI. Adds bounded scans and the existing host path policy;
+    workspace selection is separate from directory browsing.
+- `components/SessionSidebar.tsx` -> deletion interaction in `src/ConversationList.tsx`
+  and `src/App.tsx`
+  - Adapted the per-conversation delete/confirm interaction using our dialog and
+    host DELETE receipt. Pi's runtime shutdown and session-file deletion code
+    were not copied; the Python host owns execution cleanup.
 
 Assets:
 

@@ -135,7 +135,8 @@ p {
   overflow: hidden;
 }
 .app.sidebar-collapsed {
-  grid-template-columns: 0 minmax(0, 1fr);
+  /* The hidden sidebar leaves main-area as the first auto-placed grid item. */
+  grid-template-columns: minmax(0, 1fr);
 }
 .sidebar {
   min-width: 0;
@@ -219,7 +220,7 @@ p {
 .thread-row .task {
   min-width: 0;
   flex: 1;
-  padding-right: 30px;
+  padding-right: 58px;
 }
 .thread-title-line {
   display: flex;
@@ -239,7 +240,8 @@ p {
   background: var(--accent);
   box-shadow: 0 0 0 2px rgba(164, 194, 244, 0.12);
 }
-.thread-rename-button {
+.thread-rename-button,
+.thread-delete-button {
   position: absolute;
   top: 7px;
   right: 5px;
@@ -251,9 +253,29 @@ p {
   color: var(--text-dim);
   opacity: 0;
 }
+.thread-rename-button {
+  right: 33px;
+}
+.thread-delete-button {
+  right: 5px;
+}
 .thread-row:hover .thread-rename-button,
-.thread-rename-button:focus-visible {
+.thread-row:hover .thread-delete-button,
+.thread-row:focus-within .thread-rename-button,
+.thread-row:focus-within .thread-delete-button {
   opacity: 1;
+}
+.delete-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.delete-confirm {
+  background: #7d3028;
+  border-color: #a44a40;
+}
+.delete-confirm:hover:not(:disabled) {
+  background: #953f36;
 }
 .thread-rename-form {
   display: flex;
@@ -583,6 +605,92 @@ main {
 .new-task {
   width: min(var(--chat-content-max-width), calc(100% - 64px));
   margin: auto;
+  flex-shrink: 0;
+}
+.new-task-main {
+  overflow-y: auto;
+  padding-block: 20px;
+}
+.workspace-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.workspace-picker > div:first-child {
+  min-width: 0;
+  flex: 1 1 180px;
+}
+.workspace-selection {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.workspace-picker .small {
+  margin: 4px 0 0;
+}
+.workspace-picker-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.directory-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.directory-picker-path {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.directory-picker-path label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.directory-picker-path input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+}
+.directory-picker-list {
+  min-height: 120px;
+  max-height: 55dvh;
+  overflow: auto;
+}
+.directory-picker-entry {
+  width: 100%;
+  justify-content: flex-start;
+  background: none;
+  border: 0;
+  padding: 9px 6px;
+}
+.directory-picker-entry span {
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.directory-picker-entry svg {
+  flex-shrink: 0;
+}
+.directory-picker-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 .knowledge-picker {
   margin-bottom: 12px;
@@ -642,19 +750,6 @@ main {
 .runtime-policy-picker select,
 .runtime-policy-picker input {
   min-width: 0;
-}
-.new-task .composer label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-}
-.new-task .composer .row small {
-  display: none;
-}
-.new-task .composer .row {
-  justify-content: flex-end;
 }
 .workspace {
   flex: 1;
@@ -1007,7 +1102,7 @@ pre {
   border: 1px solid var(--border);
   border-radius: 14px;
   background: var(--bg-panel);
-  padding: 12px 14px 10px;
+  padding: 10px 10px 10px 14px;
 }
 .composer:focus-within {
   border-color: var(--text-dim);
@@ -1015,18 +1110,27 @@ pre {
 .composer label {
   display: none;
 }
+.composer-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
 .composer textarea {
   display: block;
+  flex: 1;
+  min-width: 0;
   width: 100%;
-  min-height: 68px;
-  max-height: 220px;
+  min-height: 24px;
+  max-height: min(200px, 30dvh);
+  overflow-y: auto;
   resize: none;
-  padding: 3px 2px;
+  padding: 4px 2px;
   color: var(--text);
   background: transparent;
   border: 0;
   box-shadow: none;
-  line-height: 1.6;
+  line-height: 24px;
 }
 .composer textarea:focus-visible {
   outline: none;
@@ -1034,17 +1138,25 @@ pre {
 .composer textarea::placeholder {
   color: var(--text-dim);
 }
-.composer .row {
-  margin-top: 5px;
-  min-height: 32px;
-}
-.composer .row small {
-  font-size: 10px;
+.composer-hint {
+  margin: 6px 0 0;
+  font-size: 11px;
   color: var(--text-dim);
 }
-.composer .row button {
-  padding: 6px 14px;
+.composer-input-row button {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 6px 12px;
   font-size: 13px;
+}
+.composer-send:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+.composer-send:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 .composer-statusbar {
   display: flex;
@@ -1457,7 +1569,7 @@ dd {
 .welcome .brandmark {
   display: none;
 }
-@media (max-width: 900px) {
+@media (width < 900px) {
   .app,
   .app.sidebar-collapsed {
     grid-template-columns: minmax(0, 1fr);
@@ -1506,9 +1618,6 @@ dd {
   }
   .composer {
     padding: 10px;
-  }
-  .composer .row small {
-    max-width: 65%;
   }
   .composer-statusbar {
     font-size: 10px;

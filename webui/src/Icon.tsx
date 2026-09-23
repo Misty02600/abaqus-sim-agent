@@ -9,6 +9,7 @@ export function Icon({
     | "close"
     | "refresh"
     | "plus"
+    | "trash"
     | "chevron";
 }) {
   const paths = {
@@ -19,6 +20,7 @@ export function Icon({
     close: "M6 6l12 12 M6 18L18 6",
     refresh: "M20 10a8 8 0 1 0-1 8 M20 4v6h-6",
     plus: "M12 5v14 M5 12h14",
+    trash: "M4 6h16 M9 6V3h6v3 M6 6l1 15h10l1-15 M10 10v7 M14 10v7",
     chevron: "M6 9l6 6 6-6",
   };
   return (

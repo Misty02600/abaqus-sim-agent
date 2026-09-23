@@ -51,9 +51,11 @@ function isImage(path: string) {
 
 export function WorkspaceExplorer({
   runId,
+  filesVersion,
   onMention,
 }: {
   runId: string;
+  filesVersion: string;
   onMention: (path: string) => void;
 }) {
   const [directories, setDirectories] = useState<Record<string, DirectoryState>>({});
@@ -67,9 +69,12 @@ export function WorkspaceExplorer({
   const [previewError, setPreviewError] = useState("");
   const [previewLoading, setPreviewLoading] = useState(false);
   const searchSequence = useRef(0);
+  const directorySequence = useRef(new Map<string, number>());
 
   function loadDirectory(path: string, force = false) {
     if (!force && directories[path] && !directories[path].error) return;
+    const sequence = (directorySequence.current.get(path) ?? 0) + 1;
+    directorySequence.current.set(path, sequence);
     setDirectories((current) => ({
       ...current,
       [path]: { ...(current[path] ?? EMPTY_DIRECTORY), loading: true, error: "" },
@@ -77,6 +82,7 @@ export function WorkspaceExplorer({
     const suffix = path ? `?path=${encodeURIComponent(path)}` : "";
     void request<WorkspaceDirectory>(`${runPath(runId)}/workspace${suffix}`)
       .then((result) => {
+        if (directorySequence.current.get(path) !== sequence) return;
         setDirectories((current) => ({
           ...current,
           [path]: {
@@ -88,6 +94,7 @@ export function WorkspaceExplorer({
         }));
       })
       .catch((loadError) => {
+        if (directorySequence.current.get(path) !== sequence) return;
         setDirectories((current) => ({
           ...current,
           [path]: {
@@ -110,6 +117,12 @@ export function WorkspaceExplorer({
     // loadDirectory intentionally uses the fresh runId after a session switch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId]);
+
+  useEffect(() => {
+    for (const path of expanded) loadDirectory(path, true);
+    // The host file manifest changes at checkpoints, not on every SSE poll.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filesVersion]);
 
   useEffect(() => {
     const trimmed = query.trim();

@@ -24,15 +24,19 @@ function relativeTime(value: string | undefined, now: number) {
   const delta = time - now;
   const abs = Math.abs(delta);
   if (abs < 60_000) return "刚刚";
-  if (abs < 3_600_000) return relative.format(Math.round(delta / 60_000), "minute");
-  if (abs < 86_400_000) return relative.format(Math.round(delta / 3_600_000), "hour");
+  if (abs < 3_600_000)
+    return relative.format(Math.round(delta / 60_000), "minute");
+  if (abs < 86_400_000)
+    return relative.format(Math.round(delta / 3_600_000), "hour");
   return relative.format(Math.round(delta / 86_400_000), "day");
 }
 
 function compactWorkspace(workspace: string) {
   const separator = workspace.includes("\\") ? "\\" : "/";
   const parts = workspace.split(/[\\/]+/).filter(Boolean);
-  return parts.length <= 2 ? workspace : `…${separator}${parts.slice(-2).join(separator)}`;
+  return parts.length <= 2
+    ? workspace
+    : `…${separator}${parts.slice(-2).join(separator)}`;
 }
 
 export function ConversationList({
@@ -44,6 +48,7 @@ export function ConversationList({
   onSearchChange,
   workspace,
   onRename,
+  onDelete,
 }: {
   busy: boolean;
   query: string;
@@ -57,6 +62,7 @@ export function ConversationList({
     title: string,
     titleVersion: number,
   ) => Promise<boolean>;
+  onDelete: (runId: string, title: string) => void;
 }) {
   const [now, setNow] = useState(Date.now());
   const [editing, setEditing] = useState<string | null>(null);
@@ -156,11 +162,18 @@ export function ConversationList({
                         if (event.key === "Escape") setEditing(null);
                       }}
                       onBlur={(event) => {
-                        if (!event.currentTarget.form?.contains(event.relatedTarget))
+                        if (
+                          !event.currentTarget.form?.contains(
+                            event.relatedTarget,
+                          )
+                        )
                           setEditing(null);
                       }}
                     />
-                    <button type="submit" disabled={!editTitle.trim() || renamePending}>
+                    <button
+                      type="submit"
+                      disabled={!editTitle.trim() || renamePending}
+                    >
                       保存
                     </button>
                   </form>
@@ -171,7 +184,10 @@ export function ConversationList({
             return (
               <ThreadListItemPrimitive.Root className="thread-list-item">
                 <div className="thread-row">
-                  <ThreadListItemPrimitive.Trigger className="task" disabled={busy}>
+                  <ThreadListItemPrimitive.Trigger
+                    className="task"
+                    disabled={busy}
+                  >
                     <span className="thread-title-line">
                       {meta.active && (
                         <span
@@ -207,6 +223,16 @@ export function ConversationList({
                     }}
                   >
                     ✎
+                  </button>
+                  <button
+                    className="thread-delete-button"
+                    type="button"
+                    disabled={busy}
+                    aria-label={`删除 ${title}`}
+                    title="删除会话"
+                    onClick={() => onDelete(runId, title)}
+                  >
+                    <Icon name="trash" />
                   </button>
                 </div>
               </ThreadListItemPrimitive.Root>

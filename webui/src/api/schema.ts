@@ -40,6 +40,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/directories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Directories */
+        get: operations["directories_api_v1_directories_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/knowledge-packs": {
         parameters: {
             query?: never;
@@ -68,7 +85,8 @@ export interface paths {
         get: operations["get_run_api_v1_runs__run_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete Run */
+        delete: operations["delete_run_api_v1_runs__run_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -742,6 +760,54 @@ export interface components {
             abaqus_permission?: (components["schemas"]["RuntimeDenied"] | components["schemas"]["RuntimeAllowed"] | components["schemas"]["RuntimeAllowedWithLimit"]) | null;
             /** Solver Permission */
             solver_permission?: (components["schemas"]["RuntimeDenied"] | components["schemas"]["RuntimeAllowed"] | components["schemas"]["RuntimeAllowedWithLimit"]) | null;
+            /** Workspace */
+            workspace?: string | null;
+        };
+        /** DeleteRunResponse */
+        DeleteRunResponse: {
+            /** Run Id */
+            run_id: string;
+            /**
+             * Deleted
+             * @default true
+             * @constant
+             */
+            deleted: true;
+            /** Workspace */
+            workspace: string;
+        };
+        /** DirectoryBrowse */
+        DirectoryBrowse: {
+            /** Path */
+            path?: string | null;
+            /** Parent Path */
+            parent_path?: string | null;
+            /**
+             * Directories
+             * @default []
+             */
+            directories: components["schemas"]["DirectoryChoice"][];
+            /** Drives */
+            drives?: components["schemas"]["DirectoryChoice"][] | null;
+            /**
+             * Selectable
+             * @default false
+             */
+            selectable: boolean;
+            /** Selection Error */
+            selection_error?: string | null;
+            /**
+             * Truncated
+             * @default false
+             */
+            truncated: boolean;
+        };
+        /** DirectoryChoice */
+        DirectoryChoice: {
+            /** Name */
+            name: string;
+            /** Path */
+            path: string;
         };
         /** DomainKnowledgeFileBinding */
         DomainKnowledgeFileBinding: {
@@ -999,6 +1065,11 @@ export interface components {
             run_id: string;
             /** Message */
             message: string;
+            /**
+             * Can Retry Delete
+             * @default false
+             */
+            can_retry_delete: boolean;
         };
         /** RunList */
         RunList: {
@@ -1463,6 +1534,37 @@ export interface operations {
             };
         };
     };
+    directories_api_v1_directories_get: {
+        parameters: {
+            query?: {
+                path?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DirectoryBrowse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_knowledge_packs_api_v1_knowledge_packs_get: {
         parameters: {
             query?: never;
@@ -1501,6 +1603,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RunSnapshot"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_run_api_v1_runs__run_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RunCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteRunResponse"];
                 };
             };
             /** @description Validation Error */

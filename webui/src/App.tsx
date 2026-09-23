@@ -27,6 +27,7 @@ import { RunSummary } from "./RunSummary";
 import { RunStatusBar } from "./RunStatusBar";
 import { CommandPalette, type QuickAction } from "./CommandPalette";
 import { WorkspaceExplorer } from "./WorkspaceExplorer";
+import { DirectoryPicker } from "./DirectoryPicker";
 import { ThreadListPrimitive } from "@assistant-ui/react";
 import type { components } from "./api/schema";
 
@@ -41,6 +42,7 @@ const SIDEBAR_MIN = 220;
 const SIDEBAR_MAX = 520;
 const SIDEBAR_DEFAULT = 280;
 const SIDEBAR_STORAGE_KEY = "abaqus-sidebar-width";
+const WORKSPACE_DRAFT_KEY = "abaqus-new-workspace";
 
 function clampSidebarWidth(value: number) {
   return Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, value));
@@ -59,7 +61,7 @@ function selectedId() {
 }
 export default function App() {
   const [unavailable, setUnavailable] = useState<
-      { run_id: string; message: string }[]
+      components["schemas"]["RunIssue"][]
     >([]),
     [ready, setReady] = useState(false),
     [authError, setAuthError] = useState("");
@@ -74,6 +76,7 @@ export default function App() {
     error: readError,
     connected,
     refresh,
+    deleted,
   } = useRun(ready ? id : null);
   const [desktop, setDesktop] = useState(
     () => window.matchMedia("(min-width: 900px)").matches,
@@ -87,17 +90,38 @@ export default function App() {
   const [searchOpen, setSearchOpen] = useState(false),
     [commandOpen, setCommandOpen] = useState(false),
     [notice, setNotice] = useState(""),
-    [selectedArtifactPath, setSelectedArtifactPath] = useState<string | null>(null);
-  const [composerMention, setComposerMention] = useState<ComposerMention | null>(null);
+    [selectedArtifactPath, setSelectedArtifactPath] = useState<string | null>(
+      null,
+    );
+  const [composerMention, setComposerMention] =
+    useState<ComposerMention | null>(null);
   const [knowledgeInventory, setKnowledgeInventory] =
     useState<KnowledgeInventory | null>(null);
   const [selectedKnowledgePackIds, setSelectedKnowledgePackIds] = useState<
     string[]
   >([]);
-  const [abaqusPermission, setAbaqusPermission] = useState<PermissionMode>("allow");
+  const [abaqusPermission, setAbaqusPermission] =
+    useState<PermissionMode>("allow");
   const [abaqusLimit, setAbaqusLimit] = useState(10);
-  const [solverPermission, setSolverPermission] = useState<PermissionMode>("deny");
+  const [solverPermission, setSolverPermission] =
+    useState<PermissionMode>("deny");
   const [solverLimit, setSolverLimit] = useState(3);
+  const [newWorkspace, setNewWorkspace] = useState<string | null>(() =>
+    sessionStorage.getItem(WORKSPACE_DRAFT_KEY),
+  );
+  const [directoryPickerOpen, setDirectoryPickerOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    runId: string;
+    title: string;
+    workspace?: string;
+  } | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+  function selectWorkspace(path: string | null) {
+    setNewWorkspace(path);
+    if (path) sessionStorage.setItem(WORKSPACE_DRAFT_KEY, path);
+    else sessionStorage.removeItem(WORKSPACE_DRAFT_KEY);
+    setDirectoryPickerOpen(false);
+  }
   const shortcutActions = useRef<QuickAction[]>([]);
   useEffect(() => {
     if (!notice) return;
@@ -164,6 +188,7 @@ export default function App() {
   }, []);
   useEffect(() => {
     setDetailsOpen(false);
+    setDirectoryPickerOpen(false);
     setFilesOpen(true);
     setArtifactsOpen(false);
     setSelectedArtifactPath(null);
@@ -177,7 +202,7 @@ export default function App() {
     try {
       const result = await request<{
         runs: Snapshot[];
-        unavailable: { run_id: string; message: string }[];
+        unavailable: components["schemas"]["RunIssue"][];
       }>("/runs");
       if (order !== listSequence.current) return;
       setRuns(result.runs);
@@ -215,14 +240,16 @@ export default function App() {
     return () => removeEventListener("hashchange", changed);
   }, [list, listKnowledgePacks]);
   useEffect(() => {
-    const pop = () => setId(selectedId());
+    const pop = () => {
+      setError("");
+      setId(selectedId());
+    };
     addEventListener("popstate", pop);
     return () => removeEventListener("popstate", pop);
   }, []);
   useEffect(() => {
     setRenaming(false);
-    setError("");
-  }, [id, snapshot?.view.question?.question_id, snapshot?.view.task_revision]);
+  }, [id]);
   useEffect(() => {
     if (ready) void list();
   }, [snapshot?.version, ready, list]);
@@ -235,8 +262,51 @@ export default function App() {
     if (next === null) setQuery("");
     if (!window.matchMedia("(min-width: 900px)").matches) setSidebarOpen(false);
     if (next === id) return;
+    // Clear on navigation, not snapshot arrival: loading the new run must not
+    // erase a start failure that arrived before its first snapshot.
+    setError("");
     history.pushState(null, "", next ? `/runs/${next}` : "/");
     setId(next);
+  }
+  useEffect(() => {
+    if (deleted && id && !busy) navigate(null);
+  }, [deleted, id, busy]);
+  function confirmDelete(runId: string, title: string) {
+    setDeleteError("");
+    setDeleteTarget({
+      runId,
+      title,
+      workspace: runs.find((run) => run.view.run_id === runId)?.workspace,
+    });
+  }
+  async function deleteConversation() {
+    if (!deleteTarget || busy) return;
+    const target = deleteTarget;
+    setBusy(true);
+    setDeleteError("");
+    try {
+      await request(
+        runPath(target.runId),
+        { command_id: commandId(target.runId, "delete") },
+        "DELETE",
+      );
+      for (const key of Object.keys(sessionStorage)) {
+        if (
+          key.startsWith(`abaqus-command:${target.runId}:`) ||
+          key.startsWith(`abaqus-draft:${target.runId}:`)
+        )
+          sessionStorage.removeItem(key);
+      }
+      if (selected.current === target.runId) navigate(null);
+      setDeleteTarget(null);
+      setNotice("会话已删除，工作区文件已保留。");
+      await list();
+    } catch (cause) {
+      setDeleteError(errorText(cause));
+      await list();
+    } finally {
+      setBusy(false);
+    }
   }
   async function create(goal: string): Promise<Delivery> {
     if (busy) return { saved: false };
@@ -256,6 +326,7 @@ export default function App() {
           abaqusLimit,
           solverPermission,
           solverLimit,
+          workspace: newWorkspace,
         }),
       );
       messageId = `web-${key.replaceAll("-", "")}:goal`;
@@ -265,16 +336,19 @@ export default function App() {
         knowledge_pack_ids: knowledgePackIds,
         abaqus_permission: permission(abaqusPermission, abaqusLimit),
         solver_permission: permission(solverPermission, solverLimit),
+        workspace: newWorkspace,
       });
       clearCommand("new", "create");
       saved = true;
       setSelectedKnowledgePackIds([]);
       navigate(next.view.run_id);
       const startKey = commandId(next.view.run_id, "start");
-      await request(runPath(next.view.run_id) + "/start", {
-        command_id: startKey,
-      });
+      const reply = await request<{ error?: string | null }>(
+        runPath(next.view.run_id) + "/start",
+        { command_id: startKey },
+      );
       clearCommand(next.view.run_id, "start");
+      if (reply.error) setError(reply.error);
       await list();
       return { saved: true, messageId };
     } catch (error) {
@@ -365,11 +439,7 @@ export default function App() {
       expected_title_version: titleVersion,
     };
     try {
-      const key = commandId(
-        runId,
-        "title",
-        JSON.stringify(payload),
-      );
+      const key = commandId(runId, "title", JSON.stringify(payload));
       await request(runPath(runId) + "/title", {
         command_id: key,
         ...payload,
@@ -636,11 +706,21 @@ export default function App() {
             onSearchChange={setSearchOpen}
             workspace={snapshot?.workspace ?? null}
             onRename={renameRun}
+            onDelete={confirmDelete}
           />
           {unavailable.map((item) => (
-            <p key={item.run_id} className="error small">
+            <div key={item.run_id} className="error small">
               {item.message}
-            </p>
+              {item.can_retry_delete && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => confirmDelete(item.run_id, "删除未完成的会话")}
+                >
+                  重试删除
+                </button>
+              )}
+            </div>
           ))}
           <section
             className={`files-section ${filesOpen ? "" : "is-collapsed"}`}
@@ -669,6 +749,9 @@ export default function App() {
               (snapshot ? (
                 <WorkspaceExplorer
                   runId={snapshot.view.run_id}
+                  filesVersion={(snapshot.view.files ?? [])
+                    .map((file) => file.id)
+                    .join(",")}
                   onMention={mentionWorkspaceFile}
                 />
               ) : (
@@ -775,9 +858,45 @@ export default function App() {
               <span>详情</span>
             </button>
           </header>
-          <main>
+          <main className={!id ? "new-task-main" : undefined}>
             {!id ? (
               <section className="new-task">
+                <div className="workspace-picker">
+                  <div>
+                    <strong>工作区</strong>
+                    <p
+                      className="workspace-selection"
+                      title={newWorkspace ?? undefined}
+                    >
+                      {newWorkspace ?? "自动创建空工作区"}
+                    </p>
+                    {newWorkspace && (
+                      <p className="muted small">
+                        直接读写所选文件夹；会话建立后固定此位置。
+                      </p>
+                    )}
+                  </div>
+                  <div className="workspace-picker-actions">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => setDirectoryPickerOpen(true)}
+                    >
+                      <Icon name="folder" />
+                      {newWorkspace ? "更换文件夹" : "选择文件夹"}
+                    </button>
+                    {newWorkspace && (
+                      <button
+                        type="button"
+                        className="subtle"
+                        disabled={busy}
+                        onClick={() => selectWorkspace(null)}
+                      >
+                        改用空工作区
+                      </button>
+                    )}
+                  </div>
+                </div>
                 <div className="knowledge-picker">
                   <div className="row">
                     <div>
@@ -834,7 +953,9 @@ export default function App() {
                 <div className="runtime-policy-picker">
                   <div>
                     <strong>运行权限</strong>
-                    <p className="muted small">只影响新会话；Solver 默认禁用。</p>
+                    <p className="muted small">
+                      只影响新会话；Solver 默认禁用。
+                    </p>
                   </div>
                   <label>
                     <span>Abaqus</span>
@@ -842,7 +963,9 @@ export default function App() {
                       value={abaqusPermission}
                       disabled={busy}
                       onChange={(event) =>
-                        setAbaqusPermission(event.target.value as PermissionMode)
+                        setAbaqusPermission(
+                          event.target.value as PermissionMode,
+                        )
                       }
                     >
                       <option value="deny">禁止</option>
@@ -856,7 +979,9 @@ export default function App() {
                         value={abaqusLimit}
                         disabled={busy}
                         onChange={(event) =>
-                          setAbaqusLimit(Math.max(1, Number(event.target.value)))
+                          setAbaqusLimit(
+                            Math.max(1, Number(event.target.value)),
+                          )
                         }
                       />
                     )}
@@ -867,7 +992,9 @@ export default function App() {
                       value={solverPermission}
                       disabled={busy}
                       onChange={(event) =>
-                        setSolverPermission(event.target.value as PermissionMode)
+                        setSolverPermission(
+                          event.target.value as PermissionMode,
+                        )
                       }
                     >
                       <option value="deny">禁止</option>
@@ -881,7 +1008,9 @@ export default function App() {
                         value={solverLimit}
                         disabled={busy}
                         onChange={(event) =>
-                          setSolverLimit(Math.max(1, Number(event.target.value)))
+                          setSolverLimit(
+                            Math.max(1, Number(event.target.value)),
+                          )
                         }
                       />
                     )}
@@ -1013,6 +1142,52 @@ export default function App() {
             onClose={() => setCommandOpen(false)}
             onError={(error) => setError(errorText(error))}
           />
+        )}
+        {directoryPickerOpen && !id && (
+          <DirectoryPicker
+            initialPath={newWorkspace}
+            onSelect={selectWorkspace}
+            onClose={() => setDirectoryPickerOpen(false)}
+          />
+        )}
+        {deleteTarget && (
+          <SidePanel
+            title="删除会话"
+            closeDisabled={busy}
+            onClose={() => setDeleteTarget(null)}
+          >
+            <p>
+              永久删除“{deleteTarget.title}
+              ”的会话记录？此操作不可恢复，工作区文件会保留。
+            </p>
+            {deleteTarget.workspace && (
+              <p className="muted small">
+                文件保留位置：<code>{deleteTarget.workspace}</code>
+              </p>
+            )}
+            {deleteError && (
+              <p role="alert" className="error">
+                {deleteError}
+              </p>
+            )}
+            <div className="delete-confirm-actions">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setDeleteTarget(null)}
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                className="delete-confirm"
+                disabled={busy}
+                onClick={() => void deleteConversation()}
+              >
+                {busy ? "正在删除…" : "确认删除"}
+              </button>
+            </div>
+          </SidePanel>
         )}
         {detailsOpen && snapshot && (
           <SidePanel title="运行详情" onClose={() => setDetailsOpen(false)}>

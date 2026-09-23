@@ -113,6 +113,54 @@
         }
       }
     },
+    "/api/v1/directories": {
+      "get": {
+        "summary": "Directories",
+        "operationId": "directories_api_v1_directories_get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectoryBrowse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/knowledge-packs": {
       "get": {
         "summary": "List Knowledge Packs",
@@ -153,6 +201,53 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RunSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Run",
+        "operationId": "delete_run_api_v1_runs__run_id__delete",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteRunResponse"
                 }
               }
             }
@@ -1937,6 +2032,19 @@
               }
             ],
             "title": "Solver Permission"
+          },
+          "workspace": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4096,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace"
           }
         },
         "additionalProperties": false,
@@ -1946,6 +2054,122 @@
           "goal"
         ],
         "title": "CreateRun"
+      },
+      "DeleteRunResponse": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "deleted": {
+            "type": "boolean",
+            "const": true,
+            "title": "Deleted",
+            "default": true
+          },
+          "workspace": {
+            "type": "string",
+            "title": "Workspace"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "run_id",
+          "workspace"
+        ],
+        "title": "DeleteRunResponse"
+      },
+      "DirectoryBrowse": {
+        "properties": {
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          },
+          "parent_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Path"
+          },
+          "directories": {
+            "items": {
+              "$ref": "#/components/schemas/DirectoryChoice"
+            },
+            "type": "array",
+            "title": "Directories",
+            "default": []
+          },
+          "drives": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DirectoryChoice"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drives"
+          },
+          "selectable": {
+            "type": "boolean",
+            "title": "Selectable",
+            "default": false
+          },
+          "selection_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selection Error"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DirectoryBrowse"
+      },
+      "DirectoryChoice": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "path"
+        ],
+        "title": "DirectoryChoice"
       },
       "DomainKnowledgeFileBinding": {
         "properties": {
@@ -2560,6 +2784,11 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "can_retry_delete": {
+            "type": "boolean",
+            "title": "Can Retry Delete",
+            "default": false
           }
         },
         "additionalProperties": false,

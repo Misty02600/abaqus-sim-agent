@@ -49,35 +49,29 @@ export function Composer({
           <p>{question}</p>
         </div>
       )}
-      <label htmlFor="message-input">
-        {question ? "回复当前问题" : "消息"}
-      </label>
-      <ComposerPrimitive.Input
-        id="message-input"
-        aria-label={question ? "回复当前问题" : "消息"}
-        readOnly={disabled}
-        maxLength={20000}
-        minRows={3}
-        submitMode="enter"
-        addAttachmentOnPaste={false}
-        cancelOnEscape={false}
-        unstable_focusOnRunStart={false}
-        placeholder={
-          question
-            ? "输入你的答复…"
-            : cacheKey === "new"
-              ? "发消息…"
-              : "继续追问，或补充你的要求…"
-        }
-        onChange={(event) => {
-          draft.current = event.currentTarget.value;
-          sessionStorage.setItem(storageKey, event.currentTarget.value);
-        }}
-      />
-      <div className="row">
-        <small className="muted">
-          {hint || "Enter 发送 · Shift+Enter 换行"}
-        </small>
+      <div className="composer-input-row">
+        <label htmlFor="message-input">
+          {question ? "回复当前问题" : "消息"}
+        </label>
+        <ComposerPrimitive.Input
+          id="message-input"
+          aria-label={question ? "回复当前问题" : "消息"}
+          readOnly={disabled}
+          maxLength={20000}
+          minRows={1}
+          maxRows={9}
+          title="Enter 发送 · Shift+Enter 换行"
+          aria-describedby={hint ? "composer-hint" : undefined}
+          submitMode="enter"
+          addAttachmentOnPaste={false}
+          cancelOnEscape={false}
+          unstable_focusOnRunStart={false}
+          placeholder={question ? "输入你的答复…" : "发消息…"}
+          onChange={(event) => {
+            draft.current = event.currentTarget.value;
+            sessionStorage.setItem(storageKey, event.currentTarget.value);
+          }}
+        />
         {stop ? (
           <button
             type="button"
@@ -88,11 +82,17 @@ export function Composer({
             {stop.requested ? "正在停止…" : "停止回复"}
           </button>
         ) : (
-          <ComposerPrimitive.Send>
+          <ComposerPrimitive.Send
+            className="composer-send"
+            title="发送（Enter）· Shift+Enter 换行"
+          >
             {disabled ? "发送中…" : "发送"}
           </ComposerPrimitive.Send>
         )}
       </div>
+      {hint && (
+        <p className="composer-hint" id="composer-hint">{hint}</p>
+      )}
     </ComposerPrimitive.Root>
   );
 }

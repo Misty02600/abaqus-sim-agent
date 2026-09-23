@@ -55,6 +55,12 @@ for relative, metadata in sorted(lock["packages"].items()):
         notices.append(
             f"Package declares {info.get('license')}; no license text is distributed in its tarball. Upstream: {info.get('repository')}\n"
         )
+notices.extend(
+    (
+        "\n=== Pi Web presentational adaptations (MIT; see webui/THIRD_PARTY_REUSE.md) ===\n",
+        (frontend / "third-party" / "pi-web-LICENSE").read_text(encoding="utf-8"),
+    )
+)
 (frontend / "dist" / "THIRD_PARTY_NOTICES.txt").write_text(
     "\n".join(notices), encoding="utf-8", newline="\n"
 )

@@ -7,9 +7,23 @@ export type Artifact = components["schemas"]["FileView"];
 export type ToolExecution = components["schemas"]["ToolExecution"];
 let csrf = "";
 
-export async function request<T>(path: string, body?: unknown): Promise<T> {
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public code?: string,
+  ) {
+    super(message);
+  }
+}
+
+export async function request<T>(
+  path: string,
+  body?: unknown,
+  method?: "DELETE",
+): Promise<T> {
   const response = await fetch(`/api/v1${path}`, {
-    method: body === undefined ? "GET" : "POST",
+    method: method ?? (body === undefined ? "GET" : "POST"),
     credentials: "same-origin",
     headers:
       body === undefined
@@ -19,10 +33,12 @@ export async function request<T>(path: string, body?: unknown): Promise<T> {
   });
   const data = await response.json();
   if (!response.ok)
-    throw new Error(
+    throw new ApiError(
       typeof data.message === "string"
         ? data.message
         : `请求失败（${response.status}）`,
+      response.status,
+      typeof data.code === "string" ? data.code : undefined,
     );
   return data as T;
 }

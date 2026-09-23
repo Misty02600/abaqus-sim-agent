@@ -1,10 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { request, runPath, errorText, type Snapshot } from "./api/client";
+import {
+  ApiError,
+  request,
+  runPath,
+  errorText,
+  type Snapshot,
+} from "./api/client";
 
 export function useRun(id: string | null) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [error, setError] = useState("");
   const [connected, setConnected] = useState(false);
+  const [deleted, setDeleted] = useState(false);
   const generation = useRef(0);
   const sequence = useRef(0);
   const selected = useRef(id);
@@ -28,8 +35,10 @@ export function useRun(id: string | null) {
         id === selected.current &&
         epoch === generation.current &&
         order === sequence.current
-      )
+      ) {
         setError(errorText(error));
+        if (error instanceof ApiError && error.status === 410) setDeleted(true);
+      }
     }
   }, [id]);
   useEffect(() => {
@@ -37,6 +46,7 @@ export function useRun(id: string | null) {
     setSnapshot(null);
     setError("");
     setConnected(false);
+    setDeleted(false);
     if (!id) return;
     const events = new EventSource(`/api/v1${runPath(id)}/events`);
     const sync = () => {
@@ -71,5 +81,6 @@ export function useRun(id: string | null) {
     error,
     connected,
     refresh,
+    deleted,
   };
 }

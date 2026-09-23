@@ -17,7 +17,19 @@ proxy preserves the origin; the Python API still checks session and CSRF.
 
 - `App.tsx` owns page selection, first-message send, follow-up messages, answers,
   explicit continuation, the Pi-inspired workbench layout and global shortcuts.
+- `DirectoryPicker.tsx` adapts Pi's drive/directory navigation to the authenticated
+  `/directories` API. New runs can bind an existing workspace or use a managed
+  empty folder. The selection is an unsent session-scoped preference; the host
+  revalidates and persists the canonical binding on creation. No workspace is
+  created or model run started by browsing folders.
+- `WorkspaceExplorer.tsx` refreshes expanded folders when the host file manifest
+  changes and discards superseded directory responses, so new files appear after
+  a run settles without a manual refresh.
 - `Composer.tsx` wraps native Composer Root/Input/Send primitives; keyboard, IME, resizing and send availability come from the library. It only hydrates/persists the scoped draft and renders question context.
+  The Pi-inspired input starts at one line with the send action beside it, grows
+  with the draft, then scrolls internally at 200px (or 30dvh in short windows).
+  Clearing or sending the draft restores the single-line height. Disabled-action
+  reasons remain visible; keyboard hints are available on the input/send action.
 - `WorkbenchRuntime.tsx` owns the shared ExternalStore adapter for messages, native composer submission and controlled thread selection. It translates the host delivery receipt into native draft recovery.
 - `Conversation.tsx` projects/renders host messages with native message primitives;
   tool calls use host-projected summaries and keep full payloads in disclosure panels.
@@ -37,6 +49,20 @@ proxy preserves the origin; the Python API still checks session and CSRF.
   the same state-checked handlers as the visible controls and owns no run state.
 - `api/client.ts` handles session/CSRF and retry IDs; generated types are the API
   contract. Browser session storage contains retry IDs and unsent drafts, not authoritative task history or outcomes.
+
+The desktop sidebar participates in the page grid at widths of 900px and above;
+collapsing it leaves a single content column. Below 900px it is an overlay.
+SidePanel dialogs render through a portal outside the sidebar so resizing cannot
+hide an open modal and leave the page blocked. Start errors, including errors in
+accepted HTTP receipts, remain visible across snapshot refreshes until the user
+retries or navigates away; retry uses the already saved conversation.
+
+For manual browser previews and native window-resize checks, launch Playwright
+with `contextOptions.viewport: null` and resize the actual browser window. CLI
+`resize` / `page.setViewportSize()` enables a fixed emulated viewport: dragging
+the outer window afterward does not make the page follow its new size. Reopen a
+non-emulated preview before handing it to a user. Viewport-size layout checks
+alone do not verify native window resizing.
 
 No official Pydantic UI source or assets were copied. The visual layer also
 adapts selected presentational code and assets from Pi Web: file/thinking icons,
@@ -60,6 +86,16 @@ Reply actions now use assistant-ui's Copy primitive. Conversation titles are
 versioned display metadata under the registry; changing a title does not amend
 the user request. The Stop action carries the current model-request identity so
 a stale click cannot cancel a later request.
+This stops only that model request. Solver cancellation is a separate action for
+executions still controlled by the current host. There is no Web stop command for
+CAE, Abaqus Python or foreground/background Shell commands, and no standalone
+whole-task stop or pause/resume control.
+
+Conversation deletion is a separate confirmed operation: the host cancels and
+drains its owned execution before permanently removing state/registry records.
+Project files remain in place. Only a successful DELETE receipt removes the
+conversation in the initiating UI; failed cleanup keeps a retry action. Other
+tabs leave the deleted conversation after a refreshed snapshot returns 410.
 
 Web model requests use Pydantic AI's native node stream. Public text and typed
 final-output summaries update an in-memory snapshot (coalesced at 50 ms); SSE
