@@ -55,6 +55,11 @@ Web 确认删除会话后，先等待本宿主模型/工具和 Solver 实际收�
 和 registry；工程目录及文件保留。`control/deletions` 只保存最小幂等/清理回执，不是回收站。无法确认的
 外部执行和未决 effect 不通过删除记录掩盖，见 [ADR-0035](../adr/0035-delete-web-conversation-records-and-keep-workspaces.md)。
 
+已有 Web 会话可在空闲、待答或终态通过 operational amendment 覆盖 Abaqus/Solver permission。待答问题、
+task revision、workspace/execution baseline 和累计 usage 保持；写入不调度 Agent，也不取消已提交执行。
+活动工作段、待消费 Solver、`needs_reconcile`、外部锁或不确定命令状态拒绝修改。有限次数始终表示会话累计
+总上限，调低至不高于已用量会使后续调用自然被现有 runtime gate 拒绝。
+
 Catalog 与文档索引是显式选择的外部知识数据，和 run state 分开；可恢复产品入口核对 request/launch 中的
 内容绑定。显式工厂的只读参考资料尚无同等 launch 快照保证，见 [知识接入](knowledge-access.md)。
 

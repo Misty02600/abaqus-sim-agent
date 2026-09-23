@@ -82,6 +82,9 @@ graph runtime或数据库控制面。
   把产品`execution_evidence`描述成完整语义验证。证据见
   `benchmarks/coding/coding_run_amendment_revision_provider_e2e_20260903.json`。
 - 全量质量门：Ruff、BasedPyright、`452 passed, 26 skipped`。
+- Web 在既有决定上接入 runtime-policy operational amendment：命令使用独立 operation ID 幂等，乐观核对
+  amendment sequence；待答问题可以保留，修改不自动运行模型。活动/待核查执行拒绝写入，累计 runtime
+  usage 不清零，有限次数仍是会话总上限。
 
 ## 相关文档
 

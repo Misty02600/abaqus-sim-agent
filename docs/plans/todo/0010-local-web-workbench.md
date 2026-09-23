@@ -109,6 +109,12 @@ evaluation 436通过；Ruff、格式、BasedPyright、前端production build和w
 本轮实现拆为可回滚提交：`59e3725`保存工作区绑定、删除生命周期、受控取消与后端回归，`e6616ae`保存
 响应式布局、Pi风格输入、目录/删除交互、生成API与构建许可证接线；架构、ADR和计划由随后文档提交收口。
 
+2026-09-23继续补齐会话内 runtime 权限：等待用户、空闲中断和终态会话可修改未来 Abaqus/Solver permission，
+待答问题和累计usage保持；活动、待消费Solver与`needs_reconcile`拒绝修改。命令使用operation ID和sequence
+核对，HTTP重试不重复追加；修改不自动继续Agent或取消执行。确定性宿主测试覆盖同run“先澄清、后批准
+Solver、再继续”，浏览器覆盖桌面/窄屏、终态不自动请求和活动禁用；未执行真实Provider或Abaqus。
+实现提交为`1aca0ef`（amendment、Web宿主与回归）和`1fe05de`（权限编辑器、生成API与交互）。
+
 本工作树已完成差异审查并拆为可回滚提交：`d3577f0`保存共享CodingRun/FastAPI/deferred Solver后端与测试，`c259596`保存assistant-ui前端、模型预览、第三方资产与构建接线；架构、ADR落实和本计划由随后独立文档提交收口。Abaqus replay、浏览器截图、node_modules、构建静态目录和wheel均按生成物忽略。
 
 ## 后续剩余工作

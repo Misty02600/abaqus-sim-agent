@@ -27,6 +27,7 @@ Web 主线仍未执行。外部 Job 对账、数据库控制面、多进程 Coor
 | `ResponseDecision` | 对当前问题、讨论或局部请求交付纯文字 | `verification_scope=null`；已有运行或终态工作区变化时不能绕过验收 | [合同](../../src/abaqus_sim_agent/coding/contracts.py) |
 | `ask_user`、`--answer-file`、`--cancel-question` | 持久待答、按问题 ID 回答或取消 | 等待释放锁、不计 active wall；同 ID 同答幂等，冲突答复拒绝覆盖 | [问答](../../src/abaqus_sim_agent/coding/user_questions.py) |
 | `--resume`、显式 amendment / task revision | 同一 conversation 继续，或修订配置/任务 | 继承累计 usage；runtime policy 可修订，新任务换验收基线；未决 runtime 停在 `needs_reconcile` | [恢复](../../src/abaqus_sim_agent/coding/resume.py)、[修订](../../src/abaqus_sim_agent/coding/amendments.py) |
+| Web runtime policy amendment | 在已有会话中修改未来 Abaqus/Solver 提交权限 | 仅空闲且无需对账时可写；待答问题保留，不自动继续或取消执行，累计 usage 不重置 | [Web controller](../../src/abaqus_sim_agent/web/controller.py)、[ADR-0021](../adr/0021-use-amendments-and-task-revisions-for-continuation.md) |
 | Web Thread message / continuation | 在同一会话 history 上追加普通消息 | 不推进 task revision；每段独立划定 workspace/execution evidence baseline | [Web storage](../../src/abaqus_sim_agent/web/storage.py)、[ADR-0027](../adr/0027-decouple-web-thread-messages-from-task-revisions.md) |
 | Web 删除会话 | 确认后结束本宿主受控执行，永久删除会话记录 | 工程文件保留，无回收站；不删除尚无法确认的外部执行记录 | [删除存储](../../src/abaqus_sim_agent/web/deletion.py)、[ADR-0035](../adr/0035-delete-web-conversation-records-and-keep-workspaces.md) |
 | Harness 文件与 Shell 工具 | 普通仓库编码、检查、测试和后台命令 | Shell 固定 workspace 并剥离 Provider 凭据；直接 Abaqus launcher 被拒绝，不构成 OS 沙箱 | [Agent](../../src/abaqus_sim_agent/coding/agent.py)、[ADR-0032](../adr/0032-restore-restricted-shell-for-product-coder.md) |

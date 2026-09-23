@@ -24,6 +24,7 @@
 - 模型脚本和输入位于已解析的 ASCII 工作区，state/evidence 位于工作区外；校验路径归属、后缀、Job 名及可选逐工具文件 allowlist。runtime permission/allowance、准确进程树终止、raw stdout/stderr bytes 和 artifact freshness 必须保留。这些边界不是 OS 沙箱或不可信租户隔离。
 - 恢复必须保留累计 usage/allowance、原始 freshness 基线、execution provenance、协议、context policy 和知识/Skill 绑定。同一 state 使用 OS 独占锁；未决 Abaqus tool effect 停在 `needs_reconcile`，禁止盲目重跑。不得把文件后端续跑称为外部 Job exactly-once、PID 重新附着或完整 durable workflow。
 - Task revision 与 operational amendment 分开：新任务建立新验收基线，旧 outcome 归档；runtime policy 或 provider 修订不能清零已消耗用量。损坏 ledger 不猜测修复，不用 event log 推断缺失的副作用记录。
+- Web 会话在无活动/待核查执行时可用 operational amendment 修改 Abaqus/Solver 权限；待答问题保持，修改不自动继续也不取消已有执行，只影响未来提交。有限次数是累计总上限，usage/allowance 不清零。
 - 新普通会话使用 launch v7，绑定 1M context policy 与 filesystem Skill digest：当前请求可以交付 `ResponseDecision` 文字答复，文件或执行请求仍须走非空 manifest 与宿主 verifier；当前 revision 已有执行或终态工作区变化时不能用文字答复绕过验收。
 - 本地 Web 工作台复用 `coding/application.py`、`composition.py` 和 `CodingRunService`。命令使用 REST，SSE 只通知重取；Web registry、Thread、invocation 和 `ToolExecution` 是管理记录，不覆盖 CodingRun 的 request、limits/runtime policy、runtime evidence、verification 或 outcome。
 - Web 会话可使用托管空目录或显式选择已有本机 ASCII 工作区；创建后固定绑定，文件原地读写。所选目录与管理根互不包含，state/evidence 仍由宿主保存；目录接线与边界见 ADR-0034。
