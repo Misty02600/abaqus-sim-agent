@@ -6,6 +6,7 @@ from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import FunctionModel
 from tests.test_task_baseline_service import FakeAbaqusProcess
 
+from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.amendments import append_task_revision
 from abaqus_sim_agent.coding.clarification import ScriptedClarificationProvider
@@ -260,7 +261,7 @@ def service_for(tmp_path, reply, *, resume=False):
     config = baseline_execution_config()
     skill_library = skill_library_path().resolve()
     launch = LaunchManifest(
-        schema_version="coding-run-launch-v7",
+        schema_version="coding-run-launch-v9",
         question_protocol="ask_user_v1",
         response_enabled=True,
         capability_definitions=bind_filesystem_skills(
@@ -614,6 +615,8 @@ def test_cli_default_asks_outside_event_loop_and_run_lock(tmp_path, monkeypatch)
         return "1 mm"
 
     monkeypatch.setattr("builtins.input", user_input)
+    catalog = tmp_path / "api-catalog"
+    ApiCatalog([], runtime_release="2024").write(catalog)
     assert (
         run_cli(
             [
@@ -623,6 +626,8 @@ def test_cli_default_asks_outside_event_loop_and_run_lock(tmp_path, monkeypatch)
                 str(workspace),
                 "--state-dir",
                 str(state),
+                "--api-catalog-dir",
+                str(catalog),
             ]
         )
         == 0

@@ -4,6 +4,12 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..skills import skill_library_path
+from .api_lookup import (
+    DEFAULT_PRODUCT_API_CATALOG_MODE,
+    ProductApiCatalogMode,
+    bind_api_catalog,
+    load_product_api_catalog,
+)
 from .context_policy import (
     CONTEXT_POLICY_VERSION,
     bind_filesystem_skills,
@@ -52,6 +58,8 @@ def prepare_new_run(
     state_dir: Path,
     execution: ModelExecutionConfig,
     runtime: RuntimeProfile,
+    api_catalog_dir: Path,
+    api_catalog_mode: ProductApiCatalogMode = DEFAULT_PRODUCT_API_CATALOG_MODE,
     limits: CodingRunLimits | None = None,
     runtime_policy: RuntimeExecutionPolicy | None = None,
     evaluation_tool_limits: EvaluationToolLimits | None = None,
@@ -61,12 +69,17 @@ def prepare_new_run(
     resolved = WorkspaceResolver().resolve_interactive(
         run_id=run_id, workspace=workspace, state_dir=state_dir
     )
+    api_catalog = load_product_api_catalog(
+        api_catalog_dir,
+        workspace=resolved.workspace,
+    )
     request = CodingRunRequest(
         run_id=run_id,
         goal=goal,
         workspace=resolved.workspace,
         state_dir=resolved.state_dir,
         runtime=runtime,
+        api_catalog=bind_api_catalog(api_catalog),
         limits=limits or CodingRunLimits(),
         runtime_policy=runtime_policy or RuntimeExecutionPolicy(),
         evaluation_tool_limits=evaluation_tool_limits,
@@ -79,7 +92,7 @@ def prepare_new_run(
     )
     skill_library = skill_library_path().resolve()
     launch = LaunchManifest(
-        schema_version="coding-run-launch-v7",
+        schema_version="coding-run-launch-v10",
         question_protocol="ask_user_v1",
         response_enabled=True,
         domain_knowledge=domain_knowledge,
@@ -89,6 +102,8 @@ def prepare_new_run(
             ("abaqus-2024-coding",),
         ),
         context_policy_version=CONTEXT_POLICY_VERSION,
+        api_catalog_dir=api_catalog_dir.resolve(strict=True),
+        api_catalog_mode=api_catalog_mode,
         **execution.model_dump(),
     )
     return PreparedCodingRun(request, resolved.initial_snapshot, launch)
@@ -99,7 +114,7 @@ def prepare_resume(state_dir: Path) -> PreparedCodingRun:
     launch = LaunchManifest.model_validate_json(
         (state_dir / "launch.json").read_bytes()
     )
-    if launch.schema_version != "coding-run-launch-v7":
+    if launch.schema_version != "coding-run-launch-v10":
         raise ValueError("pre-release CodingRun launch schema is not supported")
     return PreparedCodingRun(
         effective.request,

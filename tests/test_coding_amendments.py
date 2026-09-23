@@ -59,6 +59,7 @@ def _persist_base_state(tmp_path: Path) -> CodingRunRequest:
     )
     (state_dir / "resume_state.json").write_text(
         CodingRunResumeState(
+            schema_version="coding-run-resume-v6",
             run_id=request.run_id,
             status="interrupted",
             turn=1,

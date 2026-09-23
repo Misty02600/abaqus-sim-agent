@@ -156,7 +156,7 @@ def baseline_execution_config() -> ModelExecutionConfig:
         model_name=DEEPSEEK_V4_FLASH,
         http_retries=10,
         http_timeout_seconds=60.0,
-        planning_enabled=True,
+        planning_enabled=False,
     )
 
 

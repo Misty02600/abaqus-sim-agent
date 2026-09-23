@@ -78,6 +78,7 @@ from abaqus_sim_agent.coding.resume import create_step_store as _create_step_sto
 from abaqus_sim_agent.coding.runtime_tools import (
     register_runtime_tools as _register_runtime_tools,
 )
+from abaqus_sim_agent.coding.text_files import AbaqusTextFileSystem
 from abaqus_sim_agent.coding.user_questions import (
     CodingAgentOutput,
     QuestionProtocol,
@@ -136,18 +137,6 @@ __all__ = [
     "PRODUCT_CODER_SHELL_POLICY_VERSION",
     "create_abaqus_coding_agent",
 ]
-
-
-def _production_python_syntax_guard(
-    ctx: RunContext[_CodingAgentDependencies],
-    call: ToolCallInfo,
-) -> GuardrailResult:
-    gate = ctx.deps.syntax_gate
-    if gate is None:
-        return GuardrailResult.block(
-            "Python syntax gate is required by this ACI profile but unavailable"
-        )
-    return gate.guard(call)
 
 
 def _immutable_workspace_guard(
@@ -272,7 +261,7 @@ def create_abaqus_coding_agent(
         knowledge_allowed_patterns: 只读资料工具允许访问的文本文件 glob。
         response_enabled: 新普通会话是否允许无文件的文字答复完成；固定任务及旧会话默认关闭。
         product_coding_tools: 是否启用普通产品的受限 Shell 与后台 Solver 工具。
-        context_policy_enabled: 是否启用 launch v7 的 1M tiered compaction。
+        context_policy_enabled: 是否启用 launch v10 的 1M tiered compaction。
 
     Returns:
         配置完成、但尚未运行的单 Agent 实例。
@@ -347,16 +336,6 @@ def create_abaqus_coding_agent(
         )
     if request.edit_scope is not None:
         capabilities.append(ReferenceEditCapability())
-    if (
-        request.static_preflight is not None
-        and request.static_preflight.mode == "enforced_verified"
-    ):
-        capabilities.append(
-            ToolGuardrail[_CodingAgentDependencies](
-                guard=_production_python_syntax_guard,
-                tools=("write_file", "edit_file"),
-            )
-        )
     if immutable_workspace_paths:
         capabilities.append(
             ToolGuardrail[_CodingAgentDependencies](
@@ -417,7 +396,6 @@ def create_abaqus_coding_agent(
             or probe_protocol_mode != "off"
             or concept_retrieval_mode != "off"
             or diagnostic_retrieval_mode != "off"
-            or request.static_preflight is not None
         ):
             raise ValueError(
                 "ask_user_v1 is not enabled for this legacy explicit profile"
@@ -565,7 +543,18 @@ def _configure_coder(
         ):
             return None
         if isinstance(capability, FileSystem):
-            return FileSystem[_CodingAgentDependencies](root_dir=workspace)
+            return AbaqusTextFileSystem[_CodingAgentDependencies](
+                root_dir=workspace,
+                allowed_patterns=capability.allowed_patterns,
+                denied_patterns=capability.denied_patterns,
+                protected_patterns=capability.protected_patterns,
+                max_read_lines=capability.max_read_lines,
+                max_list_results=capability.max_list_results,
+                max_search_results=capability.max_search_results,
+                max_find_results=capability.max_find_results,
+                read_only=capability.read_only,
+                id=capability.id,
+            )
         if isinstance(capability, ToolOutputLimits):
             # Keep spill + read_tool_result instead of Coder's lossy-only truncation.
             return ToolOutputLimits[_CodingAgentDependencies]()

@@ -10,6 +10,7 @@ from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai_harness.guardrails import ToolCallInfo
 
+from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.amendments import (
     CodingRunConfigPatch,
@@ -446,6 +447,8 @@ def test_cli_loads_and_persists_scope_before_real_file_tools(
         "abaqus_sim_agent.coding.cli.create_deepseek_chat_model",
         lambda **_kwargs: (FunctionModel(model), Client()),
     )
+    catalog = tmp_path / "api-catalog"
+    ApiCatalog([], runtime_release="2024").write(catalog)
     code = run_cli(
         [
             "--goal",
@@ -458,6 +461,8 @@ def test_cli_loads_and_persists_scope_before_real_file_tools(
             "scope-cli",
             "--edit-scope-file",
             str(scope_file),
+            "--api-catalog-dir",
+            str(catalog),
         ]
     )
     assert code == 0

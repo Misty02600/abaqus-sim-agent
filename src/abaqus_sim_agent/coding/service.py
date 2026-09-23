@@ -617,15 +617,6 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                             verification=verification,
                         )
 
-                    if self.dependencies.runtime_permission_denial(solver=False):
-                        return self._failed(
-                            verification.failure_stage or "verification",
-                            verification.feedback,
-                            shared_usage,
-                            clarifications,
-                            started,
-                            verification=verification,
-                        )
                     history = self._persist_history_json(
                         result.all_messages_json(
                             output_tool_return_content=verification.feedback
@@ -954,7 +945,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                 "document policy activation differs from persisted checkpoint"
             )
         if self.request.document_policy is not None and (
-            persisted.schema_version != "coding-run-resume-v4"
+            persisted.schema_version != "coding-run-resume-v7"
             or self._document_checkpoint is None
         ):
             raise CodingRunResumeError(
@@ -1765,14 +1756,14 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                 )
             state = state.model_copy(
                 update={
-                    "schema_version": "coding-run-resume-v4",
+                    "schema_version": "coding-run-resume-v7",
                     "document_policy_checkpoint": self._document_checkpoint,
                 }
             )
         if self.question_protocol == "ask_user_v1":
             state = state.model_copy(
                 update={
-                    "schema_version": "coding-run-resume-v5",
+                    "schema_version": "coding-run-resume-v8",
                     "question_protocol": "ask_user_v1",
                     "pending_question_id": self._pending_question.question_id
                     if self._pending_question
@@ -2072,11 +2063,7 @@ def _usage(
         api_lookup_calls=dependencies.api_lookup_calls,
         concept_lookup_calls=dependencies.concept_lookup_calls,
         diagnostic_retrieval_calls=dependencies.diagnostic_retrieval_calls,
-        syntax_edit_checks=(
-            dependencies.syntax_gate.edit_checks
-            if dependencies.syntax_gate is not None
-            else 0
-        ),
+        syntax_edit_checks=(0),
         syntax_runtime_checks=(
             dependencies.syntax_gate.runtime_checks
             if dependencies.syntax_gate is not None

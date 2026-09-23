@@ -2,8 +2,8 @@
 
 ## 这条流程保证什么
 
-宿主拥有请求、limits、runtime policy 与终态；Agent 提出代码、问题、文字答复和验收请求。新普通 CLI/Web 使用 launch v7
-与 `ask_user_v1`，旧 run/Gold/未迁移 profile 按保存的 legacy 协议执行。以下状态是宿主语义，不是
+宿主拥有请求、limits、runtime policy 与终态；Agent 提出代码、问题、文字答复和验收请求。新普通 CLI/Web 使用 launch v10
+与 `ask_user_v1`；显式固定 profile 可使用 legacy 问答协议，不兼容的旧 state 明确拒绝。以下状态是宿主语义，不是
 LangGraph 节点。
 
 ## 首次执行与用户待答
@@ -24,7 +24,7 @@ legacy `needs_input` 继续使用原 `field_id`、answers 与预先澄清条件�
 
 ## 当前请求范围与文字答复
 
-launch v7 的 `ResponseDecision` 可以直接交付问题、讨论或局部步骤的完整文字答案；该路径保存
+launch v10 的 `ResponseDecision` 可以直接交付问题、讨论或局部步骤的完整文字答案；该路径保存
 `completion_kind=response`，不运行 verifier，也不声称文件、执行或物理验收通过。当前请求若需要文件或
 Abaqus 执行，仍须返回非空 manifest 并经过对应执行验收；当前 revision 已记录 runtime 或终态工作区变化时，
 宿主拒绝用文字答复绕过验收。澄清只围绕当前请求实际依赖的缺失事实，不要求补齐无关阶段参数。
@@ -33,10 +33,11 @@ Abaqus 执行，仍须返回非空 manifest 并经过对应执行验收；当前
 
 1. Coder 编写普通 Abaqus Python，可按显式 profile 获取知识证据或静态诊断。
 2. 三个 runtime 工具先检查 permission，再检查路径、可选 allowlist 和策略；外部副作用开始前预留有限 allowance，并记录输入指纹和 tool effect。
-3. runner 运行固定 CAE/Solver/Abaqus Python launcher，记录 raw logs、execution result 和文件变化。
+3. CAE/Abaqus Python 执行前检查语法；可选静态分析的诊断不阻断，随运行结果返回。runner 运行固定 CAE/Solver/Abaqus Python launcher，记录 raw logs、execution result 和文件变化。
 4. 宿主保存 execution journal；Coder 收到当前诊断后修复，所有调用继续累计 usage。
 5. ready decision 必须声明 deliverable manifest；宿主验收通过才写 completed outcome，否则反馈当前 scope
-   的失败证据继续有界修复。模型最终输出的 schema 错误不是工作区 artifact 损坏的证据。
+   的失败证据继续有界修复。runtime permission 只在模型实际调用相应工具时拒绝，不因 verifier 失败提前
+   终止普通文件修复。模型最终输出的 schema 错误不是工作区 artifact 损坏的证据。
 
 建模 → Solver → ODB 提取是阶段合同。CAE runtime 前的最小 AST policy 会拒绝直接出现的
 `.submit(...)` / `.waitForCompletion(...)`，且不消耗 Abaqus 预算；动态方法查找等绕行不在该策略范围内。

@@ -205,7 +205,7 @@ def scripted_model(
         assert info.model_settings["extra_body"]["thinking"] == {"type": "enabled"}
         assert info.model_settings["openai_reasoning_effort"] == "high"
         names = {t.name for t in info.function_tools}
-        assert "write_plan" in names
+        assert "write_plan" not in names
         assert "run_command" not in names
         if crash_after is not None and index == crash_after:
             raise ConnectionError("offline injected provider interruption")
@@ -260,7 +260,7 @@ async def test_real_service_all_four_cards_with_fake_model_and_process(
     assert launch["reasoning_policy"] == baseline_execution_config().reasoning_policy
     assert launch["http_retries"] == 10
     assert launch["http_timeout_seconds"] == 60.0
-    assert launch["planning_enabled"] is True
+    assert launch["planning_enabled"] is False
     request = json.loads((state / "request.json").read_text(encoding="utf-8"))
     assert request["limits"]["model_requests"] == {
         "mode": "limited",

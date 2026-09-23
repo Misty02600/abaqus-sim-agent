@@ -240,13 +240,42 @@ def test_service_pauses_for_clarification_then_verifies(tmp_path: Path) -> None:
 
 
 def test_service_records_verifier_feedback_as_concept_trigger(tmp_path: Path) -> None:
-    request, initial_snapshot = _request(tmp_path)
+    request, initial_snapshot = _request(
+        tmp_path,
+        budget=CodingRunBudget(max_abaqus_calls=0, max_solver_calls=0),
+    )
+    model_calls = 0
     verifier_calls = 0
 
     def model_function(
-        _messages: list[ModelMessage],
+        messages: list[ModelMessage],
         info: AgentInfo,
     ) -> ModelResponse:
+        nonlocal model_calls
+        model_calls += 1
+        if model_calls == 1:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "write_file",
+                        {"path": "placeholder.txt", "content": "draft\n"},
+                    )
+                ]
+            )
+        if model_calls == 3:
+            assert "File content is still a draft." in str(messages)
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "edit_file",
+                        {
+                            "path": "placeholder.txt",
+                            "old_text": "draft",
+                            "new_text": "fixed",
+                        },
+                    )
+                ]
+            )
         return ModelResponse(
             parts=[
                 ToolCallPart(
@@ -270,16 +299,19 @@ def test_service_records_verifier_feedback_as_concept_trigger(tmp_path: Path) ->
             decision: ReadyForVerificationDecision | None = None,
         ) -> VerificationAttempt:
             nonlocal verifier_calls
-            del request, runner, initial_snapshot, executions, decision
+            del runner, initial_snapshot, executions, decision
             verifier_calls += 1
+            passed = (request.workspace / "placeholder.txt").read_text(
+                encoding="utf-8"
+            ) == "fixed\n"
             return VerificationAttempt(
-                passed=verifier_calls == 2,
+                passed=passed,
                 feedback=(
                     "Independent verification passed."
-                    if verifier_calls == 2
-                    else "Beam section assignment is incomplete."
+                    if passed
+                    else "File content is still a draft."
                 ),
-                failure_stage=None if verifier_calls == 2 else "model",
+                failure_stage=None if passed else "artifact",
             )
 
     runner = Abaqus2024Runner(request.workspace, request.state_dir)
@@ -296,7 +328,18 @@ def test_service_records_verifier_feedback_as_concept_trigger(tmp_path: Path) ->
     )
 
     assert result.outcome.status is CodingRunStatus.COMPLETED
+    assert model_calls == 4
     assert verifier_calls == 2
+    assert dependencies.abaqus_calls == 0
+    assert (
+        request.runtime_policy.runtime_denial(
+            solver=False, abaqus_used=0, solver_used=0
+        )
+        == "Abaqus execution is not authorized"
+    )
+    assert (request.workspace / "placeholder.txt").read_text(
+        encoding="utf-8"
+    ) == "fixed\n"
     assert dependencies.current_turn == 2
     assert dependencies.concept_trigger_source == "verification"
     assert dependencies.concept_trigger_outcome == "feedback"

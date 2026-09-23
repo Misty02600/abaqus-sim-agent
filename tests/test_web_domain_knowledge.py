@@ -14,7 +14,13 @@ from pydantic_ai.messages import (
     ToolReturnPart,
 )
 from pydantic_ai.models.function import FunctionModel
-from tests.test_web_workbench import Client, NoProcess, login, settled
+from tests.test_web_workbench import (
+    Client,
+    NoProcess,
+    api_catalog_dir,
+    login,
+    settled,
+)
 
 from abaqus_sim_agent.execution import Abaqus2024Runner
 from abaqus_sim_agent.web.app import create_app
@@ -69,7 +75,11 @@ def test_web_lists_and_binds_explicit_private_knowledge_pack(tmp_path: Path) -> 
     packs = tmp_path / "packs"
     _write_pack(packs)
     app = create_app(
-        ServerConfig(root=tmp_path / "web", knowledge_packs_root=packs),
+        ServerConfig(
+            root=tmp_path / "web",
+            api_catalog_dir=api_catalog_dir(tmp_path),
+            knowledge_packs_root=packs,
+        ),
     )
 
     with TestClient(app, base_url="http://127.0.0.1") as client:
@@ -142,6 +152,7 @@ def test_selected_pack_is_readable_through_product_agent_tools(tmp_path: Path) -
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
+            api_catalog_dir=api_catalog_dir(tmp_path),
             knowledge_packs_root=packs,
             stream_model=False,
         ),

@@ -1,209 +1,62 @@
-import hashlib
 import json
 from pathlib import Path
 
 import pytest
-from pydantic_ai import Agent
-from pydantic_ai.messages import ModelResponse, TextPart, ToolCallPart
-from pydantic_ai.models.function import FunctionModel
-from pydantic_ai_harness import ToolGuardrail
-from pydantic_ai_harness.filesystem import FileSystem
-from pydantic_ai_harness.guardrails import ToolCallInfo
 
-from abaqus_sim_agent.coding.aci import (
-    PYTHON_SYNTAX_GATE_VERSION,
-    ProductionPythonSyntaxGate,
-)
-from abaqus_sim_agent.coding.contracts import RuntimeScriptPolicy
+from abaqus_sim_agent.coding.aci import RuntimePythonSyntaxGate
 
 
-def _gate(tmp_path: Path) -> ProductionPythonSyntaxGate:
-    workspace = tmp_path / "workspace"
-    state_dir = tmp_path / "state"
-    workspace.mkdir()
-    state_dir.mkdir()
-    return ProductionPythonSyntaxGate(
-        workspace=workspace,
-        state_dir=state_dir,
-        runtime_script_policy=RuntimeScriptPolicy(
-            allowed_cae_scripts=("build_model.py",),
-            allowed_abaqus_python_scripts=("extract_results.py",),
-            allowed_solver_inputs=("beam_tension.inp",),
-        ),
-    )
-
-
-def _write_call(path: str, content: str) -> ToolCallInfo:
-    return ToolCallInfo(
-        name="write_file",
-        args={"path": path, "content": content},
-        tool_call_id="write-1",
-    )
-
-
-def test_syntax_gate_blocks_invalid_production_write_before_file_change(
-    tmp_path: Path,
-) -> None:
-    gate = _gate(tmp_path)
-
-    verdict = gate.guard(_write_call("build_model.py", "def broken(:\n    pass\n"))
-
-    assert verdict.action == "block"
-    assert isinstance(verdict.message, str)
-    payload = json.loads(verdict.message)
-    assert payload["error_type"] == "PythonSyntaxEditDenied"
-    assert payload["syntax_gate_version"] == PYTHON_SYNTAX_GATE_VERSION
-    assert payload["python_version"] == "3.10"
-    assert payload["edit_applied"] is False
-    assert payload["budget_consumed"] is False
-    assert not (gate.workspace / "build_model.py").exists()
-    assert gate.edit_checks == 1
-    assert gate.denials == 1
-    trace = (gate.state_dir / "syntax_checks.jsonl").read_text(encoding="utf-8")
-    assert '"status": "denied"' in trace
-
-
-def test_syntax_gate_uses_python_310_grammar(tmp_path: Path) -> None:
-    gate = _gate(tmp_path)
-
-    verdict = gate.guard(_write_call("build_model.py", "type Alias = int\n"))
-
-    assert verdict.action == "block"
-    payload = json.loads(str(verdict.message))
-    assert payload["diagnostic"]["line"] == 1
-
-
-def test_syntax_gate_binds_valid_edit_to_runtime_hash(tmp_path: Path) -> None:
-    gate = _gate(tmp_path)
-    content = "from abaqus import mdb\nmodel = mdb.models['Model-1']\n"
-
-    verdict = gate.guard(_write_call("build_model.py", content))
-    (gate.workspace / "build_model.py").write_text(content, encoding="utf-8")
-    runtime = gate.check_runtime("build_model.py")
-
-    assert verdict.action == "allow"
-    assert runtime.status == "clean"
-    assert runtime.cache_hit is True
-    assert runtime.script_sha256 is not None
-    assert gate.edit_checks == 1
-    assert gate.runtime_checks == 1
-    assert gate.denials == 0
-
-
-def test_syntax_gate_rechecks_out_of_band_runtime_change(tmp_path: Path) -> None:
-    gate = _gate(tmp_path)
-    valid = "value = 1\n"
-    assert gate.guard(_write_call("build_model.py", valid)).action == "allow"
-    (gate.workspace / "build_model.py").write_text(
-        "if True print('broken')\n",
-        encoding="utf-8",
-    )
-
-    runtime = gate.check_runtime("build_model.py")
-
-    assert runtime.status == "denied"
-    assert runtime.cache_hit is False
-    assert runtime.diagnostic is not None
-    assert gate.denials == 1
-
-
-def test_syntax_gate_rejects_invalid_edit_without_changing_old_file(
-    tmp_path: Path,
-) -> None:
-    gate = _gate(tmp_path)
-    path = gate.workspace / "build_model.py"
-    original = "value = 1\n"
-    path.write_text(original, encoding="utf-8")
-    call = ToolCallInfo(
-        name="edit_file",
-        args={
-            "path": "build_model.py",
-            "old_text": "value = 1",
-            "new_text": "value = (",
-        },
-        tool_call_id="edit-1",
-    )
-
-    verdict = gate.guard(call)
-
-    assert verdict.action == "block"
-    assert path.read_text(encoding="utf-8") == original
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(("replacement", "blocked"), [("2", False), ("[", True)])
-async def test_real_harness_batch_edit_validates_final_candidate_before_write(
-    tmp_path: Path, replacement: str, blocked: bool
-) -> None:
-    gate = _gate(tmp_path)
-    path = gate.workspace / "build_model.py"
-    original = b"value = 1\r\n"
-    path.write_bytes(original)
-    calls = 0
-
-    def respond(_messages, _info):
-        nonlocal calls
-        calls += 1
-        if calls == 1:
-            return ModelResponse(
-                parts=[
-                    ToolCallPart(
-                        "edit_file",
-                        {
-                            "path": "build_model.py",
-                            "expected_hash": hashlib.sha256(original).hexdigest()[:12],
-                            "replacements": [
-                                {"old_text": "1", "new_text": "("},
-                                {"old_text": "(", "new_text": replacement},
-                            ],
-                        },
-                    )
-                ]
-            )
-        return ModelResponse(parts=[TextPart("Edit feedback inspected.")])
-
-    agent = Agent(
-        FunctionModel(respond),
-        capabilities=[
-            FileSystem(root_dir=gate.workspace),
-            ToolGuardrail(guard=gate.guard, tools=("edit_file",)),
-        ],
-    )
-    await agent.run("Apply the requested edit.")
-
-    assert calls == 2
-    assert gate.edit_checks == 1
-    assert gate.denials == int(blocked)
-    assert path.read_bytes() == (original if blocked else b"value = 2\r\n")
-
-
-def test_syntax_gate_does_not_claim_nonproduction_files(tmp_path: Path) -> None:
-    gate = _gate(tmp_path)
-
-    verdict = gate.guard(_write_call("notes.py", "def broken(:\n"))
-
-    assert verdict.action == "allow"
-    assert gate.checks == 0
-
-
-def test_syntax_gate_cannot_be_bypassed_with_relative_path_alias(
-    tmp_path: Path,
-) -> None:
-    gate = _gate(tmp_path)
-
-    verdict = gate.guard(_write_call("staging/../build_model.py", "def broken(:\n"))
-
-    assert verdict.action == "block"
-    assert gate.denials == 1
-
-
-def test_syntax_gate_requires_explicit_production_allowlists(tmp_path: Path) -> None:
+def _gate(tmp_path: Path) -> RuntimePythonSyntaxGate:
     workspace = tmp_path / "workspace"
     workspace.mkdir()
+    return RuntimePythonSyntaxGate(workspace, tmp_path / "state")
 
-    with pytest.raises(ValueError, match="explicit CAE"):
-        ProductionPythonSyntaxGate(
-            workspace=workspace,
-            state_dir=tmp_path / "state",
-            runtime_script_policy=RuntimeScriptPolicy(),
-        )
+
+@pytest.mark.parametrize("source", ["def broken(:\n    pass\n", "type Alias = int\n"])
+def test_runtime_syntax_denies_invalid_python_310(tmp_path: Path, source: str) -> None:
+    gate = _gate(tmp_path)
+    path = gate.workspace / "build_model.py"
+    path.write_text(source, encoding="utf-8")
+    result = gate.check_runtime(path.name)
+    assert result.status == "denied"
+    assert result.diagnostic is not None
+    assert result.diagnostic.line == 1
+    assert path.read_text(encoding="utf-8") == source
+    assert gate.denials == 1
+    record = json.loads((gate.state_dir / "syntax_checks.jsonl").read_text())
+    assert record["script_sha256"] == result.script_sha256
+
+
+def test_runtime_syntax_cache_tracks_actual_bytes(tmp_path: Path) -> None:
+    gate = _gate(tmp_path)
+    path = gate.workspace / "any_name.py"
+    path.write_text("from abaqus import mdb\n", encoding="utf-8")
+    assert gate.check_runtime(path.name).cache_hit is False
+    assert gate.check_runtime(path.name).cache_hit is True
+    path.write_text("value = (\n", encoding="utf-8")
+    result = gate.check_runtime(path.name)
+    assert result.status == "denied"
+    assert result.cache_hit is False
+    path.write_text("value = 1\n", encoding="utf-8")
+    assert gate.check_runtime(path.name).status == "clean"
+
+
+def test_runtime_syntax_respects_encoding_and_does_not_execute(tmp_path: Path) -> None:
+    gate = _gate(tmp_path)
+    source = "# coding: cp936\n# 注释\nraise RuntimeError('must not execute')\n"
+    (gate.workspace / "extract.py").write_bytes(source.encode("cp936"))
+    assert gate.check_runtime("extract.py").status == "clean"
+    (gate.workspace / "undefined.py").write_text(
+        "value = missing_name\n", encoding="utf-8"
+    )
+    assert gate.check_runtime("undefined.py").status == "clean"
+
+
+@pytest.mark.parametrize("name", ["missing.py", "../outside.py", "input.inp"])
+def test_runtime_syntax_rejects_unreadable_or_outside_scripts(
+    tmp_path: Path, name: str
+) -> None:
+    gate = _gate(tmp_path)
+    (tmp_path / "outside.py").write_text("pass\n", encoding="utf-8")
+    (gate.workspace / "input.inp").write_text("pass\n", encoding="utf-8")
+    assert gate.check_runtime(name).status == "unavailable"

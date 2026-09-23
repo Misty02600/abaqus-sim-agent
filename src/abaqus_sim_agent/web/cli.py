@@ -3,6 +3,7 @@ import asyncio
 import webbrowser
 from pathlib import Path
 
+from ..coding.api_lookup import DEFAULT_PRODUCT_API_CATALOG_MODE
 from ..coding.model import (
     DEEPSEEK_V4_FLASH,
     DeepSeekGateway,
@@ -19,6 +20,22 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=Path,
         required=True,
         help="ASCII任务根目录（workspace与state分别建立）",
+    )
+    parser.add_argument(
+        "--api-catalog-dir",
+        type=Path,
+        required=True,
+        help="Abaqus API Catalog目录",
+    )
+    parser.add_argument(
+        "--api-catalog-mode",
+        choices=(
+            "full",
+            "full_with_discovery",
+            "automatic_verified_only",
+            "automatic_exact_signature",
+        ),
+        default=DEFAULT_PRODUCT_API_CATALOG_MODE,
     )
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument(
@@ -42,6 +59,8 @@ def main() -> None:
         raise SystemExit("请安装Web依赖：uv sync --extra web --all-groups") from exc
     config = ServerConfig(
         root=args.root,
+        api_catalog_dir=args.api_catalog_dir,
+        api_catalog_mode=args.api_catalog_mode,
         execution=new_run_execution_config(
             model_provider=args.model_provider, model_name=args.model
         ),

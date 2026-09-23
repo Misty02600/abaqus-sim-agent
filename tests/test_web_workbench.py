@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+import json
 import threading
 import time
 from uuid import uuid4
@@ -13,6 +14,7 @@ from pydantic import SecretStr
 from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import FunctionModel
 
+from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
 from abaqus_sim_agent.execution import Abaqus2024Runner
 from abaqus_sim_agent.web.app import create_app
@@ -28,6 +30,13 @@ class NoProcess:
 class Client:
     async def close(self):
         pass
+
+
+def api_catalog_dir(tmp_path):
+    path = tmp_path / "api-catalog"
+    if not path.exists():
+        ApiCatalog([], runtime_release="2024").write(path)
+    return path
 
 
 def configured_app(tmp_path, *, fail=False, block=None, crash_once=None):
@@ -89,6 +98,7 @@ def configured_app(tmp_path, *, fail=False, block=None, crash_once=None):
 
     config = ServerConfig(
         root=tmp_path / "web",
+        api_catalog_dir=api_catalog_dir(tmp_path),
         stream_model=False,
         budget=CodingRunBudget(
             max_model_requests=8, max_abaqus_calls=0, max_solver_calls=0
@@ -232,6 +242,11 @@ def test_commands_questions_and_read_only_state(tmp_path):
             == 409
         )
         assert "run_command" in calls[0]
+        assert "lookup_abaqus_api" not in calls[0]
+        assert "discover_abaqus_api" not in calls[0]
+        launch = json.loads((state / "launch.json").read_bytes())
+        assert launch["api_catalog_mode"] == "automatic_verified_only"
+        assert launch["schema_version"] == "coding-run-launch-v10"
         assert all(names == calls[0] for names in calls)
 
 

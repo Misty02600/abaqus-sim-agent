@@ -4,6 +4,9 @@
 
 已采纳
 
+后续替代：2026-09-22 [ADR-0038](0038-unify-runtime-syntax-and-static-feedback.md) 替代下文的双模式、
+编辑语法门和 API blocker 策略；本文保留当时的决定、背景与实验。当前实现见 architecture。
+
 权限、syntax/API gate、证据分级与 vendor runtime 前检查顺序继续有效；普通产品 static preflight
 调用次数耗尽分支由 [ADR-0031](0031-remove-product-tool-call-count-limits.md) 部分替代。
 

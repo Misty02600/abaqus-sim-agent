@@ -91,31 +91,14 @@ def test_runtime_script_policy_normalizes_and_rejects_unsafe_paths() -> None:
         )
 
 
-def test_enforced_aci_rejects_policy_or_allowlist_mismatch(tmp_path: Path) -> None:
-    with pytest.raises(ValidationError, match="enforced policy version"):
+@pytest.mark.parametrize("mode", ["advisory", "enforced_verified"])
+def test_static_binding_rejects_removed_modes(mode: str) -> None:
+    with pytest.raises(ValidationError, match="mode"):
         StaticPreflightBinding(
-            mode="enforced_verified",
+            mode=mode,
             engine_version="1.39.10",
             api_source_version="2024.10",
             api_source_sha256="a" * 64,
-        )
-
-    binding = StaticPreflightBinding(
-        mode="enforced_verified",
-        policy_version="abqpy-enforced-verified-v1",
-        syntax_gate_version="python-3.10-production-syntax-v1",
-        engine_version="1.39.10",
-        api_source_version="2024.10",
-        api_source_sha256="a" * 64,
-    )
-    with pytest.raises(ValidationError, match="explicit CAE"):
-        CodingRunRequest(
-            run_id="run-enforced-no-policy",
-            goal="Invalid enforced profile.",
-            workspace=(tmp_path / "workspace").resolve(),
-            state_dir=(tmp_path / "state").resolve(),
-            runtime=make_runtime(tmp_path),
-            static_preflight=binding,
         )
 
 
@@ -262,6 +245,22 @@ def test_runtime_policy_defaults_and_parent_child_limits() -> None:
         "Abaqus invocation allowance is exhausted"
     )
     assert finite.timeout_seconds("solver") == 30.0
+
+
+def test_frozen_budget_can_leave_low_cost_evaluation_tools_unlimited() -> None:
+    controls = CodingRunBudget(
+        max_api_lookup_calls=None,
+        max_concept_lookup_calls=None,
+        max_diagnostic_retrieval_calls=None,
+        max_static_preflight_calls=None,
+    ).as_request_controls()
+
+    limits = controls["evaluation_tool_limits"]
+    assert limits is not None
+    assert limits.api_lookup_calls is None
+    assert limits.concept_lookup_calls is None
+    assert limits.diagnostic_retrieval_calls is None
+    assert limits.static_preflight_calls is None
 
 
 def test_api_lookup_trace_is_strict() -> None:

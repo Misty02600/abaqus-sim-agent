@@ -4,12 +4,26 @@ import hashlib
 import json
 from pathlib import Path
 
-from abaqus_sim_agent.api_catalog import ApiRuntimeNote
+import pytest
+
+from abaqus_sim_agent.api_catalog import (
+    AbqpyApiRecord,
+    ApiCatalog,
+    ApiParameter,
+    ApiRuntimeNote,
+    ApiSignature,
+    ApiSourceRef,
+)
 from abaqus_sim_agent.api_catalog.evaluation import load_api_catalog_cases
+from abaqus_sim_agent.coding.api_lookup import _api_lookup_payload
 
 _ROOT = Path(__file__).parent.parent
 _BENCHMARK_ROOT = _ROOT / "benchmarks" / "api_catalog"
 _RUNTIME_NOTES = _BENCHMARK_ROOT / "abaqus_2024_runtime_notes.jsonl"
+_FINAL15_RUNTIME_NOTES = (
+    _BENCHMARK_ROOT / "abaqus_2024_runtime_notes_final15_20260828.jsonl"
+)
+_ORIENTATION_NOTE_ID = "runtime:2024:Part.assignBeamSectionOrientation:region-binding"
 _CONSUMER_EVIDENCE = _BENCHMARK_ROOT / "abaqus_2024_api_consumer_observations.json"
 _BEAM_ORIENTATION_EVIDENCE = (
     _BENCHMARK_ROOT / "abaqus_2024_beam_section_orientation_observations.json"
@@ -25,10 +39,10 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _notes() -> dict[str, ApiRuntimeNote]:
+def _notes(path: Path) -> dict[str, ApiRuntimeNote]:
     notes = [
         ApiRuntimeNote.model_validate_json(line)
-        for line in _RUNTIME_NOTES.read_text(encoding="utf-8").splitlines()
+        for line in path.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
     assert len({note.note_id for note in notes}) == len(notes)
@@ -37,7 +51,7 @@ def _notes() -> dict[str, ApiRuntimeNote]:
 
 def test_final15_verified_notes_are_scoped_and_traceable() -> None:
     evidence = json.loads(_FINAL15_EVIDENCE.read_text(encoding="utf-8"))
-    notes = _notes()
+    notes = _notes(_FINAL15_RUNTIME_NOTES)
     expected_ids = set(evidence["verified_notes_added_since_final9"])
 
     assert len(expected_ids) == 10
@@ -138,7 +152,7 @@ def test_final15_evidence_matches_fixtures_notes_and_benchmark() -> None:
 
     catalog = final15["immutable_catalog"]
     deterministic = final15["deterministic_evaluation"]
-    assert catalog["source_digests"]["runtime_notes"] == _sha256(_RUNTIME_NOTES)
+    assert catalog["source_digests"]["runtime_notes"] == _sha256(_FINAL15_RUNTIME_NOTES)
     assert deterministic["benchmark_sha256"] == _sha256(_QUERY_BENCHMARK)
     assert deterministic["result_sha256"] == _sha256(_QUERY_RESULT)
     assert len(load_api_catalog_cases(_QUERY_BENCHMARK)) == 27
@@ -146,3 +160,81 @@ def test_final15_evidence_matches_fixtures_notes_and_benchmark() -> None:
     assert all(result["passed"] for result in evaluation["results"])
     assert catalog["card_count"] == 5480
     assert catalog["conflict_count"] == 48
+
+
+@pytest.mark.parametrize("parameter_query", [False, True])
+def test_current_orientation_note_keeps_probe_scope_in_model_payload(
+    tmp_path: Path, parameter_query: bool
+) -> None:
+    current = _notes(_RUNTIME_NOTES)
+    frozen = _notes(_FINAL15_RUNTIME_NOTES)
+    note = current[_ORIENTATION_NOTE_ID]
+    assert current.keys() == frozen.keys()
+    for note_id, historical in frozen.items():
+        if note_id == _ORIENTATION_NOTE_ID:
+            assert note.model_dump(exclude={"summary", "guidance"}) == (
+                historical.model_dump(exclude={"summary", "guidance"})
+            )
+        else:
+            assert current[note_id] == historical
+
+    record = AbqpyApiRecord(
+        record_id="abqpy:2024.test:PropertyPart.assignBeamSectionOrientation",
+        entity_kind="method",
+        declaring_name="PropertyPart.assignBeamSectionOrientation",
+        class_name="PropertyPart",
+        method_name="assignBeamSectionOrientation",
+        public_names=("Part.assignBeamSectionOrientation",),
+        signatures=(
+            ApiSignature(
+                text="assignBeamSectionOrientation(region, method, n1)",
+                parameters=tuple(
+                    ApiParameter(name=name, required=True)
+                    for name in ("region", "method", "n1")
+                ),
+            ),
+        ),
+        source=ApiSourceRef(
+            kind="abqpy",
+            release="2024",
+            version="2024.test",
+            source_path="abaqus/Property/PropertyPart.py",
+        ),
+    )
+    catalog = ApiCatalog.build(
+        runtime_release="2024", abqpy_records=(record,), runtime_notes=(note,)
+    )
+    output = tmp_path / "catalog"
+    catalog.write(output, source_digests={"runtime_notes": _sha256(_RUNTIME_NOTES)})
+    reopened = ApiCatalog.open(output)
+    query = "Part.assignBeamSectionOrientation" + (".region" if parameter_query else "")
+    payload = _api_lookup_payload(reopened.lookup(query), error_excerpt=None)
+    assert payload["status"] == "found"
+    if parameter_query:
+        parameter = payload["parameter"]
+        assert isinstance(parameter, dict)
+        delivered = parameter["runtime_notes"]
+    else:
+        cards = payload["cards"]
+        assert isinstance(cards, list)
+        delivered = cards[0]["runtime_notes"]
+    assert len(delivered) == 1
+    assert delivered[0]["verified"] is True
+    assert delivered[0]["evidence"]["ref"] == note.evidence_ref
+    assert "without raising" in delivered[0]["summary"]
+    assert (
+        "did not inspect stored beam orientations or write an INP"
+        in (delivered[0]["guidance"])
+    )
+    assert (
+        "does not establish effective orientation assignment"
+        in (delivered[0]["guidance"])
+    )
+    assert "successful input generation" in delivered[0]["guidance"]
+    assert "probe or wrapper is unnecessary" not in delivered[0]["guidance"]
+    direction = _api_lookup_payload(
+        reopened.lookup("Part.assignBeamSectionOrientation.n1"), error_excerpt=None
+    )
+    direction_parameter = direction["parameter"]
+    assert isinstance(direction_parameter, dict)
+    assert direction_parameter["runtime_notes"] == []

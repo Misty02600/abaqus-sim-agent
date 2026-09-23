@@ -14,7 +14,9 @@
 | [0008：Pydantic AI Harness 单 Coder](0008-pydantic-ai-harness-abaqus-coding-run.md) | 已采纳；替代旧 LangGraph、多角色及首轮控制面路线，后续 scope/恢复/问答按下列决定扩展 |
 | [0017：按活动组件组织产品包](0017-package-by-component-coding-run.md) | 已采纳；组件职责与消费方端口 |
 | [0015：产品 Coder 不暴露通用 Shell](0015-disable-general-shell-for-product-coder.md) | 普通产品决定已由 0032 替代；旧冻结 profile 与原失败依据保留 |
-| [0018：分级 ACI 与已验证 API 合同](0018-enforce-verified-abaqus-aci.md) | 已采纳为显式 profile；替代 0016，普通产品 preflight 次数上限由 0031 部分替代 |
+| [0018：分级 ACI 与已验证 API 合同](0018-enforce-verified-abaqus-aci.md) | 原双模式与编辑/API 阻断由 0034 替代；原证据保留 |
+| [0038：执行前语法与非阻断静态反馈](0038-unify-runtime-syntax-and-static-feedback.md) | 已采纳；运行前语法必检，可选静态诊断随执行结果返回 |
+| [0039：保留工作区文本编码](0039-preserve-workspace-text-encoding.md) | 已采纳；UTF-8/CP936 严格解码、原编码写回与 raw-byte hash |
 | [0023：调用方声明的纯编辑范围](0023-constrain-explicit-reference-edits-before-writing.md) | 已采纳为默认关闭的单表达式编辑 profile |
 | [0025：CodingRun 上的本地 Web 工作台](0025-local-web-workbench-over-coding-run.md) | 已采纳；FastAPI + assistant-ui 的工程实现已完成，真实 Web 主线仍由 PLAN-0010 验收 |
 | [0026：按请求范围支持文字回答与局部执行](0026-scope-requests-and-text-responses.md) | 已采纳；新普通会话 launch v5 允许无文件文字交付，文件/执行验收边界保持不变 |
@@ -42,7 +44,8 @@
 | 决定 | 状态与作用域 |
 |---|---|
 | [0005：可追溯地吸收与重构上游](0005-traceable-upstream-reuse.md) | 已采纳；替代 0001，保留独立仓库与许可证/来源义务 |
-| [0009：精确 Abaqus API Catalog](0009-exact-abaqus-api-catalog.md) | 已采纳；官方语义、静态声明与运行证据分开，普通产品调用次数上限由 0031 部分替代 |
+| [0009：精确 Abaqus API Catalog](0009-exact-abaqus-api-catalog.md) | 已采纳；来源与证据合同保留，普通产品默认由 0036 更新，调用次数上限由 0031 部分替代 |
+| [0040：普通产品必须绑定 API Catalog](0040-require-api-catalog-for-product-runs.md) | 已采纳；更新 0009 的产品默认，移除产品 `off`，默认 automatic verified-only |
 | [0010：显式受预算的官方概念检索](0010-budgeted-official-concept-retrieval.md) | 已采纳；可选证据、不补物理输入，普通产品次数上限由 0031 部分替代 |
 | [0022：独立比较 BM25、Dense、RRF 后再采用](0022-evaluate-bm25-dense-rrf-before-agent-adoption.md) | 已采纳；保留算法对照与采用门槛，不代表 RRF 已替换默认 Concept 路径 |
 | [0028：本机私有领域知识包绑定为只读内容快照](0028-bind-user-domain-knowledge-as-read-only-snapshots.md) | 已采纳；仅本机私有内容、run 快照与恢复绑定，不开放分发、任意代码插件或新权限；默认位置与发现方式由 0029 局部替代 |

@@ -152,10 +152,10 @@ class CodingRunBudget(_StrictModel):
 
     max_clarifications: int = Field(default=2, ge=0)
     max_model_requests: int = Field(default=30, ge=1)
-    max_api_lookup_calls: int = Field(default=4, ge=0)
-    max_concept_lookup_calls: int = Field(default=2, ge=0)
-    max_diagnostic_retrieval_calls: int = Field(default=2, ge=0)
-    max_static_preflight_calls: int = Field(default=12, ge=0)
+    max_api_lookup_calls: int | None = Field(default=4, ge=0)
+    max_concept_lookup_calls: int | None = Field(default=2, ge=0)
+    max_diagnostic_retrieval_calls: int | None = Field(default=2, ge=0)
+    max_static_preflight_calls: int | None = Field(default=12, ge=0)
     max_abaqus_calls: int = Field(default=9, ge=0)
     max_solver_calls: int = Field(default=3, ge=0)
     wall_time_seconds: float = Field(default=2_700.0, gt=0)
@@ -306,36 +306,13 @@ class ConceptIndexBinding(_StrictModel):
 
 
 class StaticPreflightBinding(_StrictModel):
-    schema_version: Literal["1"] = "1"
-    mode: Literal["advisory", "enforced_verified"] = "advisory"
-    policy_version: Literal[
-        "abqpy-advisory-high-confidence-v2",
-        "abqpy-enforced-verified-v1",
-    ] = "abqpy-advisory-high-confidence-v2"
-    syntax_gate_version: Literal["python-3.10-production-syntax-v1"] | None = None
+    schema_version: Literal["2"] = "2"
+    policy_version: Literal["abqpy-runtime-feedback-v1"] = "abqpy-runtime-feedback-v1"
     engine: Literal["basedpyright"] = "basedpyright"
     engine_version: str = Field(min_length=1)
     api_source: Literal["abqpy"] = "abqpy"
     api_source_version: str = Field(min_length=1)
     api_source_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
-
-    @model_validator(mode="after")
-    def check_mode_policy(self) -> "StaticPreflightBinding":
-        if self.mode == "advisory":
-            if self.policy_version != "abqpy-advisory-high-confidence-v2":
-                raise ValueError("advisory mode requires its advisory policy version")
-            if self.syntax_gate_version is not None:
-                raise ValueError("advisory mode must not enable the hard syntax gate")
-        else:
-            if self.policy_version != "abqpy-enforced-verified-v1":
-                raise ValueError(
-                    "enforced_verified mode requires its enforced policy version"
-                )
-            if self.syntax_gate_version != "python-3.10-production-syntax-v1":
-                raise ValueError(
-                    "enforced_verified mode requires the Python 3.10 syntax gate"
-                )
-        return self
 
 
 class ApiDeliveredParameter(_StrictModel):
@@ -733,23 +710,6 @@ class CodingRunRequest(_StrictModel):
             raise ValueError(
                 "api_catalog runtime_release must match the selected Abaqus runtime"
             )
-        if (
-            self.static_preflight is not None
-            and self.static_preflight.mode == "enforced_verified"
-        ):
-            policy = self.runtime_script_policy
-            if (
-                policy.allowed_cae_scripts is None
-                or policy.allowed_abaqus_python_scripts is None
-            ):
-                raise ValueError(
-                    "enforced_verified static preflight requires explicit CAE and "
-                    "Abaqus Python runtime allowlists"
-                )
-            if not (policy.allowed_cae_scripts or policy.allowed_abaqus_python_scripts):
-                raise ValueError(
-                    "enforced_verified static preflight requires a production script"
-                )
         return self
 
 

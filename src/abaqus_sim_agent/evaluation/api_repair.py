@@ -11,7 +11,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Literal
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, SecretStr, model_validator
 from pydantic_evals import Case, Dataset
 from pydantic_evals.dataset import increment_eval_metric, set_eval_attribute
 from pydantic_evals.evaluators import EvaluationReason, Evaluator, EvaluatorContext
@@ -49,6 +49,11 @@ from abaqus_sim_agent.coding.model import (
     take_gateway_api_key_from_environment,
 )
 from abaqus_sim_agent.coding.service import CodingRunService
+from abaqus_sim_agent.coding.static_preflight import (
+    AbqpyBasedPyrightPreflight,
+    PreparedAbqpySource,
+    prepare_abqpy_source,
+)
 from abaqus_sim_agent.coding.workspace import ResolvedWorkspace, WorkspaceResolver
 from abaqus_sim_agent.execution import (
     DEFAULT_ABAQUS_2024_LAUNCHER,
@@ -62,6 +67,7 @@ from abaqus_sim_agent.verification.api_repair import (
 )
 
 PROMPT_VERSION = "api-repair-v2-output-decision"
+StaticPreflightMode = Literal["off", "on"]
 DEFAULT_MANIFEST = (
     Path(__file__).parents[3] / "benchmarks" / "coding" / "api_repair_cases.jsonl"
 )
@@ -134,6 +140,9 @@ class ApiRepairObservation(_FrozenModel):
     delivered_note_ids: tuple[str, ...] = ()
     abaqus_runtime_seconds: float = Field(ge=0)
     failed_cae_calls: int = Field(ge=0)
+    static_preflight_mode: StaticPreflightMode = "off"
+    static_diagnostic_count: int = Field(default=0, ge=0)
+    static_unavailable_count: int = Field(default=0, ge=0)
 
 
 class ApiRepairEvalGate(_FrozenModel):
@@ -268,7 +277,14 @@ async def run_evaluation(
     api_catalog_mode: ApiCatalogMode = "off",
     api_catalog_dir: Path | None = None,
     case_ids: tuple[str, ...] | None = None,
+    static_preflight_mode: StaticPreflightMode = "off",
+    abqpy_static_wheel: Path | None = None,
+    static_preflight_cache_dir: Path | None = None,
+    repetition: int = 1,
+    api_key: SecretStr | None = None,
 ) -> ApiRepairEvalGate:
+    if repetition < 1:
+        raise ValueError("repetition must be positive")
     harness_hash_patch = apply_harness_windows_newline_hash_patch()
     harness_shell_patch = apply_harness_windows_shell_tree_patch()
     cases = load_case_specs(manifest_path)
@@ -283,7 +299,15 @@ async def run_evaluation(
             raise ValueError("at least one API repair case must be selected")
     project_root = Path(__file__).parents[3]
     _validate_case_fixtures(project_root, cases)
-    api_key = take_gateway_api_key_from_environment(model_gateway)
+    static_source = await asyncio.to_thread(
+        _prepare_static_source,
+        static_preflight_mode,
+        abqpy_static_wheel,
+        static_preflight_cache_dir,
+    )
+    static_binding = static_source.binding() if static_source is not None else None
+    if api_key is None:
+        api_key = take_gateway_api_key_from_environment(model_gateway)
     api_catalog = await asyncio.to_thread(
         _load_api_catalog,
         run_root,
@@ -329,6 +353,13 @@ async def run_evaluation(
         "harness_windows_shell_tree_patch": harness_shell_patch,
         "runtime": "Abaqus 2024",
         "prompt_version": PROMPT_VERSION,
+        "static_preflight_mode": static_preflight_mode,
+        "static_preflight_binding": (
+            static_binding.model_dump(mode="json")
+            if static_binding is not None
+            else None
+        ),
+        "repetition": repetition,
         "coding_decision_output_policy": CODING_DECISION_OUTPUT_POLICY_VERSION,
         "evidence_repair_convergence_policy": (
             EVIDENCE_REPAIR_CONVERGENCE_POLICY_VERSION
@@ -337,7 +368,9 @@ async def run_evaluation(
 
     async def run_case(inputs: ApiRepairEvalInput) -> ApiRepairObservation:
         case = case_by_id[inputs.case_id]
-        run_id = f"{case.case_id}-{uuid4().hex[:10]}"
+        run_id = (
+            f"{case.case_id}-r{repetition}-{static_preflight_mode}-{uuid4().hex[:10]}"
+        )
         resolved = await asyncio.to_thread(
             _create_case_workspace,
             run_root,
@@ -354,6 +387,7 @@ async def run_evaluation(
                 launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()
             ),
             api_catalog=_api_catalog_binding(api_catalog),
+            static_preflight=static_binding,
             **CodingRunBudget(
                 max_clarifications=0,
                 max_model_requests=18,
@@ -378,10 +412,16 @@ async def run_evaluation(
             else None,
         )
         try:
+            static_preflight = (
+                AbqpyBasedPyrightPreflight(static_source, request.state_dir)
+                if static_source is not None
+                else None
+            )
             dependencies = CodingAgentDependencies(
                 request=request,
                 runner=runner,
                 api_catalog=api_catalog,
+                static_preflight=static_preflight,
             )
             agent = create_abaqus_coding_agent(
                 model,
@@ -419,6 +459,9 @@ async def run_evaluation(
             )
         )
         usage = result.outcome.usage
+        static_diagnostic_count, static_unavailable_count = _static_feedback_counts(
+            request.state_dir
+        )
         for name, value in {
             "model_requests": usage.model_requests,
             "input_tokens": usage.input_tokens,
@@ -428,6 +471,9 @@ async def run_evaluation(
             "delivered_runtime_notes": len(delivered_note_ids),
             "abaqus_calls": usage.abaqus_calls,
             "failed_cae_calls": failed_cae_calls,
+            "static_preflight_calls": usage.static_preflight_calls,
+            "static_diagnostic_count": static_diagnostic_count,
+            "static_unavailable_count": static_unavailable_count,
             "abaqus_runtime_s": sum(
                 execution.duration_seconds for execution in dependencies.executions
             ),
@@ -438,6 +484,8 @@ async def run_evaluation(
         set_eval_attribute("split", case.split)
         set_eval_attribute("failing_api", case.failing_api)
         set_eval_attribute("api_catalog_mode", api_catalog_mode)
+        set_eval_attribute("static_preflight_mode", static_preflight_mode)
+        set_eval_attribute("repetition", repetition)
         return ApiRepairObservation(
             run_id=run_id,
             case_id=case.case_id,
@@ -448,12 +496,18 @@ async def run_evaluation(
                 execution.duration_seconds for execution in dependencies.executions
             ),
             failed_cae_calls=failed_cae_calls,
+            static_preflight_mode=static_preflight_mode,
+            static_diagnostic_count=static_diagnostic_count,
+            static_unavailable_count=static_unavailable_count,
         )
 
     dataset = build_dataset(cases)
     report = await dataset.evaluate(
         run_case,
-        name=f"{model_gateway.value}-{model_name}-abaqus2024-{PROMPT_VERSION}-{api_catalog_mode}",
+        name=(
+            f"{model_gateway.value}-{model_name}-abaqus2024-{PROMPT_VERSION}-"
+            f"{api_catalog_mode}-{static_preflight_mode}-r{repetition}"
+        ),
         max_concurrency=1,
         retry_task=None,
         retry_evaluators=None,
@@ -540,6 +594,40 @@ def _load_api_catalog(
     ):
         raise ValueError("API catalog must be outside the evaluation run root")
     return ApiCatalog.open(catalog_path)
+
+
+def _prepare_static_source(
+    mode: StaticPreflightMode,
+    wheel: Path | None,
+    cache_dir: Path | None,
+) -> PreparedAbqpySource | None:
+    if mode == "off":
+        if wheel is not None or cache_dir is not None:
+            raise ValueError("off static preflight must not receive source paths")
+        return None
+    if mode != "on":
+        raise ValueError(f"unknown static preflight mode: {mode}")
+    if wheel is None or cache_dir is None:
+        raise ValueError("on static preflight requires an abqpy wheel and cache dir")
+    return prepare_abqpy_source(wheel, cache_dir)
+
+
+def _static_feedback_counts(state_dir: Path) -> tuple[int, int]:
+    path = state_dir / "static_preflight.jsonl"
+    if not path.is_file():
+        return 0, 0
+    diagnostics = 0
+    unavailable = 0
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        payload = json.loads(line)
+        if payload.get("status") in {"timeout", "unavailable"}:
+            unavailable += 1
+        values = payload.get("diagnostics")
+        if isinstance(values, list):
+            diagnostics += len(values)
+    return diagnostics, unavailable
 
 
 def _api_catalog_binding(catalog: ApiCatalog | None) -> ApiCatalogBinding | None:
@@ -683,6 +771,10 @@ def main() -> None:
         default="off",
     )
     parser.add_argument("--api-catalog-dir", type=Path)
+    parser.add_argument("--static-preflight-mode", choices=("off", "on"), default="off")
+    parser.add_argument("--abqpy-static-wheel", type=Path)
+    parser.add_argument("--static-preflight-cache-dir", type=Path)
+    parser.add_argument("--repetition", type=int, default=1)
     parser.add_argument(
         "--case-id",
         action="append",
@@ -700,6 +792,10 @@ def main() -> None:
             api_catalog_mode=args.api_catalog_mode,
             api_catalog_dir=args.api_catalog_dir,
             case_ids=tuple(args.case_ids) if args.case_ids else None,
+            static_preflight_mode=args.static_preflight_mode,
+            abqpy_static_wheel=args.abqpy_static_wheel,
+            static_preflight_cache_dir=args.static_preflight_cache_dir,
+            repetition=args.repetition,
         )
     )
     raise SystemExit(0 if gate.passed else 1)

@@ -49,7 +49,7 @@ class ModelExecutionConfig(BaseModel):
         default=DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS, gt=0, allow_inf_nan=False
     )
     reasoning_policy: Literal["provider_default", "enabled_high"] = "provider_default"
-    planning_enabled: bool = True
+    planning_enabled: bool = False
     interaction_policy: Literal["legacy", "workspace_facts_first"] = "legacy"
 
     @model_validator(mode="after")
@@ -123,7 +123,7 @@ def new_run_execution_config(
     http_retries: int = DEFAULT_MODEL_HTTP_RETRIES,
     http_timeout_seconds: float = DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS,
     reasoning_policy: Literal["provider_default", "enabled_high"] | None = None,
-    planning_enabled: bool = True,
+    planning_enabled: bool = False,
 ) -> ModelExecutionConfig:
     policy = reasoning_policy or (
         "enabled_high"

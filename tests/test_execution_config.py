@@ -27,7 +27,7 @@ def target_config(**changes):
 
 def launch(tmp_path):
     return LaunchManifest(
-        schema_version="coding-run-launch-v7",
+        schema_version="coding-run-launch-v10",
         question_protocol="ask_user_v1",
         response_enabled=True,
         capability_definitions=(
@@ -38,11 +38,20 @@ def launch(tmp_path):
         ),
         context_policy_version=CONTEXT_POLICY_VERSION,
         skill_library=tmp_path,
+        api_catalog_dir=(tmp_path / "catalog").resolve(),
+        api_catalog_mode="automatic_verified_only",
         **target_config().model_dump(),
     )
 
 
+def test_launch_binds_workspace_text_policy(tmp_path) -> None:
+    manifest = launch(tmp_path)
+    assert manifest.schema_version == "coding-run-launch-v10"
+    assert manifest.filesystem_policy_version == "utf8-cp936-preserve-v1"
+
+
 def test_current_launch_roundtrip_and_question_protocol(tmp_path):
+    assert target_config().planning_enabled is False
     assert target_config().model_settings() == {
         "timeout": 300.0,
         "extra_body": {"thinking": {"type": "enabled"}},
@@ -58,6 +67,19 @@ def test_current_launch_roundtrip_and_question_protocol(tmp_path):
         ValidationError, match="response-enabled launch requires ask_user"
     ):
         LaunchManifest.model_validate(without_question_protocol)
+
+
+def test_product_launch_v10_requires_enabled_catalog(tmp_path) -> None:
+    values = launch(tmp_path).model_dump(mode="python")
+
+    current = LaunchManifest.model_validate(values)
+    assert current.api_catalog_mode == "automatic_verified_only"
+    for invalid in (
+        values | {"api_catalog_dir": None},
+        values | {"api_catalog_mode": "off"},
+    ):
+        with pytest.raises(ValidationError, match="requires an enabled API catalog"):
+            LaunchManifest.model_validate(invalid)
 
 
 def test_current_launch_rejects_missing_and_null_required_execution_field(tmp_path):
@@ -161,3 +183,37 @@ def test_foundation_profile_adds_decision_owned_skill_routing_rule(tmp_path):
     assert "meaning-level\n  changes to an accepted existing model" in foundation
     assert "linear-structural-fea-discretization" in foundation
     assert "purely local coding/API repair" in foundation
+
+
+@pytest.mark.parametrize(
+    "version", [None, "coding-run-launch-v7", "coding-run-launch-v8"]
+)
+def test_launch_rejects_missing_or_old_execution_contract(tmp_path, version):
+    data = launch(tmp_path).model_dump(mode="json")
+    if version is None:
+        data.pop("schema_version")
+    else:
+        data["schema_version"] = version
+    with pytest.raises(ValidationError, match="schema_version"):
+        LaunchManifest.model_validate(data)
+
+
+@pytest.mark.parametrize(
+    "version",
+    [None, "coding-run-resume-v3", "coding-run-resume-v4", "coding-run-resume-v5"],
+)
+def test_resume_rejects_missing_or_old_execution_contract(tmp_path, version):
+    import json
+
+    from abaqus_sim_agent.coding.resume import CodingRunResumeState
+
+    request = _persist_base_state(tmp_path)
+    data = json.loads(
+        (request.state_dir / "resume_state.json").read_text(encoding="utf-8")
+    )
+    if version is None:
+        data.pop("schema_version")
+    else:
+        data["schema_version"] = version
+    with pytest.raises(ValidationError, match="schema_version"):
+        CodingRunResumeState.model_validate(data)

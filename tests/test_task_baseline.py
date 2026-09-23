@@ -8,6 +8,7 @@ from openai import AsyncOpenAI
 from pydantic import SecretStr
 from tests.test_coding_amendments import _persist_base_state
 
+from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.cli import run_cli
 from abaqus_sim_agent.coding.contracts import ClarificationRequest
 from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
@@ -214,6 +215,8 @@ def test_actual_cli_and_baseline_http_configuration_parity_with_sdk_retry(
     work = tmp_path / "cli-work"
     work.mkdir()
     state = tmp_path / "cli-state"
+    catalog = tmp_path / "api-catalog"
+    ApiCatalog([], runtime_release="2024").write(catalog)
     assert (
         run_cli(
             [
@@ -227,6 +230,8 @@ def test_actual_cli_and_baseline_http_configuration_parity_with_sdk_retry(
                 "parity",
                 "--model-provider",
                 "opencode-go",
+                "--api-catalog-dir",
+                str(catalog),
             ]
         )
         == 0
@@ -304,7 +309,7 @@ def test_actual_cli_and_baseline_http_configuration_parity_with_sdk_retry(
         }
         & evaluator_tools.keys()
     )
-    assert "write_plan" in evaluator_tools
+    assert "write_plan" not in evaluator_tools
     assert "write_plan" not in product_tools
     for name in product_tools.keys() & evaluator_tools.keys():
         assert product_tools[name] == evaluator_tools[name]

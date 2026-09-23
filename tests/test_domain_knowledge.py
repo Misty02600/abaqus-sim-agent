@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.application import prepare_new_run
 from abaqus_sim_agent.coding.contracts import CodingRunBudget, RuntimeProfile
 from abaqus_sim_agent.coding.domain_knowledge import (
@@ -202,6 +203,8 @@ def test_manifest_rejects_unsafe_or_unsupported_resources(
 def test_prepare_new_run_binds_selected_pack_to_launch_v7(tmp_path: Path) -> None:
     root = tmp_path / "packs"
     _write_pack(root)
+    catalog = tmp_path / "api-catalog"
+    ApiCatalog([], runtime_release="2024").write(catalog)
     workspace, state = _workspace_and_state(tmp_path)
     prepared = prepare_new_run(
         run_id="private-pack-run",
@@ -213,6 +216,7 @@ def test_prepare_new_run_binds_selected_pack_to_launch_v7(tmp_path: Path) -> Non
             model_name="fixture-model",
         ),
         runtime=RuntimeProfile(launcher_path=tmp_path / "never-run.bat"),
+        api_catalog_dir=catalog,
         **CodingRunBudget(
             max_abaqus_calls=0,
             max_solver_calls=0,
@@ -221,7 +225,7 @@ def test_prepare_new_run_binds_selected_pack_to_launch_v7(tmp_path: Path) -> Non
         knowledge_packs_root=root,
     )
 
-    assert prepared.launch.schema_version == "coding-run-launch-v7"
+    assert prepared.launch.schema_version == "coding-run-launch-v10"
     assert prepared.launch.allows_response()
     assert prepared.launch.domain_knowledge is not None
     assert prepared.launch.domain_knowledge.packs[0].pack_id == (

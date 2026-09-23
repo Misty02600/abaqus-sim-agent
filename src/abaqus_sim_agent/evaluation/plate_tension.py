@@ -379,7 +379,6 @@ async def run_evaluation(
     api_catalog_mode: ApiCatalogMode | None = None,
     concept_index_dir: Path | None = None,
     concept_retrieval_mode: ConceptRetrievalMode = "off",
-    planning_enabled: bool = False,
     clarification_policy_case: str | None = None,
     resume_infrastructure_once: bool = False,
 ) -> EvalGate:
@@ -431,7 +430,7 @@ async def run_evaluation(
         "concept_index_release": (
             concept_index.read_manifest().release if concept_index is not None else None
         ),
-        "planning_enabled": planning_enabled,
+        "planning_enabled": False,
         "clarification_policy_version": CLARIFICATION_POLICY_VERSION,
         "clarification_policy_case": clarification_policy_case,
         "resume_infrastructure_once": resume_infrastructure_once,
@@ -509,7 +508,7 @@ async def run_evaluation(
                 skill_library=skill_library_path(),
                 api_catalog_mode=resolved_api_catalog_mode,
                 concept_retrieval_mode=resolved_concept_retrieval_mode,
-                planning_enabled=planning_enabled,
+                planning_enabled=False,
                 task_instructions=inputs.task_instructions,
                 step_store=step_store,
             )
@@ -800,11 +799,6 @@ def main() -> None:
         default="off",
     )
     parser.add_argument(
-        "--enable-planning",
-        action="store_true",
-        help="Expose the Harness write_plan tool (disabled in Prompt v4)",
-    )
-    parser.add_argument(
         "--clarification-policy-case",
         help="Run one checked-in proceed case with zero expected clarification.",
     )
@@ -827,7 +821,6 @@ def main() -> None:
             api_catalog_mode=args.api_catalog_mode,
             concept_index_dir=args.concept_index_dir,
             concept_retrieval_mode=args.concept_retrieval_mode,
-            planning_enabled=args.enable_planning,
             clarification_policy_case=args.clarification_policy_case,
             resume_infrastructure_once=args.resume_infrastructure_once,
         )

@@ -40,6 +40,13 @@ from abaqus_sim_agent.coding.resume import (
 )
 
 
+def _catalog_dir(tmp_path: Path) -> Path:
+    path = tmp_path / "api-catalog"
+    if not path.exists():
+        ApiCatalog([], runtime_release="2024").write(path)
+    return path
+
+
 def test_parser_leaves_workspace_unset_for_cwd_default() -> None:
     args = build_parser().parse_args(["--goal", "test"])
 
@@ -122,7 +129,7 @@ def test_resume_parser_rejects_pre_release_launch_manifest(tmp_path: Path) -> No
         encoding="utf-8",
     )
 
-    with pytest.raises(ValidationError, match="coding-run-launch-v7"):
+    with pytest.raises(ValidationError, match="coding-run-launch-v9"):
         _load_launch_manifest(state_dir)
 
 
@@ -236,12 +243,14 @@ def test_cli_binds_and_reads_selected_private_knowledge_pack(
             "cli-private-pack",
             "--knowledge-pack",
             "private-fea",
+            "--api-catalog-dir",
+            str(_catalog_dir(tmp_path)),
         ]
     )
 
     assert result == 0
     launch = _load_launch_manifest(state)
-    assert launch.schema_version == "coding-run-launch-v7"
+    assert launch.schema_version == "coding-run-launch-v10"
     assert launch.domain_knowledge is not None
     assert launch.domain_knowledge.packs[0].pack_id == "private-fea"
     assert "knowledge_read_file" in observed["tools"]
@@ -354,6 +363,8 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
             "cli-resume-test",
             "--model-provider",
             gateway,
+            "--api-catalog-dir",
+            str(_catalog_dir(tmp_path)),
         ]
     )
     assert first_exit == 1
@@ -424,6 +435,8 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
             "cli-resume-test",
             "--model-provider",
             "opencode-go",
+            "--api-catalog-dir",
+            str(_catalog_dir(tmp_path)),
         ]
     )
 
@@ -558,6 +571,8 @@ def test_cli_task_revision_preserves_old_outcome_and_reverifies_fresh_work(
                 str(state_dir),
                 "--run-id",
                 "cli-task-revision",
+                "--api-catalog-dir",
+                str(_catalog_dir(tmp_path)),
             ]
         )
         == 0
@@ -630,6 +645,19 @@ def test_parser_accepts_explicit_opencode_gateway_and_model() -> None:
     assert go_args.model_provider is DeepSeekGateway.OPENCODE_GO
 
 
+def test_product_cli_does_not_expose_planning_toggle() -> None:
+    parser = build_parser()
+    assert "--planning" not in parser.format_help()
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--goal", "test", "--planning"])
+
+
+def test_product_cli_does_not_expose_api_catalog_off_mode() -> None:
+    parser = build_parser()
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--goal", "test", "--api-catalog-mode", "off"])
+
+
 def test_resolve_goal_supports_json_and_plain_text(tmp_path: Path) -> None:
     json_path = tmp_path / "request.json"
     json_path.write_text(json.dumps({"goal": " JSON goal "}), encoding="utf-8")
@@ -672,6 +700,8 @@ def test_cli_resolves_startup_cwd_before_model_configuration(
             str(state_dir),
             "--run-id",
             "cli-test",
+            "--api-catalog-dir",
+            str(_catalog_dir(tmp_path)),
         ]
     )
 
@@ -704,6 +734,8 @@ def test_cli_explicit_workspace_overrides_startup_cwd(
             str(state_dir),
             "--run-id",
             "cli-workspace-test",
+            "--api-catalog-dir",
+            str(_catalog_dir(tmp_path)),
         ]
     )
 
@@ -736,6 +768,8 @@ def test_cli_opencode_gateway_reads_only_opencode_key(
             "cli-opencode-test",
             "--model-provider",
             "opencode-zen",
+            "--api-catalog-dir",
+            str(_catalog_dir(tmp_path)),
         ]
     )
 
@@ -779,8 +813,7 @@ def test_cli_loads_catalog_only_outside_workspace(tmp_path: Path) -> None:
 def test_cli_catalog_mode_defaults_and_validates_catalog_presence() -> None:
     catalog = ApiCatalog([], runtime_release="2024")
 
-    assert _resolve_api_catalog_mode(None, None) == "off"
-    assert _resolve_api_catalog_mode(None, catalog) == "full"
+    assert _resolve_api_catalog_mode(None, catalog) == "automatic_verified_only"
     assert (
         _resolve_api_catalog_mode("full_with_discovery", catalog)
         == "full_with_discovery"
@@ -793,14 +826,8 @@ def test_cli_catalog_mode_defaults_and_validates_catalog_presence() -> None:
         _resolve_api_catalog_mode("automatic_exact_signature", catalog)
         == "automatic_exact_signature"
     )
-    with pytest.raises(ValueError, match="requires"):
+    with pytest.raises(ValueError, match="require"):
         _resolve_api_catalog_mode("automatic_verified_only", None)
-    with pytest.raises(ValueError, match="requires"):
-        _resolve_api_catalog_mode("automatic_exact_signature", None)
-    with pytest.raises(ValueError, match="requires"):
-        _resolve_api_catalog_mode("full_with_discovery", None)
-    with pytest.raises(ValueError, match="must not receive"):
-        _resolve_api_catalog_mode("off", catalog)
 
 
 def test_cli_static_preflight_requires_explicit_external_source(
@@ -811,7 +838,7 @@ def test_cli_static_preflight_requires_explicit_external_source(
 
     with pytest.raises(ValueError, match="requires"):
         _prepare_static_preflight_source(
-            mode="advisory",
+            mode="on",
             wheel=None,
             cache_dir=None,
             workspace=workspace.resolve(),
@@ -837,7 +864,7 @@ def test_cli_prepares_pinned_static_source_outside_workspace(tmp_path: Path) -> 
         archive.writestr("abaqus/__init__.py", "")
 
     source = _prepare_static_preflight_source(
-        mode="advisory",
+        mode="on",
         wheel=wheel,
         cache_dir=tmp_path / "static-cache",
         workspace=workspace.resolve(),
@@ -847,7 +874,7 @@ def test_cli_prepares_pinned_static_source_outside_workspace(tmp_path: Path) -> 
     assert source.binding().api_source_version == "2024.10"
     with pytest.raises(ValueError, match="outside"):
         _prepare_static_preflight_source(
-            mode="advisory",
+            mode="on",
             wheel=wheel,
             cache_dir=workspace / "cache",
             workspace=workspace.resolve(),
@@ -860,7 +887,7 @@ def test_cli_accepts_enforced_aci_and_explicit_runtime_files() -> None:
             "--goal",
             "test",
             "--static-preflight-mode",
-            "enforced_verified",
+            "on",
             "--abqpy-static-wheel",
             "abqpy.whl",
             "--static-preflight-cache-dir",
@@ -874,7 +901,7 @@ def test_cli_accepts_enforced_aci_and_explicit_runtime_files() -> None:
         ]
     )
 
-    assert args.static_preflight_mode == "enforced_verified"
+    assert args.static_preflight_mode == "on"
     policy = _runtime_script_policy(
         allowed_cae_scripts=args.allowed_cae_script,
         allowed_abaqus_python_scripts=args.allowed_abaqus_python_script,

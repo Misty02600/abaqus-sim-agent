@@ -103,10 +103,7 @@ def test_prepare_abqpy_source_is_immutable_and_reusable(tmp_path: Path) -> None:
 
     assert first == second
     assert first.version == "2024.10"
-    assert first.binding().policy_version == "abqpy-advisory-high-confidence-v2"
-    enforced = first.binding("enforced_verified")
-    assert enforced.policy_version == "abqpy-enforced-verified-v1"
-    assert enforced.syntax_gate_version == "python-3.10-production-syntax-v1"
+    assert first.binding().policy_version == "abqpy-runtime-feedback-v1"
     assert len(first.wheel_sha256) == 64
     assert (first.root / "abaqus" / "__init__.py").is_file()
     config = json.loads(first.config_path.read_text(encoding="utf-8"))
@@ -202,7 +199,7 @@ def test_prepare_abqpy_source_rejects_wheel_path_escape(
     assert not (tmp_path / "escape.py").exists()
 
 
-def test_preflight_records_actionable_diagnostics_and_ignores_import_noise(
+def test_preflight_preserves_errors_and_warnings_with_raw_output(
     tmp_path: Path,
 ) -> None:
     wheel = tmp_path / "abqpy-2024.10-py3-none-any.whl"
@@ -225,8 +222,8 @@ def test_preflight_records_actionable_diagnostics_and_ignores_import_noise(
     report = asyncio.run(preflight.inspect(workspace, "build_model.py"))
 
     assert report.status == "diagnostics"
-    assert report.ignored_diagnostic_count == 1
-    assert len(report.diagnostics) == 1
+    assert report.omitted_diagnostic_count == 0
+    assert len(report.diagnostics) == 2
     diagnostic = report.diagnostics[0]
     assert diagnostic.rule == "reportCallIssue"
     assert diagnostic.line == 9
@@ -243,7 +240,7 @@ def test_preflight_records_actionable_diagnostics_and_ignores_import_noise(
     assert timeout == 20.0
 
 
-def test_preflight_filters_unverified_noise_and_records_licensed_override(
+def test_preflight_does_not_suppress_diagnostics_using_case_overrides(
     tmp_path: Path,
 ) -> None:
     wheel = tmp_path / "abqpy-2024.10-py3-none-any.whl"
@@ -292,10 +289,13 @@ def test_preflight_filters_unverified_noise_and_records_licensed_override(
 
     report = asyncio.run(preflight.inspect(workspace, "build_model.py"))
 
-    assert report.status == "clean"
-    assert report.diagnostics == ()
-    assert report.ignored_diagnostic_count == 2
-    assert report.applied_override_ids == ("licensed-abq2024-job-write-input-v1",)
+    assert report.status == "diagnostics"
+    assert len(report.diagnostics) == 2
+    assert report.omitted_diagnostic_count == 0
+    assert {d.rule for d in report.diagnostics} == {
+        "reportAttributeAccessIssue",
+        "reportOptionalIterable",
+    }
 
 
 def test_preflight_timeout_fails_open_with_preserved_raw_output(
@@ -368,7 +368,7 @@ def test_preflight_detects_script_change_during_check(tmp_path: Path) -> None:
     assert report.stdout_raw_path.read_bytes() == process.output.stdout
 
 
-def test_real_basedpyright_policy_does_not_pause_known_passing_b31_reference(
+def test_real_basedpyright_preserves_hints_on_passing_b31_reference(
     tmp_path: Path,
 ) -> None:
     script_name = "build_model.py"
@@ -385,9 +385,8 @@ def test_real_basedpyright_policy_does_not_pause_known_passing_b31_reference(
 
     report = asyncio.run(preflight.inspect(workspace, script_name))
 
-    assert report.status == "clean"
-    assert report.diagnostics == ()
-    assert report.ignored_diagnostic_count > 0
+    assert report.status == "diagnostics"
+    assert report.diagnostics
 
 
 def test_real_basedpyright_catches_missing_orientation_arguments_from_v1_trace(
@@ -418,7 +417,7 @@ def test_real_basedpyright_catches_missing_orientation_arguments_from_v1_trace(
     )
 
 
-def test_enforced_preflight_has_no_blocker_on_passing_b31_reference(
+def test_runtime_feedback_has_no_blocker_on_passing_b31_reference(
     tmp_path: Path,
 ) -> None:
     script_name = "build_model.py"
@@ -434,15 +433,16 @@ def test_enforced_preflight_has_no_blocker_on_passing_b31_reference(
     preflight = AbqpyBasedPyrightPreflight(
         source,
         tmp_path / "state",
-        mode="enforced_verified",
     )
 
     report = asyncio.run(preflight.inspect(workspace, script_name))
 
-    assert all(diagnostic.disposition != "block" for diagnostic in report.diagnostics)
+    assert all(
+        not hasattr(diagnostic, "disposition") for diagnostic in report.diagnostics
+    )
 
 
-def test_enforced_preflight_keeps_unverified_missing_method_as_warning(
+def test_runtime_feedback_reports_unverified_missing_method(
     tmp_path: Path,
 ) -> None:
     repository = Path(__file__).resolve().parents[1]
@@ -461,55 +461,50 @@ def test_enforced_preflight_keeps_unverified_missing_method_as_warning(
     preflight = AbqpyBasedPyrightPreflight(
         source,
         tmp_path / "state",
-        mode="enforced_verified",
     )
 
     report = asyncio.run(preflight.inspect(workspace, "build_model.py"))
 
-    warnings = [
-        diagnostic
-        for diagnostic in report.diagnostics
-        if diagnostic.disposition == "warn"
-    ]
+    warnings = list(report.diagnostics)
     assert warnings
     assert any("HomogeneousBeamSection" in item.message for item in warnings)
-    assert not any(item.disposition == "block" for item in report.diagnostics)
+    assert all(not hasattr(item, "disposition") for item in report.diagnostics)
 
 
 @pytest.mark.parametrize(
-    ("source_text", "expected_rule_id"),
+    ("source_text", "expected_fragment"),
     [
         (
             "from abaqus import mdb\n"
             "model = mdb.models['Model-1']\n"
             "model.BeamSection(name='S', createStepName='Initial', "
             "profile='P', material='M')\n",
-            "verified-model-beam-section-keywords-v1",
+            'No parameter named "createStepName"',
         ),
         (
             "from abaqus import mdb\n"
             "part = mdb.models['Model-1'].parts['Part-1']\n"
             "part.seedPartByNumber(number=20)\n",
-            "verified-attribute-part-seed-part-by-number-v1",
+            "seedPartByNumber",
         ),
         (
             "from abaqus import mdb\n"
             "model = mdb.models['Model-1']\n"
             "model.writeInput(fileName='beam_tension')\n",
-            "verified-attribute-model-write-input-v1",
+            "writeInput",
         ),
         (
             "from abaqus import mdb\n"
             "part = mdb.models['Model-1'].parts['Part-1']\n"
             "part.assignBeamSectionOrientation()\n",
-            "verified-beam-orientation-call-contract-v1",
+            "Arguments missing",
         ),
     ],
 )
-def test_enforced_preflight_blocks_real_b31_v1_failure_families(
+def test_runtime_feedback_retains_real_b31_v1_diagnostics(
     tmp_path: Path,
     source_text: str,
-    expected_rule_id: str,
+    expected_fragment: str,
 ) -> None:
     repository = Path(__file__).resolve().parents[1]
     wheel = repository / "var/api-catalog/sources/abqpy-2024.10-py3-none-any.whl"
@@ -522,14 +517,75 @@ def test_enforced_preflight_blocks_real_b31_v1_failure_families(
     preflight = AbqpyBasedPyrightPreflight(
         source,
         tmp_path / "state",
-        mode="enforced_verified",
     )
 
     report = asyncio.run(preflight.inspect(workspace, "build_model.py"))
 
-    blockers = [
-        diagnostic
-        for diagnostic in report.diagnostics
-        if diagnostic.disposition == "block"
+    diagnostics = list(report.diagnostics)
+    assert any(expected_fragment in item.message for item in diagnostics)
+    assert all(not hasattr(item, "policy_rule_id") for item in diagnostics)
+
+
+def test_static_feedback_retains_names_and_marks_truncation(tmp_path: Path) -> None:
+    wheel = tmp_path / "abqpy-2024.10-py3-none-any.whl"
+    _write_abqpy_wheel(wheel)
+    source = prepare_abqpy_source(wheel, tmp_path / "cache")
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    (workspace / "extract.py").write_text("x = missing_name\n", encoding="utf-8")
+    diagnostics = [
+        {
+            "severity": "error",
+            "rule": "reportUndefinedVariable",
+            "message": '"missing_name" is not defined ' + "x" * 4100,
+            "range": {"start": {"line": 0, "character": 4}},
+        }
     ]
-    assert any(item.policy_rule_id == expected_rule_id for item in blockers)
+    diagnostics += [
+        {
+            "severity": "warning",
+            "rule": "reportArgumentType",
+            "message": f"Possibly incompatible dynamic object {i}",
+            "range": {"start": {"line": i + 1, "character": 0}},
+        }
+        for i in range(23)
+    ]
+    raw = json.dumps({"generalDiagnostics": diagnostics}).encode()
+    checker = AbqpyBasedPyrightPreflight(
+        source,
+        tmp_path / "state",
+        process_strategy=_FakeProcessStrategy(
+            ProcessOutput(exit_code=1, stdout=raw, stderr=b"")
+        ),
+    )
+    report = asyncio.run(checker.inspect(workspace, "extract.py"))
+    assert report.diagnostics[0].rule == "reportUndefinedVariable"
+    assert report.diagnostics[0].message_truncated is True
+    assert len(report.diagnostics) == 20
+    assert report.raw_diagnostic_count == 24
+    assert report.omitted_diagnostic_count == 4
+    assert report.stdout_raw_path.read_bytes() == raw
+
+
+@pytest.mark.parametrize(
+    "payload", [[], {"generalDiagnostics": [{}]}, {"generalDiagnostics": "invalid"}]
+)
+def test_malformed_static_output_is_unavailable_not_clean(
+    tmp_path: Path, payload
+) -> None:
+    wheel = tmp_path / "abqpy-2024.10-py3-none-any.whl"
+    _write_abqpy_wheel(wheel)
+    source = prepare_abqpy_source(wheel, tmp_path / "cache")
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    (workspace / "build.py").write_text("pass\n", encoding="utf-8")
+    checker = AbqpyBasedPyrightPreflight(
+        source,
+        tmp_path / "state",
+        process_strategy=_FakeProcessStrategy(
+            ProcessOutput(exit_code=0, stdout=json.dumps(payload).encode(), stderr=b"")
+        ),
+    )
+    report = asyncio.run(checker.inspect(workspace, "build.py"))
+    assert report.status == "unavailable"
+    assert report.error

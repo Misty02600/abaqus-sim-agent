@@ -33,8 +33,8 @@ def root_fixture(tmp_path):
     config = new_run_execution_config(
         model_provider=DeepSeekGateway.OPENCODE_GO,
         model_name=DEEPSEEK_V4_FLASH,
-        http_retries=1,
-        http_timeout_seconds=180.0,
+        http_retries=4,
+        http_timeout_seconds=300.0,
     )
     save_json(
         tmp_path / "manifest.json",
@@ -47,7 +47,7 @@ def root_fixture(tmp_path):
             "max_task_concurrency": 1,
             "max_runtime_concurrency": 1,
             "verification_policy": "results_first_v1",
-            "max_explicit_resumes": 1,
+            "max_explicit_resumes": 3,
             "execution_config": config.model_dump(mode="json"),
             "budgets": {
                 name: get_case(name).run_budget().model_dump(mode="json")
@@ -252,7 +252,8 @@ def test_continue_never_replays_and_resume_is_bounded(tmp_path):
     )
     assert suite.selected_cases(tmp_path, "continue", None) == names[1:]
     assert suite.selected_cases(tmp_path, "resume", names[:1]) == names[:1]
-    save_json(state / "attempts/001.json", {"mode": "resume"})
+    for index in range(1, 4):
+        save_json(state / f"attempts/{index:03}.json", {"mode": "resume"})
     with pytest.raises(ValueError, match="allowance"):
         suite.selected_cases(tmp_path, "resume", names[:1])
     with pytest.raises(FileExistsError):
@@ -401,6 +402,19 @@ def test_knowledge_discovery_profile_copies_and_binds_resources(tmp_path, monkey
     assert manifest["catalog_mode"] == "full_with_discovery"
     assert manifest["max_task_concurrency"] == 2
     assert manifest["max_runtime_concurrency"] == 2
+    assert manifest["max_explicit_resumes"] == 3
+    assert manifest["execution_config"]["http_timeout_seconds"] == 300.0
+    assert manifest["execution_config"]["http_retries"] == 4
+    assert manifest["execution_config"]["planning_enabled"] is False
+    for budget in manifest["budgets"].values():
+        assert budget["max_model_requests"] == 80
+        assert budget["max_api_lookup_calls"] is None
+        assert budget["max_concept_lookup_calls"] is None
+        assert budget["max_diagnostic_retrieval_calls"] is None
+        assert budget["max_static_preflight_calls"] is None
+        assert budget["max_abaqus_calls"] == 30
+        assert budget["max_solver_calls"] == 10
+        assert budget["wall_time_seconds"] == 5400.0
     assert manifest["knowledge_resources"]["files"] == {
         "README.md": suite.file_digest(root / "knowledge-resources/README.md")
     }

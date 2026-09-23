@@ -46,7 +46,7 @@ from abaqus_sim_agent.coding.static_preflight import StaticPreflightReport
 from abaqus_sim_agent.coding.workspace import WorkspaceSnapshot
 from abaqus_sim_agent.execution import AbaqusExecutionResult
 
-RESUME_STATE_SCHEMA_VERSION = "coding-run-resume-v3"
+RESUME_STATE_SCHEMA_VERSION = "coding-run-resume-v6"
 STEP_PERSISTENCE_DIRECTORY = "step-persistence"
 EXECUTION_JOURNAL_NAME = "execution_results.jsonl"
 RUNTIME_TOOL_NAMES = frozenset(
@@ -148,7 +148,6 @@ class StaticPreflightCacheSnapshot(_StrictModel):
     relative_path: str
     script_sha256: str
     report: StaticPreflightReport
-    acknowledged: bool = False
 
 
 class DependencyResumeState(_StrictModel):
@@ -167,7 +166,7 @@ class DependencyResumeState(_StrictModel):
     static_preflight_calls: int = Field(default=0, ge=0)
     static_preflight_cache: tuple[StaticPreflightCacheSnapshot, ...] = ()
     syntax_checks: int = Field(default=0, ge=0)
-    syntax_edit_checks: int = Field(default=0, ge=0)
+    syntax_edit_checks: Literal[0] = 0
     syntax_runtime_checks: int = Field(default=0, ge=0)
     syntax_denials: int = Field(default=0, ge=0)
     probe_protocol_active: bool = False
@@ -181,14 +180,12 @@ class DependencyResumeState(_StrictModel):
 
     @classmethod
     def capture(cls, dependencies: CodingAgentDependencies) -> DependencyResumeState:
-        acknowledged = dependencies.acknowledged_static_preflights
         cache = tuple(
             StaticPreflightCacheSnapshot(
                 kind=key[0],
                 relative_path=key[1],
                 script_sha256=key[2],
                 report=report,
-                acknowledged=key in acknowledged,
             )
             for key, report in sorted(
                 dependencies.static_preflight_reports.items(),
@@ -231,9 +228,7 @@ class DependencyResumeState(_StrictModel):
             static_preflight_calls=dependencies.static_preflight_calls,
             static_preflight_cache=cache,
             syntax_checks=syntax_gate.checks if syntax_gate is not None else 0,
-            syntax_edit_checks=(
-                syntax_gate.edit_checks if syntax_gate is not None else 0
-            ),
+            syntax_edit_checks=(0),
             syntax_runtime_checks=(
                 syntax_gate.runtime_checks if syntax_gate is not None else 0
             ),
@@ -367,23 +362,17 @@ class DependencyResumeState(_StrictModel):
             (item.kind, item.relative_path, item.script_sha256): item.report
             for item in self.static_preflight_cache
         }
-        dependencies.acknowledged_static_preflights = {
-            (item.kind, item.relative_path, item.script_sha256)
-            for item in self.static_preflight_cache
-            if item.acknowledged
-        }
         syntax_gate = dependencies.syntax_gate
         if syntax_gate is not None:
             syntax_gate.checks = self.syntax_checks
-            syntax_gate.edit_checks = self.syntax_edit_checks
             syntax_gate.runtime_checks = self.syntax_runtime_checks
             syntax_gate.denials = self.syntax_denials
 
 
 class CodingRunResumeState(_StrictModel):
     schema_version: Literal[
-        "coding-run-resume-v3", "coding-run-resume-v4", "coding-run-resume-v5"
-    ] = RESUME_STATE_SCHEMA_VERSION
+        "coding-run-resume-v6", "coding-run-resume-v7", "coding-run-resume-v8"
+    ]
     question_protocol: Literal["ask_user_v1"] | None = Field(
         default=None, exclude_if=lambda v: v is None
     )
@@ -414,12 +403,12 @@ class CodingRunResumeState(_StrictModel):
 
     @model_validator(mode="after")
     def document_checkpoint_version(self):
-        if self.schema_version == "coding-run-resume-v5":
+        if self.schema_version == "coding-run-resume-v8":
             if (
                 self.question_protocol != "ask_user_v1"
                 or self.document_policy_checkpoint is not None
             ):
-                raise ValueError("resume v5 requires the supported ask_user profile")
+                raise ValueError("resume v8 requires the supported ask_user profile")
             if self.status == "waiting_for_user" and self.pending_question_id is None:
                 raise ValueError("waiting state requires its question id")
             return self
@@ -429,11 +418,11 @@ class CodingRunResumeState(_StrictModel):
             or self.status == "waiting_for_user"
         ):
             raise ValueError("legacy resume cannot carry question state")
-        if (self.schema_version == "coding-run-resume-v4") != (
+        if (self.schema_version == "coding-run-resume-v7") != (
             self.document_policy_checkpoint is not None
         ):
             raise ValueError(
-                "resume v4 requires a document checkpoint; v3 must not carry one"
+                "resume v7 requires a document checkpoint; v6 must not carry one"
             )
         return self
 
@@ -793,7 +782,7 @@ def new_resume_state(
     pending_question_id: str | None = None,
 ) -> CodingRunResumeState:
     return CodingRunResumeState(
-        schema_version="coding-run-resume-v5"
+        schema_version="coding-run-resume-v8"
         if question_protocol
         else RESUME_STATE_SCHEMA_VERSION,
         question_protocol=question_protocol,
@@ -882,7 +871,6 @@ def _dependencies_have_runtime_state(
             dependencies.executions,
             dependencies.static_preflight_calls,
             dependencies.static_preflight_reports,
-            dependencies.acknowledged_static_preflights,
             dependencies.probe_protocol is not None,
         )
     )

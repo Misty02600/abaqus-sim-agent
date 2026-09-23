@@ -4,14 +4,18 @@
 
 | 入口 | 当前接线 | 返回什么 / 由谁使用 |
 |---|---|---|
-| `lookup_abaqus_api` | CLI 显式 `full` / `full_with_discovery` | qualified method、parameter、member 或 `Method.__doc__` 的精确证据 |
-| `discover_abaqus_api` | CLI 显式 `full_with_discovery` | 已知 receiver 下的方法名称和 Card ID；供 Coder 选择后精确查证 |
-| automatic Catalog | `automatic_verified_only` / `automatic_exact_signature` | 在可确定的错误上下文中附 verified note 或紧凑签名，不暴露主动 discovery |
+| `lookup_abaqus_api` | CLI/Web 显式 `full` / `full_with_discovery` | qualified method、parameter、member 或 `Method.__doc__` 的精确证据 |
+| `discover_abaqus_api` | CLI/Web 显式 `full_with_discovery` | 已知 receiver 下的方法名称和 Card ID；供 Coder 选择后精确查证 |
+| automatic Catalog | 产品默认 `automatic_verified_only`；可选 `automatic_exact_signature` | 在可确定的错误上下文中附 verified note 或紧凑签名，不暴露主动查询工具 |
 | `search_abaqus_docs` | 显式 Concept `tool`；默认 off | 本地官方文档候选；普通模式按需查询，允许零查询 |
 | Solver diagnostic advisory | 独立、默认 off 的模式 | 非超时结构化 Solver warning/error 后附有界文档候选，不覆盖原运行结果 |
 | `bounded_v1` document policy | 显式 policy spec + Concept tool，已接入同一 Coder；默认 off | need、receipt、assessment 与逐链预算；运行和 ready 前有宿主证据门禁 |
 | 力学 Skill 与只读参考资料 | 显式 Agent 工厂 / 评测入口 | 基础层 `foundation_skill_profile="linear_structural_fea_v1"`；专题层 `structural_topic_skill_profile="structural_mechanics_v1"`；参考脚本仍由独立 `knowledge_resources_dir` 提供，普通 CLI/launch 尚无资料选择和快照绑定 |
-| 本机私有领域知识包 | CLI `--knowledge-pack` / Web 新会话显式选择；默认 off | 从用户级应用数据根发现 strict manifest，launch v7 绑定 state 快照；模型只经两个只读文件工具按需读取 |
+| 本机私有领域知识包 | CLI `--knowledge-pack` / Web 新会话显式选择；默认 off | 从用户级应用数据根发现 strict manifest，launch v10 绑定 state 快照；模型只经两个只读文件工具按需读取 |
+
+新普通 CLI/Web 会话必须绑定工作区外的 Catalog artifact；产品不再提供 `off`。launch v10 保存路径、模式，
+request 保存 schema、card/member hash 和 runtime release。创建和恢复均核对绑定，Catalog 缺失、损坏或变化时
+在模型调用前拒绝。旧冻结报告和 evaluator 中的 `off` 仍是历史实验条件，不是当前产品配置。
 
 当前 Catalog 是精确卡片与对象方法目录，独立检索实验另有 BM25/E5 意图搜索。两者不能仅因都叫
 discovery 就视为同一产品接口。早期 [API 方案实验](../../benchmarks/api_catalog/api_discovery_loop_v1_20260915.md)
@@ -19,9 +23,10 @@ discovery 就视为同一产品接口。早期 [API 方案实验](../../benchmar
 
 ## 产品 API discovery
 
-已有显式 Catalog 目录时，CLI 参数 `--api-catalog-mode full_with_discovery` 同时注册 discovery 和 exact
-lookup。不提供 Catalog 时不能启用该模式；默认 run 不自动加载候选索引。该模式可以和新普通 CLI 的
-`ask_user_v1` 一起使用，旧 run 仍按自己的 launch 恢复。
+CLI/Web 参数 `--api-catalog-mode full_with_discovery` 同时注册 discovery 和 exact lookup。默认
+`automatic_verified_only` 不注册这两个工具，只在符合条件的 runtime failure 后附 verified note；因此
+“必须绑定 Catalog”不等于每轮都让模型主动检索。显式模式可以和普通 `ask_user_v1` 一起使用，旧冻结 run
+仍按自己的实验合同解释。
 
 调用顺序：
 
@@ -33,7 +38,7 @@ lookup。不提供 Catalog 时不能启用该模式；默认 run 不自动加载
 discovery 的候选 ID 不进入已读卡片集合，也不会阻止随后 exact lookup。查到名字不证明签名、适用性或运行成功。
 
 普通产品的 discovery 与 lookup 不设调用次数上限。有效、非重复且 Catalog 可用的查询进入累计 usage/journal；
-无效、重复或未配置不增加计数。去重按规范化 receiver/query/limit，
+无效或重复查询不增加计数。去重按规范化 receiver/query/limit，
 不把候选误记成已交付的完整卡片或参数。
 
 `api_discoveries.jsonl` 和 `api_lookups.jsonl` 保存在 workspace 外。恢复合并 journal 与 snapshot，继承
@@ -54,7 +59,7 @@ junction、路径越界、未列出文件、重复 ID、单文件/整包超限�
 
 发现不等于启用。CLI 用可重复的 `--knowledge-pack <pack_id>`，Web 在创建新会话时选择包；空列表保持原产品
 行为。宿主按 `pack_id` 找到源目录，读取实际 bytes，生成逐文件 hash、pack digest 和按 ID 排序的 bundle
-digest，并把 `pack.json` 与所列资源复制到 state 的 `domain-knowledge/`。launch v7 保存完整 binding；普通
+digest，并把 `pack.json` 与所列资源复制到 state 的 `domain-knowledge/`。launch v10 保存完整 binding；普通
 恢复、Web continuation 和 task revision 只校验原 state 快照，不回读已变化或已删除的用户级源目录，也不允许
 通过 amendment 换包。
 
@@ -105,9 +110,18 @@ snapshot/resume、CLI/Web 接线和确定性模型读取等离线回归，没有
 知识来源区分 Abaqus 2026 FD02 文档、abqpy 2024.10 静态声明和 2024 licensed runtime note。
 静态声明不是运行证据，found 不是物理验收；索引、Card、Skill 或参数变化后必须重新绑定新实验，旧报告保留。
 
+Runtime note 的 `verified` 只覆盖说明中明确验证的行为。调用未抛异常不能替代状态赋值生效、INP 写出或
+求解成功；例如 `Part.assignBeamSectionOrientation.region` 的最小探针仅验证参数接受情况，没有检查
+保存的梁方向或写出 INP。当前卡片说明保留这一限制，不沿用历史观测中的通用用法推荐。
+
+[当前 runtime notes](../../benchmarks/api_catalog/abaqus_2024_runtime_notes.jsonl) 是新 Catalog 的构建输入；
+[final15 原始快照](../../benchmarks/api_catalog/abaqus_2024_runtime_notes_final15_20260828.jsonl) 保留旧报告绑定的
+原始 bytes。修订当前说明后须生成新的不可变 Catalog 目录，由新会话显式选择；已有目录及 run 绑定不会自动更新。
+
 ## 相关决定与证据
 
 - [ADR-0009](../adr/0009-exact-abaqus-api-catalog.md)：Catalog 来源和证据合同。
+- [ADR-0040](../adr/0040-require-api-catalog-for-product-runs.md)：产品必选 Catalog、默认 automatic verified-only 与历史 `off` 边界。
 - [ADR-0010](../adr/0010-budgeted-official-concept-retrieval.md)：可选 Concept 接入；普通产品次数上限已由 ADR-0031 替代。
 - [ADR-0022](../adr/0022-evaluate-bm25-dense-rrf-before-agent-adoption.md)：先独立对照再决定采用。
 - [ADR-0028](../adr/0028-bind-user-domain-knowledge-as-read-only-snapshots.md)：私有包的只读内容和 run 快照边界。

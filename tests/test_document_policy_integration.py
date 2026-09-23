@@ -12,6 +12,7 @@ from tests.test_coding_resume import _execution
 from tests.test_coding_service import _request
 from tests.test_document_policy import BINDING, SCOPE, FakePort, FakeValidator, first
 
+from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.amendments import (
     CodingRunConfigPatch,
@@ -201,6 +202,7 @@ def compose(
 
 def test_harness_blocks_all_runtime_tools_and_ready_until_assessment(tmp_path):
     request, snapshot = _request(tmp_path)
+    (request.workspace / "model.py").write_text("pass\n", encoding="utf-8")
     request = request.model_copy(update={"document_policy": bound(tmp_path)})
     verifier = FakeVerifier()
     count = 0
@@ -248,7 +250,7 @@ def test_harness_blocks_all_runtime_tools_and_ready_until_assessment(tmp_path):
     assert verifier.calls == 1
     assert deps.concept_lookup_calls == 1
     state = load_resume_state(request.state_dir)
-    assert state.schema_version == "coding-run-resume-v4"
+    assert state.schema_version == "coding-run-resume-v7"
     assert state.document_policy_checkpoint.cumulative_lookup_calls == 1
 
 
@@ -276,6 +278,7 @@ def test_budget_exhaustion_cannot_bypass_document_gate(tmp_path):
 
 def test_host_physical_input_is_resolved_only_by_real_clarification_path(tmp_path):
     request, snapshot = _request(tmp_path)
+    (request.workspace / "model.py").write_text("pass\n", encoding="utf-8")
     need = DeclaredDocumentNeed(
         condition="plate thickness",
         affects_step="all runtime",
@@ -426,7 +429,7 @@ def test_explicit_binding_current_launch_roundtrip(tmp_path):
         http_retries=0,
     )
     launch = _LaunchManifest(
-        schema_version="coding-run-launch-v7",
+        schema_version="coding-run-launch-v9",
         response_enabled=False,
         capability_definitions=(
             CapabilityDefinitionBinding(
@@ -538,6 +541,8 @@ def test_cli_bounded_profile_persists_launch_and_ignores_edited_spec_on_resume(
         return FunctionModel(model), Client()
 
     monkeypatch.setattr(cli, "create_deepseek_chat_model", factory)
+    catalog = tmp_path / "api-catalog"
+    ApiCatalog([], runtime_release="2024").write(catalog)
     assert (
         cli.run_cli(
             [
@@ -555,6 +560,8 @@ def test_cli_bounded_profile_persists_launch_and_ignores_edited_spec_on_resume(
                 str(spec_path),
                 "--concept-retrieval-mode",
                 "tool",
+                "--api-catalog-dir",
+                str(catalog),
             ]
         )
         == 0
@@ -563,7 +570,7 @@ def test_cli_bounded_profile_persists_launch_and_ignores_edited_spec_on_resume(
         (state / "request.json").read_bytes(),
         (state / "launch.json").read_bytes(),
     )
-    assert json.loads(original_launch)["schema_version"] == "coding-run-launch-v7"
+    assert json.loads(original_launch)["schema_version"] == "coding-run-launch-v10"
     assert json.loads(original_launch)["reasoning_policy"] == "provider_default"
     assert json.loads(original_launch)["planning_enabled"] is False
     assert json.loads(original_request)["document_policy"]["mode"] == "bounded_v1"

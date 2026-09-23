@@ -118,6 +118,10 @@ def test_workspace_browse_search_preview_and_path_boundaries(tmp_path):
         source.mkdir()
         (source / "build_model.py").write_text("print('model')\n", encoding="utf-8")
         (workspace / "notes.txt").write_text("workspace note", encoding="utf-8")
+        (workspace / "abaqus.rpy").write_bytes(
+            "# -*- coding: mbcs -*-\r\n#: 模型已创建。\r\n".encode("cp936")
+        )
+        (workspace / "unsupported.txt").write_bytes(b"\x81")
         (workspace / "opaque.bin").write_bytes(b"\x00\x01")
         Image.new("RGB", (8, 8), "red").save(workspace / "view.png")
 
@@ -156,6 +160,19 @@ def test_workspace_browse_search_preview_and_path_boundaries(tmp_path):
                 params={"path": "src/build_model.py"},
             ).content
             == (source / "build_model.py").read_bytes()
+        )
+        replay = client.get(
+            f"/api/v1/runs/{rid}/workspace/file", params={"path": "abaqus.rpy"}
+        )
+        assert replay.status_code == 200
+        assert replay.headers["content-type"].startswith("text/plain; charset=utf-8")
+        assert replay.content.decode("utf-8").endswith("#: 模型已创建。\r\n")
+        assert (
+            client.get(
+                f"/api/v1/runs/{rid}/workspace/file",
+                params={"path": "unsupported.txt"},
+            ).status_code
+            == 415
         )
         image = client.get(
             f"/api/v1/runs/{rid}/workspace/file", params={"path": "view.png"}

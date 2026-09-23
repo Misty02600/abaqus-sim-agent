@@ -79,6 +79,16 @@ def check(tmp_path, text, case="uniform-axial-bar", measured=None):
 def test_twenty_distinct_cases_and_independent_reference_formulas():
     cases = mechanics_cases()
     assert len({c.case_id for c in cases}) == 20
+    assert {case.run_budget().max_model_requests for case in cases} == {80}
+    assert {case.run_budget().max_api_lookup_calls for case in cases} == {None}
+    assert {case.run_budget().max_concept_lookup_calls for case in cases} == {None}
+    assert {case.run_budget().max_diagnostic_retrieval_calls for case in cases} == {
+        None
+    }
+    assert {case.run_budget().max_static_preflight_calls for case in cases} == {None}
+    assert {case.run_budget().max_abaqus_calls for case in cases} == {30}
+    assert {case.run_budget().max_solver_calls for case in cases} == {10}
+    assert {case.run_budget().wall_time_seconds for case in cases} == {5400.0}
     assert cases[0].metrics["tip_u1"].target == 10000 * 1000 / (200000 * 100)
     assert cases[1].metrics["tip_u1"].target == pytest.approx(
         10000 / 200000 * (400 / 100 + 600 / 200)

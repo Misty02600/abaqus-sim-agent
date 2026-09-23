@@ -15,10 +15,15 @@ from uuid import uuid4
 
 from pydantic import SecretStr
 
+from ..api_catalog import ApiCatalog
 from ..coding.amendments import (
     CodingRunConfigPatch,
     RuntimeExecutionPolicyPatch,
     append_operational_amendment,
+)
+from ..coding.api_lookup import (
+    DEFAULT_PRODUCT_API_CATALOG_MODE,
+    ProductApiCatalogMode,
 )
 from ..coding.application import (
     ConversationMessage,
@@ -123,6 +128,8 @@ DELETE_STOP_TIMEOUT_SECONDS = 20.0
 @dataclass(frozen=True)
 class ServerConfig:
     root: Path
+    api_catalog_dir: Path
+    api_catalog_mode: ProductApiCatalogMode = DEFAULT_PRODUCT_API_CATALOG_MODE
     knowledge_packs_root: Path | None = None
     stream_model: bool = True
     execution: ModelExecutionConfig = field(
@@ -289,6 +296,7 @@ class RunController:
         runner_factory: RunnerFactory = Abaqus2024Runner,
     ):
         self.config, self.api_key = config, api_key
+        self.api_catalog = ApiCatalog.open(config.api_catalog_dir.resolve(strict=True))
         self.registry = RunRegistry(config.root)
         self.threads = ThreadStore(self.registry)
         self.invocations = InvocationStore(self.registry)
@@ -736,6 +744,7 @@ class RunController:
                 clarification_provider=ScriptedClarificationProvider({}),
                 resume=True,
                 expected_amendment_sequence=prepared.amendment_sequence,
+                api_catalog=self.api_catalog,
                 observer=lambda event: self._publish(run_id, prepared, event),
                 stream_model=self.config.stream_model,
                 response_control=self._response_control,
@@ -1135,6 +1144,8 @@ class RunController:
                 state_dir=state,
                 execution=self.config.execution,
                 runtime=self.config.runtime,
+                api_catalog_dir=self.config.api_catalog_dir,
+                api_catalog_mode=self.config.api_catalog_mode,
                 **controls,
                 knowledge_pack_ids=command.knowledge_pack_ids,
                 knowledge_packs_root=self.config.knowledge_packs_root,
@@ -1418,7 +1429,7 @@ class RunController:
             runtime_policy_block = None
             if run_id in self._deleting or deletion_stopping:
                 runtime_policy_block = "会话删除尚未完成。"
-            elif launch.schema_version != "coding-run-launch-v7":
+            elif launch.schema_version != "coding-run-launch-v10":
                 runtime_policy_block = "旧会话不支持修改运行权限。"
             elif active or external_busy:
                 runtime_policy_block = "当前工作段仍在执行。"
@@ -1446,7 +1457,7 @@ class RunController:
             message_block = None
             if run_id in self._deleting or deletion_stopping:
                 message_block = "会话删除尚未完成，请重试删除。"
-            elif launch.schema_version != "coding-run-launch-v7":
+            elif launch.schema_version != "coding-run-launch-v10":
                 message_block = "旧会话不支持追加消息，请新建会话。"
             elif tool_needs_reconcile:
                 message_block = "Solver 外部执行状态未知，请先核查运行状态与产物。"
@@ -2499,6 +2510,7 @@ class RunController:
                 expected_amendment_sequence=prepared.amendment_sequence,
                 continuation_id=continuation_id,
                 continuation_prompt=continuation_prompt,
+                api_catalog=self.api_catalog,
                 observer=lambda event: self._publish(run_id, prepared, event),
                 stream_model=self.config.stream_model,
                 response_control=self._response_control,

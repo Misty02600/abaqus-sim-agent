@@ -7,7 +7,13 @@ from fastapi.testclient import TestClient
 from pydantic import SecretStr
 from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import FunctionModel
-from tests.test_web_workbench import Client, NoProcess, login, settled
+from tests.test_web_workbench import (
+    Client,
+    NoProcess,
+    api_catalog_dir,
+    login,
+    settled,
+)
 
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.application import prepare_new_run
@@ -71,6 +77,7 @@ def open_request_app(tmp_path, mode="response"):
 
     config = ServerConfig(
         root=tmp_path / "web",
+        api_catalog_dir=api_catalog_dir(tmp_path),
         stream_model=False,
         budget=CodingRunBudget(
             max_model_requests=5, max_abaqus_calls=0, max_solver_calls=0
@@ -117,7 +124,7 @@ def test_text_question_finishes_without_files_or_verification_and_restores(tmp_p
         launch = LaunchManifest.model_validate_json(
             (tmp_path / "web/states" / rid / "launch.json").read_bytes()
         )
-        assert launch.schema_version == "coding-run-launch-v7"
+        assert launch.schema_version == "coding-run-launch-v10"
         assert launch.capability_definitions
         assert launch.context_policy_version == "deepseek-1m-tiered-summary-v1"
     other, again = open_request_app(tmp_path)
@@ -159,7 +166,10 @@ def test_text_completion_cannot_hide_file_changes(tmp_path):
 
 @pytest.mark.asyncio
 async def test_response_output_is_enabled_only_for_open_request_agent(tmp_path):
-    config = ServerConfig(root=tmp_path / "host")
+    config = ServerConfig(
+        root=tmp_path / "host",
+        api_catalog_dir=api_catalog_dir(tmp_path),
+    )
     (tmp_path / "workspace").mkdir()
     prepared = prepare_new_run(
         run_id="compat",
@@ -168,6 +178,7 @@ async def test_response_output_is_enabled_only_for_open_request_agent(tmp_path):
         state_dir=tmp_path / "state",
         execution=config.execution,
         runtime=config.runtime,
+        api_catalog_dir=config.api_catalog_dir,
     )
     observed = []
 
@@ -211,4 +222,4 @@ async def test_response_output_is_enabled_only_for_open_request_agent(tmp_path):
     assert "final_result_ResponseDecision" in observed[1][0]
     assert "CURRENT requested action" in observed[1][1]
     assert "creating only geometry needs no material or load" in observed[1][1]
-    assert prepared.launch.schema_version == "coding-run-launch-v7"
+    assert prepared.launch.schema_version == "coding-run-launch-v10"

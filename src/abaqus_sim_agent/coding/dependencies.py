@@ -10,7 +10,7 @@ from typing import Literal
 from pydantic_ai_harness.step_persistence import StepStore
 
 from abaqus_sim_agent.api_catalog import ApiCatalog
-from abaqus_sim_agent.coding.aci import ProductionPythonSyntaxGate
+from abaqus_sim_agent.coding.aci import RuntimePythonSyntaxGate
 from abaqus_sim_agent.coding.contracts import (
     CodingRunRequest,
     ConceptLookupContext,
@@ -80,10 +80,7 @@ class CodingAgentDependencies:
     static_preflight_reports: dict[tuple[str, str, str], StaticPreflightReport] = field(
         default_factory=dict
     )
-    acknowledged_static_preflights: set[tuple[str, str, str]] = field(
-        default_factory=set
-    )
-    syntax_gate: ProductionPythonSyntaxGate | None = None
+    syntax_gate: RuntimePythonSyntaxGate | None = None
     edit_scope_gate: ReferenceEditGate | None = field(default=None, init=False)
     current_turn: int = 0
     current_amendment_sequence: int = 0
@@ -98,28 +95,21 @@ class CodingAgentDependencies:
             self.edit_scope_gate = ReferenceEditGate(
                 self.request.workspace, self.request.state_dir, self.request.edit_scope
             )
+        if self.syntax_gate is None:
+            self.syntax_gate = RuntimePythonSyntaxGate(
+                workspace=self.request.workspace, state_dir=self.request.state_dir
+            )
         binding = self.request.static_preflight
         if binding is None and self.static_preflight is None:
-            if self.syntax_gate is not None:
-                raise ValueError("syntax gate requires enforced static preflight")
             return
         if binding is None or self.static_preflight is None:
             raise ValueError(
-                "static preflight request binding and runtime must be configured together"
+                "static preflight binding and runtime must be configured together"
             )
         if self.static_preflight.binding != binding:
             raise ValueError("static preflight runtime does not match request binding")
         if self.static_preflight.state_dir != self.request.state_dir:
             raise ValueError("static preflight state directory must match the request")
-        if binding.mode == "enforced_verified":
-            if self.syntax_gate is None:
-                self.syntax_gate = ProductionPythonSyntaxGate(
-                    workspace=self.request.workspace,
-                    state_dir=self.request.state_dir,
-                    runtime_script_policy=self.request.runtime_script_policy,
-                )
-        elif self.syntax_gate is not None:
-            raise ValueError("hard syntax gate requires enforced_verified mode")
 
     def reserve_runtime_call(self, *, solver: bool) -> str | None:
         if denied := self.runtime_permission_denial(solver=solver):

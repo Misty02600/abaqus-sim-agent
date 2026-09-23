@@ -43,7 +43,7 @@ from abaqus_sim_agent.coding.contracts import (
 )
 from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
 from abaqus_sim_agent.coding.runtime_tools import (
-    _static_preflight_before_runtime,
+    _python_checks_before_runtime,
     _tool_payload,
 )
 from abaqus_sim_agent.coding.static_preflight import (
@@ -248,11 +248,8 @@ class _UnavailableStaticPreflightProcess:
         return ProcessOutput(exit_code=1, stdout=b"not-json", stderr=b"failed")
 
 
-def _enforced_binding() -> StaticPreflightBinding:
+def _feedback_binding() -> StaticPreflightBinding:
     return StaticPreflightBinding(
-        mode="enforced_verified",
-        policy_version="abqpy-enforced-verified-v1",
-        syntax_gate_version="python-3.10-production-syntax-v1",
         engine_version="1.1.407",
         api_source_version="2024.10",
         api_source_sha256="a" * 64,
@@ -631,9 +628,13 @@ def test_runtime_script_policy_blocks_unlisted_cae_without_budget(
     assert "Do not create a probe or\ncheck script" in instructions
 
 
-def test_static_preflight_pauses_once_then_unchanged_retry_runs_abaqus(
+@pytest.mark.parametrize("analysis_available", [True, False])
+@pytest.mark.parametrize("runtime_fails", [False, True])
+def test_static_feedback_accompanies_each_execution_and_reuses_analysis(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    analysis_available: bool,
+    runtime_fails: bool,
 ) -> None:
     binding = StaticPreflightBinding(
         engine_version="1.1.407",
@@ -654,7 +655,11 @@ def test_static_preflight_pauses_once_then_unchanged_retry_runs_abaqus(
         version=binding.api_source_version,
         basedpyright_version=binding.engine_version,
     )
-    process = _StaticPreflightProcess()
+    process = (
+        _StaticPreflightProcess()
+        if analysis_available
+        else _UnavailableStaticPreflightProcess()
+    )
     preflight = AbqpyBasedPyrightPreflight(
         source,
         request.state_dir,
@@ -678,11 +683,11 @@ def test_static_preflight_pauses_once_then_unchanged_retry_runs_abaqus(
             invocation=AbaqusInvocation.CAE_NOGUI,
             command=("abq2024.bat", "cae", f"noGUI={script}"),
             workspace=request.workspace,
-            exit_code=0,
+            exit_code=1 if runtime_fails else 0,
             timed_out=False,
             duration_seconds=0.1,
             stdout="DONE\n",
-            stderr="",
+            stderr="TypeError: runtime failure" if runtime_fails else "",
             stdout_encoding="utf-8",
             stderr_encoding="utf-8",
             stdout_raw_path=request.state_dir / "abaqus-stdout.bin",
@@ -696,6 +701,8 @@ def test_static_preflight_pauses_once_then_unchanged_retry_runs_abaqus(
         info: AgentInfo,
     ) -> ModelResponse:
         nonlocal model_calls
+        tool_names = {tool.name for tool in info.function_tools}
+        assert {"ask_user", "run_command", "solver_job"} <= tool_names
         model_calls += 1
         if info.instructions is not None:
             observed_instructions.append(info.instructions)
@@ -731,42 +738,52 @@ def test_static_preflight_pauses_once_then_unchanged_retry_runs_abaqus(
         runner=Abaqus2024Runner(request.workspace, request.state_dir),
         static_preflight=preflight,
     )
-    agent = create_abaqus_coding_agent(FunctionModel(model_function), request)
+    agent = create_abaqus_coding_agent(
+        FunctionModel(model_function),
+        request,
+        question_protocol="ask_user_v1",
+        response_enabled=True,
+        product_coding_tools=True,
+    )
 
     result = asyncio.run(agent.run(request.goal, deps=dependencies))
 
     assert isinstance(result.output, FailedDecision)
-    assert process.calls == 1
-    assert dependencies.static_preflight_calls == 1
-    assert dependencies.abaqus_calls == 1
-    assert runtime_calls == ["build_model.py"]
+    assert process.calls == (1 if analysis_available else 2)
+    assert dependencies.static_preflight_calls == process.calls
+    assert dependencies.abaqus_calls == 2
+    assert runtime_calls == ["build_model.py", "build_model.py"]
     tool_returns = [
-        part
+        part.content
         for message in observed_messages
         if isinstance(message, ModelRequest)
         for part in message.parts
         if isinstance(part, ToolReturnPart) and part.tool_name == "run_cae_script"
     ]
     assert len(tool_returns) == 2
-    first = tool_returns[0].content
-    second = tool_returns[1].content
-    assert isinstance(first, dict)
-    assert first["error_type"] == "StaticPreflightAdvisory"
-    assert first["budget_consumed"] is False
-    assert first["runtime_executed"] is False
-    assert isinstance(second, dict)
-    assert second["succeeded"] is True
-    assert second["static_preflight"]["status"] == "acknowledged"
+    for payload in tool_returns:
+        assert isinstance(payload, dict)
+        assert payload["succeeded"] is (not runtime_fails)
+        assert payload["static_preflight"]["status"] == (
+            "diagnostics" if analysis_available else "unavailable"
+        )
+        assert payload["static_preflight"]["non_blocking"] is True
+        if analysis_available:
+            assert payload["static_preflight"]["diagnostics"]
+        else:
+            assert payload["static_preflight"]["error"]
+        if runtime_fails:
+            assert "runtime failure" in payload["stderr_tail"]
+        assert "error_type" not in payload
     instructions = " ".join(observed_instructions[0].split())
-    assert "filters its raw output through the pinned" in instructions
-    assert "apply all independent supported repairs in one edit" in instructions
-    assert "unchanged retry remains a false-positive escape hatch" in instructions
+    assert "never require a separate acknowledgement or block execution" in instructions
+    assert "escape hatch" not in instructions
 
 
-def test_enforced_preflight_unavailable_fails_closed_before_abaqus(
+def test_unavailable_analysis_is_nonblocking_and_explicit(
     tmp_path: Path,
 ) -> None:
-    binding = _enforced_binding()
+    binding = _feedback_binding()
     request = _request(
         tmp_path,
         runtime_script_policy=_production_policy(),
@@ -784,23 +801,22 @@ def test_enforced_preflight_unavailable_fails_closed_before_abaqus(
         static_preflight=AbqpyBasedPyrightPreflight(
             source,
             request.state_dir,
-            mode="enforced_verified",
             process_strategy=process,
         ),
     )
 
     blocked, annotation = asyncio.run(
-        _static_preflight_before_runtime(
+        _python_checks_before_runtime(
             dependencies,
             kind="cae",
             script_path="build_model.py",
         )
     )
 
-    assert blocked is not None
-    assert blocked["error_type"] == "ApiPreflightUnavailable"
-    assert blocked["budget_consumed"] is False
-    assert annotation is None
+    assert blocked is None
+    assert annotation is not None
+    assert annotation["status"] == "unavailable"
+    assert annotation["non_blocking"] is True
     assert process.calls == 1
     assert dependencies.abaqus_calls == 0
 
@@ -809,7 +825,7 @@ def test_enforced_runtime_policy_denial_precedes_syntax_and_api_checks(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    binding = _enforced_binding()
+    binding = _feedback_binding()
     request = _request(
         tmp_path,
         runtime_script_policy=_production_policy(),
@@ -871,7 +887,6 @@ def test_enforced_runtime_policy_denial_precedes_syntax_and_api_checks(
         static_preflight=AbqpyBasedPyrightPreflight(
             source,
             request.state_dir,
-            mode="enforced_verified",
             process_strategy=process,
         ),
     )
@@ -1327,7 +1342,7 @@ def test_runtime_preflight_error_is_returned_to_agent_for_repair(
     result = asyncio.run(agent.run(request.goal, deps=dependencies))
 
     assert isinstance(result.output, FailedDecision)
-    assert dependencies.abaqus_calls == 1
+    assert dependencies.abaqus_calls == 0
     assert dependencies.executions == []
     assert any("FileNotFoundError" in str(message) for message in observed_messages)
 
@@ -1336,7 +1351,7 @@ def test_coder_filesystem_and_runner_share_canonical_workspace_without_shell(
     tmp_path: Path,
 ) -> None:
     request = _request(tmp_path)
-    (request.workspace / "marker.txt").write_text("workspace marker", encoding="utf-8")
+    (request.workspace / "marker.txt").write_bytes("工作区标记".encode("cp936"))
     call_count = 0
     observed_messages: list[ModelMessage] = []
 
@@ -1388,7 +1403,8 @@ def test_coder_filesystem_and_runner_share_canonical_workspace_without_shell(
         if isinstance(part, ToolReturnPart)
     ]
     read_result = next(part for part in tool_returns if part.tool_name == "read_file")
-    assert "workspace marker" in str(read_result.content)
+    assert "工作区标记" in str(read_result.content)
+    assert "encoding:cp936" in str(read_result.content)
     assert all(part.tool_name != "run_command" for part in tool_returns)
     assert runner.workspace == request.workspace
 
@@ -2366,3 +2382,97 @@ def test_solver_tool_payload_includes_high_signal_diagnostics(tmp_path: Path) ->
         execution.model_copy(update={"invocation": AbaqusInvocation.CAE_NOGUI})
     )
     assert "diagnostics" not in cae_payload
+
+
+@pytest.mark.parametrize("tool_name", ["run_cae_script", "run_abaqus_python"])
+def test_syntax_blocks_runtime_without_static_analysis(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, tool_name: str
+) -> None:
+    request = _request(tmp_path)
+    script = request.workspace / "draft.py"
+    script.write_text("def broken(:\n", encoding="utf-8")
+    observed = []
+
+    async def must_not_run(*args, **kwargs):
+        raise AssertionError("invalid syntax reached vendor runtime")
+
+    monkeypatch.setattr(Abaqus2024Runner, tool_name, must_not_run)
+
+    def model_function(messages, info):
+        returned = [
+            part
+            for message in messages
+            if isinstance(message, ModelRequest)
+            for part in message.parts
+            if isinstance(part, ToolReturnPart) and part.tool_name == tool_name
+        ]
+        if not returned:
+            return ModelResponse(
+                parts=[ToolCallPart(tool_name, {"script_path": "draft.py"})]
+            )
+        observed.append(returned[-1].content)
+        output = next(
+            tool for tool in info.output_tools if tool.name.endswith("FailedDecision")
+        )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    output.name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "syntax",
+                        "summary": "Invalid draft.",
+                    },
+                )
+            ]
+        )
+
+    deps = CodingAgentDependencies(
+        request=request, runner=Abaqus2024Runner(request.workspace, request.state_dir)
+    )
+    agent = create_abaqus_coding_agent(FunctionModel(model_function), request)
+    asyncio.run(agent.run(request.goal, deps=deps))
+    assert observed[0]["error_type"] == "PythonSyntaxRuntimeDenied"
+    assert observed[0]["diagnostic"]["line"] == 1
+    assert observed[0]["runtime_executed"] is False
+    assert deps.abaqus_calls == 0
+    assert deps.static_preflight_calls == 0
+    assert script.read_text(encoding="utf-8") == "def broken(:\n"
+
+
+def test_analysis_cache_and_usage_survive_restore(tmp_path: Path) -> None:
+    from abaqus_sim_agent.coding.resume import DependencyResumeState
+
+    binding = _feedback_binding()
+    request = _request(tmp_path, static_preflight=binding)
+    script = request.workspace / "build_model.py"
+    script.write_text("value = missing_name\n", encoding="utf-8")
+    source = _prepared_static_source(tmp_path, binding)
+    process = _StaticPreflightProcess()
+
+    def dependencies():
+        return CodingAgentDependencies(
+            request=request,
+            runner=Abaqus2024Runner(request.workspace, request.state_dir),
+            static_preflight=AbqpyBasedPyrightPreflight(
+                source, request.state_dir, process_strategy=process
+            ),
+        )
+
+    original = dependencies()
+    block, first = asyncio.run(
+        _python_checks_before_runtime(original, kind="cae", script_path=script.name)
+    )
+    assert block is None
+    snapshot = DependencyResumeState.capture(original)
+    resumed = dependencies()
+    snapshot.restore_into(resumed)
+    block, second = asyncio.run(
+        _python_checks_before_runtime(resumed, kind="cae", script_path=script.name)
+    )
+    assert block is None
+    assert second == first
+    assert process.calls == 1
+    assert resumed.static_preflight_calls == 1
+    assert resumed.syntax_gate is not None
+    assert resumed.syntax_gate.runtime_checks == 2

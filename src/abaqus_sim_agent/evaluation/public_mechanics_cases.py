@@ -88,12 +88,14 @@ class MechanicsCase(BaseModel):
     def run_budget(self) -> CodingRunBudget:
         return CodingRunBudget(
             max_clarifications=0,
-            max_model_requests=40,
-            max_api_lookup_calls=8,
-            max_concept_lookup_calls=2,
-            max_abaqus_calls=18,
-            max_solver_calls=6,
-            wall_time_seconds=2700.0,
+            max_model_requests=80,
+            max_api_lookup_calls=None,
+            max_concept_lookup_calls=None,
+            max_diagnostic_retrieval_calls=None,
+            max_static_preflight_calls=None,
+            max_abaqus_calls=30,
+            max_solver_calls=10,
+            wall_time_seconds=5400.0,
         )
 
     def goal(self) -> str:

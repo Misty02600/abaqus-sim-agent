@@ -37,7 +37,8 @@ Harness 0.33 的 `Coder` 默认提供六个工具和跨 run 存活的持久 Shel
   ACI 在落盘前检查依次替换后的完整候选，包括 CRLF 源文件。纯编辑 profile 仍拒绝批量替换，只允许其原有受限入口。
 - Shell 显式选择 `run_command`、`start_command`、`check_command`、`stop_command`；后台命令随 run 退出清理，
   使用原有 launcher guardrail、环境过滤及 Shell 超时策略。持久 `shell` 工具不注册。
-- `Planning` 按有效配置独立组合，普通产品默认关闭；显式 evaluator profile 继续使用受限 `write_plan`。
+- `Planning` 能力保持可组合，只用于解释或复现冻结历史 profile；当前新产品与新评测均关闭，入口不提供
+  重新开启参数。历史 manifest 中的 `planning_enabled=true` 不作为新运行默认值。
 - 工具输出保留 `ToolOutputLimits` 的 spill/read-back 路径，避免上游 Coder 默认直接截断后无法回读完整结果。
   产品 1M tiered compaction 与 typed capability activation 保留机制继续由项目装配。
 - 新 Coder 默认通用指令与 `RepairToolArguments` 未自动启用；问答和恢复继续由 `CodingRunService` 与
@@ -56,7 +57,7 @@ Harness 0.33 的 `Coder` 默认提供六个工具和跨 run 存活的持久 Shel
 | `ready_for_verification` | 声明非空、去重的工作区相对 manifest，申请宿主验收；不是完成声明 |
 | `failed` | 当前任务无法继续，由宿主形成失败 outcome |
 
-新普通 CLI 及其显式 Catalog 组合可使用 ask_user。旧 run、旧 Gold、旧 `--answers` 与未迁移的
+新普通 CLI/Web 会话必须绑定 Catalog，并可使用 ask_user。旧 run、旧 Gold、旧 `--answers` 与未迁移的
 Concept/ACI/document/纯编辑组合按保存合同使用 legacy；不从“新默认”推导旧 run 自动换协议。
 CLI 对新会话可先读取工作区事实再提问；缺失材料、尺寸、载荷等必要物理输入仍不能补造或带缺参执行。
 
@@ -70,10 +71,15 @@ CLI 对新会话可先读取工作区事实再提问；缺失材料、尺寸、�
 ## 显式约束与实验 profile
 
 - `RuntimeScriptPolicy` 按三种入口分别限制精确相对路径；拒绝在 probe 状态、allowance 预留和 runner 前发生，
-  返回 `RuntimeScriptPolicyDenied`。null 保持工作区路径边界。
-- ACI 默认 off。`enforced_verified` 要求 task-owned production allowlist：写入前检查完整 Python 3.10
-  候选，运行前按当前 hash 复核，再按冻结 evidence 分类 API blocker；未知 SWIG/type 仅 warning。
-  checker 不可用或预算耗尽 fail-closed，旧 advisory 保留原兼容行为。
+  返回 `RuntimeScriptPolicyDenied`。null 保持工作区路径边界。runtime permission 与 allowance 在相应工具
+  被调用时返回明确拒绝；verifier 拒绝本身不推断后续修复是否需要 Abaqus，也不提前结束普通文件修复。
+- 两个 Python runtime 执行前始终解析当前脚本的 Python 3.10 语法，错误或无法检查时不启动外部进程；
+  编辑过程允许不完整文件。可选 BasedPyright 仅有 `off` / `on`，默认 off；error/warning 与执行结果
+  一起返回，不暂停或阻断。检查器超时/不可用明确留证并允许实际运行。只缓存完成的分析，检查期间
+  脚本变化会拒绝执行；不要求固定 production 文件名。见 [ADR-0038](../adr/0038-unify-runtime-syntax-and-static-feedback.md)。
+- Coder 文件工具按 [ADR-0039](../adr/0039-preserve-workspace-text-encoding.md) 严格支持 UTF-8/CP936。
+  `read_file`/搜索显示采用的编码，编辑和覆盖保持已有编码，新文件为 UTF-8，hash 绑定原始 bytes；不支持
+  或无法无损写回的文本在修改前拒绝。Web 预览使用同一解码策略，runner 的 raw log 合同不变。
 - typed probe 默认 off。显式启用时区分 production/diagnostic；conclusion/adoption 与允许 target hash
   由宿主记录，validated 不能绕过 production adoption；不自动发布经验，当前不支持其完整恢复。
 - `--edit-scope-file` 冻结现有 Python 文件和单表达式范围，写前约束范围外不变，且不注册 Abaqus runtime。

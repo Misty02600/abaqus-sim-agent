@@ -412,35 +412,18 @@ def _runtime_script_policy_instructions(
 
 
 def _static_preflight_instructions(request: CodingRunRequest) -> str:
+    syntax = (
+        "Before executing a CAE or Abaqus Python script, the host checks Python 3.10 "
+        "syntax. Invalid syntax prevents that execution, but file edits may be incomplete."
+    )
     binding = request.static_preflight
     if binding is None:
-        return ""
-    if binding.mode == "enforced_verified":
-        return f"""
-The host enforces the `{binding.syntax_gate_version}` Agent-Computer Interface
-for the task-owned production Python files. A syntactically invalid Python 3.10
-candidate is rejected before `write_file` or `edit_file` changes the workspace.
-The current file hash is checked again before vendor runtime.
-
-After runtime-file authorization, the host runs {binding.engine} with pinned
-{binding.api_source} {binding.api_source_version} information and applies
-`{binding.policy_version}`. Diagnostics backed by explicit licensed or frozen
-contract evidence are hard blockers: the same unchanged hash remains blocked
-and you cannot override it. Apply every blocker in one coherent edit. Warnings
-are non-blocking hints for dynamic SWIG/container behavior and licensed Abaqus
-remains authoritative for them. Do not create another script to evade either
-gate.
-""".strip()
-    return f"""
-Before vendor execution, the host runs {binding.engine} against the current
-production script using {binding.api_source} {binding.api_source_version} type
-information, then filters its raw output through the pinned
-`{binding.policy_version}` high-confidence policy. The first report for a script
-hash pauses execution before Abaqus starts. Review every reported
-item and apply all independent supported repairs in one edit before vendor
-execution; do not use an unchanged retry merely to ask Abaqus to confirm the
-same errors. An unchanged retry remains a false-positive escape hatch, but use
-it only when a specific exact-Catalog result or prior licensed-runtime fact
-contradicts a diagnostic, and state that evidence. Do not create a separate
-script merely to evade preflight.
-""".strip()
+        return syntax
+    return syntax + (
+        f" Optional {binding.engine} analysis uses {binding.api_source} "
+        f"{binding.api_source_version} and {binding.policy_version}. Its diagnostics "
+        "and availability status accompany the actual runtime result; they never "
+        "require a separate acknowledgement or block execution. Prioritize runtime "
+        "failures over speculative static hints. Successful execution need not be "
+        "followed by edits solely to clear static warnings."
+    )

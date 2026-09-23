@@ -550,7 +550,7 @@ async def _execute_service(
     )
     skill_library = skill_library_path().resolve()
     launch = LaunchManifest(
-        schema_version="coding-run-launch-v7",
+        schema_version="coding-run-launch-v9",
         question_protocol=(
             "ask_user_v1" if question_protocol == "ask_user_v1" else None
         ),

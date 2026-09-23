@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path, PurePosixPath
 
+from ..coding.text_encoding import (
+    UnsupportedTextEncodingError,
+    decode_workspace_text,
+)
 from .contracts import WebError, WorkspaceDirectory, WorkspaceEntry, WorkspaceSearch
 from .controller import RunController
 from .storage import plain_path
@@ -14,12 +18,14 @@ TEXT_PREVIEW_SUFFIXES = {
     ".dat",
     ".inp",
     ".json",
+    ".jnl",
     ".log",
     ".md",
     ".msg",
     ".mtl",
     ".obj",
     ".py",
+    ".rec",
     ".rpy",
     ".sta",
     ".txt",
@@ -147,7 +153,7 @@ def search_workspace(
 
 def workspace_preview(
     controller: RunController, run_id: str, relative_path: str
-) -> tuple[Path, str]:
+) -> tuple[Path | bytes, str]:
     _root, file = workspace_path(controller, run_id, relative_path, directory=False)
     if file.stat().st_size > MAX_PREVIEW_BYTES:
         raise WebError("preview_too_large", "文件超过网页预览上限", 413)
@@ -155,5 +161,12 @@ def workspace_preview(
     if suffix in IMAGE_PREVIEW_TYPES:
         return file, IMAGE_PREVIEW_TYPES[suffix]
     if suffix in TEXT_PREVIEW_SUFFIXES or file.stat().st_size == 0:
-        return file, "text/plain; charset=utf-8"
+        raw = file.read_bytes()
+        if b"\x00" in raw[:8192]:
+            raise WebError("preview_unsupported", "该文件不是可预览文本", 415)
+        try:
+            decoded = decode_workspace_text(file, raw)
+        except UnsupportedTextEncodingError as exc:
+            raise WebError("preview_encoding", "文件编码不受支持", 415) from exc
+        return decoded.text.encode("utf-8"), "text/plain; charset=utf-8"
     raise WebError("preview_unsupported", "该文件类型暂不支持网页预览", 415)

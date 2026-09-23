@@ -15,6 +15,7 @@ from .diagnostic_retrieval import DiagnosticRetrievalMode
 from .document_policy_binding import DocumentPolicyBinding
 from .domain_knowledge import DomainKnowledgeBundleBinding
 from .model import DeepSeekGateway, ModelExecutionConfig
+from .text_encoding import TEXT_ENCODING_POLICY_VERSION
 
 if TYPE_CHECKING:
     from .amendments import CodingRunAmendmentLedger
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
 
 class LaunchManifest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
-    schema_version: Literal["coding-run-launch-v7"] = "coding-run-launch-v7"
+    schema_version: Literal["coding-run-launch-v9", "coding-run-launch-v10"]
     question_protocol: Literal["ask_user_v1"] | None = Field(
         default=None, exclude_if=lambda v: v is None
     )
@@ -35,6 +36,9 @@ class LaunchManifest(BaseModel):
     )
     capability_definitions: tuple[CapabilityDefinitionBinding, ...]
     context_policy_version: Literal["deepseek-1m-tiered-summary-v1"]
+    filesystem_policy_version: Literal["utf8-cp936-preserve-v1"] = (
+        TEXT_ENCODING_POLICY_VERSION
+    )
     model_provider: DeepSeekGateway
     model_name: str
     http_retries: int = Field(ge=0)
@@ -44,7 +48,7 @@ class LaunchManifest(BaseModel):
     concept_index_dir: Path | None = None
     concept_retrieval_mode: ConceptRetrievalMode = "off"
     diagnostic_retrieval_mode: DiagnosticRetrievalMode = "off"
-    static_preflight_mode: Literal["off", "advisory", "enforced_verified"] = "off"
+    static_preflight_mode: Literal["off", "on"] = "off"
     abqpy_static_wheel: Path | None = None
     static_preflight_cache_dir: Path | None = None
     reasoning_policy: Literal["provider_default", "enabled_high"]
@@ -63,6 +67,13 @@ class LaunchManifest(BaseModel):
             raise ValueError("capability definition ids must be unique")
         if self.context_policy_version != CONTEXT_POLICY_VERSION:
             raise ValueError("launch requires the current context policy")
+        if self.schema_version == "coding-run-launch-v10":
+            if self.api_catalog_dir is None or self.api_catalog_mode == "off":
+                raise ValueError("launch v10 requires an enabled API catalog")
+            if not self.api_catalog_dir.is_absolute():
+                raise ValueError("launch API catalog directory must be absolute")
+            if self.api_catalog_dir.resolve() != self.api_catalog_dir:
+                raise ValueError("launch API catalog directory must be resolved")
         if self.document_policy is not None and self.concept_retrieval_mode != "tool":
             raise ValueError("bounded documents require concept tool mode")
         self.effective_execution()

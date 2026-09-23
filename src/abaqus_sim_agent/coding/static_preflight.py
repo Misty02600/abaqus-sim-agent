@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import ast
 import hashlib
 import json
-import re
 import shutil
 import stat
 import sys
@@ -21,19 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from abaqus_sim_agent.coding.contracts import StaticPreflightBinding
 from abaqus_sim_agent.execution import ProcessStrategy, WindowsProcessStrategy
 
-ADVISORY_STATIC_PREFLIGHT_POLICY_VERSION = "abqpy-advisory-high-confidence-v2"
-ENFORCED_STATIC_PREFLIGHT_POLICY_VERSION = "abqpy-enforced-verified-v1"
-_IGNORED_RULES = frozenset({"reportWildcardImportFromLibrary"})
-_JOB_WRITE_INPUT_OVERRIDE_ID = "licensed-abq2024-job-write-input-v1"
-_B31_PREFLIGHT_EVIDENCE = (
-    "benchmarks/coding/beam_tension_b31_abqpy_preflight_evaluation_20260829.json"
-)
-_API_REPAIR_REGRESSION_EVIDENCE = (
-    "benchmarks/coding/api_repair_regression_evaluation_20260824.json"
-)
-_API_REPAIR_FINAL11_EVIDENCE = (
-    "benchmarks/coding/api_repair_final13_evaluation_20260828.json"
-)
+STATIC_PREFLIGHT_POLICY_VERSION = "abqpy-runtime-feedback-v1"
 
 
 class _FrozenModel(BaseModel):
@@ -46,10 +32,7 @@ class StaticPreflightDiagnostic(_FrozenModel):
     message: str = Field(min_length=1, max_length=4_000)
     line: int = Field(ge=1)
     column: int = Field(ge=1)
-    disposition: Literal["advisory", "block", "warn"] = "advisory"
-    policy_rule_id: str | None = Field(default=None, min_length=1)
-    evidence_refs: tuple[str, ...] = ()
-    callable_name: str | None = Field(default=None, min_length=1)
+    message_truncated: bool = False
 
 
 class StaticPreflightReport(_FrozenModel):
@@ -58,11 +41,9 @@ class StaticPreflightReport(_FrozenModel):
     script_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     engine: Literal["basedpyright"] = "basedpyright"
     engine_version: str = Field(min_length=1)
-    mode: Literal["advisory", "enforced_verified"] = "advisory"
-    policy_version: Literal[
-        "abqpy-advisory-high-confidence-v2",
-        "abqpy-enforced-verified-v1",
-    ] = ADVISORY_STATIC_PREFLIGHT_POLICY_VERSION
+    policy_version: Literal["abqpy-runtime-feedback-v1"] = (
+        STATIC_PREFLIGHT_POLICY_VERSION
+    )
     api_source: Literal["abqpy"] = "abqpy"
     api_source_version: str = Field(min_length=1)
     api_source_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
@@ -70,8 +51,8 @@ class StaticPreflightReport(_FrozenModel):
     exit_code: int | None
     timed_out: bool
     diagnostics: tuple[StaticPreflightDiagnostic, ...] = ()
-    ignored_diagnostic_count: int = Field(default=0, ge=0)
-    applied_override_ids: tuple[str, ...] = ()
+    raw_diagnostic_count: int = Field(default=0, ge=0)
+    omitted_diagnostic_count: int = Field(default=0, ge=0)
     error: str | None = Field(default=None, min_length=1, max_length=2_000)
     stdout_raw_path: Path
     stderr_raw_path: Path
@@ -85,20 +66,8 @@ class PreparedAbqpySource:
     version: str
     basedpyright_version: str
 
-    def binding(
-        self,
-        mode: Literal["advisory", "enforced_verified"] = "advisory",
-    ) -> StaticPreflightBinding:
-        if mode == "advisory":
-            return StaticPreflightBinding(
-                engine_version=self.basedpyright_version,
-                api_source_version=self.version,
-                api_source_sha256=self.wheel_sha256,
-            )
+    def binding(self) -> StaticPreflightBinding:
         return StaticPreflightBinding(
-            mode="enforced_verified",
-            policy_version=ENFORCED_STATIC_PREFLIGHT_POLICY_VERSION,
-            syntax_gate_version="python-3.10-production-syntax-v1",
             engine_version=self.basedpyright_version,
             api_source_version=self.version,
             api_source_sha256=self.wheel_sha256,
@@ -172,14 +141,13 @@ class AbqpyBasedPyrightPreflight:
         source: PreparedAbqpySource,
         state_dir: Path,
         *,
-        mode: Literal["advisory", "enforced_verified"] = "advisory",
         process_strategy: ProcessStrategy | None = None,
         timeout_seconds: float = 20.0,
     ) -> None:
         if timeout_seconds <= 0:
             raise ValueError("static preflight timeout must be greater than zero")
         self.source = source
-        self.binding = source.binding(mode)
+        self.binding = source.binding()
         self.state_dir = state_dir.resolve()
         self.state_dir.mkdir(parents=True, exist_ok=True)
         self.timeout_seconds = timeout_seconds
@@ -235,7 +203,6 @@ class AbqpyBasedPyrightPreflight:
                 status="changed",
                 script_path=relative,
                 script_sha256=script_sha256,
-                mode=self.binding.mode,
                 policy_version=self.binding.policy_version,
                 engine_version=self.source.basedpyright_version,
                 api_source_version=self.source.version,
@@ -255,7 +222,6 @@ class AbqpyBasedPyrightPreflight:
                     status="unavailable",
                     script_path=relative,
                     script_sha256=script_sha256,
-                    mode=self.binding.mode,
                     policy_version=self.binding.policy_version,
                     engine_version=self.source.basedpyright_version,
                     api_source_version=self.source.version,
@@ -303,55 +269,17 @@ def _latest_invocation_sequence(directory: Path) -> int:
 
 
 def static_preflight_payload(report: StaticPreflightReport) -> dict[str, object]:
-    blockers = [
-        diagnostic.model_dump(mode="json")
-        for diagnostic in report.diagnostics
-        if diagnostic.disposition == "block"
-    ]
-    warnings = [
-        diagnostic.model_dump(mode="json")
-        for diagnostic in report.diagnostics
-        if diagnostic.disposition == "warn"
-    ]
-    advisory_diagnostics = [
-        diagnostic.model_dump(mode="json")
-        for diagnostic in report.diagnostics
-        if diagnostic.disposition == "advisory"
-    ]
     return {
-        "status": report.status,
-        "script_path": report.script_path,
-        "script_sha256": report.script_sha256,
-        "engine": report.engine,
-        "engine_version": report.engine_version,
-        "mode": report.mode,
-        "policy_version": report.policy_version,
-        "api_source": report.api_source,
-        "api_source_version": report.api_source_version,
-        "diagnostics": [
-            diagnostic.model_dump(mode="json") for diagnostic in report.diagnostics
-        ],
-        "blockers": blockers,
-        "warnings": warnings,
-        "advisory_diagnostics": advisory_diagnostics,
-        "ignored_diagnostic_count": report.ignored_diagnostic_count,
-        "applied_override_ids": list(report.applied_override_ids),
-        "advisory": report.mode == "advisory",
-        "enforced": report.mode == "enforced_verified",
-        "runtime_executed": False,
-        "budget_consumed": False,
+        **report.model_dump(
+            mode="json", exclude={"stdout_raw_path", "stderr_raw_path"}
+        ),
+        "non_blocking": True,
         "guidance": (
-            "Apply every verified blocker to the production script before "
-            "requesting vendor runtime again. The model cannot override a blocker; "
-            "warnings are non-blocking and remain subject to licensed runtime."
-            if report.mode == "enforced_verified"
-            else (
-                "The host has already filtered raw abqpy noise through a pinned "
-                "high-confidence policy. Review every reported item and apply all "
-                "independent supported repairs in one edit before vendor execution. "
-                "Use an unchanged repeat only when a specific exact-Catalog or prior "
-                "licensed-runtime fact contradicts a diagnostic."
-            )
+            "Static analysis hints, not confirmed runtime failures. Prioritize the actual "
+            "execution result; do not change successful code merely to clear diagnostics. "
+            "At most 20 diagnostics and 4000 characters per message are shown; "
+            "omissions and truncated messages are marked. The complete analyzer output "
+            "is retained in the host state."
         ),
     }
 
@@ -374,7 +302,6 @@ def _report_from_output(
     common = {
         "script_path": relative,
         "script_sha256": script_sha256,
-        "mode": binding.mode,
         "policy_version": binding.policy_version,
         "engine_version": source.basedpyright_version,
         "api_source_version": source.version,
@@ -400,6 +327,12 @@ def _report_from_output(
             error=(error or f"invalid BasedPyright JSON: {type(exc).__name__}")[:2_000],
             **common,
         )
+    if not isinstance(payload, dict) or exit_code not in {0, 1}:
+        return StaticPreflightReport(
+            status="unavailable",
+            error="Invalid BasedPyright result or exit status",
+            **common,
+        )
     raw_diagnostics = payload.get("generalDiagnostics")
     if not isinstance(raw_diagnostics, list):
         return StaticPreflightReport(
@@ -407,280 +340,26 @@ def _report_from_output(
             error="BasedPyright JSON did not contain generalDiagnostics",
             **common,
         )
-    blockers: list[StaticPreflightDiagnostic] = []
-    warnings: list[StaticPreflightDiagnostic] = []
-    advisories: list[StaticPreflightDiagnostic] = []
-    ignored = 0
-    applied_overrides: list[str] = []
+    diagnostics = []
     for item in raw_diagnostics:
-        if not isinstance(item, dict):
-            ignored += 1
-            continue
-        rule = item.get("rule")
-        if rule in _IGNORED_RULES:
-            ignored += 1
-            continue
-        diagnostic = _diagnostic_from_json(item)
+        diagnostic = _diagnostic_from_json(item) if isinstance(item, dict) else None
         if diagnostic is None:
-            ignored += 1
-            continue
-        decision = _diagnostic_policy(
-            diagnostic,
-            mode=binding.mode,
-            script_text=script_text,
-        )
-        if decision.disposition == "ignore":
-            ignored += 1
-            if (
-                decision.override_id is not None
-                and decision.override_id not in applied_overrides
-            ):
-                applied_overrides.append(decision.override_id)
-            continue
-        classified = diagnostic.model_copy(
-            update={
-                "disposition": decision.disposition,
-                "policy_rule_id": decision.policy_rule_id,
-                "evidence_refs": decision.evidence_refs,
-                "callable_name": decision.callable_name,
-            }
-        )
-        target = {
-            "block": blockers,
-            "warn": warnings,
-            "advisory": advisories,
-        }[decision.disposition]
-        target.append(classified)
-    if binding.mode == "enforced_verified":
-        kept_blockers = blockers[:20]
-        warning_limit = min(3, max(0, 20 - len(kept_blockers)))
-        kept_warnings = warnings[:warning_limit]
-        diagnostics = (*kept_blockers, *kept_warnings)
-        dropped = (
-            len(blockers)
-            - len(kept_blockers)
-            + len(warnings)
-            - len(kept_warnings)
-            + len(advisories)
-        )
-    else:
-        diagnostics = tuple(advisories[:20])
-        dropped = len(advisories) - len(diagnostics) + len(blockers) + len(warnings)
+            return StaticPreflightReport(
+                status="unavailable",
+                error="Malformed BasedPyright diagnostic",
+                **common,
+            )
+        if diagnostic.severity in {"error", "warning"}:
+            diagnostics.append(diagnostic)
+    diagnostics.sort(key=lambda diagnostic: diagnostic.severity != "error")
+    kept = tuple(diagnostics[:20])
     return StaticPreflightReport(
         status="diagnostics" if diagnostics else "clean",
-        diagnostics=tuple(diagnostics),
-        ignored_diagnostic_count=ignored + dropped,
-        applied_override_ids=tuple(applied_overrides),
+        diagnostics=kept,
+        raw_diagnostic_count=len(raw_diagnostics),
+        omitted_diagnostic_count=len(raw_diagnostics) - len(kept),
         **common,
     )
-
-
-@dataclass(frozen=True, slots=True)
-class _DiagnosticDecision:
-    disposition: Literal["advisory", "block", "warn", "ignore"]
-    policy_rule_id: str | None = None
-    evidence_refs: tuple[str, ...] = ()
-    callable_name: str | None = None
-    override_id: str | None = None
-
-
-def _diagnostic_policy(
-    diagnostic: StaticPreflightDiagnostic,
-    *,
-    mode: Literal["advisory", "enforced_verified"],
-    script_text: str,
-) -> _DiagnosticDecision:
-    message = diagnostic.message
-    callable_name = _callable_at_line(script_text, diagnostic.line)
-    if diagnostic.rule == "reportAttributeAccessIssue":
-        if 'attribute "writeInput"' in message and (
-            'class "Job"' in message or 'class "JobFromInputFile"' in message
-        ):
-            return _DiagnosticDecision(
-                disposition="ignore",
-                override_id=_JOB_WRITE_INPUT_OVERRIDE_ID,
-            )
-        if mode == "advisory":
-            return _DiagnosticDecision(
-                disposition="advisory",
-                policy_rule_id="advisory-attribute-access-v1",
-                callable_name=callable_name,
-            )
-        match = re.search(
-            r'Cannot access attribute "(?P<attribute>[^"]+)" for class "(?P<class>[^"]+)"',
-            message,
-        )
-        verified_attributes = {
-            ("Part", "BaseSolidBox"): (
-                "verified-attribute-part-base-solid-box-v1",
-                _API_REPAIR_REGRESSION_EVIDENCE,
-            ),
-            ("PartInstance", "Set"): (
-                "verified-attribute-part-instance-set-v1",
-                _API_REPAIR_REGRESSION_EVIDENCE,
-            ),
-            ("Part", "seedPartByNumber"): (
-                "verified-attribute-part-seed-part-by-number-v1",
-                _B31_PREFLIGHT_EVIDENCE,
-            ),
-            ("Model", "writeInput"): (
-                "verified-attribute-model-write-input-v1",
-                _B31_PREFLIGHT_EVIDENCE,
-            ),
-        }
-        verified = None
-        if match is not None:
-            key = (match.group("class"), match.group("attribute"))
-            verified = verified_attributes.get(key)
-        if verified is not None:
-            rule_id, evidence_ref = verified
-            return _DiagnosticDecision(
-                disposition="block",
-                policy_rule_id=rule_id,
-                evidence_refs=(evidence_ref,),
-                callable_name=callable_name,
-            )
-        return _DiagnosticDecision(
-            disposition="warn",
-            policy_rule_id="unverified-attribute-access-warning-v1",
-            callable_name=callable_name,
-        )
-    if diagnostic.rule == "reportCallIssue":
-        actionable_prefixes = (
-            "No parameter named ",
-            "Arguments missing for parameters ",
-        )
-        if not message.startswith(actionable_prefixes):
-            return _DiagnosticDecision(disposition="ignore")
-        if mode == "advisory":
-            return _DiagnosticDecision(
-                disposition="advisory",
-                policy_rule_id="advisory-call-contract-v1",
-                callable_name=callable_name,
-            )
-        terminal = callable_name.rsplit(".", maxsplit=1)[-1] if callable_name else None
-        parameter_match = re.match(r'No parameter named "(?P<name>[^"]+)"', message)
-        parameter_name = (
-            parameter_match.group("name") if parameter_match is not None else None
-        )
-        if terminal == "BeamSection" and parameter_name in {
-            "orientation",
-            "beamOrientation",
-            "geometricType",
-            "createStepName",
-        }:
-            return _DiagnosticDecision(
-                disposition="block",
-                policy_rule_id="verified-model-beam-section-keywords-v1",
-                evidence_refs=(
-                    _B31_PREFLIGHT_EVIDENCE,
-                    "benchmarks/api_catalog/abaqus_2024_beam_section_orientation_observations.json",
-                ),
-                callable_name=callable_name,
-            )
-        if terminal == "assignBeamSectionOrientation" and (
-            parameter_name == "orientation"
-            or message.startswith("Arguments missing for parameters ")
-        ):
-            return _DiagnosticDecision(
-                disposition="block",
-                policy_rule_id="verified-beam-orientation-call-contract-v1",
-                evidence_refs=(
-                    _B31_PREFLIGHT_EVIDENCE,
-                    "benchmarks/api_catalog/abaqus_2024_api_consumer_observations.json",
-                ),
-                callable_name=callable_name,
-            )
-        return _DiagnosticDecision(
-            disposition="warn",
-            policy_rule_id="unverified-call-contract-warning-v1",
-            callable_name=callable_name,
-        )
-    if diagnostic.rule == "reportArgumentType":
-        if (
-            'parameter "region"' in message
-            and 'function "assignBeamSectionOrientation"' in message
-        ):
-            return _DiagnosticDecision(
-                disposition="ignore",
-                override_id="licensed-abq2024-beam-orientation-region-v1",
-            )
-        direct_face_region = (
-            message.startswith('Argument of type "list[Face]"')
-            and 'parameter "regions"' in message
-            and 'function "setElementType"' in message
-        )
-        flat_surface_edges = (
-            message.startswith('Argument of type "tuple[Edge')
-            and 'parameter "side1Edges"' in message
-            and 'function "Surface"' in message
-        )
-        if mode == "advisory":
-            if not (direct_face_region or flat_surface_edges):
-                return _DiagnosticDecision(disposition="ignore")
-            return _DiagnosticDecision(
-                disposition="advisory",
-                policy_rule_id="advisory-verified-container-binding-v1",
-                callable_name=callable_name,
-            )
-        if direct_face_region:
-            return _DiagnosticDecision(
-                disposition="block",
-                policy_rule_id="verified-set-element-type-direct-face-v1",
-                evidence_refs=(_API_REPAIR_FINAL11_EVIDENCE,),
-                callable_name=callable_name,
-            )
-        if flat_surface_edges:
-            return _DiagnosticDecision(
-                disposition="block",
-                policy_rule_id="verified-surface-flat-edge-tuple-v1",
-                evidence_refs=(_API_REPAIR_FINAL11_EVIDENCE,),
-                callable_name=callable_name,
-            )
-        if not any(
-            marker in message
-            for marker in ('function "setElementType"', 'function "Surface"')
-        ):
-            return _DiagnosticDecision(disposition="ignore")
-        return _DiagnosticDecision(
-            disposition="warn",
-            policy_rule_id="swig-container-type-warning-v1",
-            callable_name=callable_name,
-        )
-    return _DiagnosticDecision(disposition="ignore")
-
-
-def _callable_at_line(script_text: str, line: int) -> str | None:
-    try:
-        tree = ast.parse(script_text, mode="exec", feature_version=(3, 10))
-    except (SyntaxError, TypeError, ValueError):
-        return None
-    candidates: list[ast.Call] = []
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Call):
-            continue
-        end_line = node.end_lineno or node.lineno
-        if node.lineno <= line <= end_line:
-            candidates.append(node)
-    if not candidates:
-        return None
-    call = min(
-        candidates,
-        key=lambda node: (
-            (node.end_lineno or node.lineno) - node.lineno,
-            (node.end_col_offset or node.col_offset) - node.col_offset,
-        ),
-    )
-    return _dotted_name(call.func)
-
-
-def _dotted_name(node: ast.expr) -> str | None:
-    if isinstance(node, ast.Name):
-        return node.id
-    if isinstance(node, ast.Attribute):
-        owner = _dotted_name(node.value)
-        return f"{owner}.{node.attr}" if owner is not None else node.attr
-    return None
 
 
 def _diagnostic_from_json(
@@ -688,7 +367,7 @@ def _diagnostic_from_json(
 ) -> StaticPreflightDiagnostic | None:
     severity = item.get("severity")
     message = item.get("message")
-    rule = item.get("rule")
+    rule = item.get("rule") or "unknown"
     raw_range = item.get("range")
     if (
         not isinstance(message, str)
@@ -709,7 +388,13 @@ def _diagnostic_from_json(
         return None
     line = start.get("line")
     character = start.get("character")
-    if not isinstance(line, int) or not isinstance(character, int):
+    if (
+        not isinstance(line, int)
+        or not isinstance(character, int)
+        or line < 0
+        or character < 0
+        or not message
+    ):
         return None
     return StaticPreflightDiagnostic(
         severity=normalized_severity,
@@ -717,6 +402,7 @@ def _diagnostic_from_json(
         message=message[:4_000],
         line=line + 1,
         column=character + 1,
+        message_truncated=len(message) > 4_000,
     )
 
 

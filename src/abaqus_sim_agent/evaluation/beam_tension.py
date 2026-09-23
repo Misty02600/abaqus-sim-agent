@@ -121,7 +121,7 @@ EVAL_BUDGET = CodingRunBudget(
 )
 
 BeamRuntimeScriptPolicyMode = Literal["off", "production_allowlist"]
-BeamStaticPreflightMode = Literal["off", "advisory", "enforced_verified"]
+BeamStaticPreflightMode = Literal["off", "on"]
 B31_RUNTIME_SCRIPT_POLICY = RuntimeScriptPolicy(
     allowed_cae_scripts=("build_model.py",),
     allowed_abaqus_python_scripts=("extract_results.py",),
@@ -389,45 +389,19 @@ async def run_evaluation(
         raise ValueError(
             f"unknown runtime script policy mode: {runtime_script_policy_mode}"
         )
-    if static_preflight_mode == "advisory":
-        configured_static_preflight_mode: (
-            Literal["advisory", "enforced_verified"] | None
-        ) = "advisory"
-    elif static_preflight_mode == "enforced_verified":
-        configured_static_preflight_mode = "enforced_verified"
-    elif static_preflight_mode == "off":
-        configured_static_preflight_mode = None
-    else:
+    if static_preflight_mode not in {"off", "on"}:
         raise ValueError(f"unknown static preflight mode: {static_preflight_mode}")
-    if configured_static_preflight_mode is not None:
+    if static_preflight_mode == "on":
         if abqpy_static_wheel is None or static_preflight_cache_dir is None:
-            raise ValueError(
-                f"{configured_static_preflight_mode} static preflight requires an abqpy "
-                "wheel and cache dir"
-            )
-        if (
-            configured_static_preflight_mode == "enforced_verified"
-            and runtime_script_policy_mode != "production_allowlist"
-        ):
-            raise ValueError(
-                "enforced_verified static preflight requires the production "
-                "runtime allowlist"
-            )
+            raise ValueError("static preflight requires an abqpy wheel and cache dir")
         static_preflight_source = await asyncio.to_thread(
-            prepare_abqpy_source,
-            abqpy_static_wheel,
-            static_preflight_cache_dir,
+            prepare_abqpy_source, abqpy_static_wheel, static_preflight_cache_dir
         )
+        static_preflight_binding = static_preflight_source.binding()
     else:
         if abqpy_static_wheel is not None or static_preflight_cache_dir is not None:
             raise ValueError("off static preflight must not receive source paths")
         static_preflight_source = None
-    if static_preflight_source is not None:
-        assert configured_static_preflight_mode is not None
-        static_preflight_binding = static_preflight_source.binding(
-            configured_static_preflight_mode
-        )
-    else:
         static_preflight_binding = None
     api_manifest = api_catalog.manifest if api_catalog is not None else None
     concept_manifest = (
@@ -556,7 +530,6 @@ async def run_evaluation(
                 AbqpyBasedPyrightPreflight(
                     static_preflight_source,
                     request.state_dir,
-                    mode=static_preflight_binding.mode,
                 )
                 if static_preflight_source is not None
                 and static_preflight_binding is not None
@@ -735,7 +708,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--static-preflight-mode",
-        choices=("off", "advisory", "enforced_verified"),
+        choices=("off", "on"),
         default="off",
     )
     parser.add_argument("--abqpy-static-wheel", type=Path)

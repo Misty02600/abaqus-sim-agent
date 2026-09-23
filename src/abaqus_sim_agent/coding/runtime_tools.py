@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Awaitable
+from dataclasses import asdict
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Annotated, Literal
 
@@ -9,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from pydantic_ai import Agent, RunContext
 from pydantic_ai_harness.step_persistence import annotate_tool_effect
 
+from abaqus_sim_agent.coding.aci import PYTHON_SYNTAX_GATE_VERSION
 from abaqus_sim_agent.coding.api_lookup import ApiCatalogMode, runtime_api_hint
 from abaqus_sim_agent.coding.cae_script_policy import (
     find_cae_solver_lifecycle_calls,
@@ -33,7 +35,6 @@ from abaqus_sim_agent.coding.resume import (
     append_execution_result,
 )
 from abaqus_sim_agent.coding.static_preflight import (
-    StaticPreflightReport,
     static_preflight_payload,
 )
 from abaqus_sim_agent.execution.abaqus2024 import (
@@ -373,7 +374,7 @@ async def _run_cae_tool(
                 for call in lifecycle_calls
             ],
         }
-    preflight_block, preflight_annotation = await _static_preflight_before_runtime(
+    preflight_block, preflight_annotation = await _python_checks_before_runtime(
         dependencies,
         kind="cae",
         script_path=script_path,
@@ -454,7 +455,7 @@ async def _run_abaqus_python_tool(
         dependencies, kind="abaqus_python", path=script_path
     ):
         return document_denied
-    preflight_block, preflight_annotation = await _static_preflight_before_runtime(
+    preflight_block, preflight_annotation = await _python_checks_before_runtime(
         dependencies,
         kind="abaqus_python",
         script_path=script_path,
@@ -693,205 +694,95 @@ def _invalid_probe_result(recorded: dict[str, object]) -> dict[str, object]:
     }
 
 
-async def _static_preflight_before_runtime(
+async def _python_checks_before_runtime(
     dependencies: CodingAgentDependencies,
     *,
     kind: Literal["cae", "abaqus_python"],
     script_path: str,
 ) -> tuple[dict[str, object] | None, dict[str, object] | None]:
-    binding = dependencies.request.static_preflight
-    enforced = binding is not None and binding.mode == "enforced_verified"
-    if enforced:
-        assert binding is not None
-        syntax_gate = dependencies.syntax_gate
-        if syntax_gate is None:
-            return _enforced_preflight_unavailable(
-                "Python syntax gate is not configured"
-            ), None
-        syntax = syntax_gate.check_runtime(script_path)
-        if syntax.status != "clean":
-            return {
-                "succeeded": False,
-                "stage_succeeded": False,
-                "blocked": True,
-                "budget_consumed": False,
-                "runtime_executed": False,
-                "error_type": (
-                    "PythonSyntaxRuntimeDenied"
-                    if syntax.status == "denied"
-                    else "PythonSyntaxGateUnavailable"
-                ),
-                "script_path": syntax.script_path,
-                "script_sha256": syntax.script_sha256,
-                "syntax_gate_version": binding.syntax_gate_version,
-                "diagnostic": (
-                    {
-                        "message": syntax.diagnostic.message,
-                        "line": syntax.diagnostic.line,
-                        "column": syntax.diagnostic.column,
-                        "end_line": syntax.diagnostic.end_line,
-                        "end_column": syntax.diagnostic.end_column,
-                    }
-                    if syntax.diagnostic is not None
-                    else None
-                ),
-                "error": syntax.error,
-            }, None
+    """在已有权限检查后验证语法，收集非阻断诊断，不启动 vendor runtime。
+
+    Returns:
+        第一项是语法或源码变化的拒绝信息；第二项是随实际运行结果返回的静态反馈。
+        分析器不可用时允许运行，但不缓存该次未完成的检查。
+    """
+    gate = dependencies.syntax_gate
+    assert gate is not None
+    syntax = gate.check_runtime(script_path)
+    if syntax.status != "clean":
+        return {
+            "succeeded": False,
+            "stage_succeeded": False,
+            "blocked": True,
+            "budget_consumed": False,
+            "runtime_executed": False,
+            "error_type": "PythonSyntaxRuntimeDenied"
+            if syntax.status == "denied"
+            else "PythonSyntaxGateUnavailable",
+            "syntax_gate_version": PYTHON_SYNTAX_GATE_VERSION,
+            **asdict(syntax),
+        }, None
     preflight = dependencies.static_preflight
     if preflight is None:
         return None, None
-    try:
-        relative, digest = preflight.script_key(
-            dependencies.request.workspace,
-            script_path,
-        )
-    except (OSError, ValueError) as exc:
-        if enforced:
-            return _enforced_preflight_unavailable(f"{type(exc).__name__}: {exc}"), None
-        return None, {
-            "status": "unavailable",
-            "advisory": True,
-            "error": f"{type(exc).__name__}: {exc}",
-        }
-    key = (kind, relative, digest)
+    assert syntax.script_sha256 is not None
+    key = (kind, syntax.script_path, syntax.script_sha256)
     report = dependencies.static_preflight_reports.get(key)
-    if key in dependencies.acknowledged_static_preflights:
-        assert report is not None
-        return None, _static_preflight_runtime_annotation(
-            report,
-            status="acknowledged",
-        )
+    annotation: dict[str, object] = {
+        "status": "unavailable",
+        "error": "Static analysis did not complete",
+        "non_blocking": True,
+    }
     if report is None:
         exhausted = dependencies.reserve_static_preflight()
         if exhausted is not None:
-            if enforced:
-                return _enforced_preflight_unavailable(exhausted), None
-            return None, {
+            annotation = {
                 "status": "unavailable",
-                "advisory": True,
                 "error": exhausted,
+                "non_blocking": True,
             }
-        try:
-            async with dependencies.active_wall.pause():
-                report = await preflight.inspect(
-                    dependencies.request.workspace,
-                    script_path,
-                )
-        except (OSError, RuntimeError, ValueError) as exc:
-            if enforced:
-                return _enforced_preflight_unavailable(
-                    f"{type(exc).__name__}: {exc}"
-                ), None
-            return None, {
-                "status": "unavailable",
-                "advisory": True,
-                "error": f"{type(exc).__name__}: {exc}",
-            }
-        if report.script_path != relative or report.script_sha256 != digest:
-            return {
-                "succeeded": False,
-                "stage_succeeded": False,
-                "blocked": True,
-                "budget_consumed": False,
-                "runtime_executed": False,
-                "error_type": "StaticPreflightScriptChanged",
-                "error": (
-                    "Production script changed while static preflight was running; "
-                    "retry its current hash before vendor execution"
-                ),
-            }, None
-        if report.status == "changed":
-            return {
-                "succeeded": False,
-                "stage_succeeded": False,
-                "blocked": True,
-                "budget_consumed": False,
-                "runtime_executed": False,
-                "error_type": "StaticPreflightScriptChanged",
-                "error": (
-                    "Production script changed while static preflight was running; "
-                    "retry its current hash before vendor execution"
-                ),
-            }, None
-        dependencies.static_preflight_reports[key] = report
-    if enforced:
-        if report.status in {"timeout", "unavailable"}:
-            return _enforced_preflight_unavailable(
-                report.error or f"static preflight status is {report.status}"
-            ), None
-        blockers = [
-            diagnostic
-            for diagnostic in report.diagnostics
-            if diagnostic.disposition == "block"
-        ]
-        if blockers:
-            payload = static_preflight_payload(report)
-            payload.update(
-                {
-                    "succeeded": False,
-                    "stage_succeeded": False,
-                    "blocked": True,
-                    "error_type": "ApiPreflightFailed",
+        else:
+            try:
+                async with dependencies.active_wall.pause():
+                    report = await preflight.inspect(
+                        dependencies.request.workspace, script_path
+                    )
+            except (OSError, RuntimeError, ValueError) as exc:
+                annotation = {
+                    "status": "unavailable",
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "non_blocking": True,
                 }
-            )
-            return payload, None
-        return None, _static_preflight_runtime_annotation(
-            report,
-            status="warnings" if report.diagnostics else report.status,
-        )
-    if report.status == "diagnostics":
-        dependencies.acknowledged_static_preflights.add(key)
-        payload = static_preflight_payload(report)
-        payload.update(
-            {
-                "succeeded": False,
-                "stage_succeeded": False,
-                "blocked": True,
-                "error_type": "StaticPreflightAdvisory",
-            }
-        )
-        return payload, None
-    return None, _static_preflight_runtime_annotation(report, status=report.status)
+            else:
+                if report.status in {"clean", "diagnostics"}:
+                    dependencies.static_preflight_reports[key] = report
+    if report is not None:
+        if (
+            report.script_path != syntax.script_path
+            or report.script_sha256 != syntax.script_sha256
+            or report.status == "changed"
+        ):
+            return _script_changed_during_checks(), None
+        annotation = static_preflight_payload(report)
+    # A slow analyzer must not allow a newly changed, unchecked script to execute.
+    try:
+        current = _sha256_file(dependencies.request.workspace / script_path)
+    except OSError:
+        return _script_changed_during_checks(), None
+    if current != syntax.script_sha256:
+        return _script_changed_during_checks(), None
+    return None, annotation
 
 
-def _enforced_preflight_unavailable(error: str) -> dict[str, object]:
+def _script_changed_during_checks() -> dict[str, object]:
     return {
         "succeeded": False,
         "stage_succeeded": False,
         "blocked": True,
         "budget_consumed": False,
         "runtime_executed": False,
-        "error_type": "ApiPreflightUnavailable",
-        "error": error,
-    }
-
-
-def _static_preflight_runtime_annotation(
-    report: StaticPreflightReport,
-    *,
-    status: str,
-) -> dict[str, object]:
-    return {
-        "status": status,
-        "original_status": report.status,
-        "script_path": report.script_path,
-        "script_sha256": report.script_sha256,
-        "engine": report.engine,
-        "engine_version": report.engine_version,
-        "mode": report.mode,
-        "policy_version": report.policy_version,
-        "api_source": report.api_source,
-        "api_source_version": report.api_source_version,
-        "diagnostic_count": len(report.diagnostics),
-        "warnings": [
-            diagnostic.model_dump(mode="json")
-            for diagnostic in report.diagnostics
-            if diagnostic.disposition == "warn"
-        ],
-        "ignored_diagnostic_count": report.ignored_diagnostic_count,
-        "applied_override_ids": list(report.applied_override_ids),
-        "advisory": True,
-        "runtime_executed": True,
+        "error_type": "StaticPreflightScriptChanged",
+        "error": "Script changed during checks; request execution of its current version.",
     }
 
 

@@ -21,6 +21,7 @@ from pydantic_ai.models.function import FunctionModel
 from tests.test_web_workbench import (
     Client,
     answer_body,
+    api_catalog_dir,
     configured_app,
     create,
     login,
@@ -237,6 +238,7 @@ def _background_solver_app(tmp_path: Path):
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
+            api_catalog_dir=api_catalog_dir(tmp_path),
             stream_model=False,
             budget=CodingRunBudget(
                 max_model_requests=4,

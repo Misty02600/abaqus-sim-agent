@@ -11,7 +11,13 @@ from pydantic import SecretStr
 from pydantic_ai.messages import ModelResponse, TextPart, ThinkingPart, ToolCallPart
 from pydantic_ai.models.function import DeltaThinkingPart, DeltaToolCall, FunctionModel
 from tests.test_web_conversation import message_body
-from tests.test_web_workbench import Client, NoProcess, login, settled
+from tests.test_web_workbench import (
+    Client,
+    NoProcess,
+    api_catalog_dir,
+    login,
+    settled,
+)
 
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
 from abaqus_sim_agent.coding.response_stream import public_response_text
@@ -86,6 +92,7 @@ def streaming_app(tmp_path, flow, *, before_header=False):
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
+            api_catalog_dir=api_catalog_dir(tmp_path),
             budget=CodingRunBudget(
                 max_model_requests=8, max_abaqus_calls=0, max_solver_calls=0
             ),
@@ -373,6 +380,7 @@ def test_go_http_streaming_adapter_retry_and_transport_close(
     monkeypatch.setattr("abaqus_sim_agent.coding.model.AsyncOpenAI", client_factory)
     config = ServerConfig(
         root=tmp_path / "web",
+        api_catalog_dir=api_catalog_dir(tmp_path),
         execution=new_run_execution_config(
             model_provider=DeepSeekGateway.OPENCODE_GO, model_name="deepseek-v4-flash"
         ),
@@ -464,6 +472,7 @@ def test_streamed_file_tool_runs_once_and_keeps_host_verification(tmp_path):
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
+            api_catalog_dir=api_catalog_dir(tmp_path),
             budget=CodingRunBudget(
                 max_model_requests=5, max_abaqus_calls=0, max_solver_calls=0
             ),

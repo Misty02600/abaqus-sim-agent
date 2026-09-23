@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import SecretStr
 from starlette.background import BackgroundTask
@@ -271,8 +271,10 @@ def create_app(
 
     @app.get("/api/v1/runs/{run_id}/workspace/file")
     def workspace_file(run_id: str, path: str):
-        file, media_type = workspace_preview(controller, run_id, path)
-        return FileResponse(file, media_type=media_type)
+        content, media_type = workspace_preview(controller, run_id, path)
+        if isinstance(content, Path):
+            return FileResponse(content, media_type=media_type)
+        return Response(content=content, media_type=media_type)
 
     @app.post(
         "/api/v1/runs/{run_id}/start", response_model=CommandResponse, status_code=202

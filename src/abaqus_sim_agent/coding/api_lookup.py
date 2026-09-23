@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from pathlib import Path
 from typing import Any, Literal
 
 from pydantic_ai import Agent, RunContext
@@ -21,6 +22,7 @@ from abaqus_sim_agent.coding.api_traceback import (
 from abaqus_sim_agent.coding.contracts import (
     API_DISCOVERY_JOURNAL_NAME,
     API_LOOKUP_JOURNAL_NAME,
+    ApiCatalogBinding,
     ApiDeliveredParameter,
     ApiDiscoveryTrace,
     ApiLookupTrace,
@@ -38,14 +40,50 @@ ApiCatalogMode = Literal[
     "automatic_verified_only",
     "automatic_exact_signature",
 ]
+ProductApiCatalogMode = Literal[
+    "full",
+    "full_with_discovery",
+    "automatic_verified_only",
+    "automatic_exact_signature",
+]
+DEFAULT_PRODUCT_API_CATALOG_MODE: ProductApiCatalogMode = "automatic_verified_only"
 
 __all__ = [
+    "DEFAULT_PRODUCT_API_CATALOG_MODE",
     "ApiCatalogMode",
+    "ProductApiCatalogMode",
+    "bind_api_catalog",
+    "load_product_api_catalog",
     "register_api_discovery_tool",
     "register_api_lookup_tool",
     "resolve_api_catalog_mode",
     "runtime_api_hint",
 ]
+
+
+def load_product_api_catalog(directory: Path, *, workspace: Path) -> ApiCatalog:
+    resolved = directory.resolve(strict=True)
+    resolved_workspace = workspace.resolve(strict=True)
+    if resolved == resolved_workspace or resolved.is_relative_to(resolved_workspace):
+        raise ValueError("API catalog must be outside the Agent workspace")
+    catalog = ApiCatalog.open(resolved)
+    if catalog.manifest is None:
+        raise ValueError("persisted API catalog is missing its manifest")
+    return catalog
+
+
+def bind_api_catalog(catalog: ApiCatalog) -> ApiCatalogBinding:
+    manifest = catalog.manifest
+    if manifest is None:
+        raise ValueError("persisted API catalog is missing its manifest")
+    return ApiCatalogBinding(
+        schema_version=manifest.schema_version,
+        cards_sha256=manifest.cards_sha256,
+        card_count=manifest.card_count,
+        runtime_release=manifest.runtime_release,
+        member_count=manifest.member_count,
+        members_sha256=manifest.members_sha256,
+    )
 
 
 def resolve_api_catalog_mode(

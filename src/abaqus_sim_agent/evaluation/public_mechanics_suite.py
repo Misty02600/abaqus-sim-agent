@@ -61,7 +61,7 @@ from abaqus_sim_agent.verification.public_mechanics_run import (
 )
 
 ROOT = Path(__file__).parents[3]
-VERSION = "public-mechanics-e2e-v22-foundation-routing-rule"
+VERSION = "public-mechanics-e2e-v23-no-planning-request80-relaxed-limits"
 
 
 def _write(path, value):
@@ -87,8 +87,8 @@ def prepare(
     knowledge_resources: Path | None = None,
     max_task_concurrency: int = 1,
     max_runtime_concurrency: int = 1,
-    http_timeout_seconds: float = 180.0,
-    http_retries: int = 1,
+    http_timeout_seconds: float = 300.0,
+    http_retries: int = 4,
 ):
     if root.exists():
         raise FileExistsError(root)
@@ -136,7 +136,7 @@ def prepare(
     config = new_run_execution_config(
         model_provider=DeepSeekGateway.OPENCODE_GO,
         model_name=DEEPSEEK_V4_FLASH,
-        planning_enabled=True,
+        planning_enabled=False,
         http_timeout_seconds=http_timeout_seconds,
         http_retries=http_retries,
     )
@@ -154,7 +154,7 @@ def prepare(
             "docs_mode": "off",
             "question_protocol": "legacy_decision",
             "repetitions": 1,
-            "max_explicit_resumes": 1,
+            "max_explicit_resumes": 3,
             "provider_failure_policy": "stop_batch",
             "verification_policy": "results_first_v1",
             "script_review": "separate_reviewer_record",
@@ -318,7 +318,6 @@ async def preflight(root: Path):
         req,
         skill_library=skill_library_path(),
         api_catalog_mode=manifest["catalog_mode"],
-        planning_enabled=True,
         execution_config=config,
         foundation_skill_profile="linear_structural_fea_v1"
         if manifest["foundation"]
@@ -583,7 +582,6 @@ async def _run_case(root, name, *, resume, key, catalog, runtime_gate=None):
             req,
             skill_library=skill_library_path(),
             api_catalog_mode=manifest["catalog_mode"],
-            planning_enabled=True,
             execution_config=config,
             foundation_skill_profile="linear_structural_fea_v1"
             if manifest["foundation"]
@@ -844,8 +842,8 @@ def main():
             max_runtime_concurrency=args.max_runtime_concurrency,
             http_timeout_seconds=args.http_timeout_seconds
             if args.http_timeout_seconds is not None
-            else 180.0,
-            http_retries=args.http_retries if args.http_retries is not None else 1,
+            else 300.0,
+            http_retries=args.http_retries if args.http_retries is not None else 4,
         )
     elif args.mode == "preflight":
         asyncio.run(preflight(root))

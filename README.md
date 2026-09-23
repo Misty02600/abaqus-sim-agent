@@ -18,8 +18,8 @@
 - 工作区必须是已解析的 ASCII 路径，state/evidence 位于工作区之外。宿主约束路径、Job 名、调用预算、
   超时进程树和 artifact freshness，并保留原始 stdout/stderr bytes 与执行记录。
 - 缺少会改变物理问题的输入时必须澄清，不能从模板或检索结果补造材料、尺寸、载荷等参数。
-- 新普通会话通过 `ask_user(question)`交接必要输入；launch v7 可直接交付 typed 文字答复，并绑定 context policy、Skill digest 与可选私有知识快照；文件/执行请求仍返回`ready_for_verification`或`failed`；
-  新CLI可显式组合API Catalog；旧run、Gold及其他未迁移profile保留`needs_input`协议。普通 CLI 的
+- 新普通会话通过 `ask_user(question)`交接必要输入；launch v10 可直接交付 typed 文字答复，并绑定 context policy、Skill digest、UTF-8/CP936 文件策略、必选 API Catalog 与可选私有知识快照；文件/执行请求仍返回`ready_for_verification`或`failed`；
+  旧run、Gold及其他未迁移profile保留`needs_input`协议。普通 CLI 的
   `execution_evidence` 验收 fresh 交付物、Python 3.10 语法和最后一次已使用的 runtime stage，
   **不证明物理正确，也不覆盖全部自然语言语义**。固定 evaluator 才使用独立 INP/ODB `task_oracle`。
 - 支持 Harness/file-backed 会话续跑、累计预算和显式任务修订；未决 Abaqus effect 停在
@@ -60,7 +60,9 @@ Windows 的 Just recipes 需要 PowerShell 7.4+（`pwsh`）；直接运行上述
 ```powershell
 uv sync --locked --all-groups --extra web
 uv run --no-sync python scripts/build_web.py
-uv run --no-sync abaqus-sim-agent-web --root D:\abaqus-web --model-provider opencode-go
+uv run --no-sync abaqus-sim-agent-web --root D:\abaqus-web `
+  --api-catalog-dir D:\abaqus-data\api-catalog `
+  --model-provider opencode-go
 ```
 
 启动前在宿主环境配置 `OPENCODE_API_KEY`；默认官方网关使用 `DEEPSEEK_API_KEY`。服务就绪后默认打开
@@ -125,7 +127,8 @@ $env:DEEPSEEK_API_KEY = "<your-key>"
 New-Item -ItemType Directory -Force -Path D:\abaqus-runs\plate-interactive
 uv run abaqus-sim-agent `
   --request-file benchmarks\coding\plate_tension_request.json `
-  --workspace D:\abaqus-runs\plate-interactive
+  --workspace D:\abaqus-runs\plate-interactive `
+  --api-catalog-dir D:\abaqus-data\api-catalog
 ```
 
 也可使用 `--goal "<任务要求>"`，与 `--request-file` 二选一。后者接受 UTF-8 文本或带 `goal` 字段的
@@ -151,7 +154,7 @@ uv run --no-sync abaqus-sim-agent --resume <STATE_DIR> --cancel-question <QUESTI
 
 答复ID必须匹配该run当前问题；同ID同答复幂等，不同答复不覆盖。待答期间修改goal/配置须先显式撤销问题。
 已执行Abaqus后收到新工程答复，会形成新task revision，旧产物不能验收新要求；未决runtime reconcile优先。
-新普通 CLI/Web 会话使用 launch v7，绑定 context policy 与实际 filesystem Skill digest；不兼容的开发期
+新普通 CLI/Web 会话使用 launch v10，绑定 Catalog、context policy、文件编码策略与实际 filesystem Skill digest；不兼容的开发期
 state 显式拒绝。旧 Gold 及显式评测 profile 的历史证据保留，不回填新默认。
 这证明问答交接可运行，不保证模型一定识别缺参，也不构成外部Job恢复；见[ADR-0024](docs/adr/0024-host-owned-user-question-waiting.md)。
 
@@ -165,12 +168,12 @@ state 显式拒绝。旧 Gold 及显式评测 profile 的历史证据保留，�
 `--cae-timeout-seconds`、`--abaqus-python-timeout-seconds`、`--solver-timeout-seconds` 设置有限值。
 HTTP timeout 默认 300 秒，`--http-retries` 默认 4 次 SDK request retry。
 
-新建 Go / `deepseek-v4-flash` run 显式开启 thinking、reasoning effort=`high`，普通产品默认关闭 Planning，
-不另加低单响应输出上限。`--http-timeout-seconds`、`--reasoning-policy`、`--planning/--no-planning`
-只用于新run；其他网关仍使用provider-default推理，不静默切换网关。新run允许先读取工作区中用户提供的事实，
+新建 Go / `deepseek-v4-flash` run 显式开启 thinking、reasoning effort=`high`，不向新产品或评测运行暴露
+Planning，也不另加低单响应输出上限。`--http-timeout-seconds`、`--reasoning-policy` 只用于新run；其他网关
+仍使用provider-default推理，不静默切换网关。新run允许先读取工作区中用户提供的事实，
 确认必需输入缺失后澄清，仍禁止补造物理参数或据其推进建模/执行。
 
-有效模型、context policy 与 Skill 定义绑定写入 immutable `launch.json` v7；旧开发期 launch 不迁移。
+有效模型、context policy、文件编码策略与 Skill 定义绑定写入 immutable `launch.json` v10；旧开发期 launch 不迁移。
 新推理策略在同一 run 内固定，模型/provider amendment 与该策略不兼容时在写入前拒绝。
 旧评测profile与历史结果保持原样；新领域任务目前仍为[离线候选](docs/plans/todo/0006-domain-task-evaluation-baseline.md)，
 不能把旧零重试成绩当作新high配置成绩，也不能仅凭请求字段声称服务端已验证执行high。
@@ -206,14 +209,15 @@ Go的DeepSeek适配沿用Pydantic AI原生profile，将已保存的thinking内�
 2026-09-14已移除历史“不回传”覆盖；thinking enabled/high与HTTP重试配置不受影响。
 旧日志与结果保留，恢复时使用已有历史内容；缺失的推理内容不补造。新评测需重新封存源码版本。
 
-以下能力默认关闭，需要显式配置；实现或离线测试通过不等于已证明真实任务收益。
+Catalog 是新普通会话的必选依赖；其余能力默认关闭，需要显式配置。实现或离线测试通过不等于已证明真实任务收益。
 
 | 能力 | 启用方式与边界 |
 |---|---|
-| Exact API Catalog | `--api-catalog-dir <目录>` 配合 `--api-catalog-mode full`、`full_with_discovery`、`automatic_verified_only` 或 `automatic_exact_signature`；只传目录时默认 full。分别提供主动精确查证、额外的 receiver 方法目录、错误触发 verified note 或紧凑签名。 |
+| Exact API Catalog | 新 CLI/Web 必须提供 `--api-catalog-dir <目录>`；默认 `automatic_verified_only`，不暴露主动查询工具，只在符合条件的错误后附 verified note。可显式选择 `automatic_exact_signature`、`full` 或 `full_with_discovery`。 |
 | 官方文档工具 | `--concept-index-dir <索引> --concept-retrieval-mode tool`；`search_abaqus_docs` 按需查询，也允许零查询，普通产品不设调用次数上限。 |
 | Solver diagnostic advisory | `--diagnostic-retrieval-mode advisory --concept-index-dir <含BM25的索引>`；仅为符合条件的Solver诊断附加RRF证据，不替换原runtime状态。 |
-| 分级静态检查 | `--static-preflight-mode advisory` 或 `enforced_verified`；后者要求固定abqpy wheel、外部cache与task-owned生产脚本allowlist，拒绝发生在Abaqus预算前。 |
+| 静态反馈 | `--static-preflight-mode on` 启用固定 abqpy/BasedPyright 分析；默认 off。诊断随运行结果返回，语法错误始终在 Python runtime 前阻断。 |
+| 工作区文本编码 | 文件工具严格支持 UTF-8/CP936；读取和搜索报告编码，编辑保留原编码，新文件使用 UTF-8。 |
 | 有界文档查证 | `--document-policy-mode bounded_v1 --document-policy-spec <spec.json> --concept-retrieval-mode tool`；同一Coder执行精确引用回评与最多一次补查，使用spec中的独立后端，不同时注册旧文档工具。 |
 | 纯引用编辑 | `--edit-scope-file <trusted-scope.json>`；调用方冻结原文/hash和一个Python表达式区间，仅允许引用替换，不暴露Abaqus运行工具。 |
 | 本机私有领域知识包 | `--knowledge-pack <pack_id>` 可重复；只从当前用户应用数据目录发现 strict manifest，创建 run 时快照，恢复不回读源目录。Web 在新会话页显式勾选。 |
@@ -257,6 +261,7 @@ uv run --no-sync abaqus-sim-agent --list-knowledge-packs
 uv run --no-sync abaqus-sim-agent `
   --goal "使用柔性电子参考资料完成当前建模请求" `
   --workspace D:\abaqus-runs\flexible-electronics `
+  --api-catalog-dir D:\abaqus-data\api-catalog `
   --knowledge-pack flexible-electronics-fea
 ```
 
@@ -266,15 +271,15 @@ resume、Web continuation 和 task revision 继续使用原快照，不能重新
 [知识接入](docs/architecture/knowledge-access.md)与
 [ADR-0029](docs/adr/0029-discover-private-knowledge-from-user-data.md)。
 
-新 CLI 单独启用 Catalog 时支持 ask_user_v1，查询 usage、去重和证据随问答恢复累计。
+新 CLI/Web 始终绑定 Catalog 并支持 ask_user_v1，查询 usage、去重和证据随问答恢复累计。
 `full_with_discovery` 已接入产品 CLI 和恢复：`discover_abaqus_api` 按已知 receiver 列出方法名称与 Card ID，
 模型应继续 `lookup_abaqus_api` 读取证据；候选不会记为已读卡片。journal 保留查询、
 计数与实际交付内容。该目录工具不是下面的 BM25/E5 自然语言发现实验，详见
 [知识接入与恢复边界](docs/architecture/knowledge-access.md)。
 没有Python异常类型的CAE错误，只有在宿主确认非超时失败、frame指向本次执行hash匹配的工作区脚本，
-且调用可以唯一定位时才进入API提示；歧义或源码变化时不推断修复。Catalog仍需显式启用。
+且调用可以唯一定位时才进入API提示；歧义或源码变化时不推断修复。默认模式不会向模型暴露主动 Catalog 工具。
 
-ACI 示例：
+可选静态反馈示例（文件 allowlist 是独立的可选执行限制）：
 
 ```powershell
 uv sync --extra static-preflight
@@ -282,7 +287,8 @@ New-Item -ItemType Directory -Force -Path D:\abaqus-runs\plate-static
 uv run abaqus-sim-agent `
   --request-file benchmarks\coding\plate_tension_request.json `
   --workspace D:\abaqus-runs\plate-static `
-  --static-preflight-mode enforced_verified `
+  --api-catalog-dir D:\abaqus-data\api-catalog `
+  --static-preflight-mode on `
   --abqpy-static-wheel var\api-catalog\sources\abqpy-2024.10-py3-none-any.whl `
   --static-preflight-cache-dir D:\abaqus-runs\static-preflight-cache `
   --allowed-cae-script build_model.py `
@@ -291,7 +297,7 @@ uv run abaqus-sim-agent `
 ```
 
 生产脚本检查不执行或导入工作区源码；warning仍交真实runtime，静态检查不替代独立verifier。
-更多边界见[ACI](docs/adr/0018-enforce-verified-abaqus-aci.md)与
+更多边界见[语法检查与静态反馈](docs/adr/0038-unify-runtime-syntax-and-static-feedback.md)与
 [纯编辑合同](docs/adr/0023-constrain-explicit-reference-edits-before-writing.md)。
 
 `bounded_v1` 未获行为资格，保持默认off；spec路径相对spec文件解析，resume复用已保存绑定，不能重绑检索配置。
@@ -330,8 +336,9 @@ uv run python -m abaqus_sim_agent.api_catalog lookup `
   --catalog-dir var\api-catalog\local-build Model.SurfaceTraction.directionVector
 ```
 
-当前推荐的历史实验Catalog为immutable final15，但重新构建不能自动声称复现该hash；
-使用前核对[final15绑定](benchmarks/api_catalog/abaqus_api_catalog_final15_20260828.json)。
+final15 是历史实验的不可变 Catalog；[final15 绑定](benchmarks/api_catalog/abaqus_api_catalog_final15_20260828.json)
+用于复核原批次。上面的命令使用当前修订的 runtime notes，不能声称复现 final15 hash 或旧成绩；
+说明修订与已有目录的关系见[知识接入](docs/architecture/knowledge-access.md)。
 
 新建Catalog会保留abqpy方法docstring；已有lookup可用`Part.setElementType.__doc__`按需读取原文，
 参数查询仍使用`Part.setElementType.regions`。旧目录保持可读，不自动补写说明。

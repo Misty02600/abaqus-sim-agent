@@ -21,11 +21,15 @@
 - `ready_for_verification` 只申请验收，必须声明非空、无重复的工作区相对交付物 manifest。普通 CLI 的 `execution_evidence` 验证 fresh 交付物、fresh Python 的 3.10 语法和每种已用 runtime 的最后一次 stage；不证明完整自然语言语义或物理正确。固定 evaluator 才注入模型不可见的 `task_oracle`。
 - 新普通产品会话是标准 Harness Coder：保留工作区 Shell，但按配置路径和 `abaqus*` / `abq*` 版本化名称拒绝直接启动 vendor launcher；Abaqus 执行使用 `run_cae_script`、`solver_job(action=submit|wait)`、`run_abaqus_python`。冻结 evaluator 继续使用各自保存的工具合同；`run_trusted_abaqus_python` 永不注册给模型。
 - 建模脚本应只生成模型与 INP，求解经独立 Solver 工具，提取经 Abaqus Python/odbAccess。宿主在 CAE runtime 前确定性拒绝 AST 中直接出现的 `.submit(...)` 和 `.waitForCompletion(...)`；`getattr`、`exec` 和运行时重绑定等动态绕行不在该最小策略覆盖范围内，不得宣传为 Python 沙箱。
+- 两个 Python runtime 执行前始终检查 Python 3.10 语法，文件编辑可保留半成品。BasedPyright 仅有 off/on、默认 off；诊断与真实运行结果同时返回，不做原样重试放行或 API 案例阻断。检查器不可用不得伪装成 clean，已有权限和执行证据边界继续有效。
+- Coder 文件工具严格支持 UTF-8/CP936：读取和搜索报告采用编码，编辑或覆盖保持已有编码，新文件使用 UTF-8，hash 绑定原始 bytes；无法无损解码或写回时修改前拒绝。Web 文本预览复用同一策略，runner raw log 合同不变。
 - 模型脚本和输入位于已解析的 ASCII 工作区，state/evidence 位于工作区外；校验路径归属、后缀、Job 名及可选逐工具文件 allowlist。runtime permission/allowance、准确进程树终止、raw stdout/stderr bytes 和 artifact freshness 必须保留。这些边界不是 OS 沙箱或不可信租户隔离。
+- runtime permission/allowance 只在模型实际调用相应工具时返回拒绝；不能因 verifier 拒绝就提前终止仍可进行的普通文件修复。
 - 恢复必须保留累计 usage/allowance、原始 freshness 基线、execution provenance、协议、context policy 和知识/Skill 绑定。同一 state 使用 OS 独占锁；未决 Abaqus tool effect 停在 `needs_reconcile`，禁止盲目重跑。不得把文件后端续跑称为外部 Job exactly-once、PID 重新附着或完整 durable workflow。
 - Task revision 与 operational amendment 分开：新任务建立新验收基线，旧 outcome 归档；runtime policy 或 provider 修订不能清零已消耗用量。损坏 ledger 不猜测修复，不用 event log 推断缺失的副作用记录。
 - Web 会话在无活动/待核查执行时可用 operational amendment 修改 Abaqus/Solver 权限；待答问题保持，修改不自动继续也不取消已有执行，只影响未来提交。有限次数是累计总上限，usage/allowance 不清零。
-- 新普通会话使用 launch v7，绑定 1M context policy 与 filesystem Skill digest：当前请求可以交付 `ResponseDecision` 文字答复，文件或执行请求仍须走非空 manifest 与宿主 verifier；当前 revision 已有执行或终态工作区变化时不能用文字答复绕过验收。
+- 新普通会话使用 launch v10，绑定 1M context policy、filesystem Skill digest、UTF-8/CP936 文件策略与必选 API Catalog：当前请求可以交付 `ResponseDecision` 文字答复，文件或执行请求仍须走非空 manifest 与宿主 verifier；当前 revision 已有执行或终态工作区变化时不能用文字答复绕过验收。
+- Harness Planning 适配只为解释冻结历史轨迹保留；新产品和新评测不得启用，也不新增重新开启入口。历史 manifest 中的 `planning_enabled=true` 保留原值。
 - 本地 Web 工作台复用 `coding/application.py`、`composition.py` 和 `CodingRunService`。命令使用 REST，SSE 只通知重取；Web registry、Thread、invocation 和 `ToolExecution` 是管理记录，不覆盖 CodingRun 的 request、limits/runtime policy、runtime evidence、verification 或 outcome。
 - Web CLI 固定回环监听，服务 started 后默认打开普通本机 URL，`--no-open` 可关闭；页面通过 GET session 无感建立 HttpOnly cookie 与 CSRF，不使用终端 fragment token。非回环部署仍未开放；见 ADR-0037。
 - Web 会话可使用托管空目录或显式选择已有本机 ASCII 工作区；创建后固定绑定，文件原地读写。所选目录与管理根互不包含，state/evidence 仍由宿主保存；目录接线与边界见 ADR-0034。
@@ -36,7 +40,7 @@
 
 ## 知识与评测
 
-- Catalog、Concept、diagnostic advisory、bounded document policy、ACI、typed probe 和纯编辑限制按显式 profile 启用；不因实验有局部改善就改变产品或旧评测默认值。当前入口与组合见 [知识接入](docs/architecture/knowledge-access.md)。
+- 新普通产品必须绑定 Catalog，默认 `automatic_verified_only` 且不暴露主动查询工具；`full`、`full_with_discovery`、`automatic_exact_signature` 由显式 profile 选择。Concept、diagnostic advisory、bounded document policy、ACI、typed probe 和纯编辑限制仍按显式 profile 启用；旧冻结评测的 `off` 条件不回填。当前入口与组合见 [知识接入](docs/architecture/knowledge-access.md)。
 - `full_with_discovery` 已接入产品：discovery 返回候选名称，必须继续 exact lookup 才有卡片证据；候选、静态声明、runtime note 和实际运行成功不能互相替代。检索不能补造缺失物理输入。
 - 2026 官方文档、2024 abqpy 静态声明与 Abaqus 2024 runtime evidence 分别标来源；不能把文档命中视为版本兼容或任务收益。不自动将 probe、失败修复或单题解法写入全局 Skill、Catalog 或跨 run Memory。
 - 固定 Gold、verified-seed change、API repair、检索评测和开放产品任务分开。变更任务先重新验证 source 合同、验收与 hash，再缓存种子 bytes；共享执行证据不能代替逐 Case oracle。suite 按每个 Case 的 gate 验收，不能用总通过数掩盖失败 Case。

@@ -20,7 +20,12 @@ from abaqus_sim_agent.coding.amendments import (
     append_operational_amendment,
     append_task_revision,
 )
-from abaqus_sim_agent.coding.api_lookup import ApiCatalogMode
+from abaqus_sim_agent.coding.api_lookup import (
+    DEFAULT_PRODUCT_API_CATALOG_MODE,
+    ProductApiCatalogMode,
+    bind_api_catalog,
+    load_product_api_catalog,
+)
 from abaqus_sim_agent.coding.clarification import (
     ConsoleClarificationProvider,
     ScriptedClarificationProvider,
@@ -187,7 +192,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--api-catalog-dir",
         type=Path,
-        help="Optional exact Abaqus API catalog outside the Agent workspace",
+        help="Required exact Abaqus API catalog outside the Agent workspace",
     )
     parser.add_argument(
         "--http-timeout-seconds",
@@ -200,24 +205,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="New Go/V4-Flash runs default to enabled_high; other models keep provider defaults",
     )
     parser.add_argument(
-        "--planning",
-        action=argparse.BooleanOptionalAction,
-        default=None,
-        help="Expose write_plan for a new run (on by default, disabled in pure edit)",
-    )
-    parser.add_argument(
         "--api-catalog-mode",
         choices=(
-            "off",
             "full",
             "full_with_discovery",
             "automatic_verified_only",
             "automatic_exact_signature",
         ),
-        help=(
-            "Catalog behavior; defaults to full when --api-catalog-dir is set "
-            "and off otherwise"
-        ),
+        help=("Catalog behavior; defaults to automatic_verified_only"),
     )
     parser.add_argument(
         "--concept-index-dir",
@@ -244,11 +239,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--static-preflight-mode",
-        choices=("off", "advisory", "enforced_verified"),
+        choices=("off", "on"),
         default="off",
         help=(
-            "Run the pinned abqpy/BasedPyright preflight; enforced_verified "
-            "also hard-gates Python 3.10 production edits"
+            "Run optional non-blocking abqpy/BasedPyright analysis; "
+            "diagnostics accompany runtime results"
         ),
     )
     parser.add_argument(
@@ -387,7 +382,7 @@ def _run_cli_once(
         fresh_goal: str | None = None
         fresh_run_id: str | None = None
         expected_amendment_sequence: int | None = None
-        static_preflight_mode: Literal["off", "advisory", "enforced_verified"]
+        static_preflight_mode: Literal["off", "on"]
         if resuming:
             _validate_resume_arguments(args)
             assert args.resume is not None
@@ -429,7 +424,10 @@ def _run_cli_once(
             http_retries = launch.http_retries
             skill_library = launch.skill_library
             api_catalog_dir = launch.api_catalog_dir
-            requested_api_catalog_mode: ApiCatalogMode | None = launch.api_catalog_mode
+            requested_api_catalog_mode = cast(
+                ProductApiCatalogMode,
+                launch.api_catalog_mode,
+            )
             concept_index_dir = launch.concept_index_dir
             requested_concept_mode = launch.concept_retrieval_mode
             diagnostic_retrieval_mode = launch.diagnostic_retrieval_mode
@@ -469,7 +467,7 @@ def _run_cli_once(
             skill_library = args.skills_dir or skill_library_path()
             api_catalog_dir = args.api_catalog_dir
             requested_api_catalog_mode = cast(
-                ApiCatalogMode | None,
+                ProductApiCatalogMode | None,
                 args.api_catalog_mode,
             )
             concept_index_dir = args.concept_index_dir
@@ -482,7 +480,7 @@ def _run_cli_once(
                 args.diagnostic_retrieval_mode or "off",
             )
             static_preflight_mode = cast(
-                Literal["off", "advisory", "enforced_verified"],
+                Literal["off", "on"],
                 args.static_preflight_mode,
             )
             static_wheel = args.abqpy_static_wheel
@@ -504,6 +502,7 @@ def _run_cli_once(
             api_catalog_dir,
             workspace=resolved.workspace,
         )
+        assert api_catalog_dir is not None
         api_catalog_mode = _resolve_api_catalog_mode(
             requested_api_catalog_mode,
             api_catalog,
@@ -545,7 +544,7 @@ def _run_cli_once(
         else:
             if static_preflight_mode == "off":
                 raise AssertionError("off mode cannot prepare a static source")
-            static_binding = static_preflight_source.binding(static_preflight_mode)
+            static_binding = static_preflight_source.binding()
         if resuming:
             assert request is not None
             if request.api_catalog != _api_catalog_binding(api_catalog):
@@ -594,22 +593,20 @@ def _run_cli_once(
                 if args.http_timeout_seconds is not None
                 else DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS,
                 reasoning_policy=args.reasoning_policy,
-                planning_enabled=(args.planning if args.planning is not None else False)
-                and request.edit_scope is None,
+                planning_enabled=False,
             )
             use_questions = not (
                 args.answers
                 or request.edit_scope
                 or document_binding
                 or request.concept_index
-                or static_binding
             )
             domain_knowledge = prepare_domain_knowledge_bundle(
                 tuple(args.knowledge_pack or ()),
                 state_dir=request.state_dir,
                 workspace=request.workspace,
             )
-            schema_version = "coding-run-launch-v7"
+            schema_version = "coding-run-launch-v10"
             resolved_skill_library = skill_library.resolve(strict=True)
             launch = _LaunchManifest(
                 schema_version=schema_version,
@@ -634,11 +631,7 @@ def _run_cli_once(
                     exclude={"model_provider", "model_name", "http_retries"},
                 ),
                 skill_library=resolved_skill_library,
-                api_catalog_dir=(
-                    api_catalog_dir.resolve(strict=True)
-                    if api_catalog_dir is not None
-                    else None
-                ),
+                api_catalog_dir=api_catalog_dir.resolve(strict=True),
                 api_catalog_mode=api_catalog_mode,
                 concept_index_dir=(
                     concept_index_dir.resolve(strict=True)
@@ -730,7 +723,6 @@ def _validate_resume_arguments(args: argparse.Namespace) -> None:
     conflicts = {
         "--reasoning-policy": args.reasoning_policy,
         "--http-timeout-seconds": args.http_timeout_seconds,
-        "--planning": args.planning,
         "--document-policy-mode": args.document_policy_mode,
         "--document-policy-spec": args.document_policy_spec,
         "--workspace": args.workspace,
@@ -860,7 +852,7 @@ def _load_launch_manifest(state_dir: Path) -> _LaunchManifest:
     if not path.is_file():
         raise ValueError("run predates resumable CLI state: launch.json is missing")
     launch = _LaunchManifest.model_validate_json(path.read_text(encoding="utf-8"))
-    if launch.schema_version != "coding-run-launch-v7":
+    if launch.schema_version != "coding-run-launch-v10":
         raise ValueError("pre-release CodingRun launch schema is not supported")
     return launch
 
@@ -889,13 +881,11 @@ def _load_api_catalog(
     directory: Path | None,
     *,
     workspace: Path,
-) -> ApiCatalog | None:
+) -> ApiCatalog:
     if directory is None:
-        return None
+        raise ValueError("new runs require --api-catalog-dir")
     resolved = directory.resolve(strict=True)
-    if resolved == workspace or resolved.is_relative_to(workspace):
-        raise ValueError("API catalog directory must be outside the Agent workspace")
-    catalog = ApiCatalog.open(resolved)
+    catalog = load_product_api_catalog(resolved, workspace=workspace)
     print(
         f"API catalog: {resolved} "
         f"({len(catalog.cards)} cards, runtime={catalog.runtime_release})"
@@ -908,15 +898,12 @@ def _product_verifier() -> ExecutionEvidenceVerifier:
 
 
 def _resolve_api_catalog_mode(
-    requested: ApiCatalogMode | None,
+    requested: ProductApiCatalogMode | None,
     catalog: ApiCatalog | None,
-) -> ApiCatalogMode:
-    mode: ApiCatalogMode = requested or ("full" if catalog is not None else "off")
-    if mode == "off" and catalog is not None:
-        raise ValueError("off mode must not receive --api-catalog-dir")
-    if mode != "off" and catalog is None:
-        raise ValueError(f"{mode} mode requires --api-catalog-dir")
-    return mode
+) -> ProductApiCatalogMode:
+    if catalog is None:
+        raise ValueError("product runs require --api-catalog-dir")
+    return requested or DEFAULT_PRODUCT_API_CATALOG_MODE
 
 
 def _load_concept_index(
@@ -953,7 +940,7 @@ def _resolve_concept_retrieval_mode(
 
 def _prepare_static_preflight_source(
     *,
-    mode: Literal["off", "advisory", "enforced_verified"],
+    mode: Literal["off", "on"],
     wheel: Path | None,
     cache_dir: Path | None,
     workspace: Path,
@@ -964,7 +951,7 @@ def _prepare_static_preflight_source(
                 "off static preflight must not receive source or cache paths"
             )
         return None
-    if mode not in {"advisory", "enforced_verified"}:
+    if mode not in {"on"}:
         raise ValueError(f"unknown static preflight mode: {mode}")
     if wheel is None or cache_dir is None:
         raise ValueError(
@@ -978,7 +965,7 @@ def _prepare_static_preflight_source(
             raise ValueError(f"static preflight {label} must be outside the workspace")
     source = prepare_abqpy_source(resolved_wheel, resolved_cache)
     print(
-        f"Static preflight: {source.binding(mode).policy_version} "
+        f"Static preflight: {source.binding().policy_version} "
         f"(abqpy={source.version}, basedpyright={source.basedpyright_version})"
     )
     return source
@@ -1008,17 +995,7 @@ def _runtime_script_policy(
 def _api_catalog_binding(catalog: ApiCatalog | None) -> ApiCatalogBinding | None:
     if catalog is None:
         return None
-    manifest = catalog.manifest
-    if manifest is None:
-        raise ValueError("persisted API catalog is missing its manifest")
-    return ApiCatalogBinding(
-        schema_version=manifest.schema_version,
-        cards_sha256=manifest.cards_sha256,
-        card_count=manifest.card_count,
-        member_count=manifest.member_count,
-        members_sha256=manifest.members_sha256,
-        runtime_release=manifest.runtime_release,
-    )
+    return bind_api_catalog(catalog)
 
 
 def _concept_index_binding(

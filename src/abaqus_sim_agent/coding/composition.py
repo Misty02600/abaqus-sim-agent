@@ -2,7 +2,6 @@
 
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
-from typing import Literal, cast
 
 from openai import AsyncOpenAI
 from pydantic import SecretStr
@@ -13,6 +12,7 @@ from abaqus_sim_agent.execution import Abaqus2024Runner
 from abaqus_sim_agent.retrieval import AbaqusDocumentIndex
 
 from .agent import create_abaqus_coding_agent
+from .api_lookup import bind_api_catalog, load_product_api_catalog
 from .clarification import ClarificationProvider
 from .context_policy import validate_filesystem_skill_bindings
 from .contracts import CodingRunRequest
@@ -68,11 +68,20 @@ async def open_coding_run(
     if continuation_id is not None and not resume:
         raise ValueError("host continuation requires resume mode")
     execution = launch.effective_execution(pure_edit=request.edit_scope is not None)
-    if launch.schema_version == "coding-run-launch-v7":
-        validate_filesystem_skill_bindings(
-            launch.skill_library,
-            launch.capability_definitions,
+    if launch.schema_version != "coding-run-launch-v10":
+        raise ValueError("pre-release CodingRun launch schema is not supported")
+    validate_filesystem_skill_bindings(
+        launch.skill_library,
+        launch.capability_definitions,
+    )
+    if api_catalog is None:
+        assert launch.api_catalog_dir is not None
+        api_catalog = load_product_api_catalog(
+            launch.api_catalog_dir,
+            workspace=request.workspace,
         )
+    if request.api_catalog != bind_api_catalog(api_catalog):
+        raise ValueError("API catalog does not match the persisted request binding")
     with materialize_domain_knowledge_bundle(
         request.state_dir, launch.domain_knowledge
     ) as knowledge:
@@ -109,7 +118,7 @@ async def open_coding_run(
                     launch.question_protocol == "ask_user_v1"
                     and launch.allows_response()
                 ),
-                context_policy_enabled=launch.schema_version == "coding-run-launch-v7",
+                context_policy_enabled=launch.schema_version == "coding-run-launch-v10",
             )
             dependencies = CodingAgentDependencies(
                 request=request,
@@ -120,10 +129,6 @@ async def open_coding_run(
                 static_preflight=AbqpyBasedPyrightPreflight(
                     static_source,
                     request.state_dir,
-                    mode=cast(
-                        Literal["advisory", "enforced_verified"],
-                        launch.static_preflight_mode,
-                    ),
                 )
                 if static_source
                 else None,
