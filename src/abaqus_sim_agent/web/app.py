@@ -36,7 +36,6 @@ from .contracts import (
     RunSnapshot,
     RuntimePolicyCommand,
     SessionInfo,
-    SessionInput,
     StopCommand,
     TimelinePage,
     ToolExecution,
@@ -56,7 +55,6 @@ def create_app(
     config: ServerConfig,
     *,
     api_key: SecretStr = SecretStr(""),
-    bootstrap_token: str | None = None,
     model_factory: ModelFactory = create_deepseek_chat_model,
     runner_factory: RunnerFactory = Abaqus2024Runner,
 ) -> FastAPI:
@@ -64,7 +62,6 @@ def create_app(
         config, api_key, model_factory=model_factory, runner_factory=runner_factory
     )
     events = ViewEvents()
-    token = bootstrap_token or secrets.token_urlsafe(32)
     session = secrets.token_urlsafe(32)
     csrf = secrets.token_urlsafe(32)
 
@@ -110,12 +107,12 @@ def create_app(
             return error("origin_denied", "不允许跨来源请求", 403)
         path = request.url.path
         if path.startswith("/api/"):
-            is_bootstrap = path == "/api/v1/session" and request.method == "POST"
+            is_bootstrap = path == "/api/v1/session" and request.method == "GET"
             if not is_bootstrap and not secrets.compare_digest(
                 request.cookies.get(cookie_name(request), "").encode(), session.encode()
             ):
                 return error(
-                    "unauthorized", "请使用终端显示的本地会话链接打开页面", 401
+                    "unauthorized", "本地浏览器会话尚未初始化，请刷新页面", 401
                 )
             if request.method not in {"GET", "HEAD"}:
                 if (
@@ -123,7 +120,7 @@ def create_app(
                     != "application/json"
                 ):
                     return error("json_required", "请求必须为JSON", 415)
-                if not is_bootstrap and not secrets.compare_digest(
+                if not secrets.compare_digest(
                     request.headers.get("x-csrf-token", "").encode(), csrf.encode()
                 ):
                     return error("csrf_denied", "请求校验失败，请刷新页面", 403)
@@ -150,19 +147,13 @@ def create_app(
     async def corrupt_state(request: Request, exc: Exception):
         return error("state_unavailable", "本地记录不可用，请检查宿主日志", 409)
 
-    @app.post("/api/v1/session", response_model=SessionInfo)
-    def open_session(body: SessionInput, request: Request):
-        if not secrets.compare_digest(body.token.encode(), token.encode()):
-            raise WebError("unauthorized", "本地会话标识无效", 401)
+    @app.get("/api/v1/session", response_model=SessionInfo)
+    def get_session(request: Request):
         response = JSONResponse(SessionInfo(csrf_token=csrf).model_dump())
         response.set_cookie(
             cookie_name(request), session, httponly=True, samesite="strict", path="/api"
         )
         return response
-
-    @app.get("/api/v1/session", response_model=SessionInfo)
-    def get_session():
-        return SessionInfo(csrf_token=csrf)
 
     @app.post("/api/v1/runs", response_model=RunSnapshot, status_code=201)
     def create_run(body: CreateRun):

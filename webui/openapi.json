@@ -21,42 +21,6 @@
             }
           }
         }
-      },
-      "post": {
-        "summary": "Open Session",
-        "operationId": "open_session_api_v1_session_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SessionInput"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionInfo"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
       }
     },
     "/api/v1/runs": {
@@ -3286,22 +3250,6 @@
           "csrf_token"
         ],
         "title": "SessionInfo"
-      },
-      "SessionInput": {
-        "properties": {
-          "token": {
-            "type": "string",
-            "maxLength": 256,
-            "minLength": 1,
-            "title": "Token"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "token"
-        ],
-        "title": "SessionInput"
       },
       "StopCommand": {
         "properties": {

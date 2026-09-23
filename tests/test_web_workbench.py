@@ -97,7 +97,6 @@ def configured_app(tmp_path, *, fail=False, block=None, crash_once=None):
     app = create_app(
         config,
         api_key=SecretStr("fixture-key"),
-        bootstrap_token="bootstrap",
         model_factory=factory,
         runner_factory=lambda workspace, state, **kw: Abaqus2024Runner(
             workspace, state, process_strategy=NoProcess()
@@ -107,7 +106,7 @@ def configured_app(tmp_path, *, fail=False, block=None, crash_once=None):
 
 
 def login(client):
-    response = client.post("/api/v1/session", json={"token": "bootstrap"})
+    response = client.get("/api/v1/session")
     assert response.status_code == 200, response.text
     client.headers["x-csrf-token"] = response.json()["csrf_token"]
 
@@ -301,9 +300,7 @@ def test_negative_verification_and_changed_artifact(tmp_path):
 def test_boundaries_and_corrupt_ledger(tmp_path):
     app, calls = configured_app(tmp_path)
     with TestClient(app, base_url="http://127.0.0.1") as client:
-        assert (
-            client.post("/api/v1/session", json={"token": "wrong"}).status_code == 401
-        )
+        assert client.get("/api/v1/runs").status_code == 401
         login(client)
         assert (
             client.get("/api/v1/runs", headers={"host": "evil.example"}).status_code

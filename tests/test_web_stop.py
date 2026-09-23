@@ -57,7 +57,6 @@ def test_stop_current_task_cancels_foreground_runtime_and_waits_for_cleanup(
     app = create_app(
         ServerConfig(root=tmp_path / "web", stream_model=False),
         api_key=SecretStr("fixture"),
-        bootstrap_token="bootstrap",
         model_factory=model_factory,
         runner_factory=lambda *args, **kwargs: Runner(),
     )

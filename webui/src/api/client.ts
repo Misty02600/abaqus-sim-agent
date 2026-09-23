@@ -43,12 +43,9 @@ export async function request<T>(
   return data as T;
 }
 
-export async function authenticate() {
-  const token = new URLSearchParams(location.hash.slice(1)).get("session");
-  if (token) history.replaceState(null, "", location.pathname);
+export async function initializeSession() {
   const info = await request<components["schemas"]["SessionInfo"]>(
     "/session",
-    token ? { token } : undefined,
   );
   csrf = info.csrf_token;
 }

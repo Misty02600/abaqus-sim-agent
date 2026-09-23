@@ -245,7 +245,6 @@ def _background_solver_app(tmp_path: Path):
             ),
         ),
         api_key=SecretStr("fixture-key"),
-        bootstrap_token="bootstrap",
         model_factory=model_factory,
         runner_factory=runner_factory,
     )

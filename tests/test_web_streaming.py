@@ -91,7 +91,6 @@ def streaming_app(tmp_path, flow, *, before_header=False):
             ),
         ),
         api_key=SecretStr("fixture"),
-        bootstrap_token="bootstrap",
         model_factory=factory,
         runner_factory=lambda w, s, **kw: Abaqus2024Runner(
             w, s, process_strategy=NoProcess()
@@ -384,7 +383,6 @@ def test_go_http_streaming_adapter_retry_and_transport_close(
     app = create_app(
         config,
         api_key=SecretStr("fixture"),
-        bootstrap_token="bootstrap",
         runner_factory=lambda w, s, **kw: Abaqus2024Runner(
             w, s, process_strategy=NoProcess()
         ),
@@ -471,7 +469,6 @@ def test_streamed_file_tool_runs_once_and_keeps_host_verification(tmp_path):
             ),
         ),
         api_key=SecretStr("fixture"),
-        bootstrap_token="bootstrap",
         model_factory=factory,
         runner_factory=lambda w, s, **kw: Abaqus2024Runner(
             w, s, process_strategy=NoProcess()

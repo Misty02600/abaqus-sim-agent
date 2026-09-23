@@ -79,7 +79,6 @@ def open_request_app(tmp_path, mode="response"):
     return create_app(
         config,
         api_key=SecretStr("fixture"),
-        bootstrap_token="bootstrap",
         model_factory=factory,
         runner_factory=lambda w, s, **kw: Abaqus2024Runner(
             w, s, process_strategy=NoProcess()

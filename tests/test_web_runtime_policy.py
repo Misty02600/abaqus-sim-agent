@@ -200,7 +200,6 @@ def test_user_can_approve_solver_while_waiting_then_resume_same_run(tmp_path):
     app = create_app(
         ServerConfig(root=tmp_path / "web", stream_model=False),
         api_key=SecretStr("fixture"),
-        bootstrap_token="bootstrap",
         model_factory=model_factory,  # type: ignore[arg-type] - deterministic client fixture
         runner_factory=runner_factory,  # type: ignore[arg-type] - deterministic runner fixture
     )

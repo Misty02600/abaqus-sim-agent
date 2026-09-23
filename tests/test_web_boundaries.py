@@ -233,13 +233,15 @@ def test_observer_failure_does_not_change_host_result(tmp_path, monkeypatch):
         ]
 
 
-def test_non_ascii_session_token_is_rejected(tmp_path):
+def test_plain_local_session_endpoint_initializes_browser_cookie(tmp_path):
     app, _ = configured_app(tmp_path)
     with TestClient(app, base_url="http://127.0.0.1") as client:
-        assert (
-            client.post("/api/v1/session", json={"token": "错误令牌"}).status_code
-            == 401
-        )
+        assert client.get("/api/v1/runs").status_code == 401
+        opened = client.get("/api/v1/session")
+        assert opened.status_code == 200, opened.text
+        client.headers["x-csrf-token"] = opened.json()["csrf_token"]
+        assert client.get("/api/v1/runs").status_code == 200
+        assert client.post("/api/v1/session", json={}).status_code == 405
 
 
 def test_second_server_cannot_start_same_root(tmp_path):

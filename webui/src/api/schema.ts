@@ -14,8 +14,7 @@ export interface paths {
         /** Get Session */
         get: operations["get_session_api_v1_session_get"];
         put?: never;
-        /** Open Session */
-        post: operations["open_session_api_v1_session_post"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1245,11 +1244,6 @@ export interface components {
             /** Csrf Token */
             csrf_token: string;
         };
-        /** SessionInput */
-        SessionInput: {
-            /** Token */
-            token: string;
-        };
         /** StopCommand */
         StopCommand: {
             /**
@@ -1486,39 +1480,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SessionInfo"];
-                };
-            };
-        };
-    };
-    open_session_api_v1_session_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SessionInput"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SessionInfo"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -70,7 +70,6 @@ def test_web_lists_and_binds_explicit_private_knowledge_pack(tmp_path: Path) -> 
     _write_pack(packs)
     app = create_app(
         ServerConfig(root=tmp_path / "web", knowledge_packs_root=packs),
-        bootstrap_token="bootstrap",
     )
 
     with TestClient(app, base_url="http://127.0.0.1") as client:
@@ -147,7 +146,6 @@ def test_selected_pack_is_readable_through_product_agent_tools(tmp_path: Path) -
             stream_model=False,
         ),
         api_key=SecretStr("fixture"),
-        bootstrap_token="bootstrap",
         model_factory=factory,
         runner_factory=lambda workspace, state, **_kwargs: Abaqus2024Runner(
             workspace, state, process_strategy=NoProcess()

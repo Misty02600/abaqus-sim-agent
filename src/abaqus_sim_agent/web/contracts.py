@@ -466,10 +466,6 @@ class WorkspaceSearch(StrictModel):
     truncated: bool = False
 
 
-class SessionInput(StrictModel):
-    token: str = Field(min_length=1, max_length=256)
-
-
 class SessionInfo(StrictModel):
     csrf_token: str
 

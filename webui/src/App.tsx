@@ -6,7 +6,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import {
-  authenticate,
+  initializeSession,
   request,
   runPath,
   errorText,
@@ -68,7 +68,7 @@ export default function App() {
       components["schemas"]["RunIssue"][]
     >([]),
     [ready, setReady] = useState(false),
-    [authError, setAuthError] = useState("");
+    [connectionError, setConnectionError] = useState("");
   const [renaming, setRenaming] = useState(false),
     [newTitle, setNewTitle] = useState("");
   const [id, setId] = useState<string | null>(selectedId),
@@ -231,21 +231,16 @@ export default function App() {
   useEffect(() => {
     const connect = () => {
       setReady(false);
-      setAuthError("");
-      void authenticate()
+      setConnectionError("");
+      void initializeSession()
         .then(() => {
           setReady(true);
           void list();
           void listKnowledgePacks();
         })
-        .catch((e) => setAuthError(errorText(e)));
+        .catch((e) => setConnectionError(errorText(e)));
     };
     connect();
-    const changed = () => {
-      if (location.hash.startsWith("#session=")) connect();
-    };
-    addEventListener("hashchange", changed);
-    return () => removeEventListener("hashchange", changed);
   }, [list, listKnowledgePacks]);
   useEffect(() => {
     const pop = () => {
@@ -715,9 +710,9 @@ export default function App() {
       <main className="welcome">
         <div className="brandmark">A</div>
         <h1>Abaqus 工作台</h1>
-        <p>{authError || "正在连接本地服务…"}</p>
-        {authError && (
-          <p className="muted">请使用启动终端显示的完整会话链接打开本页。</p>
+        <p>{connectionError || "正在连接本地服务…"}</p>
+        {connectionError && (
+          <p className="muted">确认本地服务仍在运行，然后刷新页面。</p>
         )}
       </main>
     );

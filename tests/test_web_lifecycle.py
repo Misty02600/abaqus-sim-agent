@@ -56,7 +56,7 @@ server.run()
                 for _ in range(100):
                     try:
                         response = client.get("/api/v1/session")
-                        if response.status_code == 401:
+                        if response.status_code == 200:
                             break
                     except httpx.TransportError:
                         pass
@@ -64,7 +64,6 @@ server.run()
                     time.sleep(0.1)
                 else:
                     pytest.fail("server did not start")
-                response = client.post("/api/v1/session", json={"token": "bootstrap"})
                 client.headers["x-csrf-token"] = response.json()["csrf_token"]
                 created = client.post(
                     "/api/v1/runs",

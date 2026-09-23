@@ -194,7 +194,6 @@ def test_delete_active_vendor_stage_cancels_before_removing_state(
     app = create_app(
         ServerConfig(root=tmp_path / "web", stream_model=False),
         api_key=SecretStr("fixture"),
-        bootstrap_token="bootstrap",
         model_factory=factory,
         runner_factory=lambda *a, **kw: Runner(),
     )
@@ -353,7 +352,6 @@ def test_delete_shell_terminates_parent_and_child_processes(tmp_path, tool_name)
     app = create_app(
         ServerConfig(root=tmp_path / "web", stream_model=False),
         api_key=SecretStr("fixture"),
-        bootstrap_token="bootstrap",
         model_factory=factory,
     )
     with TestClient(app, base_url="http://127.0.0.1") as client:
