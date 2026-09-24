@@ -545,15 +545,20 @@ def _configure_coder(
         if isinstance(capability, FileSystem):
             return AbaqusTextFileSystem[_CodingAgentDependencies](
                 root_dir=workspace,
+                cwd=capability.cwd,
                 allowed_patterns=capability.allowed_patterns,
                 denied_patterns=capability.denied_patterns,
                 protected_patterns=capability.protected_patterns,
                 max_read_lines=capability.max_read_lines,
+                max_read_chars=capability.max_read_chars,
                 max_list_results=capability.max_list_results,
                 max_search_results=capability.max_search_results,
                 max_find_results=capability.max_find_results,
                 read_only=capability.read_only,
+                content_hashes=capability.content_hashes,
                 id=capability.id,
+                description=capability.description,
+                defer_loading=capability.defer_loading,
             )
         if isinstance(capability, ToolOutputLimits):
             # Keep spill + read_tool_result instead of Coder's lossy-only truncation.

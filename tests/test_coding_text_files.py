@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 from pydantic_ai.exceptions import ModelRetry
-from pydantic_ai_harness.filesystem import FileSystemToolset
+from pydantic_ai_harness.filesystem import FileSystemToolset, Replacement
 
 from abaqus_sim_agent.coding.text_encoding import (
     UnsupportedTextEncodingError,
@@ -137,6 +137,27 @@ async def test_unrepresentable_edit_and_stale_hash_leave_cp936_file_unchanged(
     with pytest.raises(ModelRetry, match="Conflict"):
         await toolset.edit_file(path.name, "变化", "修改", expected_hash=content_hash)
     assert path.read_bytes() == "外部变化".encode("cp936")
+
+
+@pytest.mark.asyncio
+async def test_batch_edit_applies_in_order_and_preserves_cp936(tmp_path: Path) -> None:
+    toolset = _toolset(tmp_path)
+    path = tmp_path / "probe.txt"
+    original = "状态 = 初始\r\n".encode("cp936")
+    path.write_bytes(original)
+
+    edited = await toolset._edit_file(
+        None,
+        path.name,
+        (
+            Replacement(old_text="初始", new_text="中间"),
+            Replacement(old_text="中间", new_text="完成"),
+        ),
+        expected_hash=hashlib.sha256(original).hexdigest()[:12],
+    )
+
+    assert "encoding:cp936" in edited
+    assert path.read_bytes() == "状态 = 完成\r\n".encode("cp936")
 
 
 @pytest.mark.asyncio

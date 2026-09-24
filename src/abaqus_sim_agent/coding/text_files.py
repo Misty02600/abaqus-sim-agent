@@ -7,18 +7,20 @@ import hashlib
 import os
 import re
 import stat
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import BinaryIO, Concatenate
+from types import CoroutineType
+from typing import Any, BinaryIO, Concatenate
 
 from pydantic_ai.exceptions import ModelRetry
 from pydantic_ai.tools import AgentDepsT, RunContext
 from pydantic_ai.toolsets import FilteredToolset
-from pydantic_ai_harness.filesystem import FileSystem, FileSystemToolset
+from pydantic_ai_harness.filesystem import FileSystem, FileSystemToolset, Replacement
 from pydantic_ai_harness.filesystem._events import FileReadEvent, FileWrittenEvent
 from pydantic_ai_harness.filesystem._toolset import (
     READ_ONLY_TOOL_NAMES,
+    _apply_replacements,
     _format_lines,
     _is_binary,
     _matching_lines,
@@ -49,8 +51,8 @@ _RECOVERABLE_ERRNOS: dict[int | None, str] = {
 
 
 def _recoverable_text[ToolsetT: FileSystemToolset[object], **P](
-    function: Callable[Concatenate[ToolsetT, P], Awaitable[str]],
-) -> Callable[Concatenate[ToolsetT, P], Awaitable[str]]:
+    function: Callable[Concatenate[ToolsetT, P], CoroutineType[Any, Any, str]],
+) -> Callable[Concatenate[ToolsetT, P], CoroutineType[Any, Any, str]]:
     @functools.wraps(function)
     async def wrapper(self: ToolsetT, *args: P.args, **kwargs: P.kwargs) -> str:
         try:
@@ -85,10 +87,14 @@ class AbaqusTextFileSystem(FileSystem[AgentDepsT]):
             denied_patterns=self.denied_patterns,
             protected_patterns=self.protected_patterns,
             max_read_lines=self.max_read_lines,
+            max_read_chars=self.max_read_chars,
             max_list_results=self.max_list_results,
             max_search_results=self.max_search_results,
             max_find_results=self.max_find_results,
             id=self.id or "file_system",
+            cwd=None if self.cwd is None else Path(self.cwd),
+            content_hashes=self.content_hashes,
+            tools=self.tools,
         )
         if self.read_only:
             return FilteredToolset(
@@ -132,7 +138,7 @@ class AbaqusTextFileSystemToolset(FileSystemToolset[AgentDepsT]):
 
         decoded = decode_workspace_text(resolved, raw)
         lines = decoded.text.splitlines(keepends=True)
-        body = _format_lines(lines, offset, limit)
+        body = _format_lines(lines, offset, limit, self._max_read_chars)
         if ctx is not None:
             await ctx.emit(
                 FileReadEvent(
@@ -193,8 +199,7 @@ class AbaqusTextFileSystemToolset(FileSystemToolset[AgentDepsT]):
         self,
         ctx: RunContext[object] | None,
         path: str,
-        old_text: str,
-        new_text: str,
+        replacements: Sequence[Replacement],
         *,
         expected_hash: str | None = None,
     ) -> str:
@@ -209,14 +214,7 @@ class AbaqusTextFileSystemToolset(FileSystemToolset[AgentDepsT]):
             if expected_hash is not None:
                 self._check_hash(path, current_hash, expected_hash)
             decoded = self._decode_existing(resolved, before)
-            count = decoded.text.count(old_text)
-            if count == 0:
-                raise ValueError(f"old_text not found in {path}.")
-            if count > 1:
-                raise ValueError(
-                    f"old_text found {count} times in {path}. Include more surrounding context to make the match unique."
-                )
-            changed = decoded.text.replace(old_text, new_text, 1)
+            changed = _apply_replacements(decoded.text, replacements, path)
             encoded = encode_workspace_text(resolved, changed, decoded.encoding)
             stream.seek(0)
             stream.truncate(0)
