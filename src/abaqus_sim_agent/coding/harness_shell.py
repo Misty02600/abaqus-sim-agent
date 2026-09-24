@@ -1,7 +1,7 @@
-"""Harness 0.31.0 前台 Shell 的 Windows 取消收尾。
+"""Harness 0.33.0 前台 Shell 的 Windows 取消收尾。
 
 Adapted from pydantic/pydantic-ai-harness, MIT, commit
-d8787b74fa043908bca6dd0f5cc7f1f2e1c3a50a (v0.31.0),
+1747bc28cec32eba1afba46b36a08b1eb882b9da (v0.33.0),
 pydantic_ai_harness/shell/_toolset.py::ShellToolset.run_command.
 仅增加异常/取消时先终止进程树及 shield 清理；其余命令、输出与 cwd 语义保留。
 许可证随包保存在 harness_shell.LICENSE；安装入口精确约束平台与版本。

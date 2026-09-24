@@ -1,7 +1,13 @@
+import hashlib
 import json
 from pathlib import Path
 
 import pytest
+from pydantic_ai import Agent
+from pydantic_ai.messages import ModelResponse, TextPart, ToolCallPart
+from pydantic_ai.models.function import FunctionModel
+from pydantic_ai_harness import ToolGuardrail
+from pydantic_ai_harness.filesystem import FileSystem
 from pydantic_ai_harness.guardrails import ToolCallInfo
 
 from abaqus_sim_agent.coding.aci import (
@@ -122,6 +128,53 @@ def test_syntax_gate_rejects_invalid_edit_without_changing_old_file(
 
     assert verdict.action == "block"
     assert path.read_text(encoding="utf-8") == original
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("replacement", "blocked"), [("2", False), ("[", True)])
+async def test_real_harness_batch_edit_validates_final_candidate_before_write(
+    tmp_path: Path, replacement: str, blocked: bool
+) -> None:
+    gate = _gate(tmp_path)
+    path = gate.workspace / "build_model.py"
+    original = b"value = 1\r\n"
+    path.write_bytes(original)
+    calls = 0
+
+    def respond(_messages, _info):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "edit_file",
+                        {
+                            "path": "build_model.py",
+                            "expected_hash": hashlib.sha256(original).hexdigest()[:12],
+                            "replacements": [
+                                {"old_text": "1", "new_text": "("},
+                                {"old_text": "(", "new_text": replacement},
+                            ],
+                        },
+                    )
+                ]
+            )
+        return ModelResponse(parts=[TextPart("Edit feedback inspected.")])
+
+    agent = Agent(
+        FunctionModel(respond),
+        capabilities=[
+            FileSystem(root_dir=gate.workspace),
+            ToolGuardrail(guard=gate.guard, tools=("edit_file",)),
+        ],
+    )
+    await agent.run("Apply the requested edit.")
+
+    assert calls == 2
+    assert gate.edit_checks == 1
+    assert gate.denials == int(blocked)
+    assert path.read_bytes() == (original if blocked else b"value = 2\r\n")
 
 
 def test_syntax_gate_does_not_claim_nonproduction_files(tmp_path: Path) -> None:

@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
+from pydantic_ai_harness.filesystem import Replacement
 from pydantic_ai_harness.guardrails import GuardrailResult, ToolCallInfo
 
 from abaqus_sim_agent.coding.contracts import RuntimeScriptPolicy
@@ -249,19 +250,38 @@ class ProductionPythonSyntaxGate:
             return content if isinstance(content, str) else None
         resolved = (self.workspace / relative).resolve()
         try:
-            current = resolved.read_text(encoding="utf-8")
+            with resolved.open(encoding="utf-8", newline="") as stream:
+                current = stream.read()
         except (OSError, UnicodeError):
             return None
         old_text = call.args.get("old_text")
         new_text = call.args.get("new_text")
-        if not isinstance(old_text, str) or not isinstance(new_text, str):
-            return None
         expected_hash = call.args.get("expected_hash")
         if expected_hash is not None and expected_hash != _short_hash(current):
             return None
-        if current.count(old_text) != 1:
+        replacements = call.args.get("replacements")
+        if replacements is None:
+            replacements = [{"old_text": old_text, "new_text": new_text}]
+        elif old_text is not None or new_text is not None:
             return None
-        return current.replace(old_text, new_text, 1)
+        if not isinstance(replacements, list) or not replacements:
+            return None
+        for replacement in replacements:
+            if isinstance(replacement, Replacement):
+                old, new = replacement.old_text, replacement.new_text
+            elif isinstance(replacement, dict):
+                old, new = replacement.get("old_text"), replacement.get("new_text")
+            else:
+                return None
+            if (
+                not isinstance(old, str)
+                or not old
+                or not isinstance(new, str)
+                or current.count(old) != 1
+            ):
+                return None  # Harness rejects invalid replacement sets before writing.
+            current = current.replace(old, new, 1)
+        return current
 
     def _record(
         self,

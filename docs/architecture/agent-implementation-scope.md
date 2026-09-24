@@ -13,7 +13,7 @@ Coder，不构成多 Agent。Runner、verifier、evaluator 与用户问答组件
 
 | 能力 | 可以做什么 | 执行边界 |
 |---|---|---|
-| Harness 文件与 Shell 工具 | 在 canonical workspace 读写、搜索并运行普通编码命令 | 当前装配显式 `subagents=()`；普通产品保留 Shell，直接 Abaqus launcher 被 guardrail 拒绝；固定 evaluator 按自身工具表运行 |
+| Harness 文件与 Shell 工具 | 在 canonical workspace 读写、搜索并运行普通编码命令 | 不注册 SubAgents；普通产品保留 run-scoped Shell，直接 Abaqus launcher 被 guardrail 拒绝；固定 evaluator 按自身工具表运行 |
 | 包内领域 Skill | 获取运行方式、物理澄清、诊断与停止条件 | Skill 是指导，不是兼容性或任务成功证明 |
 | `run_cae_script` | 在 CAE kernel 执行工作区 Python | `.py`、路径、Abaqus permission、默认无限 timeout 与可选逐工具 allowlist |
 | `solver_job` | `submit` 从已有 `.inp` 启动后台 Standard Job；`wait` 按 execution ID 等待结果 | submit 消耗一次 Solver allowance 并立即返回；wait 不重复计数，pending execution 阻止 run 终态 |
@@ -26,6 +26,26 @@ Coder，不构成多 Agent。Runner、verifier、evaluator 与用户问答组件
 解析 Python 3.10 AST，并拒绝直接出现的 `.submit(...)` / `.waitForCompletion(...)` 调用；Job 创建和
 `writeInput(...)` 保持允许。该最小策略不追踪 `getattr`、`exec` 或运行时重绑定，普通动态 Python 的这些
 工具限制不构成 OS 沙箱或不可信租户隔离。
+
+## Harness 组合合同
+
+Harness 0.33 的 `Coder` 默认提供六个工具和跨 run 存活的持久 Shell；当前产品通过公开 capability 组合接口
+保留以下合同，具体装配见 [agent.py](../../src/abaqus_sim_agent/coding/agent.py)：
+
+- 文件工具使用 `FileSystem` 的默认纯 Python 工具集与 content hashes，保留 `list_directory`、`search_files`、
+  `file_info` 等入口，不依赖 Coder 新增的 ripgrep 工具。上游 `edit_file` 也接受批量 `replacements`；
+  ACI 在落盘前检查依次替换后的完整候选，包括 CRLF 源文件。纯编辑 profile 仍拒绝批量替换，只允许其原有受限入口。
+- Shell 显式选择 `run_command`、`start_command`、`check_command`、`stop_command`；后台命令随 run 退出清理，
+  使用原有 launcher guardrail、环境过滤及 Shell 超时策略。持久 `shell` 工具不注册。
+- `Planning` 按有效配置独立组合，普通产品默认关闭；显式 evaluator profile 继续使用受限 `write_plan`。
+- 工具输出保留 `ToolOutputLimits` 的 spill/read-back 路径，避免上游 Coder 默认直接截断后无法回读完整结果。
+  产品 1M tiered compaction 与 typed capability activation 保留机制继续由项目装配。
+- 新 Coder 默认通用指令与 `RepairToolArguments` 未自动启用；问答和恢复继续由 `CodingRunService` 与
+  `StepPersistence` 协作，不另外接入 `AskUser`、conversation store 或 `BackgroundTools`。
+
+已核查 0.33 的 run-scoped Shell 仍调用 `os.killpg`，Windows 下可复现异常；FileStepStore 的同步 JSONL
+追加方法仍没有并行写入锁。因此宿主补丁精确绑定 0.33，并分别验证超时/后台退出清理和并行 effect 追加。
+新组合通过离线合同回归不等于真实模型行为或仿真效果已经重新验证；旧批次按冻结源码/依赖保留原工具 schema。
 
 ## 模型交接与宿主终态
 

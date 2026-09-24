@@ -9,7 +9,7 @@ import pytest
 from pydantic_ai.messages import ModelMessage, ModelResponse
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai_harness.filesystem import FileSystem, FileSystemToolset
-from pydantic_ai_harness.shell import ShellToolset
+from pydantic_ai_harness.shell import Shell, ShellToolset
 from pydantic_ai_harness.step_persistence import FileStepStore, ToolEffectRecord
 
 import abaqus_sim_agent.coding.agent as coding_agent
@@ -62,7 +62,7 @@ async def test_harness_shell_patch_is_version_scoped_and_idempotent() -> None:
     assert (
         apply_harness_windows_shell_tree_patch(
             platform_name="nt",
-            harness_version="0.31.0",
+            harness_version="0.33.0",
             shell_toolset_class=FakeShellToolset,
             tree_terminator=terminated.append,
         )
@@ -77,7 +77,7 @@ async def test_harness_shell_patch_is_version_scoped_and_idempotent() -> None:
     assert (
         apply_harness_windows_shell_tree_patch(
             platform_name="nt",
-            harness_version="0.31.0",
+            harness_version="0.33.0",
             shell_toolset_class=FakeShellToolset,
             tree_terminator=terminated.append,
         )
@@ -124,7 +124,7 @@ def test_harness_jsonl_patch_serializes_parallel_append_methods() -> None:
     assert (
         apply_harness_windows_jsonl_append_patch(
             platform_name="nt",
-            harness_version="0.31.0",
+            harness_version="0.33.0",
             file_step_store_class=FakeFileStepStore,
         )
         == HARNESS_WINDOWS_JSONL_APPEND_PATCH_VERSION
@@ -146,7 +146,7 @@ def test_harness_jsonl_patch_serializes_parallel_append_methods() -> None:
     assert (
         apply_harness_windows_jsonl_append_patch(
             platform_name="nt",
-            harness_version="0.31.0",
+            harness_version="0.33.0",
             file_step_store_class=FakeFileStepStore,
         )
         == HARNESS_WINDOWS_JSONL_APPEND_PATCH_VERSION
@@ -180,7 +180,7 @@ def test_harness_jsonl_patch_serializes_first_install(
             pool.map(
                 lambda _index: apply_harness_windows_jsonl_append_patch(
                     platform_name="nt",
-                    harness_version="0.31.0",
+                    harness_version="0.33.0",
                     file_step_store_class=FakeFileStepStore,
                 ),
                 range(20),
@@ -338,3 +338,20 @@ async def test_shell_timeout_uses_windows_process_tree_termination(
     )
 
     assert result == "[Command timed out after 0.1s]"
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows process-tree regression")
+@pytest.mark.asyncio
+async def test_run_scoped_shell_cleans_up_background_process_on_exit(
+    tmp_path: Path,
+) -> None:
+    apply_harness_windows_shell_tree_patch()
+    toolset = Shell(cwd=tmp_path).get_toolset()
+
+    async with toolset:
+        await toolset.start_command('python -c "import time; time.sleep(60)"')
+        processes = [bg.proc for bg in toolset._background.values()]
+        assert len(processes) == 1
+        assert processes[0].returncode is None
+
+    assert processes[0].returncode is not None

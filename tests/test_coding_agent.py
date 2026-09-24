@@ -1068,6 +1068,8 @@ def test_open_product_agent_exposes_shell_and_background_solver_without_planning
     tools = observed["tools"]
     assert isinstance(tools, set)
     assert {"run_command", "start_command", "check_command", "stop_command"} <= tools
+    assert {"list_directory", "search_files", "file_info", "read_tool_result"} <= tools
+    assert not {"shell", "list_files", "grep", "delegate_task"} & tools
     assert "solver_job" in tools
     assert "run_solver_job" not in tools
     assert "write_plan" not in tools

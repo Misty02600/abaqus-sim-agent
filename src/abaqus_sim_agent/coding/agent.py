@@ -6,14 +6,22 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Literal
 
 from pydantic_ai import Agent, DeferredToolRequests, RunContext, ToolOutput
+from pydantic_ai.capabilities import Capability
 from pydantic_ai.models import Model
 from pydantic_ai_harness import Coder, Skills, StepPersistence, ToolGuardrail
 from pydantic_ai_harness.compaction import ClearToolResults, WarnNearLimits
+from pydantic_ai_harness.filesystem import FileSystem
 from pydantic_ai_harness.guardrails import GuardrailResult, ToolCallInfo
 from pydantic_ai_harness.planning import Planning
+from pydantic_ai_harness.repair_tool_arguments import RepairToolArguments
 from pydantic_ai_harness.repo_context import RepoContext
-from pydantic_ai_harness.shell import LLM_API_KEY_ENV_PATTERNS, Shell
+from pydantic_ai_harness.shell import (
+    LLM_API_KEY_ENV_PATTERNS,
+    RUN_SCOPED_TOOL_NAMES,
+    Shell,
+)
 from pydantic_ai_harness.step_persistence import StepStore
+from pydantic_ai_harness.tool_output_limits import ToolOutputLimits
 
 from abaqus_sim_agent.coding.api_lookup import (
     ApiCatalogMode as _ApiCatalogMode,
@@ -307,15 +315,10 @@ def create_abaqus_coding_agent(
         raise ValueError(
             "product coding tools require an open ask_user response session"
         )
-    coder = Coder[_CodingAgentDependencies](
-        request.workspace,
-        allowed_commands=(),
-        subagents=(),
-    )
+    coder = Coder[_CodingAgentDependencies](request.workspace)
     coder = _configure_coder(
         coder,
         request.workspace,
-        planning_enabled=planning_enabled,
         shell_enabled=product_shell_enabled,
         context_policy_enabled=context_policy_enabled,
     )
@@ -323,6 +326,16 @@ def create_abaqus_coding_agent(
         coder,
         StepPersistence(store=step_store or _create_step_store(request.state_dir)),
     ]
+    if planning_enabled:
+        planning = Planning[_CodingAgentDependencies]()
+        if not product_shell_enabled:
+            planning.tools = ("write_plan",)
+            planning.guidance = (
+                "After all required user input is known, use write_plan at most "
+                "once for a genuinely multi-stage task. Keep it concise; do not "
+                "rewrite or administratively update the plan during repair."
+            )
+        capabilities.append(planning)
     if context_policy_enabled:
         capabilities.insert(1, build_context_policy())
     if product_shell_enabled:
@@ -515,7 +528,6 @@ def _configure_coder(
     coder: Coder[_CodingAgentDependencies],
     workspace: Path,
     *,
-    planning_enabled: bool,
     shell_enabled: bool,
     context_policy_enabled: bool,
 ) -> Coder[_CodingAgentDependencies]:
@@ -546,6 +558,17 @@ def _configure_coder(
     )
 
     def configure(capability):
+        # 0.32 changed Coder defaults. Keep the host's tool/prompt contract using
+        # upstream capabilities; persistent shell and JSON repair are separate choices.
+        if type(capability) is Capability or isinstance(
+            capability, RepairToolArguments
+        ):
+            return None
+        if isinstance(capability, FileSystem):
+            return FileSystem[_CodingAgentDependencies](root_dir=workspace)
+        if isinstance(capability, ToolOutputLimits):
+            # Keep spill + read_tool_result instead of Coder's lossy-only truncation.
+            return ToolOutputLimits[_CodingAgentDependencies]()
         if context_policy_enabled and isinstance(
             capability, (ClearToolResults, WarnNearLimits)
         ):
@@ -553,21 +576,14 @@ def _configure_coder(
         if isinstance(capability, Shell):
             if not shell_enabled:
                 return None
-            capability.denied_commands = ("abaqus", "abq")
-            capability.denied_env_patterns = LLM_API_KEY_ENV_PATTERNS
-            return capability
+            return Shell[_CodingAgentDependencies](
+                cwd=workspace,
+                denied_commands=("abaqus", "abq"),
+                denied_env_patterns=LLM_API_KEY_ENV_PATTERNS,
+                tools=RUN_SCOPED_TOOL_NAMES,
+            )
         if isinstance(capability, RepoContext) and not has_repo_context:
             return None
-        elif isinstance(capability, Planning):
-            if not planning_enabled:
-                return None
-            if not shell_enabled:
-                capability.tools = ("write_plan",)
-                capability.guidance = (
-                    "After all required user input is known, use write_plan at most "
-                    "once for a genuinely multi-stage task. Keep it concise; do not "
-                    "rewrite or administratively update the plan during repair."
-                )
         return capability
 
     configured = coder.visit_and_replace(configure)
