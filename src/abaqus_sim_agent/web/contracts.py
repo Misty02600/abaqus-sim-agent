@@ -30,7 +30,7 @@ class CreateRun(StrictModel):
     knowledge_pack_ids: tuple[str, ...] = Field(default=(), max_length=32)
     abaqus_permission: RuntimePermission | None = None
     solver_permission: RuntimePermission | None = None
-    workspace: str | None = Field(default=None, min_length=1, max_length=4096)
+    workspace: str = Field(min_length=1, max_length=4096)
 
     @field_validator("idempotency_key", mode="before")
     @classmethod

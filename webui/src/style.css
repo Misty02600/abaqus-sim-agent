@@ -185,11 +185,107 @@ p {
   font-family: var(--font-mono);
   font-size: 10px;
 }
+.workspace-switcher {
+  position: relative;
+}
+.workspace-context-button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.workspace-context-button:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--bg-hover);
+}
+.workspace-context-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.workspace-context-button:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
 .workspace-context span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.workspace-switcher-menu {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 2px);
+  left: 8px;
+  right: 8px;
+  max-height: min(60vh, 420px);
+  overflow: auto;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+}
+.workspace-switcher-heading {
+  display: block;
+  padding: 6px 8px;
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 500;
+}
+.workspace-switcher-option,
+.workspace-switcher-actions button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  padding: 8px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  font-size: 11px;
+  cursor: pointer;
+}
+.workspace-switcher-option:hover:not(:disabled),
+.workspace-switcher-actions button:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.workspace-switcher-option:disabled,
+.workspace-switcher-actions button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.workspace-switcher-option:focus-visible,
+.workspace-switcher-actions button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.workspace-switcher-option span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+}
+.workspace-switcher-option small {
+  flex-shrink: 0;
+  margin-left: 8px;
+  color: var(--accent);
+}
+.workspace-switcher-empty {
+  margin: 0;
+  padding: 8px;
+  color: var(--text-dim);
+  font-size: 11px;
+}
+.workspace-switcher-actions {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
 }
 .session-search {
   padding: 10px 12px 2px;
@@ -265,17 +361,75 @@ p {
 .thread-row:focus-within .thread-delete-button {
   opacity: 1;
 }
-.delete-confirm-actions {
+.thread-delete-confirmation {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 7px;
+  min-height: 50px;
+  padding: 6px 8px;
+  border-left: 2px solid #ef4444;
+  background: rgba(239, 68, 68, 0.06);
+}
+.thread-delete-confirmation-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+.thread-delete-confirmation-copy strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.thread-delete-confirmation-copy small {
+  overflow: hidden;
+  color: var(--text-dim);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.thread-delete-confirmation-copy .thread-delete-error {
+  color: #ef8b82;
+}
+.thread-delete-confirmation-actions,
+.unavailable-run-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 5px;
+}
+.thread-delete-confirmation-actions button,
+.unavailable-run-actions button {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.thread-delete-confirmation-actions button.danger,
+.unavailable-run-actions button:first-child {
+  border-color: transparent;
+  background: #ef4444;
+  color: #fff;
+}
+.thread-delete-confirmation-actions button:hover:not(:disabled),
+.unavailable-run-actions button:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.thread-delete-confirmation-actions button:disabled,
+.unavailable-run-actions button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.unavailable-run {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
-}
-.delete-confirm {
-  background: #7d3028;
-  border-color: #a44a40;
-}
-.delete-confirm:hover:not(:disabled) {
-  background: #953f36;
 }
 .thread-rename-form {
   display: flex;

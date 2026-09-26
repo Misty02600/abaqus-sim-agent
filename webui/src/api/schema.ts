@@ -777,7 +777,7 @@ export interface components {
             /** Solver Permission */
             solver_permission?: (components["schemas"]["RuntimeDenied"] | components["schemas"]["RuntimeAllowed"] | components["schemas"]["RuntimeAllowedWithLimit"]) | null;
             /** Workspace */
-            workspace?: string | null;
+            workspace: string;
         };
         /** DeleteRunResponse */
         DeleteRunResponse: {

@@ -1111,20 +1111,12 @@ class RunController:
                         "idempotency_conflict", "相同创建标识不能提交不同目标"
                     )
                 return self.snapshot(run_id)
-            workspace = (
-                selected_workspace(command.workspace, self.registry.root)
-                if command.workspace is not None
-                else plain_path(
-                    self.registry.root / "workspaces" / run_id, directory=True
-                )
-            )
+            workspace = selected_workspace(command.workspace, self.registry.root)
             conflict = self._workspace_conflict(workspace)
             if conflict:
                 raise WebError("workspace_busy", conflict)
             directory.mkdir()
             state = self.registry.state_dir(run_id)
-            if command.workspace is None:
-                workspace.mkdir()
             state.mkdir()
             controls = self.config.request_controls()
             base_runtime_policy = controls["runtime_policy"]
@@ -1152,9 +1144,7 @@ class RunController:
             )
             with CodingRunFileLock(state):
                 registration = Registration(
-                    workspace_kind="selected"
-                    if command.workspace is not None
-                    else "managed",
+                    workspace_kind="selected",
                     request_digest=digest(command),
                     created_at=datetime.now(UTC),
                     request=prepared.request,

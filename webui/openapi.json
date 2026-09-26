@@ -2047,16 +2047,9 @@
             "title": "Solver Permission"
           },
           "workspace": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4096,
-                "minLength": 1
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "type": "string",
+            "maxLength": 4096,
+            "minLength": 1,
             "title": "Workspace"
           }
         },
@@ -2064,7 +2057,8 @@
         "type": "object",
         "required": [
           "idempotency_key",
-          "goal"
+          "goal",
+          "workspace"
         ],
         "title": "CreateRun"
       },

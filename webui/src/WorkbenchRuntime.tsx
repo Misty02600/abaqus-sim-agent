@@ -16,6 +16,7 @@ export function WorkbenchRuntime({
   snapshot,
   runs,
   busy,
+  canCreateRun,
   draftKey,
   onSend,
   onNavigate,
@@ -26,6 +27,7 @@ export function WorkbenchRuntime({
   snapshot: Snapshot | null;
   runs: Snapshot[];
   busy: boolean;
+  canCreateRun: boolean;
   draftKey: string;
   onSend: (text: string) => Promise<Delivery>;
   onNavigate: (id: string | null) => void;
@@ -59,10 +61,11 @@ export function WorkbenchRuntime({
   latestMessages.current = messages;
   const allowed =
     !busy &&
-    (!id ||
-      !!(snapshot?.view.question?.pending
-        ? snapshot.can_answer
-        : snapshot?.can_message));
+    (id
+      ? !!(snapshot?.view.question?.pending
+          ? snapshot.can_answer
+          : snapshot?.can_message)
+      : canCreateRun);
   const storageKey = `abaqus-draft:${draftKey}`;
   const runtime = useExternalStoreRuntime<ThreadMessageLike>({
     messages,

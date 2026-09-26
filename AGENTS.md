@@ -32,7 +32,7 @@
 - Harness Planning 适配只为解释冻结历史轨迹保留；新产品和新评测不得启用，也不新增重新开启入口。历史 manifest 中的 `planning_enabled=true` 保留原值。
 - 本地 Web 工作台复用 `coding/application.py`、`composition.py` 和 `CodingRunService`。命令使用 REST，SSE 只通知重取；Web registry、Thread、invocation 和 `ToolExecution` 是管理记录，不覆盖 CodingRun 的 request、limits/runtime policy、runtime evidence、verification 或 outcome。
 - Web CLI 固定回环监听，服务 started 后默认打开普通本机 URL，`--no-open` 可关闭；页面通过 GET session 无感建立 HttpOnly cookie 与 CSRF，不使用终端 fragment token。非回环部署仍未开放；见 ADR-0037。
-- Web 会话可使用托管空目录或显式选择已有本机 ASCII 工作区；创建后固定绑定，文件原地读写。所选目录与管理根互不包含，state/evidence 仍由宿主保存；目录接线与边界见 ADR-0034。
+- 新 Web 会话必须先显式选择已有本机 ASCII 工作区，不自动创建托管空目录；创建后固定绑定，文件原地读写。所选目录与管理根互不包含，state/evidence 仍由宿主保存；目录接线与边界见 ADR-0034、ADR-0041。历史 managed 登记按原路径继续读取。
 - Web 删除会话先完成本宿主受控执行的收尾，再永久清理会话记录；托管或选定的工程文件始终保留。最小删除回执仅用于幂等和失败重试，不是回收站；见 ADR-0035。
 - Web 主停止操作按活动 operation ID 中断当前 Agent 工作段，并通过 `AgentRun.cancel()` 传播到模型和前台工具；成功收尾后保存 `interrupted/stopped`，保留文件、history 与累计 usage。已后台化的 Solver 不随主停止取消，继续由独立 ToolExecution 观察或取消；其运行期间不启动新 Agent 工作段，终态后只按宿主记录的精确 workspace snapshot 接回。删除会话仍执行完整收尾。见 ADR-0036。
 - Web 普通追加消息先持久化到 Thread，再以 `continuation_id` 恢复同一 CodingRun history；它不推进 task revision，但每段单独捕获 workspace/execution baseline，旧产物和旧执行不能冒充 fresh evidence。显式任务合同变化仍使用 amendment/task revision。

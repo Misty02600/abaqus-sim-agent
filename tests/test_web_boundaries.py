@@ -78,7 +78,7 @@ def test_png_preview_html_download_and_symlink_rejection(tmp_path):
     with TestClient(app, base_url="http://127.0.0.1") as client:
         login(client)
         rid = create(client)
-        workspace = tmp_path / "web/workspaces" / rid
+        workspace = app.state.controller.registry.load(rid).request.workspace
         Image.new("RGB", (10, 10), "red").save(workspace / "image.png")
         (workspace / "bad.png").write_bytes(b"not png")
         (workspace / "page.html").write_text(
@@ -113,7 +113,7 @@ def test_workspace_browse_search_preview_and_path_boundaries(tmp_path):
     with TestClient(app, base_url="http://127.0.0.1") as client:
         login(client)
         rid = create(client)
-        workspace = tmp_path / "web/workspaces" / rid
+        workspace = app.state.controller.registry.load(rid).request.workspace
         source = workspace / "src"
         source.mkdir()
         (source / "build_model.py").write_text("print('model')\n", encoding="utf-8")

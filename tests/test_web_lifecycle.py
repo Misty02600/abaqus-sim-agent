@@ -65,9 +65,15 @@ server.run()
                 else:
                     pytest.fail("server did not start")
                 client.headers["x-csrf-token"] = response.json()["csrf_token"]
+                workspace = tmp_path / "selected-project"
+                workspace.mkdir()
                 created = client.post(
                     "/api/v1/runs",
-                    json={"idempotency_key": str(uuid4()), "goal": "fixture"},
+                    json={
+                        "idempotency_key": str(uuid4()),
+                        "goal": "fixture",
+                        "workspace": str(workspace),
+                    },
                 ).json()
                 rid = created["view"]["run_id"]
                 assert (

@@ -71,6 +71,13 @@ def _result(tmp_path: Path, workspace: Path) -> AbaqusExecutionResult:
     )
 
 
+def _selected_solver_workspace(tmp_path: Path) -> Path:
+    workspace = tmp_path / "selected-project"
+    workspace.mkdir(exist_ok=True)
+    (workspace / "demo.inp").write_text("*HEADING\nfixture\n", encoding="ascii")
+    return workspace
+
+
 class _SuccessfulSolver:
     def __init__(self, result: AbaqusExecutionResult) -> None:
         self.result = result
@@ -429,11 +436,13 @@ def test_background_solver_completion_returns_in_same_invocation(
     try:
         with TestClient(app, base_url="http://127.0.0.1") as client:
             login(client)
+            workspace = _selected_solver_workspace(tmp_path)
             created = client.post(
                 "/api/v1/runs",
                 json={
                     "idempotency_key": str(uuid4()),
                     "goal": "Run the existing demo Solver job and report its result.",
+                    "workspace": str(workspace),
                 },
             )
             assert created.status_code == 201, created.text
@@ -499,11 +508,13 @@ def test_background_solver_already_completed_wait_returns_immediately(
     release.set()
     with TestClient(app, base_url="http://127.0.0.1") as client:
         login(client)
+        workspace = _selected_solver_workspace(tmp_path)
         created = client.post(
             "/api/v1/runs",
             json={
                 "idempotency_key": str(uuid4()),
                 "goal": "Run the existing demo Solver job and report its result.",
+                "workspace": str(workspace),
             },
         )
         assert created.status_code == 201, created.text
@@ -537,11 +548,13 @@ def test_background_solver_cancel_returns_failure_to_wait_call(
     try:
         with TestClient(app, base_url="http://127.0.0.1") as client:
             login(client)
+            workspace = _selected_solver_workspace(tmp_path)
             created = client.post(
                 "/api/v1/runs",
                 json={
                     "idempotency_key": str(uuid4()),
                     "goal": "Run the existing demo Solver job and report its result.",
+                    "workspace": str(workspace),
                 },
             )
             assert created.status_code == 201, created.text

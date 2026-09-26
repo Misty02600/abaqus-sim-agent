@@ -2,7 +2,7 @@ import {
   ThreadListPrimitive,
   ThreadListItemPrimitive,
 } from "@assistant-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
 
 type ThreadMeta = {
@@ -47,8 +47,17 @@ export function ConversationList({
   searching,
   onSearchChange,
   workspace,
+  workspaceBound,
+  workspaces,
+  onWorkspaceSwitch,
+  onWorkspaceBrowse,
   onRename,
   onDelete,
+  deleteTarget,
+  deleteError,
+  deleteInProgress,
+  onDeleteConfirm,
+  onDeleteCancel,
 }: {
   busy: boolean;
   query: string;
@@ -57,22 +66,50 @@ export function ConversationList({
   searching: boolean;
   onSearchChange: (open: boolean) => void;
   workspace: string | null;
+  workspaceBound: boolean;
+  workspaces: string[];
+  onWorkspaceSwitch: (path: string) => void;
+  onWorkspaceBrowse: () => void;
   onRename: (
     runId: string,
     title: string,
     titleVersion: number,
   ) => Promise<boolean>;
   onDelete: (runId: string, title: string) => void;
+  deleteTarget: { runId: string; title: string } | null;
+  deleteError: string;
+  deleteInProgress: string | null;
+  onDeleteConfirm: () => void;
+  onDeleteCancel: () => void;
 }) {
   const [now, setNow] = useState(Date.now());
   const [editing, setEditing] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [renamePending, setRenamePending] = useState(false);
+  const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
+  const workspaceSwitcherRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 60_000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (!workspaceMenuOpen) return;
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!workspaceSwitcherRef.current?.contains(event.target as Node))
+        setWorkspaceMenuOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setWorkspaceMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [workspaceMenuOpen]);
 
   return (
     <ThreadListPrimitive.Root className="conversation-list">
@@ -98,12 +135,82 @@ export function ConversationList({
           <Icon name="search" />
         </button>
       </div>
-      {workspace && (
-        <div className="workspace-context" title={workspace}>
+      <div className="workspace-switcher" ref={workspaceSwitcherRef}>
+        <button
+          type="button"
+          className="workspace-context workspace-context-button"
+          disabled={busy}
+          title={
+            workspaceBound
+              ? `当前会话固定使用此工作区：${workspace ?? "读取中"}。点击切换项目。`
+              : workspace
+                ? `新会话工作区：${workspace}。点击切换项目。`
+                : "尚未选择工作区文件夹。点击选择。"
+          }
+          aria-label={
+            workspaceBound
+              ? `当前会话工作区 ${workspace ?? "读取中"}；切换项目`
+              : workspace
+                ? `新会话工作区 ${workspace}；切换项目`
+                : "尚未选择工作区文件夹；点击选择"
+          }
+          aria-expanded={workspaceMenuOpen}
+          aria-controls="workspace-switcher-options"
+          onClick={() => setWorkspaceMenuOpen((open) => !open)}
+        >
           <Icon name="folder" />
-          <span>{compactWorkspace(workspace)}</span>
-        </div>
-      )}
+          <span>{workspace ? compactWorkspace(workspace) : "选择工作区…"}</span>
+          <Icon name="chevron" />
+        </button>
+        {workspaceMenuOpen && (
+          <div
+            className="workspace-switcher-menu"
+            id="workspace-switcher-options"
+            role="group"
+            aria-label="切换工作区"
+          >
+            <strong className="workspace-switcher-heading" role="presentation">
+              已有工作区
+            </strong>
+            {workspaces.length ? (
+              workspaces.map((path) => (
+                <button
+                  key={path}
+                  type="button"
+                  className="workspace-switcher-option"
+                  title={path}
+                  disabled={busy}
+                  onClick={() => {
+                    setWorkspaceMenuOpen(false);
+                    onWorkspaceSwitch(path);
+                  }}
+                >
+                  <span>{compactWorkspace(path)}</span>
+                  {workspace?.toLowerCase() === path.toLowerCase() && (
+                    <small>当前</small>
+                  )}
+                </button>
+              ))
+            ) : (
+              <p className="workspace-switcher-empty" role="presentation">
+                还没有已使用的工作区
+              </p>
+            )}
+            <div className="workspace-switcher-actions">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setWorkspaceMenuOpen(false);
+                  onWorkspaceBrowse();
+                }}
+              >
+                选择其他文件夹…
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
       {searching && (
         <div className="session-search">
           <input
@@ -134,6 +241,53 @@ export function ConversationList({
               relativeTime(meta.createdAt, now),
               `${meta.messageCount ?? 0} 条消息`,
             ].filter(Boolean);
+
+            if (deleteTarget?.runId === runId) {
+              return (
+                <ThreadListItemPrimitive.Root className="thread-list-item">
+                  <div
+                    className="thread-delete-confirmation"
+                    role="group"
+                    aria-label={`确认删除 ${title}`}
+                  >
+                    <div className="thread-delete-confirmation-copy">
+                      <strong title={deleteTarget.title}>
+                        删除“{deleteTarget.title}”？
+                      </strong>
+                      <small>会永久删除会话记录，工作区文件保留</small>
+                      {deleteError && (
+                        <small
+                          role="alert"
+                          className="thread-delete-error"
+                          title={deleteError}
+                        >
+                          {deleteError}
+                        </small>
+                      )}
+                    </div>
+                    <div className="thread-delete-confirmation-actions">
+                      <button
+                        type="button"
+                        className="danger"
+                        disabled={busy}
+                        aria-label={`确认删除 ${title}`}
+                        onClick={onDeleteConfirm}
+                      >
+                        {deleteInProgress === runId ? "正在删除…" : "删除"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        aria-label={`取消删除 ${title}`}
+                        onClick={onDeleteCancel}
+                      >
+                        取消
+                      </button>
+                    </div>
+                  </div>
+                </ThreadListItemPrimitive.Root>
+              );
+            }
 
             if (editing === runId) {
               return (

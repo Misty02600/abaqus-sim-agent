@@ -122,19 +122,44 @@ def login(client):
 
 
 def create(client, *, key=None):
+    key = key or uuid4()
+    workspace = (
+        client.app.state.controller.registry.root.parent
+        / "selected-workspaces"
+        / key.hex
+    )
+    workspace.mkdir(parents=True, exist_ok=True)
     response = client.post(
         "/api/v1/runs",
         json={
-            "idempotency_key": str(key or uuid4()),
+            "idempotency_key": str(key),
             "goal": "Write out.txt after asking for thickness",
+            "workspace": str(workspace),
         },
     )
     assert response.status_code == 201, response.text
     return response.json()["view"]["run_id"]
 
 
+def test_create_requires_a_selected_workspace(tmp_path) -> None:
+    app, calls = configured_app(tmp_path)
+    with TestClient(app, base_url="http://127.0.0.1") as client:
+        login(client)
+        response = client.post(
+            "/api/v1/runs",
+            json={"idempotency_key": str(uuid4()), "goal": "Create a run"},
+        )
+
+    assert response.status_code == 422
+    assert app.state.controller.registry.ids() == []
+    assert list((tmp_path / "web/states").iterdir()) == []
+    assert calls == []
+
+
 def test_create_run_persists_explicit_runtime_permissions(tmp_path) -> None:
     app, _ = configured_app(tmp_path)
+    workspace = tmp_path / "configured-workspace"
+    workspace.mkdir()
     with TestClient(app, base_url="http://127.0.0.1") as client:
         login(client)
         response = client.post(
@@ -147,6 +172,7 @@ def test_create_run_persists_explicit_runtime_permissions(tmp_path) -> None:
                     "mode": "allow_with_limit",
                     "limit": 2,
                 },
+                "workspace": str(workspace),
             },
         )
 
@@ -197,9 +223,15 @@ def test_commands_questions_and_read_only_state(tmp_path):
         key = uuid4()
         run_id = create(client, key=key)
         assert create(client, key=key) == run_id
+        workspace = app.state.controller.registry.load(run_id).request.workspace
         assert (
             client.post(
-                "/api/v1/runs", json={"idempotency_key": str(key), "goal": "another"}
+                "/api/v1/runs",
+                json={
+                    "idempotency_key": str(key),
+                    "goal": "another",
+                    "workspace": str(workspace),
+                },
             ).status_code
             == 409
         )
@@ -306,9 +338,8 @@ def test_negative_verification_and_changed_artifact(tmp_path):
         url = f"/api/v1/runs/{run_id}/artifacts/{file_id}?preview=true"
         assert client.get(url).text == "result"
         assert not list((tmp_path / "web/cache").iterdir())
-        (tmp_path / "web/workspaces" / run_id / "out.txt").write_text(
-            "changed", encoding="utf-8"
-        )
+        workspace = app.state.controller.registry.load(run_id).request.workspace
+        (workspace / "out.txt").write_text("changed", encoding="utf-8")
         assert client.get(url).status_code == 409
 
 
@@ -329,7 +360,13 @@ def test_boundaries_and_corrupt_ledger(tmp_path):
         )
         assert (
             client.post(
-                "/api/v1/runs", json={}, headers={"x-csrf-token": "wrong"}
+                "/api/v1/runs",
+                json={
+                    "idempotency_key": str(uuid4()),
+                    "goal": "x",
+                    "workspace": "C:/existing-project",
+                },
+                headers={"x-csrf-token": "wrong"},
             ).status_code
             == 403
         )
@@ -342,7 +379,12 @@ def test_boundaries_and_corrupt_ledger(tmp_path):
         assert (
             client.post(
                 "/api/v1/runs",
-                json={"idempotency_key": str(uuid4()), "goal": "x", "state_dir": "C:/"},
+                json={
+                    "idempotency_key": str(uuid4()),
+                    "goal": "x",
+                    "workspace": "C:/existing-project",
+                    "state_dir": "C:/",
+                },
             ).status_code
             == 422
         )

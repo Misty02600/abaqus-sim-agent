@@ -137,8 +137,20 @@ def test_snapshot_reports_latest_request_context_usage_and_advisory_threshold(tm
 
 
 def first_message(client, goal="Remember ALPHA"):
+    key = uuid4()
+    workspace = (
+        client.app.state.controller.registry.root.parent
+        / "selected-workspaces"
+        / key.hex
+    )
+    workspace.mkdir(parents=True, exist_ok=True)
     result = client.post(
-        "/api/v1/runs", json={"idempotency_key": str(uuid4()), "goal": goal}
+        "/api/v1/runs",
+        json={
+            "idempotency_key": str(key),
+            "goal": goal,
+            "workspace": str(workspace),
+        },
     )
     assert result.status_code == 201, result.text
     rid = result.json()["view"]["run_id"]

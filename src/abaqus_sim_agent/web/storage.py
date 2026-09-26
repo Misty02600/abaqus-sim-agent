@@ -87,7 +87,7 @@ class RunRegistry:
             raise WebError("ascii_root", "Web工作目录必须是ASCII路径", 400)
 
     def initialize(self) -> None:
-        for name in ("registry", "workspaces", "states", "cache", "control"):
+        for name in ("registry", "states", "cache", "control"):
             plain_path(self.root / name, directory=True).mkdir(
                 parents=True, exist_ok=True
             )

@@ -84,6 +84,8 @@ def test_web_lists_and_binds_explicit_private_knowledge_pack(tmp_path: Path) -> 
 
     with TestClient(app, base_url="http://127.0.0.1") as client:
         login(client)
+        workspace = tmp_path / "selected-project"
+        workspace.mkdir()
         listed = client.get("/api/v1/knowledge-packs")
         assert listed.status_code == 200
         assert [item["pack_id"] for item in listed.json()["packs"]] == [
@@ -96,6 +98,7 @@ def test_web_lists_and_binds_explicit_private_knowledge_pack(tmp_path: Path) -> 
                 "idempotency_key": str(uuid4()),
                 "goal": "Use the private reference.",
                 "knowledge_pack_ids": ["flexible-electronics-fea"],
+                "workspace": str(workspace),
             },
         )
         assert created.status_code == 201
@@ -164,12 +167,15 @@ def test_selected_pack_is_readable_through_product_agent_tools(tmp_path: Path) -
     )
     with TestClient(app, base_url="http://127.0.0.1") as client:
         login(client)
+        workspace = tmp_path / "selected-project"
+        workspace.mkdir()
         created = client.post(
             "/api/v1/runs",
             json={
                 "idempotency_key": str(uuid4()),
                 "goal": "Read the selected reference and answer.",
                 "knowledge_pack_ids": ["flexible-electronics-fea"],
+                "workspace": str(workspace),
             },
         )
         run_id = created.json()["view"]["run_id"]

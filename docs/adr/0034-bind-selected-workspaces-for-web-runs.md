@@ -39,10 +39,13 @@ ADR-0025 首版规定每个 Web 会话在管理根下创建空工作区。这便
 
 局部替代 [ADR-0025](0025-local-web-workbench-over-coding-run.md) 的“网页只能使用管理根下新建空工作区”
 限制。其本地单用户、宿主权威状态、REST 命令/SSE 通知和文件访问边界继续有效。
+其中“新会话可自动创建托管空目录”由 [ADR-0041](0041-require-selected-workspace-for-web-runs.md)
+局部替代；已有目录选择、路径校验、会话固定绑定和 state 归属决定继续有效。
 
 ## 实现与验证入口
 
 - [目录浏览](../../src/abaqus_sim_agent/web/directories.py)、[路径与登记](../../src/abaqus_sim_agent/web/storage.py)
-- [宿主接线](../../src/abaqus_sim_agent/web/controller.py)、[选择器](../../webui/src/DirectoryPicker.tsx)
+- [宿主接线](../../src/abaqus_sim_agent/web/controller.py)、[选择器](../../webui/src/DirectoryPicker.tsx)、
+  [侧栏工作区切换](../../webui/src/ConversationList.tsx)
 - [定向离线测试](../../tests/test_web_directories.py)、[来源记录](../../webui/THIRD_PARTY_REUSE.md)
 - 当前部署和数据归属见[系统框架](../architecture/system-framework.md)。目录接线不构成真实模型或物理验收。

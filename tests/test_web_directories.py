@@ -125,7 +125,7 @@ def test_invalid_selection_does_not_create_registration(tmp_path, kind):
         result = create_selected(client, choices[kind])
         assert result.status_code in {400, 404}, result.text
         assert list((tmp_path / "web/registry").iterdir()) == []
-        assert list((tmp_path / "web/workspaces").iterdir()) == []
+        assert not (tmp_path / "web/workspaces").exists()
         assert list((tmp_path / "web/states").iterdir()) == []
         assert calls == []
 

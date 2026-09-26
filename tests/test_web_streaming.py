@@ -107,9 +107,20 @@ def streaming_app(tmp_path, flow, *, before_header=False):
 
 
 def launch(client):
+    key = uuid4()
+    workspace = (
+        client.app.state.controller.registry.root.parent
+        / "selected-workspaces"
+        / key.hex
+    )
+    workspace.mkdir(parents=True, exist_ok=True)
     response = client.post(
         "/api/v1/runs",
-        json={"idempotency_key": str(uuid4()), "goal": "请解释，不生成文件。"},
+        json={
+            "idempotency_key": str(key),
+            "goal": "请解释，不生成文件。",
+            "workspace": str(workspace),
+        },
     )
     assert response.status_code == 201, response.text
     rid = response.json()["view"]["run_id"]
@@ -212,7 +223,8 @@ def test_stop_closes_request_preserves_partial_and_allows_followup(
             assert partials[0]["text"] == ("" if before_header else "第一段")
             assert client.post(f"/api/v1/runs/{rid}/stop", json=body).json()["replayed"]
             assert len(flow.calls) == 1
-            assert list((tmp_path / "web/workspaces" / rid).iterdir()) == []
+            workspace = app.state.controller.registry.load(rid).request.workspace
+            assert list(workspace.iterdir()) == []
         restored_app = streaming_app(tmp_path, flow)
         with TestClient(restored_app, base_url="http://127.0.0.1") as client:
             login(client)
@@ -491,6 +503,5 @@ def test_streamed_file_tool_runs_once_and_keeps_host_verification(tmp_path):
         assert done["view"]["verification"]["passed"]
         assert done["view"]["outcome"]["verification_scope"] == "execution_evidence"
         assert done["view"]["usage"]["model_requests"] == 2
-        assert (
-            tmp_path / "web/workspaces" / rid / "result.py"
-        ).read_text() == "value = 1\n"
+        workspace = app.state.controller.registry.load(rid).request.workspace
+        assert (workspace / "result.py").read_text() == "value = 1\n"

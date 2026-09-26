@@ -26,6 +26,7 @@
 | [0035：永久删除 Web 会话记录并保留工程文件](0035-delete-web-conversation-records-and-keep-workspaces.md) | 已采纳；确认后结束受控执行并删除记录，无回收站，保留工程与最小幂等回执 |
 | [0036：中断 Web 当前工作段并单独管理后台作业](0036-interrupt-web-work-segments-and-manage-background-jobs-separately.md) | 已采纳；主停止取消模型与前台工具，后台 Solver 保留独立取消和状态入口 |
 | [0037：用普通本机 URL 打开回环 Web 工作台](0037-open-loopback-web-with-plain-local-url.md) | 已采纳；服务就绪后默认打开普通 URL，浏览器无感建立本地 session，保留同源 CSRF 边界 |
+| [0041：Web 新会话必须选择已有工作区](0041-require-selected-workspace-for-web-runs.md) | 已采纳；新会话不再自动创建托管空工作区，已有 managed 登记按原路径保留 |
 
 ## 验收、恢复与人机交接
 

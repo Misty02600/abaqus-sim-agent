@@ -33,6 +33,7 @@
 ## 实现与验证
 
 - [删除存储](../../src/abaqus_sim_agent/web/deletion.py)、[宿主接线](../../src/abaqus_sim_agent/web/controller.py)
+- [侧栏二次确认](../../webui/src/ConversationList.tsx)、[页面删除命令](../../webui/src/App.tsx)
 - [取消控制](../../src/abaqus_sim_agent/coding/response_stream.py)、[Service](../../src/abaqus_sim_agent/coding/service.py)
 - [删除测试](../../tests/test_web_deletion.py)、[Harness兼容测试](../../tests/test_coding_harness_compat.py)
 - Windows Harness 0.31.0 前台 Shell 取消修复有精确版本门，MIT来源与修改记录见

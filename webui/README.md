@@ -18,10 +18,10 @@ the first session GET establishes the local browser cookie and CSRF automaticall
 - `App.tsx` owns page selection, first-message send, follow-up messages, answers,
   explicit continuation, the Pi-inspired workbench layout and global shortcuts.
 - `DirectoryPicker.tsx` adapts Pi's drive/directory navigation to the authenticated
-  `/directories` API. New runs can bind an existing workspace or use a managed
-  empty folder. The selection is an unsent session-scoped preference; the host
-  revalidates and persists the canonical binding on creation. No workspace is
-  created or model run started by browsing folders.
+  `/directories` API. New runs require selecting an existing workspace; the UI
+  keeps the choice as an unsent session-scoped preference, and the host
+  revalidates and persists the canonical binding on creation. Browsing folders
+  does not create a run or modify folder contents.
 - `WorkspaceExplorer.tsx` refreshes expanded folders when the host file manifest
   changes and discards superseded directory responses, so new files appear after
   a run settles without a manual refresh. It is the single file surface: tree,

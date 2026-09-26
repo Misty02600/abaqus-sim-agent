@@ -45,14 +45,14 @@ Web CLI 在服务 started 后默认打开普通 `127.0.0.1` URL。浏览器首�
   `api_discoveries.jsonl`、`concept_lookups.jsonl`，以及显式策略的额外 journal。
 - 验收：当前 `outcome.json`、verification 和历史 `outcomes/task-*/`；评测另保存 oracle 和 diff/provenance。
 
-**Web management root** 是启动时显式选择的 ASCII 根目录，分开保存 `workspaces/`、`states/`、`registry/`、
-`cache/` 和 `control/`。`registry/<run_id>/thread.json`、invocation、命令回执和 `ToolExecution` 是 Web 管理
-记录；对应 `states/<run_id>` 仍由 CodingRun 合同拥有。两类文件的顺序由恢复协议协调，不是数据库事务。
+**Web management root** 是启动时显式选择的 ASCII 根目录，保存 `states/`、`registry/`、`cache/` 和
+`control/`。`registry/<run_id>/thread.json`、invocation、命令回执和 `ToolExecution` 是 Web 管理记录；对应
+`states/<run_id>` 仍由 CodingRun 合同拥有。`workspaces/` 仅为旧托管工作区登记保留，不再创建新目录。两类文件的顺序由恢复协议协调，不是数据库事务。
 
-新会话默认在 `workspaces/<run_id>` 创建空目录，也可显式选择已有本机 ASCII 目录并原地读写；所选目录
-与整个管理根互不包含，会话建立后不可切换。registration v3 明确保存目录来源，加载时复核路径；旧 v2
-登记明确拒绝，不猜测升级。目录浏览 API 只列出有界子目录，不读取文件内容或创建运行。已有文件进入原始
-workspace snapshot，仍按 fresh evidence 合同验收，见 [ADR-0034](../adr/0034-bind-selected-workspaces-for-web-runs.md)。
+新会话必须显式选择已有本机 ASCII 目录并原地读写；未选择目录时不创建 run。所选目录与整个管理根互不包含，
+会话建立后不可切换。registration v3 明确保存目录来源，加载时复核路径；旧 v2 登记明确拒绝，不猜测升级。
+旧 managed 登记继续按原路径读取；新登记始终为 selected。目录浏览 API 只列出有界子目录，不读取文件内容或创建运行。
+已有文件进入原始 workspace snapshot，仍按 fresh evidence 合同验收，见 [ADR-0034](../adr/0034-bind-selected-workspaces-for-web-runs.md) 和 [ADR-0041](../adr/0041-require-selected-workspace-for-web-runs.md)。
 
 Web 确认删除会话后，先等待本宿主模型/工具和 Solver 实际收尾，再在 state 锁内永久清理该会话的 state
 和 registry；工程目录及文件保留。`control/deletions` 只保存最小幂等/清理回执，不是回收站。无法确认的

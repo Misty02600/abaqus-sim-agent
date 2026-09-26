@@ -94,8 +94,20 @@ def open_request_app(tmp_path, mode="response"):
 
 
 def new_request(client, goal):
+    key = uuid4()
+    workspace = (
+        client.app.state.controller.registry.root.parent
+        / "selected-workspaces"
+        / key.hex
+    )
+    workspace.mkdir(parents=True, exist_ok=True)
     response = client.post(
-        "/api/v1/runs", json={"idempotency_key": str(uuid4()), "goal": goal}
+        "/api/v1/runs",
+        json={
+            "idempotency_key": str(key),
+            "goal": goal,
+            "workspace": str(workspace),
+        },
     )
     assert response.status_code == 201
     rid = response.json()["view"]["run_id"]

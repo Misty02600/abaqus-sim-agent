@@ -63,7 +63,12 @@ def test_delete_registered_preserves_workspace_and_cannot_resurrect(tmp_path, se
         assert delete(client, rid).status_code == 200
         assert (
             client.post(
-                "/api/v1/runs", json={"idempotency_key": str(key), "goal": "new"}
+                "/api/v1/runs",
+                json={
+                    "idempotency_key": str(key),
+                    "goal": "new",
+                    "workspace": str(folder),
+                },
             ).status_code
             == 410
         )
@@ -80,6 +85,7 @@ def test_delete_waiting_or_complete_and_keep_other_conversations(tmp_path, compl
     with TestClient(app, base_url="http://127.0.0.1") as client:
         login(client)
         rid, other = create(client), create(client)
+        workspace = app.state.controller.registry.load(rid).request.workspace
         waiting = start(client, rid)
         if complete:
             client.post(f"/api/v1/runs/{rid}/answers", json=answer_body(waiting))
@@ -90,7 +96,7 @@ def test_delete_waiting_or_complete_and_keep_other_conversations(tmp_path, compl
         ] == [other]
         assert (tmp_path / "web/states" / other).exists()
         if complete:
-            assert (tmp_path / "web/workspaces" / rid / "out.txt").read_text(
+            assert (workspace / "out.txt").read_text(
                 encoding="utf-8"
             ) == "result"
 

@@ -50,6 +50,10 @@ const SIDEBAR_DEFAULT = 280;
 const SIDEBAR_STORAGE_KEY = "abaqus-sidebar-width";
 const WORKSPACE_DRAFT_KEY = "abaqus-new-workspace";
 
+function workspaceKey(path: string) {
+  return path.replace(/[\\/]+$/, "").toLowerCase();
+}
+
 function clampSidebarWidth(value: number) {
   return Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, value));
 }
@@ -114,21 +118,30 @@ export default function App() {
     sessionStorage.getItem(WORKSPACE_DRAFT_KEY),
   );
   const [directoryPickerOpen, setDirectoryPickerOpen] = useState(false);
+  const [directoryPickerForSidebar, setDirectoryPickerForSidebar] =
+    useState(false);
   const [runtimePolicyOpen, setRuntimePolicyOpen] = useState(false);
   const [runtimePolicyError, setRuntimePolicyError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<{
     runId: string;
     title: string;
-    workspace?: string;
   } | null>(null);
   const [deleteError, setDeleteError] = useState("");
-  function selectWorkspace(path: string | null) {
+  const [deleteInProgress, setDeleteInProgress] = useState<string | null>(null);
+  function selectWorkspace(path: string) {
     setNewWorkspace(path);
-    if (path) sessionStorage.setItem(WORKSPACE_DRAFT_KEY, path);
-    else sessionStorage.removeItem(WORKSPACE_DRAFT_KEY);
+    sessionStorage.setItem(WORKSPACE_DRAFT_KEY, path);
     setDirectoryPickerOpen(false);
+    setDirectoryPickerForSidebar(false);
     setRuntimePolicyOpen(false);
     setRuntimePolicyError("");
+  }
+  function switchWorkspace(path: string) {
+    selectWorkspace(path);
+    const matchingRun = runs.find(
+      (run) => workspaceKey(run.workspace) === workspaceKey(path),
+    );
+    navigate(matchingRun?.view.run_id ?? null);
   }
   const shortcutActions = useRef<QuickAction[]>([]);
   useEffect(() => {
@@ -185,6 +198,18 @@ export default function App() {
   const visibleRuns = runs.filter((run) =>
     run.title.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
   );
+  const sidebarWorkspace = id
+    ? snapshot?.workspace ??
+      runs.find((run) => run.view.run_id === id)?.workspace ??
+      null
+    : newWorkspace;
+  const workspaceChoices = Array.from(
+    new Map(
+      [sidebarWorkspace, ...runs.map((run) => run.workspace)]
+        .filter((path): path is string => !!path)
+        .map((path) => [workspaceKey(path), path]),
+    ).values(),
+  );
   useEffect(() => {
     const desktop = window.matchMedia("(min-width: 900px)");
     const update = () => {
@@ -197,6 +222,9 @@ export default function App() {
   useEffect(() => {
     setDetailsOpen(false);
     setDirectoryPickerOpen(false);
+    setDirectoryPickerForSidebar(false);
+    setDeleteTarget(null);
+    setDeleteError("");
     setFilesOpen(true);
     setWorkspaceOpenFile(null);
     setComposerMention(null);
@@ -278,13 +306,13 @@ export default function App() {
     setDeleteTarget({
       runId,
       title,
-      workspace: runs.find((run) => run.view.run_id === runId)?.workspace,
     });
   }
   async function deleteConversation() {
     if (!deleteTarget || busy) return;
     const target = deleteTarget;
     setBusy(true);
+    setDeleteInProgress(target.runId);
     setDeleteError("");
     try {
       await request(
@@ -308,10 +336,16 @@ export default function App() {
       await list();
     } finally {
       setBusy(false);
+      setDeleteInProgress(null);
     }
   }
   async function create(goal: string): Promise<Delivery> {
     if (busy) return { saved: false };
+    const workspace = newWorkspace;
+    if (!workspace) {
+      setError("请先选择工作区文件夹，再创建会话。");
+      return { saved: false };
+    }
     let saved = false;
     let messageId: string | undefined;
     setBusy(true);
@@ -328,7 +362,7 @@ export default function App() {
           abaqusLimit,
           solverPermission,
           solverLimit,
-          workspace: newWorkspace,
+          workspace,
         }),
       );
       messageId = `web-${key.replaceAll("-", "")}:goal`;
@@ -338,7 +372,7 @@ export default function App() {
         knowledge_pack_ids: knowledgePackIds,
         abaqus_permission: permission(abaqusPermission, abaqusLimit),
         solver_permission: permission(solverPermission, solverLimit),
-        workspace: newWorkspace,
+        workspace,
       });
       clearCommand("new", "create");
       saved = true;
@@ -734,6 +768,7 @@ export default function App() {
       snapshot={snapshot}
       runs={visibleRuns}
       busy={busy}
+      canCreateRun={!!newWorkspace}
       draftKey={draftKey}
       onSend={id ? send : create}
       onNavigate={navigate}
@@ -764,24 +799,71 @@ export default function App() {
             empty={visibleRuns.length === 0}
             searching={searchOpen}
             onSearchChange={setSearchOpen}
-            workspace={snapshot?.workspace ?? null}
+            workspace={sidebarWorkspace}
+            workspaceBound={id !== null}
+            workspaces={workspaceChoices}
+            onWorkspaceSwitch={switchWorkspace}
+            onWorkspaceBrowse={() => {
+              setDirectoryPickerForSidebar(true);
+              setDirectoryPickerOpen(true);
+            }}
             onRename={renameRun}
             onDelete={confirmDelete}
+            deleteTarget={deleteTarget}
+            deleteError={deleteError}
+            deleteInProgress={deleteInProgress}
+            onDeleteConfirm={() => void deleteConversation()}
+            onDeleteCancel={() => {
+              setDeleteTarget(null);
+              setDeleteError("");
+            }}
           />
-          {unavailable.map((item) => (
-            <div key={item.run_id} className="error small">
-              {item.message}
-              {item.can_retry_delete && (
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => confirmDelete(item.run_id, "删除未完成的会话")}
-                >
-                  重试删除
-                </button>
-              )}
-            </div>
-          ))}
+          {unavailable.map((item) => {
+            const confirming = deleteTarget?.runId === item.run_id;
+            return (
+              <div key={item.run_id} className="error small unavailable-run">
+                {confirming ? (
+                  <>
+                    <span>
+                      {deleteError || "确认永久删除这条会话记录？工作区文件会保留。"}
+                    </span>
+                    <div className="unavailable-run-actions">
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => void deleteConversation()}
+                      >
+                        {deleteInProgress === item.run_id ? "正在删除…" : "删除"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => {
+                          setDeleteTarget(null);
+                          setDeleteError("");
+                        }}
+                      >
+                        取消
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {item.message}
+                    {item.can_retry_delete && (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => confirmDelete(item.run_id, "删除未完成的会话")}
+                      >
+                        重试删除
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })}
           <section
             className={`files-section ${filesOpen ? "" : "is-collapsed"}`}
           >
@@ -899,38 +981,31 @@ export default function App() {
               <section className="new-task">
                 <div className="workspace-picker">
                   <div>
-                    <strong>工作区</strong>
+                    <strong>工作区文件夹（必选）</strong>
                     <p
                       className="workspace-selection"
                       title={newWorkspace ?? undefined}
                     >
-                      {newWorkspace ?? "自动创建空工作区"}
+                      {newWorkspace ?? "尚未选择工作区文件夹"}
                     </p>
-                    {newWorkspace && (
-                      <p className="muted small">
-                        直接读写所选文件夹；会话建立后固定此位置。
-                      </p>
-                    )}
+                    <p className="muted small">
+                      {newWorkspace
+                        ? "直接读写所选文件夹；会话建立后固定此位置。"
+                        : "先选择现有文件夹，才能发送并创建会话。"}
+                    </p>
                   </div>
                   <div className="workspace-picker-actions">
                     <button
                       type="button"
                       disabled={busy}
-                      onClick={() => setDirectoryPickerOpen(true)}
+                      onClick={() => {
+                        setDirectoryPickerForSidebar(false);
+                        setDirectoryPickerOpen(true);
+                      }}
                     >
                       <Icon name="folder" />
                       {newWorkspace ? "更换文件夹" : "选择文件夹"}
                     </button>
-                    {newWorkspace && (
-                      <button
-                        type="button"
-                        className="subtle"
-                        disabled={busy}
-                        onClick={() => selectWorkspace(null)}
-                      >
-                        改用空工作区
-                      </button>
-                    )}
                   </div>
                 </div>
                 <div className="knowledge-picker">
@@ -1052,7 +1127,15 @@ export default function App() {
                     )}
                   </label>
                 </div>
-                <Composer cacheKey="new" disabled={busy} />
+                <Composer
+                  cacheKey="new"
+                  disabled={busy}
+                  hint={
+                    newWorkspace
+                      ? undefined
+                      : "请先选择工作区文件夹，选择后才能发送并创建会话。"
+                  }
+                />
               </section>
             ) : !snapshot ? (
               <p className="empty">{readError || "正在读取任务…"}</p>
@@ -1179,51 +1262,14 @@ export default function App() {
             onError={(error) => setError(errorText(error))}
           />
         )}
-        {directoryPickerOpen && !id && (
+        {directoryPickerOpen && (
           <DirectoryPicker
-            initialPath={newWorkspace}
-            onSelect={selectWorkspace}
+            initialPath={
+              directoryPickerForSidebar ? sidebarWorkspace : newWorkspace
+            }
+            onSelect={directoryPickerForSidebar ? switchWorkspace : selectWorkspace}
             onClose={() => setDirectoryPickerOpen(false)}
           />
-        )}
-        {deleteTarget && (
-          <SidePanel
-            title="删除会话"
-            closeDisabled={busy}
-            onClose={() => setDeleteTarget(null)}
-          >
-            <p>
-              永久删除“{deleteTarget.title}
-              ”的会话记录？此操作不可恢复，工作区文件会保留。
-            </p>
-            {deleteTarget.workspace && (
-              <p className="muted small">
-                文件保留位置：<code>{deleteTarget.workspace}</code>
-              </p>
-            )}
-            {deleteError && (
-              <p role="alert" className="error">
-                {deleteError}
-              </p>
-            )}
-            <div className="delete-confirm-actions">
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => setDeleteTarget(null)}
-              >
-                取消
-              </button>
-              <button
-                type="button"
-                className="delete-confirm"
-                disabled={busy}
-                onClick={() => void deleteConversation()}
-              >
-                {busy ? "正在删除…" : "确认删除"}
-              </button>
-            </div>
-          </SidePanel>
         )}
         {detailsOpen && snapshot && (
           <SidePanel title="运行详情" onClose={() => setDetailsOpen(false)}>
