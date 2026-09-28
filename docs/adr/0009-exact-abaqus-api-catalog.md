@@ -9,6 +9,9 @@ API Catalog 的工具范围、来源与 trace 合同继续有效；普通产品�
 [ADR-0040](0040-require-api-catalog-for-product-runs.md) 更新为必须绑定 Catalog、默认 `automatic_verified_only`。
 下文保留原决定的背景与当时配置。
 
+2026-09-27 普通产品改为自动读取包内 Catalog，目录配置和外置检查的当前语义见
+[Catalog 安装与升级](../architecture/knowledge-access.md#catalog-安装与升级)；下文保留当时决定。
+
 ## 日期
 
 2026-08-23
