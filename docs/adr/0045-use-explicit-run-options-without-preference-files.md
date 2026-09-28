@@ -69,3 +69,6 @@ launcher、Skill、静态 wheel/cache 路径和重复文档模式开关。Abaqus
 后续同日已将 `codex/bundle-api-catalog` 的提交 `85a57e9` 资源与加载逻辑接入当前运行选项：Catalog 直接作为
 包内数据分发，普通路径参数已移除；不需要 AppData 初始化或额外下载。原始资源 bytes 与来源说明保留，
 公开再分发许可仍未确认，此次仅本地集成与验证，不发布。模型泛化继续由独立任务确认。
+
+模型扩展提交 `35cf936` 后续整合时移除了其中旧偏好层，改接 `RunOptions`；新增窗口与端点本次输入，
+原生 provider、进程内凭据与 OAuth 接线保留，不恢复用户/项目 settings.json。当前合同见逐字段文档。

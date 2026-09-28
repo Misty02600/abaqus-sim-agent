@@ -57,6 +57,8 @@ class CodingRunConfigPatch(_StrictModel):
     runtime_policy: RuntimeExecutionPolicyPatch | None = None
     model_provider: DeepSeekGateway | None = None
     model_name: str | None = Field(default=None, min_length=1)
+    context_window: int | None = Field(default=None, ge=1024)
+    provider_environment: dict[str, str] | None = None
     http_retries: int | None = Field(default=None, ge=0)
 
     @model_validator(mode="after")

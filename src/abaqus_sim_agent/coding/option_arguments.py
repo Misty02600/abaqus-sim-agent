@@ -11,6 +11,10 @@ def add_run_arguments(parser: argparse.ArgumentParser) -> None:
         "--model-provider", type=DeepSeekGateway, choices=tuple(DeepSeekGateway)
     )
     parser.add_argument("--model", help="本次模型名称；未指定时使用程序默认值")
+    parser.add_argument(
+        "--context-window", type=int, help="仅在窗口未知或自定义部署时指定"
+    )
+    parser.add_argument("--model-base-url", help="自定义模型 API 地址")
     parser.add_argument("--http-retries", type=int)
     parser.add_argument("--http-timeout-seconds", type=float)
     parser.add_argument(
@@ -43,6 +47,8 @@ def options_from_args(args: argparse.Namespace) -> RunOptions:
         for name, argument in {
             "model_provider": "model_provider",
             "model_name": "model",
+            "context_window": "context_window",
+            "model_base_url": "model_base_url",
             "http_retries": "http_retries",
             "http_timeout_seconds": "http_timeout_seconds",
             "reasoning_policy": "reasoning_policy",

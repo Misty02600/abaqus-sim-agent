@@ -139,7 +139,8 @@ def test_text_question_finishes_without_files_or_verification_and_restores(tmp_p
         )
         assert launch.schema_version == "coding-run-launch-v10"
         assert launch.capability_definitions
-        assert launch.context_policy_version == "deepseek-1m-tiered-summary-v1"
+        assert launch.context_policy_version == "model-window-tiered-summary-v1"
+    assert launch.context_window == 1_000_000
     other, again = open_request_app(tmp_path)
     with TestClient(other, base_url="http://127.0.0.1") as client:
         login(client)

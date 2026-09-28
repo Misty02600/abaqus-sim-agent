@@ -29,7 +29,7 @@ Coder，不构成多 Agent。Runner、verifier、evaluator 与用户问答组件
 
 ## Harness 组合合同
 
-Harness 0.33 的 `Coder` 默认提供六个工具和跨 run 存活的持久 Shell；当前产品通过公开 capability 组合接口
+Harness 0.36 的 `Coder` 默认提供文件工具、跨 run 存活的持久 Shell 和自身子任务委派；当前产品通过公开 capability 组合接口
 保留以下合同，具体装配见 [agent.py](../../src/abaqus_sim_agent/coding/agent.py)：
 
 - 文件工具使用项目的 `AbaqusTextFileSystem`，复用 Harness 的纯 Python 工具入口与路径边界，保留
@@ -40,15 +40,19 @@ Harness 0.33 的 `Coder` 默认提供六个工具和跨 run 存活的持久 Shel
   仍拒绝批量替换，只允许其原有受限入口。
 - Shell 显式选择 `run_command`、`start_command`、`check_command`、`stop_command`；后台命令随 run 退出清理，
   使用原有 launcher guardrail、环境过滤及 Shell 超时策略。持久 `shell` 工具不注册。
+- Coder 显式设置 `sub_agents=False`，不注册默认新增的 `delegate_task`，不将宿主状态与执行权限交给子运行。
 - `Planning` 能力保持可组合，只用于解释或复现冻结历史 profile；当前新产品与新评测均关闭，入口不提供
   重新开启参数。历史 manifest 中的 `planning_enabled=true` 不作为新运行默认值。
 - 工具输出保留 `ToolOutputLimits` 的 spill/read-back 路径，避免上游 Coder 默认直接截断后无法回读完整结果。
-  产品 1M tiered compaction 与 typed capability activation 保留机制继续由项目装配。
+  新普通会话将框架解析或显式提供的窗口保存到 launch，按 90% 触发 tiered compaction，并保留 typed capability activation。
+  保留原文量为 `min(32000, context_window // 8)`。旧会话仍按其保存的 `deepseek-1m-tiered-summary-v1` 使用 960K 阈值；
+  未知窗口要求显式指定，不把 Harness 的 200K fallback 当成模型实际容量。
 - 新 Coder 默认通用指令与 `RepairToolArguments` 未自动启用；问答和恢复继续由 `CodingRunService` 与
   `StepPersistence` 协作，不另外接入 `AskUser`、conversation store 或 `BackgroundTools`。
 
-已核查 0.33 的 run-scoped Shell 仍调用 `os.killpg`，Windows 下可复现异常；FileStepStore 的同步 JSONL
-追加方法仍没有并行写入锁。因此宿主补丁精确绑定 0.33，并分别验证超时/后台退出清理和并行 effect 追加。
+已核查 0.36 的 run-scoped Shell 仍保留 0.33 的 `os.killpg` 和前台取消收尾问题；FileStepStore 的同步
+JSONL 追加实现与 0.33 相同，仍没有并行写入锁。宿主补丁精确绑定 0.33.0 和 0.36.0，并分别验证
+超时/取消/后台退出清理和并行 effect 追加。
 新组合通过离线合同回归不等于真实模型行为或仿真效果已经重新验证；旧批次按冻结源码/依赖保留原工具 schema。
 
 ## 模型交接与宿主终态

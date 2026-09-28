@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import getpass
 import io
 import json
 import sys
@@ -37,7 +38,6 @@ from abaqus_sim_agent.coding.concept_lookup import (
     open_concept_index,
 )
 from abaqus_sim_agent.coding.context_policy import (
-    CONTEXT_POLICY_VERSION,
     bind_filesystem_skills,
 )
 from abaqus_sim_agent.coding.contracts import (
@@ -67,8 +67,10 @@ from abaqus_sim_agent.coding.execution_verifier import ExecutionEvidenceVerifier
 from abaqus_sim_agent.coding.launch import LaunchManifest as _LaunchManifest
 from abaqus_sim_agent.coding.launch import apply_launch_amendments
 from abaqus_sim_agent.coding.model import (
-    create_deepseek_chat_model,
     take_gateway_api_key_from_environment,
+)
+from abaqus_sim_agent.coding.model_connections import (
+    create_model as create_deepseek_chat_model,
 )
 from abaqus_sim_agent.coding.option_arguments import (
     add_run_arguments,
@@ -103,6 +105,9 @@ def build_parser() -> argparse.ArgumentParser:
         description="Run one Abaqus 2024 coding task in the selected workspace.",
     )
     parser.add_argument("--goal", help="Natural-language coding goal")
+    parser.add_argument(
+        "--list-model-providers", action="store_true", help="列出提供商与候选模型"
+    )
     parser.add_argument(
         "--answer-file", type=Path, help="UTF-8 question_id/answer JSON for --resume"
     )
@@ -248,6 +253,17 @@ def run_cli(argv: list[str] | None = None) -> int:
 
 
 def _run_cli_session(args: argparse.Namespace) -> int:
+    if args.list_model_providers:
+        from .providers import provider_catalog
+
+        print(
+            json.dumps(
+                [p.model_dump(mode="json") for p in provider_catalog()],
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return 0
     if args.list_knowledge_packs:
         return _print_knowledge_packs()
     key = None
@@ -341,6 +357,13 @@ def _run_cli_once(
                 _load_launch_manifest(request.state_dir),
                 effective.ledger,
             )
+            if (
+                args.model_base_url is not None
+                and args.model_base_url != launch.model_base_url
+            ):
+                raise ValueError(
+                    "恢复不能修改 model_base_url；仅可提供与会话相同的地址。"
+                )
             resolved = WorkspaceResolver().resolve_interactive(
                 run_id=request.run_id,
                 workspace=request.workspace,
@@ -527,7 +550,7 @@ def _run_cli_once(
                             resolved_skill_library,
                             ("abaqus-2024-coding",),
                         ),
-                        "context_policy_version": CONTEXT_POLICY_VERSION,
+                        "context_policy_version": "model-window-tiered-summary-v1",
                     }
                 ),
                 document_policy=document_binding,
@@ -574,6 +597,27 @@ def _run_cli_once(
         api_key = retained_api_key or take_gateway_api_key_from_environment(
             model_provider
         )
+        if (
+            launch.model_base_url
+            and args.model_base_url is None
+            and retained_api_key is None
+        ):
+            if not sys.stdin.isatty():
+                raise ValueError(
+                    "自定义接口需要显式传入 --model-base-url 确认地址后才能使用环境凭据。"
+                )
+            api_key = SecretStr(
+                getpass.getpass(f"API Key for {launch.model_base_url}: ")
+            )
+        from .providers import LOCAL_AUTH_PROVIDERS, require_provider_dependencies
+
+        require_provider_dependencies(model_provider)
+        if (
+            not api_key
+            and model_provider not in LOCAL_AUTH_PROVIDERS
+            and sys.stdin.isatty()
+        ):
+            api_key = SecretStr(getpass.getpass(f"{model_provider.value} API Key: "))
         verifier = _product_verifier()
         print(
             f"Model: {model_provider.value}/{model_name} "
@@ -666,6 +710,32 @@ def _append_requested_amendments(
     state_dir: Path,
 ) -> None:
     config = _config_patch_from_args(args)
+    if config is not None and (
+        config.model_provider is not None or config.model_name is not None
+    ):
+        effective = load_effective_run_for_resume(state_dir)
+        launch = apply_launch_amendments(
+            _load_launch_manifest(state_dir), effective.ledger
+        )
+        if launch.context_window is not None:
+            from .model_connections import resolve_context_window
+
+            values = {name: getattr(config, name) for name in config.model_fields_set}
+            values["context_window"] = resolve_context_window(
+                config.model_provider or launch.model_provider,
+                config.model_name or launch.model_name,
+                config.context_window,
+            )
+            if (
+                config.model_provider is not None
+                and config.model_provider != launch.model_provider
+            ):
+                from .providers import connection_environment
+
+                values["provider_environment"] = connection_environment(
+                    config.model_provider
+                )
+            config = CodingRunConfigPatch.model_validate(values)
     goal_requested = args.goal is not None or args.request_file is not None
     if args.amendment_reason is not None and config is None and not goal_requested:
         raise ValueError("--amendment-reason requires a configuration or task change")
@@ -701,6 +771,8 @@ def _config_patch_from_args(
         values["model_name"] = args.model
     if args.http_retries is not None:
         values["http_retries"] = args.http_retries
+    if args.context_window is not None:
+        values["context_window"] = args.context_window
     if not values:
         return None
     return CodingRunConfigPatch.model_validate(values)

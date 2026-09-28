@@ -50,13 +50,15 @@ from ..coding.domain_knowledge import (
 from ..coding.execution_verifier import ExecutionEvidenceVerifier
 from ..coding.model import (
     DeepSeekGateway,
-    create_deepseek_chat_model,
 )
+from ..coding.model_connections import create_model as create_deepseek_chat_model
+from ..coding.model_connections import provider_key
 from ..coding.options import (
     RunOptions,
     resolve_run_config,
 )
 from ..coding.progress import CodingProgress
+from ..coding.providers import LOCAL_AUTH_PROVIDERS, require_provider_dependencies
 from ..coding.read_model import (
     CodingRunView,
     project_checkpoint,
@@ -276,6 +278,7 @@ class RunController:
     ):
         self.config = config
         self.api_keys = dict(api_keys)
+        self.endpoint_keys: dict[tuple[DeepSeekGateway, str], SecretStr] = {}
         self.registry = RunRegistry(config.root)
         self.threads = ThreadStore(self.registry)
         self.invocations = InvocationStore(self.registry)
@@ -289,7 +292,15 @@ class RunController:
         self._delete_errors: dict[str, str] = {}
         self._run_controls: dict[str, RunCancellationControl] = {}
         self._cancelled_for_delete: set[str] = set()
-        self.model_factory, self.runner_factory = model_factory, runner_factory
+        self.model_credentials: dict[DeepSeekGateway, object] = {}
+
+        def connected_factory(**kwargs):
+            source = self.model_credentials.get(kwargs["gateway"])
+            if source is not None:
+                kwargs["connection_options"] = {"credential_source": source}
+            return model_factory(**kwargs)
+
+        self.model_factory, self.runner_factory = connected_factory, runner_factory
         self._mutex = threading.RLock()
         self._active: str | None = None
         self._future: Future[None] | None = None
@@ -718,7 +729,9 @@ class RunController:
                 prepared.request,
                 prepared.initial_snapshot,
                 prepared.launch,
-                api_key=self._model_key(prepared.launch.model_provider),
+                api_key=self._model_key(
+                    prepared.launch.model_provider, prepared.launch.model_base_url
+                ),
                 verifier=ExecutionEvidenceVerifier(),
                 clarification_provider=ScriptedClarificationProvider({}),
                 resume=True,
@@ -1208,15 +1221,47 @@ class RunController:
     def list_knowledge_packs(self) -> DomainKnowledgeInventory:
         return discover_domain_knowledge_packs(self.config.knowledge_packs_root)
 
-    def _model_key(self, provider: DeepSeekGateway) -> SecretStr:
-        key = self.api_keys.get(provider)
-        if key is None or not key.get_secret_value():
+    def _model_key(
+        self, provider: DeepSeekGateway, base_url: str | None = None
+    ) -> SecretStr:
+        try:
+            if base_url:
+                endpoint = (provider, base_url.rstrip("/"))
+                if endpoint not in self.endpoint_keys:
+                    raise ValueError(f"请先为此自定义 API 地址设置凭据：{base_url}")
+                return provider_key(provider, {provider: self.endpoint_keys[endpoint]})
+            return provider_key(provider, self.api_keys)
+        except ValueError as exc:
             raise WebError(
                 "model_not_configured",
-                f"启动服务前请配置 {provider.value} 的模型API凭据",
+                str(exc),
                 503,
+            ) from exc
+
+    def configure_model_key(
+        self, provider: DeepSeekGateway, key: SecretStr, base_url: str | None = None
+    ) -> None:
+        require_provider_dependencies(provider)
+        from ..coding.model import ModelExecutionConfig
+        from ..coding.providers import SDK_DEFAULT_RETRY_PROVIDERS
+
+        ModelExecutionConfig(
+            model_provider=provider,
+            model_name="connection-check",
+            model_base_url=base_url,
+            http_retries=None if provider in SDK_DEFAULT_RETRY_PROVIDERS else 4,
+        )
+        if provider is DeepSeekGateway.OPENAI_CODEX and key.get_secret_value():
+            raise WebError(
+                "account_login_required", "此提供商使用账号登录，不接受 API Key。", 422
             )
-        return key
+        if not key.get_secret_value().strip() and provider not in LOCAL_AUTH_PROVIDERS:
+            raise WebError("missing_api_key", "请填写 API Key。", 422)
+        with self._mutex:
+            if base_url:
+                self.endpoint_keys[(provider, base_url.rstrip("/"))] = key
+            else:
+                self.api_keys[provider] = key
 
     def _prepared(self, registration: Registration) -> PreparedCodingRun:
         if (registration.request.state_dir / "request.json").exists():
@@ -1494,11 +1539,15 @@ class RunController:
                 and view.usage.wall_time_seconds >= request.limits.active_wall_seconds
             ):
                 message_block = "会话预算已用尽；可新建会话，或在CLI中显式调整预算。"
+            context_warning = self.config.context_warning_threshold_tokens
+            if context_warning is not None and launch.context_window is not None:
+                context_warning = min(context_warning, int(launch.context_window * 0.9))
             value = RunSnapshot(
                 view=view,
                 version="",
                 created_at=registration.created_at,
                 model=f"{launch.model_provider.value}/{launch.model_name}",
+                model_base_url=launch.model_base_url,
                 workspace=str(registration.request.workspace),
                 title=display.title,
                 title_version=display.version,
@@ -1549,12 +1598,11 @@ class RunController:
                 runtime_policy_block_reason=runtime_policy_block,
                 context_usage=ContextUsage(
                     latest_input_tokens=view.latest_model_input_tokens,
-                    warning_threshold_tokens=self.config.context_warning_threshold_tokens,
+                    warning_threshold_tokens=context_warning,
                     warning=bool(
                         view.latest_model_input_tokens is not None
-                        and self.config.context_warning_threshold_tokens is not None
-                        and view.latest_model_input_tokens
-                        >= self.config.context_warning_threshold_tokens
+                        and context_warning is not None
+                        and view.latest_model_input_tokens >= context_warning
                     ),
                 ),
             )
@@ -2127,7 +2175,10 @@ class RunController:
                 raise WebError(
                     "state_conflict", "当前状态不允许此操作，或另一个任务正在运行"
                 )
-            self._model_key(self._prepared(registration).launch.model_provider)
+            connection_launch = self._prepared(registration).launch
+            self._model_key(
+                connection_launch.model_provider, connection_launch.model_base_url
+            )
             receipt = CommandReceipt(
                 command_id=command.command_id,
                 digest=request_digest,
@@ -2510,7 +2561,9 @@ class RunController:
                 prepared.request,
                 prepared.initial_snapshot,
                 prepared.launch,
-                api_key=self._model_key(prepared.launch.model_provider),
+                api_key=self._model_key(
+                    prepared.launch.model_provider, prepared.launch.model_base_url
+                ),
                 verifier=ExecutionEvidenceVerifier(),
                 clarification_provider=ScriptedClarificationProvider({}),
                 resume=prepared.resume,

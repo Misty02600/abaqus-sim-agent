@@ -210,7 +210,7 @@ def install_resources(
             active -= 1
 
     monkeypatch.setattr(
-        "abaqus_sim_agent.coding.model.AsyncOpenAI",
+        "abaqus_sim_agent.coding.deepseek_gateway.AsyncOpenAI",
         lambda **kwargs: AsyncOpenAI(
             **kwargs,
             http_client=httpx.AsyncClient(transport=httpx.MockTransport(reply)),

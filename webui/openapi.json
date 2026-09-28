@@ -143,6 +143,212 @@
         }
       }
     },
+    "/api/v1/model-providers": {
+      "get": {
+        "summary": "Model Providers",
+        "operationId": "model_providers_api_v1_model_providers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProviderOption"
+                  },
+                  "type": "array",
+                  "title": "Response Model Providers Api V1 Model Providers Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/model-provider-dependencies": {
+      "get": {
+        "summary": "Model Provider Dependencies",
+        "operationId": "model_provider_dependencies_api_v1_model_provider_dependencies_get",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ModelProvider"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/model-connections": {
+      "post": {
+        "summary": "Connect Model",
+        "operationId": "connect_model_api_v1_model_connections_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelConnection"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/model-logins": {
+      "post": {
+        "summary": "Begin Model Login",
+        "operationId": "begin_model_login_api_v1_model_logins_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/model-logins/{login_id}": {
+      "get": {
+        "summary": "Model Login Status",
+        "operationId": "model_login_status_api_v1_model_logins__login_id__get",
+        "parameters": [
+          {
+            "name": "login_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Login Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Cancel Model Login",
+        "operationId": "cancel_model_login_api_v1_model_logins__login_id__delete",
+        "parameters": [
+          {
+            "name": "login_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Login Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/runs/{run_id}": {
       "get": {
         "summary": "Get Run",
@@ -2056,15 +2262,6 @@
         ],
         "title": "CreateRun"
       },
-      "DeepSeekGateway": {
-        "type": "string",
-        "enum": [
-          "deepseek",
-          "opencode-zen",
-          "opencode-go"
-        ],
-        "title": "DeepSeekGateway"
-      },
       "DeleteRunResponse": {
         "properties": {
           "run_id": {
@@ -2571,6 +2768,80 @@
         ],
         "title": "LiveReply"
       },
+      "LoginRequest": {
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/ModelProvider"
+          },
+          "client_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider"
+        ],
+        "title": "LoginRequest"
+      },
+      "LoginStatus": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "completed",
+              "failed"
+            ],
+            "title": "State"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "user_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Code"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "state",
+          "url"
+        ],
+        "title": "LoginStatus"
+      },
       "MessageCommand": {
         "properties": {
           "command_id": {
@@ -2701,6 +2972,139 @@
           "role"
         ],
         "title": "MessageView"
+      },
+      "ModelConnection": {
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/ModelProvider"
+          },
+          "api_key": {
+            "type": "string",
+            "format": "password",
+            "title": "Api Key",
+            "writeOnly": true
+          },
+          "model_base_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Base Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider"
+        ],
+        "title": "ModelConnection"
+      },
+      "ModelProvider": {
+        "type": "string",
+        "enum": [
+          "deepseek",
+          "opencode-zen",
+          "opencode-go",
+          "openai",
+          "openai-chat",
+          "openai-responses",
+          "anthropic",
+          "alibaba",
+          "google",
+          "google-cloud",
+          "azure",
+          "azure-responses",
+          "bedrock",
+          "bedrock-mantle",
+          "cerebras",
+          "cohere",
+          "crusoe",
+          "fireworks",
+          "github",
+          "github-copilot",
+          "openai-codex",
+          "groq",
+          "heroku",
+          "huggingface",
+          "litellm",
+          "mistral",
+          "moonshotai",
+          "nebius",
+          "ollama",
+          "openrouter",
+          "ovhcloud",
+          "sambanova",
+          "snowflake",
+          "together",
+          "typesafe",
+          "vercel",
+          "vllm",
+          "zai",
+          "gateway/openai",
+          "gateway/anthropic",
+          "gateway/google",
+          "gateway/google-cloud",
+          "gateway/groq",
+          "gateway/bedrock"
+        ],
+        "title": "ModelProvider"
+      },
+      "ProviderOption": {
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ModelProvider"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "api_key_environment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key Environment"
+          },
+          "local_auth": {
+            "type": "boolean",
+            "title": "Local Auth"
+          },
+          "login": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Login"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "models",
+          "api_key_environment",
+          "local_auth"
+        ],
+        "title": "ProviderOption"
       },
       "QuestionView": {
         "properties": {
@@ -2839,7 +3243,7 @@
           "model_provider": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/DeepSeekGateway"
+                "$ref": "#/components/schemas/ModelProvider"
               },
               {
                 "type": "null"
@@ -2850,14 +3254,36 @@
             "anyOf": [
               {
                 "type": "string",
-                "minLength": 1,
-                "pattern": "^deepseek-"
+                "minLength": 1
               },
               {
                 "type": "null"
               }
             ],
             "title": "Model Name"
+          },
+          "context_window": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1024.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Window"
+          },
+          "model_base_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Base Url"
           },
           "http_retries": {
             "anyOf": [
@@ -2963,6 +3389,17 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "model_base_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Base Url"
           },
           "model": {
             "type": "string",

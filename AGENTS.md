@@ -10,7 +10,7 @@
 
 - 先检查当前分支、工作树改动和作用域指令。按当前分支的源码与文档判断现状，不把其他工作树或旧分支的状态当作当前事实。
 - 先读 [架构总览](docs/architecture/overview.md)；涉及架构、状态所有权、权限、兼容或“之前决定过”的问题，先查 [ADR 索引](docs/adr/README.md)及相关已采纳决定，再查实现和测试。
-- 配置设计先查 [配置输入与恢复记录](docs/architecture/system-framework.md#配置输入运行合同与恢复记录)及 [ADR-0045](docs/adr/0045-use-explicit-run-options-without-preference-files.md)：当前采用程序默认值、本次显式输入与必要会话记录，已停止读取用户/项目偏好文件；逐字段区分宿主设置、运行输入和恢复状态，不重新扩建自动偏好来源。Catalog 已随包自动定位，模型泛化的剩余范围以当前文档和实现为准。
+- 配置设计先查 [配置输入与恢复记录](docs/architecture/system-framework.md#配置输入运行合同与恢复记录)及 [ADR-0045](docs/adr/0045-use-explicit-run-options-without-preference-files.md)：当前采用程序默认值、本次显式输入与必要会话记录，已停止读取用户/项目偏好文件；逐字段区分宿主设置、运行输入和恢复状态，不重新扩建自动偏好来源。Catalog 已随包自动定位，原生 provider 与 OpenCode 适配分开，模型支持及验证边界以当前文档和实现为准。
 - 新增或修改配置时同步 [配置逐字段合同](docs/architecture/configuration-reference.md)，逐项确认来源、缺省、覆盖、校验、持久化与恢复修改规则；不能用分类说明代替字段决定。
 - 普通用户选择能力，程序管理固定内部资源；已确认的 Skill/静态来源路径及重复模式入口收敛见逐字段目标表。不要仅因上游支持扩展就新增本项目没有需求的配置入口，已决定与已实施必须分别说明。
 - 当前路线由 ADR-0008 及后续决定约束：一个 Pydantic AI Harness Coder。旧 LangGraph、多 Agent、DeckDraft 和持久 Job Service 路线已被替代。增加第二套运行时、角色或控制面需要真实需求与新的取舍，不能从旧 ADR 自动恢复。
@@ -31,7 +31,7 @@
 - 恢复必须保留累计 usage/allowance、原始 freshness 基线、execution provenance、协议、context policy 和知识/Skill 绑定。同一 state 使用 OS 独占锁；未决 Abaqus tool effect 停在 `needs_reconcile`，禁止盲目重跑。不得把文件后端续跑称为外部 Job exactly-once、PID 重新附着或完整 durable workflow。
 - Task revision 与 operational amendment 分开：新任务建立新验收基线，旧 outcome 归档；runtime policy 或 provider 修订不能清零已消耗用量。损坏 ledger 不猜测修复，不用 event log 推断缺失的副作用记录。
 - Web 会话在无活动/待核查执行时可用 operational amendment 修改 Abaqus/Solver 权限；待答问题保持，修改不自动继续也不取消已有执行，只影响未来提交。有限次数是累计总上限，usage/allowance 不清零。
-- 新普通会话使用 launch v10，绑定 1M context policy、filesystem Skill digest、UTF-8/CP936 文件策略与必选 API Catalog：当前请求可以交付 `ResponseDecision` 文字答复，文件或执行请求仍须走非空 manifest 与宿主 verifier；当前 revision 已有执行或终态工作区变化时不能用文字答复绕过验收。
+- 新普通会话使用 launch v10，绑定按实际模型窗口选择的 context policy、filesystem Skill digest、UTF-8/CP936 文件策略与必选 API Catalog：当前请求可以交付 `ResponseDecision` 文字答复，文件或执行请求仍须走非空 manifest 与宿主 verifier；当前 revision 已有执行或终态工作区变化时不能用文字答复绕过验收。
 - Harness Planning 适配只为解释冻结历史轨迹保留；新产品和新评测不得启用，也不新增重新开启入口。历史 manifest 中的 `planning_enabled=true` 保留原值。
 - 本地 Web 工作台复用 `coding/application.py`、`composition.py` 和 `CodingRunService`。命令使用 REST，SSE 只通知重取；Web registry、Thread、invocation 和 `ToolExecution` 是管理记录，不覆盖 CodingRun 的 request、limits/runtime policy、runtime evidence、verification 或 outcome。
 - Web CLI 固定回环监听，服务 started 后默认打开普通本机 URL，`--no-open` 可关闭；页面通过 GET session 无感建立 HttpOnly cookie 与 CSRF，不使用终端 fragment token。非回环部署仍未开放；见 ADR-0037。

@@ -3,9 +3,9 @@
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 
-from openai import AsyncOpenAI
 from pydantic import SecretStr
 from pydantic_ai.models import Model
+from pydantic_ai.models.wrapper import WrapperModel
 
 from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.execution import Abaqus2024Runner
@@ -23,7 +23,9 @@ from .domain_knowledge import (
 )
 from .execution_verifier import ExecutionEvidenceVerification
 from .launch import LaunchManifest
-from .model import DeepSeekGateway, create_deepseek_chat_model
+from .model import DeepSeekGateway
+from .model_connections import ModelClient
+from .model_connections import create_model as create_deepseek_chat_model
 from .progress import ProgressObserver
 from .response_stream import ModelResponseControl, RunCancellationControl
 from .resume import create_step_store
@@ -36,7 +38,7 @@ from .static_preflight import (
 from .verification_port import CodingRunVerifier
 from .workspace import WorkspaceSnapshot
 
-ModelFactory = Callable[..., tuple[Model, AsyncOpenAI]]
+ModelFactory = Callable[..., tuple[Model, ModelClient]]
 RunnerFactory = Callable[..., Abaqus2024Runner]
 
 
@@ -116,6 +118,12 @@ async def open_coding_run(
             else None,
         )
         try:
+            native_model = model
+            while isinstance(native_model, WrapperModel):
+                native_model = native_model.wrapped
+            stream_supported = (
+                type(native_model).request_stream is not Model.request_stream
+            )
             store = create_step_store(request.state_dir)
             agent = create_abaqus_coding_agent(
                 model,
@@ -170,7 +178,7 @@ async def open_coding_run(
                 initial_snapshot=initial_snapshot,
                 progress_sink=progress_sink,
                 observer=observer,
-                stream_model=stream_model,
+                stream_model=stream_model and stream_supported,
                 response_control=response_control,
                 run_control=run_control,
                 resume=resume,

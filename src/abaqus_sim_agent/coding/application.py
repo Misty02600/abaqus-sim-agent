@@ -8,7 +8,6 @@ from .api_lookup import (
     load_product_api_catalog,
 )
 from .context_policy import (
-    CONTEXT_POLICY_VERSION,
     bind_filesystem_skills,
 )
 from .contracts import (
@@ -100,7 +99,7 @@ def prepare_new_run(
             skill_library,
             ("abaqus-2024-coding",),
         ),
-        context_policy_version=CONTEXT_POLICY_VERSION,
+        context_policy_version="model-window-tiered-summary-v1",
         api_catalog_dir=settings.api_catalog_dir.resolve(strict=True),
         api_catalog_mode=settings.api_catalog_mode,
         static_preflight_mode=settings.static_preflight_mode,

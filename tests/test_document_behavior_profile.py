@@ -64,7 +64,7 @@ async def test_actual_go_http_body_only_differs_in_output_cap(monkeypatch):
 
     transport = httpx.AsyncClient(transport=httpx.MockTransport(reply))
     monkeypatch.setattr(
-        "abaqus_sim_agent.coding.model.AsyncOpenAI",
+        "abaqus_sim_agent.coding.deepseek_gateway.AsyncOpenAI",
         lambda **kwargs: AsyncOpenAI(**kwargs, http_client=transport),
     )
     model, client = create_deepseek_chat_model(
@@ -391,7 +391,7 @@ async def test_calibrated_harness_batch_to_predeclared_review_without_network(
         )
 
     monkeypatch.setattr(
-        "abaqus_sim_agent.coding.model.AsyncOpenAI",
+        "abaqus_sim_agent.coding.deepseek_gateway.AsyncOpenAI",
         lambda **kwargs: AsyncOpenAI(
             **kwargs,
             http_client=httpx.AsyncClient(transport=httpx.MockTransport(reply)),

@@ -82,6 +82,7 @@ from abaqus_sim_agent.coding.user_questions import (
     UserQuestionCapability,
     register_ask_user,
 )
+from abaqus_sim_agent.execution.environment import PROVIDER_SECRET_PATTERNS
 from abaqus_sim_agent.telemetry import (
     TELEMETRY_CREDENTIAL_ENV_PATTERNS,
     instrumentation_settings,
@@ -298,7 +299,7 @@ def create_abaqus_coding_agent(
         raise ValueError(
             "product coding tools require an open ask_user response session"
         )
-    coder = Coder[_CodingAgentDependencies](request.workspace)
+    coder = Coder[_CodingAgentDependencies](request.workspace, sub_agents=False)
     coder = _configure_coder(
         coder,
         request.workspace,
@@ -322,7 +323,14 @@ def create_abaqus_coding_agent(
             )
         capabilities.append(planning)
     if context_policy_enabled:
-        capabilities.insert(1, build_context_policy())
+        capabilities.insert(
+            1,
+            build_context_policy(
+                context_window=execution_config.context_window
+                if execution_config
+                else None
+            ),
+        )
     if product_shell_enabled:
         capabilities.append(
             ToolGuardrail[_CodingAgentDependencies](
@@ -569,7 +577,8 @@ def _configure_coder(
                 cwd=workspace,
                 denied_commands=("abaqus", "abq"),
                 denied_env_patterns=LLM_API_KEY_ENV_PATTERNS
-                + TELEMETRY_CREDENTIAL_ENV_PATTERNS,
+                + TELEMETRY_CREDENTIAL_ENV_PATTERNS
+                + PROVIDER_SECRET_PATTERNS,
                 tools=RUN_SCOPED_TOOL_NAMES,
             )
         if isinstance(capability, RepoContext) and not has_repo_context:

@@ -34,6 +34,7 @@ import {
   type WorkspaceOpenFile,
 } from "./WorkspaceExplorer";
 import { DirectoryPicker } from "./DirectoryPicker";
+import { ModelPicker, type ModelSelection } from "./ModelPicker";
 import { ThreadListPrimitive } from "@assistant-ui/react";
 import type { components } from "./api/schema";
 
@@ -115,8 +116,8 @@ export default function App() {
   const [solverPermission, setSolverPermission] =
     useState<PermissionMode>("deny");
   const [solverLimit, setSolverLimit] = useState(3);
-  const [modelProvider, setModelProvider] = useState("");
-  const [modelName, setModelName] = useState("");
+  const [modelSelection, setModelSelection] = useState<ModelSelection>({ provider: "", name: "", baseUrl: "", contextWindow: "" });
+  const { provider: modelProvider, name: modelName } = modelSelection;
   const [newWorkspace, setNewWorkspace] = useState<string | null>(() =>
     sessionStorage.getItem(WORKSPACE_DRAFT_KEY),
   );
@@ -355,10 +356,14 @@ export default function App() {
     setError("");
     try {
       const knowledgePackIds = [...selectedKnowledgePackIds].sort();
-      const modelPreferences = {
+      if (modelProvider && !modelName.trim()) throw new Error("请选择或填写该提供商的模型名称。");
+      const modelOptions = {
         ...(modelProvider ? { model_provider: modelProvider } : {}),
         ...(modelName.trim() ? { model_name: modelName.trim() } : {}),
+        ...(modelSelection.baseUrl.trim() ? { model_base_url: modelSelection.baseUrl.trim() } : {}),
+        ...(modelSelection.contextWindow ? { context_window: Number(modelSelection.contextWindow) } : {}),
       };
+
       const key = commandId(
         "new",
         "create",
@@ -371,7 +376,7 @@ export default function App() {
           solverPermission,
           solverLimit,
           workspace,
-          modelPreferences,
+          modelOptions,
         }),
       );
       messageId = `web-${key.replaceAll("-", "")}:goal`;
@@ -382,7 +387,7 @@ export default function App() {
         solver_permission: permission(solverPermission, solverLimit),
         workspace,
         options: {
-          ...modelPreferences,
+          ...modelOptions,
           ...(!inheritKnowledgePacks ? { knowledge_pack_ids: knowledgePackIds } : {}),
         },
       });
@@ -390,8 +395,7 @@ export default function App() {
       saved = true;
       setSelectedKnowledgePackIds([]);
       setInheritKnowledgePacks(true);
-      setModelProvider("");
-      setModelName("");
+      setModelSelection({ provider: "", name: "", baseUrl: "", contextWindow: "" });
       navigate(next.view.run_id);
       const startKey = commandId(next.view.run_id, "start");
       const reply = await request<{ error?: string | null }>(
@@ -1023,25 +1027,7 @@ export default function App() {
                     </button>
                   </div>
                 </div>
-                <details className="knowledge-picker">
-                  <summary>本次模型（可选）</summary>
-                  <p className="muted small">留空使用本次服务的默认值；选择只保存在这个会话。</p>
-                  <div className="row">
-                    <label>
-                      模型网关
-                      <select value={modelProvider} disabled={busy} onChange={(event) => setModelProvider(event.target.value)}>
-                        <option value="">使用默认值</option>
-                        <option value="deepseek">DeepSeek</option>
-                        <option value="opencode-go">OpenCode Go</option>
-                        <option value="opencode-zen">OpenCode Zen</option>
-                      </select>
-                    </label>
-                    <label>
-                      模型名称
-                      <input value={modelName} disabled={busy} onChange={(event) => setModelName(event.target.value)} placeholder="使用默认值" />
-                    </label>
-                  </div>
-                </details>
+                <ModelPicker ready={ready} busy={busy} value={modelSelection} onChange={setModelSelection} />
                 <div className="knowledge-picker">
                   <div className="row">
                     <div>
@@ -1237,6 +1223,7 @@ export default function App() {
                       继续上次执行
                     </button>
                   )}
+                  <ModelPicker ready={ready} busy={busy} value={{ ...modelSelection, provider: modelSelection.provider || (snapshot.model.startsWith("gateway/") ? snapshot.model.split("/").slice(0, 2).join("/") : snapshot.model.split("/")[0]), baseUrl: !modelSelection.provider || modelSelection.provider === (snapshot.model.startsWith("gateway/") ? snapshot.model.split("/").slice(0, 2).join("/") : snapshot.model.split("/")[0]) ? snapshot.model_base_url ?? "" : modelSelection.baseUrl }} onChange={setModelSelection} connectionOnly />
                   <Composer
                     cacheKey={draftKey}
                     disabled={busy}

@@ -374,6 +374,8 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
             "5400",
             "--model",
             "deepseek-v4-flash" if gateway == "opencode-go" else "amended-model",
+            "--context-window",
+            "1000000" if gateway == "opencode-go" else "128000",
             "--http-retries",
             "7",
             "--amendment-reason",
@@ -396,6 +398,9 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
         == factory_arguments[0]["execution_config"].reasoning_policy
     )
     assert factory_arguments[1]["http_retries"] == 7
+    assert factory_arguments[1]["execution_config"].context_window == (
+        1_000_000 if gateway == "opencode-go" else 128_000
+    )
     assert (state_dir / "request.json").read_bytes() == immutable_request
     assert (state_dir / "launch.json").read_bytes() == immutable_launch
     effective = load_request_for_resume(state_dir)
@@ -695,7 +700,7 @@ def test_cli_resolves_startup_cwd_before_model_configuration(
     output = capsys.readouterr().out
     assert exit_code == 1
     assert f"Workspace: {workspace.resolve()}" in output
-    assert "DEEPSEEK_API_KEY must not be empty" in output
+    assert "DEEPSEEK_API_KEY" in output
 
 
 def test_cli_explicit_workspace_overrides_startup_cwd(

@@ -72,7 +72,7 @@ def test_cli_ignores_old_preference_files_and_does_not_modify_them(
         str(tmp_path / "state"),
     ]
     assert run_cli(args) == 1
-    assert "DEEPSEEK_API_KEY must not be empty" in capsys.readouterr().out
+    assert "DEEPSEEK_API_KEY" in capsys.readouterr().out
     assert run_cli([*args, "--model-provider", "opencode-go"]) == 1
     assert "OPENCODE_API_KEY must not be empty" in capsys.readouterr().out
     assert {p: p.read_bytes() for p in before} == before

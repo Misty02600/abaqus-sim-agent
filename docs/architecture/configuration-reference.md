@@ -7,7 +7,7 @@
 
 依据 [ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md)，取消用户级和项目级偏好文件。
 **状态：第一阶段已实施。** 已撤回两级偏好读取，收回 Skill/launcher/静态资源路径和重复文档模式入口，提供默认 Web 管理根。
-Catalog 已作为包内资源接入，普通目录参数已移除；模型泛化仍由独立任务确认。
+Catalog 已作为包内资源接入，普通目录参数已移除；原生 provider、候选模型目录、动态窗口与进程内凭据已接入。
 
 2026-09-28 用户进一步确认：**用户选择能力，程序管理内部资源。** 固定 Skill 库和静态检查资源不再要求普通用户
 指定位置；保留工作区、模型、执行权限、静态检查开关和私有知识包选择。以下目标表已反映本次决定。
@@ -24,11 +24,11 @@ Catalog 已作为包内资源接入，普通目录参数已移除；模型泛化
 
 | 当前字段 | 目标决定 | 对会话的影响 / 未完成边界 |
 |---|---|---|
-| `model_provider` | 保留本次模型接入选择；复用 Pydantic AI 内置 provider，自定义 OpenCode 单独适配 | 保存实际 provider；支持范围和未指定时如何选择由模型调研确认 |
+| `model_provider` | 保留本次模型接入选择；复用 Pydantic AI 内置 provider，自定义 OpenCode 单独适配 | 保存实际 provider；默认仍为 DeepSeek，其他原生 provider 显式选择 |
 | `model_name` | 保留本次明确选择；不保存个人默认模型 | 保存实际模型；不在此擅定“取列表第一项”，不把 DeepSeek 前缀限制套在全部 provider 上 |
 | `http_retries` | 程序默认 + 本次覆盖，继续区分 HTTP 尝试与 Agent 请求数 | 当前默认4、允许的 amendment 语义暂保留；无文件继承 |
 | `http_timeout_seconds` | 程序默认 + 本次覆盖，保持请求超时与 active wall 分离 | 当前默认300秒及会话固定边界暂保留；扩大模型支持时按对应 SDK 语义接线 |
-| `reasoning_policy` | 保留本次请求意图；通用策略与 provider 专有参数由模型调研统一判断 | 不把 DeepSeek 专有参数发送给其他模型，也不把当前两值设计宣称为通用接口 |
+| `reasoning_policy` | 保留本次请求意图；默认沿用各 provider 原生策略，OpenCode Go 的专有 high 策略隔离 | 不把 DeepSeek 专有参数发送给其他模型，也不把当前两值设计宣称为通用接口 |
 | `launcher_path` | 从普通用户配置、CLI/Web 路径选择中移除，宿主调用 `abq2024` | 实际命令继续记录；类型/状态变动按开发期规则明确拒绝不兼容 state，不做迁移 |
 | `skill_library` | 普通产品自动定位包内 Skill，移除 `--skills-dir` 等库路径输入；暂不新增外部 Skill 扩展能力 | 继续保存实际 Skill 定义绑定；测试/评测的显式资源注入不作为普通产品配置 |
 | `api_catalog_dir` | 已移除普通用户目录输入；程序直接定位包内 data | 保存实际资源位置与身份/hash；随 wheel/sdist 分发，不另行复制到 AppData |
@@ -74,12 +74,12 @@ Pi 的默认发现和显式扩展只是取舍依据：本产品当前没有开�
 10. Web 不传 root 时可使用程序默认管理根；传入高级覆盖时仍按原目录边界检查。新会话始终选择已有工程目录，
     管理目录默认化不能恢复“自动创建托管空工程”的旧行为。
 
-模型支持扩大仍有独立调研。Catalog 包内分发已集成，但第三方文档公开再分发许可仍未确认；此次不发布，也不补建仓库计划。
+模型扩展已接入 Pydantic AI 原生 provider，OpenCode 继续使用 DeepSeek 专用适配。Catalog 包内分发已集成，但第三方文档公开再分发许可仍未确认；此次不发布，也不补建仓库计划。
 
 ## 当前实现：范围与阅读方式
 
-- 覆盖普通 CLI 的 36 个选项、Web 启动命令的 13 个选项，共 39 个不同选项名，不计 `--help`。
-- 对 8 个公共运行选项、8 个 `ServerConfig` 字段、运行控制和显式 profile 输入分别定义。
+- 覆盖普通 CLI 的 39 个选项、Web 启动命令的 15 个选项，共 42 个不同选项名，不计 `--help`。
+- 对 10 个公共运行选项、8 个 `ServerConfig` 字段、运行控制和显式 profile 输入分别定义。
 - 对 request/launch 的保存位置逐字段映射；重复序列化不计为另一项用户配置。
 - 会话 ID、操作命令、实验 spec 和宿主生成记录单独列出，避免将它们混为应用偏好。
 - 第三方 SDK 的全部环境变量、每个评测 Case 的物理数据、私有知识包资源 manifest、UI 临时展开状态和
@@ -95,7 +95,7 @@ Pi 的默认发现和显式扩展只是取舍依据：本产品当前没有开�
 - CLI：本次显式参数 > 程序默认。Web：创建请求 `options` > 本次服务启动 `overrides` > 程序默认。
 - 省略字段表示未指定，显式 null 拒绝；严格类型、未知字段和不兼容组合仍报错。0 是实际数值，不代表未指定。
 - 列表整体替换，知识包空列表表示本次不启用；不保存为下次个人默认。
-- CLI 相对路径基于启动 cwd；Web 创建请求相对路径基于所选 workspace。Catalog 位置由包内 locator 决定，不接受显式覆盖。
+- CLI 显式文件路径基于启动 cwd；公共 RunOptions 不含资源路径。Catalog 位置由包内 locator 决定，不接受显式覆盖。
 - 内置 Skill 由包定位，普通 runner 命令为 `abq2024`；Windows 在进程执行时按 PATH/PATHEXT 定位 batch 命令，
   不把解析结果作为用户设置保存。状态中的 `runtime.launcher_path` 保留字段名，普通新会话记录值 `abq2024`；
   评测底层的绝对 launcher 注入继续按其合同使用。
@@ -116,9 +116,11 @@ Pi 的默认发现和显式扩展只是取舍依据：本产品当前没有开�
 
 | 字段 | CLI 参数 | 无任何来源时的有效默认 | 类型、约束与用途 | 会话保存与修改 |
 |---|---|---|---|---|
-| `model_provider` | `--model-provider` | `deepseek` | `deepseek` / `opencode-go` / `opencode-zen`；决定网关及凭据选择 | `launch.model_provider`；CLI 可修订，须兼容已保存推理策略并有对应凭据 |
-| `model_name` | `--model` | `deepseek-v4-flash` | 非空、无首尾空白、以 `deepseek-` 开头；不以本地校验代替远端模型可用性 | `launch.model_name`；CLI 可修订，不保存个人默认 |
-| `http_retries` | `--http-retries` | `4` | 整数 ≥0；SDK 对可重试 HTTP 失败的额外尝试次数，不等于 Agent 请求次数 | `launch.http_retries`；CLI 可修订，`0` 必须作为显式值保留 |
+| `model_provider` | `--model-provider` | `deepseek` | `providers.ModelProvider` 中的原生 provider 与 OpenCode；决定 SDK、协议及凭据选择 | `launch.model_provider`；CLI 可修订，须兼容已保存推理策略并有对应凭据 |
+| `model_name` | `--model` | `deepseek-v4-flash` | 非空、无首尾空白；其他 provider 必须明确名称。候选列表来自框架，不代表账号有权访问；DeepSeek 前缀限制只在 OpenCode adapter | `launch.model_name`；CLI 可修订，不保存个人默认 |
+| `context_window` | `--context-window` | 框架 profile；OpenCode 已知模型由 adapter 提供 | 整数 ≥1024；未知窗口必须显式给出，不能套用1M | `launch.context_window`；CLI 可通过 amendment 修订；恢复不重新推导 |
+| `model_base_url` | `--model-base-url` | provider 默认端点 | 无凭据、query、fragment 的 HTTP(S) URL；OpenCode/Codex 固定端点不接受 | 保存实际端点；固定，Web 凭据按 provider＋端点隔离 |
+| `http_retries` | `--http-retries` | 通常 `4`；Mistral、Typesafe、Hugging Face、Bedrock（含 gateway）使用 SDK 默认 | 整数 ≥0；仅使用 SDK 默认重试的 provider 拒绝显式数值；SDK 对可重试 HTTP 失败的额外尝试次数，不等于 Agent 请求次数 | `launch.http_retries`；CLI 可修订，`0` 必须作为显式值保留 |
 | `http_timeout_seconds` | `--http-timeout-seconds` | `300.0` | 有限正数；传给模型/SDK 的请求超时，不等于 active wall 或 Solver 超时 | `launch.http_timeout_seconds`；固定，恢复显式指定拒绝 |
 | `reasoning_policy` | `--reasoning-policy` | 最终 Go + V4-Flash 为 `enabled_high`，其他为 `provider_default` | 仅允许这两个值；`enabled_high` 与最终 provider/model 不兼容时拒绝；显式值优先于自动选择 | `launch.reasoning_policy`；固定。修订模型时不重新按当前偏好推导它 |
 | `api_catalog_mode` | `--api-catalog-mode` | `automatic_verified_only` | `full` / `full_with_discovery` / `automatic_verified_only` / `automatic_exact_signature`；普通产品不接受 `off` | `launch.api_catalog_mode`；固定，不由是否传目录推断成 `full` |
@@ -306,7 +308,10 @@ diagnostic advisory。CLI 根据这些 profile 决定问答/输出合同，不�
 | `response_enabled` | 普通会话 True；CLI 随其问答/profile 合同决定；不是独立用户默认 |
 | `domain_knowledge` | 所选私有包物化后的不可变快照绑定；无包时 None |
 | `capability_definitions` | 宿主从实际 Skill 定义计算的 capability ID/digest |
-| `context_policy_version` | `deepseek-1m-tiered-summary-v1`；固定运行规则 |
+| `context_policy_version` | 新会话 `model-window-tiered-summary-v1`；旧固定1M记录保持原值，不迁移 |
+| `context_window` | 创建时解析并保存的窗口；恢复不重新读取框架元数据，随显式模型修订校验 |
+| `model_base_url` | 本次自定义端点或 None；固定，恢复仅允许显式确认同一地址 |
+| `provider_environment` | provider 所需的非凭据环境快照；恢复时检查，不隐式改指向 |
 | `filesystem_policy_version` | `utf8-cp936-preserve-v1`；固定编码与写回规则 |
 | `model_provider` | 公共配置的实际网关 |
 | `model_name` | 公共配置的实际模型 |
@@ -325,8 +330,8 @@ diagnostic advisory。CLI 根据这些 profile 决定问答/输出合同，不�
 | `planning_enabled` | 新产品 False；字段为历史解释保留，不开放重新启用入口 |
 | `interaction_policy` | 新运行工厂采用 workspace_facts_first；底层仍可解释 legacy 评测，不能据此开放产品回退开关 |
 
-`ModelExecutionConfig` 的7个字段对应上表 model_provider/name、http_retries/timeout、reasoning_policy、
-planning_enabled、interaction_policy。它和 launch 之间的字段复制、模型工厂的重复显式参数仍是实现冗余，
+`ModelExecutionConfig` 的10个字段对应上表 model_provider/name、http_retries/timeout、reasoning_policy、
+planning_enabled、interaction_policy、context_window、model_base_url、provider_environment。它和 launch 之间的字段复制、模型工厂的重复显式参数仍是实现冗余，
 不能把它们解释为另一层可独立覆盖的配置。
 
 ## 程序化 profile 与依赖注入
@@ -391,3 +396,12 @@ question_protocol、response_enabled 已在前表逐项定义。实现：[agent.
 新增配置时必须在相应字段行说明来源、缺省、覆盖、持久化及恢复规则，并核对 CLI/Web 是否共同消费。
 目前保留的区别均已显式列出：网页并非全部实验 profile 的入口，权限不由偏好文件授予，进程设置不跟随
 旧会话，项目配置文件改动仍受 workspace 一致性检查。不得以“字段都在 JSON 中”或“类型检查通过”代替这些决定。
+
+## 模型发现与连接
+
+`--list-model-providers` 和 Web `GET /api/v1/model-providers` 仅列举候选模型，不查询账号权限，
+也不隐式选取列表第一项。未选模型时 DeepSeek/OpenCode 沿用既定 V4-Flash 默认，其他 provider 要求明确名称。
+`GET /api/v1/model-provider-dependencies` 单独检查 SDK。API Key 通过宿主环境、CLI 隐藏输入或
+Web `ModelConnection(provider, api_key, model_base_url)` 传入；后者只更新进程内映射，不保存到会话或偏好文件。
+OAuth 的 `LoginRequest(provider, client_id)` 和登录 ID 是当前宿主的操作输入，状态与凭据源只保留在内存。
+本机已有账号凭据由框架管理；不把其存储位置作为本项目用户配置。创建或连接不等于已经验证远端模型。

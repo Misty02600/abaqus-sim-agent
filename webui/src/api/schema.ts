@@ -73,6 +73,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/model-providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Model Providers */
+        get: operations["model_providers_api_v1_model_providers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/model-provider-dependencies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Model Provider Dependencies */
+        get: operations["model_provider_dependencies_api_v1_model_provider_dependencies_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/model-connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Connect Model */
+        post: operations["connect_model_api_v1_model_connections_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/model-logins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Begin Model Login */
+        post: operations["begin_model_login_api_v1_model_logins_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/model-logins/{login_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Model Login Status */
+        get: operations["model_login_status_api_v1_model_logins__login_id__get"];
+        put?: never;
+        post?: never;
+        /** Cancel Model Login */
+        delete: operations["cancel_model_login_api_v1_model_logins__login_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/runs/{run_id}": {
         parameters: {
             query?: never;
@@ -775,11 +861,6 @@ export interface components {
             workspace: string;
             options?: components["schemas"]["RunOptions"];
         };
-        /**
-         * DeepSeekGateway
-         * @enum {string}
-         */
-        DeepSeekGateway: "deepseek" | "opencode-zen" | "opencode-go";
         /** DeleteRunResponse */
         DeleteRunResponse: {
             /** Run Id */
@@ -990,6 +1071,28 @@ export interface components {
              */
             text: string;
         };
+        /** LoginRequest */
+        LoginRequest: {
+            provider: components["schemas"]["ModelProvider"];
+            /** Client Id */
+            client_id?: string | null;
+        };
+        /** LoginStatus */
+        LoginStatus: {
+            /** Id */
+            id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "waiting" | "completed" | "failed";
+            /** Url */
+            url: string;
+            /** User Code */
+            user_code?: string | null;
+            /** Error */
+            error?: string | null;
+        };
         /** MessageCommand */
         MessageCommand: {
             /**
@@ -1042,6 +1145,36 @@ export interface components {
              * @enum {string}
              */
             status: "pending" | "completed" | "failed" | "waiting_for_user" | "interrupted";
+        };
+        /** ModelConnection */
+        ModelConnection: {
+            provider: components["schemas"]["ModelProvider"];
+            /**
+             * Api Key
+             * Format: password
+             */
+            api_key?: string;
+            /** Model Base Url */
+            model_base_url?: string | null;
+        };
+        /**
+         * ModelProvider
+         * @enum {string}
+         */
+        ModelProvider: "deepseek" | "opencode-zen" | "opencode-go" | "openai" | "openai-chat" | "openai-responses" | "anthropic" | "alibaba" | "google" | "google-cloud" | "azure" | "azure-responses" | "bedrock" | "bedrock-mantle" | "cerebras" | "cohere" | "crusoe" | "fireworks" | "github" | "github-copilot" | "openai-codex" | "groq" | "heroku" | "huggingface" | "litellm" | "mistral" | "moonshotai" | "nebius" | "ollama" | "openrouter" | "ovhcloud" | "sambanova" | "snowflake" | "together" | "typesafe" | "vercel" | "vllm" | "zai" | "gateway/openai" | "gateway/anthropic" | "gateway/google" | "gateway/google-cloud" | "gateway/groq" | "gateway/bedrock";
+        /** ProviderOption */
+        ProviderOption: {
+            id: components["schemas"]["ModelProvider"];
+            /** Label */
+            label: string;
+            /** Models */
+            models: string[];
+            /** Api Key Environment */
+            api_key_environment: string | null;
+            /** Local Auth */
+            local_auth: boolean;
+            /** Login */
+            login?: string | null;
         };
         /** QuestionView */
         QuestionView: {
@@ -1100,9 +1233,13 @@ export interface components {
         };
         /** RunOptions */
         RunOptions: {
-            model_provider?: components["schemas"]["DeepSeekGateway"] | null;
+            model_provider?: components["schemas"]["ModelProvider"] | null;
             /** Model Name */
             model_name?: string | null;
+            /** Context Window */
+            context_window?: number | null;
+            /** Model Base Url */
+            model_base_url?: string | null;
             /** Http Retries */
             http_retries?: number | null;
             /** Http Timeout Seconds */
@@ -1126,6 +1263,8 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Model Base Url */
+            model_base_url?: string | null;
             /** Model */
             model: string;
             /** Workspace */
@@ -1603,6 +1742,185 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DomainKnowledgeInventory"];
+                };
+            };
+        };
+    };
+    model_providers_api_v1_model_providers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderOption"][];
+                };
+            };
+        };
+    };
+    model_provider_dependencies_api_v1_model_provider_dependencies_get: {
+        parameters: {
+            query: {
+                provider: components["schemas"]["ModelProvider"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    connect_model_api_v1_model_connections_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelConnection"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    begin_model_login_api_v1_model_logins_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    model_login_status_api_v1_model_logins__login_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                login_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_model_login_api_v1_model_logins__login_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                login_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

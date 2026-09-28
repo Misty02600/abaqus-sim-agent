@@ -208,7 +208,9 @@ def test_actual_cli_and_baseline_http_configuration_parity_with_sdk_retry(
         clients.append(client)
         return client
 
-    monkeypatch.setattr("abaqus_sim_agent.coding.model.AsyncOpenAI", client_factory)
+    monkeypatch.setattr(
+        "abaqus_sim_agent.coding.deepseek_gateway.AsyncOpenAI", client_factory
+    )
     monkeypatch.setattr(
         "abaqus_sim_agent.coding.cli.take_gateway_api_key_from_environment",
         lambda _: SecretStr("offline"),

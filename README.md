@@ -155,7 +155,7 @@ workspace/execution状态划定本段fresh evidence。显式修改任务合同�
 
 **配置调整状态：** 已取消用户级/项目级偏好文件读取。普通入口使用 `abq2024` 命令、包内 Skill 和程序管理的
 静态资源；Web 管理根默认位于 `%LOCALAPPDATA%/abaqus-sim-agent/web`，可用 `--root` 高级覆盖。
-Catalog 已随应用包安装，CLI/Web 自动定位并直接读取；不需要目录参数或首次启动解压。模型泛化仍待独立方案确认。
+Catalog 已随应用包安装，CLI/Web 自动定位并直接读取；不需要目录参数或首次启动解压。已接入 Pydantic AI 原生 provider、模型候选列表及模型窗口；OpenCode 的 DeepSeek 适配独立保留。
 Catalog 的第三方文档内容公开再分发许可仍未确认，见[来源说明](src/abaqus_sim_agent/api_catalog/data/THIRD_PARTY_NOTICES.md)。
 
 未显式选择时，当前默认网关为 DeepSeek 官方 API，读取 `DEEPSEEK_API_KEY`；`opencode-go` / `opencode-zen` 读取

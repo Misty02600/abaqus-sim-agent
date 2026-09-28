@@ -78,12 +78,14 @@ class CapabilityPreservingCompaction:
         return [*compacted[:index], *restored, *compacted[index:]]
 
 
-def build_context_policy() -> TieredCompaction[Any]:
+def build_context_policy(*, context_window: int | None = None) -> TieredCompaction[Any]:
     summarizer = CapabilityPreservingCompaction(
         SummarizingCompaction(
             model=None,
             max_messages=1,
-            keep_tokens=CONTEXT_COMPACTION_KEEP_TOKENS,
+            keep_tokens=min(CONTEXT_COMPACTION_KEEP_TOKENS, context_window // 8)
+            if context_window
+            else CONTEXT_COMPACTION_KEEP_TOKENS,
             incremental=True,
             keep_user_messages=True,
             receipts=False,
@@ -92,7 +94,9 @@ def build_context_policy() -> TieredCompaction[Any]:
         )
     )
     return TieredCompaction(
-        target_tokens=CONTEXT_COMPACTION_TARGET_TOKENS,
+        target_tokens=None if context_window else CONTEXT_COMPACTION_TARGET_TOKENS,
+        target_fraction=0.9 if context_window else None,
+        context_window=context_window,
         tiers=(
             ClearToolResults(
                 max_messages=1,

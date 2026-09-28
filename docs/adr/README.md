@@ -11,7 +11,7 @@
 
 | 决定 | 状态与作用域 |
 |---|---|
-| [0045：本次运行选项与必要会话记录](0045-use-explicit-run-options-without-preference-files.md) | 偏好读取撤回、内部资源入口收敛和 Catalog 包内分发已接线；模型泛化仍由独立调研确认 |
+| [0045：本次运行选项与必要会话记录](0045-use-explicit-run-options-without-preference-files.md) | 偏好读取撤回、内部资源入口收敛和 Catalog 包内分发已接线；模型扩展已按本次运行选项整合，不恢复偏好文件 |
 | [0044：本机 Phoenix 观测](0044-local-phoenix-observability.md) | 已采纳；官方 SDK 随产品分发，--phoenix 显式发送到独立本机服务；Case 与评分关联，不接管状态/oracle |
 | [0043：模型偏好与会话合同分离](0043-separate-model-preferences-from-session-contracts.md) | 用户/项目偏好文件由0045部分替代；共享输入、会话恢复及凭据分离仍有效 |
 | [0042：显式启用的 Logfire 观测](0042-opt-in-logfire-observability.md) | 已由 [0044](0044-local-phoenix-observability.md) 替代；原云端接口与数据边界决定保留 |

@@ -18,6 +18,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from abaqus_sim_agent import telemetry
 
+from .environment import subprocess_environment
+
 DEFAULT_ABAQUS_2024_LAUNCHER = Path(r"D:\SIMULIA\Commands\abq2024.bat")
 ABAQUS_2024_COMMAND = "abq2024"
 _JOB_NAME_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,79}$")
@@ -196,6 +198,7 @@ class WindowsProcessStrategy:
             creationflags = _CREATE_NEW_PROCESS_GROUP | _CREATE_NO_WINDOW
             process = await asyncio.create_subprocess_exec(
                 *command,
+                env=subprocess_environment(),
                 cwd=cwd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
@@ -204,6 +207,7 @@ class WindowsProcessStrategy:
         else:
             process = await asyncio.create_subprocess_exec(
                 *command,
+                env=subprocess_environment(),
                 cwd=cwd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,

@@ -10,8 +10,8 @@ effective launch 为准。这里解释实际职责，不维护另一份依赖版
 | Phoenix SDK / OpenInference / OpenTelemetry | 显式启用的 Agent、HTTP、runtime、verifier 追踪，Evals Case 与评分关联 | 官方 SDK 随包安装，--phoenix 才发送到独立本机服务；移除完整 Logfire SDK，上游 logfire-api shim 仍为间接依赖；不拥有状态/验收 |
 | Python 3.12 / uv / uv_build | 宿主、依赖、项目内 `.venv`、包构建 | 不等于 Abaqus vendor Python 3.10 |
 | Pydantic | strict 请求、配置、决策、证据和 outcome | 类型校验不能证明物理意图正确 |
-| Pydantic AI 2.47.0 | 模型/provider、原生 tool loop、typed output、deferred tools、usage | 当前只有一个产品 Coder；pydantic-evals 同步锁定 2.47.0，历史批次仍使用各自冻结环境 |
-| Harness 0.33.0 | workspace coding、Shell、Skills、StepPersistence；Planning 仅保留历史适配 | 产品用 AbaqusTextFileSystem 保留 UTF-8/CP936 编码和 raw-byte hash，组合 run-scoped Shell 与可回读的 ToolOutputLimits；不注册 SubAgents。0.33 的 Windows JSONL 追加与进程树清理仍需版本补丁 |
+| Pydantic AI 2.51.0 | 模型/provider、原生 tool loop、typed output、deferred tools、usage | 当前只有一个产品 Coder；pydantic-evals 同步锁定 2.51.0，历史批次仍使用各自冻结环境 |
+| Harness 0.36.0 | workspace coding、Shell、Skills、StepPersistence；Planning 仅保留历史适配 | 产品用 AbaqusTextFileSystem 保留 UTF-8/CP936 编码和 raw-byte hash，组合 run-scoped Shell 与可回读的 ToolOutputLimits；不注册 SubAgents。0.36 的 Windows JSONL 追加与进程树清理仍需版本补丁 |
 | CodingRunService / asyncio | 问答、累计预算、修订、恢复、verifier 反馈 | 本地文件后端宿主，不是 durable scheduler |
 | FastAPI / Uvicorn / REST + SSE | 本地 Web 命令、只读快照和变更通知 | 只监听回环地址；SSE 不传递运行真值或逐 token 恢复日志 |
 | React / TypeScript / assistant-ui | Thread、消息、工具、产物与验证展示 | ExternalStore 消费宿主投影，不运行 Agent 或拥有产品状态 |
@@ -27,7 +27,8 @@ effective launch 为准。这里解释实际职责，不维护另一份依赖版
 
 ## 模型配置与兼容
 
-模型工厂支持显式 DeepSeek / OpenCode 网关，不隐藏切换 provider。当前目标 Go/V4-Flash 新 run 使用
+普通模型工厂复用 Pydantic AI 内置 provider；OpenCode 使用单独的 DeepSeek 适配，不限制其他 provider。
+模型候选目录与 SDK/凭据就绪检查分开；窗口来自框架 profile 或显式覆盖，保存后恢复不重新推导。当前目标 Go/V4-Flash 新 run 使用
 typed `ModelExecutionConfig` 保存 thinking enabled/high、Planning 开关、HTTP 重试与超时等有效设置；普通产品
 默认关闭 Planning，冻结 profile 保留原设置。当前 launch 按保存的有效配置恢复；不兼容的开发期 state
 显式拒绝，不迁移。历史批次复现使用其冻结源码和依赖，不能套新默认后声称复现旧请求。

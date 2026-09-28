@@ -5,7 +5,14 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SecretStr,
+    field_validator,
+    model_validator,
+)
 
 from ..coding.contracts import (
     CodingRunLimits,
@@ -17,12 +24,24 @@ from ..coding.contracts import (
 from ..coding.domain_knowledge import DomainKnowledgePackBinding
 from ..coding.launch import LaunchManifest
 from ..coding.options import RunOptions
+from ..coding.providers import ModelProvider
 from ..coding.read_model import CodingRunView, FileView, MessageView
 from ..coding.workspace import WorkspaceSnapshot
 
 
 class StrictModel(BaseModel):
     model_config = ConfigDict(strict=True, frozen=True, extra="forbid")
+
+
+class ModelConnection(StrictModel):
+    provider: ModelProvider
+    api_key: SecretStr = Field(default_factory=lambda: SecretStr(""))
+    model_base_url: str | None = None
+
+    @field_validator("provider", mode="before")
+    @classmethod
+    def parse_provider(cls, value: object) -> object:
+        return ModelProvider(value) if isinstance(value, str) else value
 
 
 class CreateRun(StrictModel):
@@ -190,6 +209,7 @@ class AgentInvocation(StrictModel):
     base_task_revision: int = Field(ge=0)
     base_amendment_sequence: int = Field(ge=0)
     provider: str = Field(min_length=1)
+    model_base_url: str | None = None
     model: str = Field(min_length=1)
     limits: CodingRunLimits
     runtime_policy: RuntimeExecutionPolicy
@@ -357,6 +377,7 @@ class RunSnapshot(StrictModel):
     view: CodingRunView
     version: str
     created_at: datetime
+    model_base_url: str | None = None
     model: str
     workspace: str
     title: str

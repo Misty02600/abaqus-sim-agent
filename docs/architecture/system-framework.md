@@ -35,7 +35,7 @@ Web CLI 在服务 started 后默认打开普通 `127.0.0.1` URL。浏览器首�
 
 **第一阶段已实施：** 已撤回用户/项目偏好读取，改用程序默认值和本次显式输入；内置 Skill、静态 wheel/cache
 由程序管理，runner 以 abq2024 命令启动，文档模式由 spec 推导，Web 管理根提供默认。
-Catalog 已随应用包安装并自动定位，模型泛化仍待独立方案确认。见
+Catalog 已随应用包安装并自动定位，原生 provider 与动态模型窗口已接入。见
 [ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md)与[逐字段状态](configuration-reference.md)。
 
 配置按生命周期区分：进程入口取得本次宿主设置和凭据；新会话把默认值与显式输入解析为运行合同；
@@ -101,7 +101,7 @@ registration 不能覆盖恢复得到的有效合同。创建登记和运行 sta
 [ADR-0021](../adr/0021-use-amendments-and-task-revisions-for-continuation.md) 与
 [ADR-0030](../adr/0030-drop-pre-release-coding-run-state-compatibility.md)。
 偏好文件的原始决定见 [ADR-0043](../adr/0043-separate-model-preferences-from-session-contracts.md)，其两级文件来源
-已由 [ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md) 撤回并停止读取。模型泛化仍未完成，Catalog 已接入包内分发。
+已由 [ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md) 撤回并停止读取。模型接线已支持原生 provider，Catalog 已接入包内分发。
 
 ### 实现位置与尚未收敛的边界
 

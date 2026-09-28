@@ -27,7 +27,9 @@ class RunOptions(BaseModel):
     model_config = ConfigDict(strict=True, frozen=True, extra="forbid")
 
     model_provider: DeepSeekGateway | None = None
-    model_name: str | None = Field(default=None, min_length=1, pattern=r"^deepseek-")
+    model_name: str | None = Field(default=None, min_length=1)
+    context_window: int | None = Field(default=None, ge=1024)
+    model_base_url: str | None = None
     http_retries: int | None = Field(default=None, ge=0)
     http_timeout_seconds: float | None = Field(default=None, gt=0, allow_inf_nan=False)
     reasoning_policy: Literal["provider_default", "enabled_high"] | None = None
@@ -83,12 +85,30 @@ def merge_run_options(*overrides: RunOptions) -> RunOptions:
 
 def model_execution(options: RunOptions) -> ModelExecutionConfig:
     effective = options
+    from .model_connections import resolve_context_window
+    from .providers import SDK_DEFAULT_RETRY_PROVIDERS, connection_environment
+
+    provider = effective.model_provider or DeepSeekGateway.OFFICIAL
+    name = effective.model_name
+    if not name:
+        if provider not in (
+            DeepSeekGateway.OFFICIAL,
+            DeepSeekGateway.OPENCODE_GO,
+            DeepSeekGateway.OPENCODE_ZEN,
+        ):
+            raise ValueError("请选择或填写该提供商的模型名称。")
+        name = DEEPSEEK_V4_FLASH
     return new_run_execution_config(
-        model_provider=effective.model_provider or DeepSeekGateway.OFFICIAL,
-        model_name=effective.model_name or DEEPSEEK_V4_FLASH,
+        model_provider=provider,
+        model_name=name,
+        context_window=resolve_context_window(provider, name, effective.context_window),
+        model_base_url=effective.model_base_url,
+        provider_environment=connection_environment(provider),
         http_retries=(
             effective.http_retries
             if effective.http_retries is not None
+            else None
+            if provider in SDK_DEFAULT_RETRY_PROVIDERS
             else DEFAULT_MODEL_HTTP_RETRIES
         ),
         http_timeout_seconds=(

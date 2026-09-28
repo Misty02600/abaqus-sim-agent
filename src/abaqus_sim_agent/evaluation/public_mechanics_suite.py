@@ -413,6 +413,10 @@ async def doctor(root: Path):
         "scope": "small transport probe, not long-task availability",
     }
     try:
+        if config.http_retries is None:
+            raise ValueError(
+                "This frozen transport probe requires explicit SDK retries"
+            )
         http_client = httpx.AsyncClient(
             transport=ObservedTransport(root / "health" / (check_id + ".jsonl"))
         )

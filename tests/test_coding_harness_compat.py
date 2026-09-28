@@ -36,7 +36,10 @@ def _hash_from(text: str) -> str:
 
 
 @pytest.mark.asyncio
-async def test_harness_shell_patch_is_version_scoped_and_idempotent() -> None:
+@pytest.mark.parametrize("harness_version", ["0.33.0", "0.36.0"])
+async def test_harness_shell_patch_is_version_scoped_and_idempotent(
+    harness_version: str,
+) -> None:
     class FakeShellToolset:
         pass
 
@@ -62,7 +65,7 @@ async def test_harness_shell_patch_is_version_scoped_and_idempotent() -> None:
     assert (
         apply_harness_windows_shell_tree_patch(
             platform_name="nt",
-            harness_version="0.33.0",
+            harness_version=harness_version,
             shell_toolset_class=FakeShellToolset,
             tree_terminator=terminated.append,
         )
@@ -77,7 +80,7 @@ async def test_harness_shell_patch_is_version_scoped_and_idempotent() -> None:
     assert (
         apply_harness_windows_shell_tree_patch(
             platform_name="nt",
-            harness_version="0.33.0",
+            harness_version=harness_version,
             shell_toolset_class=FakeShellToolset,
             tree_terminator=terminated.append,
         )
@@ -85,7 +88,10 @@ async def test_harness_shell_patch_is_version_scoped_and_idempotent() -> None:
     )
 
 
-def test_harness_jsonl_patch_serializes_parallel_append_methods() -> None:
+@pytest.mark.parametrize("harness_version", ["0.33.0", "0.36.0"])
+def test_harness_jsonl_patch_serializes_parallel_append_methods(
+    harness_version: str,
+) -> None:
     class FakeFileStepStore:
         active = 0
         maximum_active = 0
@@ -124,7 +130,7 @@ def test_harness_jsonl_patch_serializes_parallel_append_methods() -> None:
     assert (
         apply_harness_windows_jsonl_append_patch(
             platform_name="nt",
-            harness_version="0.33.0",
+            harness_version=harness_version,
             file_step_store_class=FakeFileStepStore,
         )
         == HARNESS_WINDOWS_JSONL_APPEND_PATCH_VERSION
@@ -146,7 +152,7 @@ def test_harness_jsonl_patch_serializes_parallel_append_methods() -> None:
     assert (
         apply_harness_windows_jsonl_append_patch(
             platform_name="nt",
-            harness_version="0.33.0",
+            harness_version=harness_version,
             file_step_store_class=FakeFileStepStore,
         )
         == HARNESS_WINDOWS_JSONL_APPEND_PATCH_VERSION

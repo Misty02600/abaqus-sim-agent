@@ -309,7 +309,7 @@ async def test_go_http_replays_thinking_after_tool_return_and_json_history_resto
         )
 
     monkeypatch.setattr(
-        "abaqus_sim_agent.coding.model.AsyncOpenAI",
+        "abaqus_sim_agent.coding.deepseek_gateway.AsyncOpenAI",
         lambda **kwargs: AsyncOpenAI(
             **kwargs,
             http_client=httpx.AsyncClient(transport=httpx.MockTransport(response)),
