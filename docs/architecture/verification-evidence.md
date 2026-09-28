@@ -17,6 +17,16 @@
 
 ## 产品与会话
 
+- [Phoenix / MLflow 本地 OTel 对照](../../benchmarks/observability/phoenix_mlflow_poc_20260927.md)：5 个现有
+  确定性场景产生的同一批 49 spans 在两家均持久保存并通过重启读回；原始消息映射、官方适配探针、评分
+  桥接和业务身份限制分开记录。该报告冻结的是替换前的隔离 PoC，后续产品接入单独验收如下。
+
+- [Phoenix 本机接入验收](../../benchmarks/observability/phoenix_local_integration_20260927.md)：产品使用官方
+  SDK，移除完整 Logfire SDK；同 5 个确定性场景经真实本机服务保存消息、业务身份、Case 和评分，重启后可
+  读回。离线回归另覆盖并发重复 Case、span_tree、300K 字符输入、失败、后台停止和恢复。大输入只验证本地
+  SDK 序列化，不证明接收体积上限。独立 wheel 安装通过，无真实模型、持证执行或物理收益声明；完成范围见
+  [PLAN-0014](../plans/done/0014-phoenix-local-observability.md)。
+
 - [开放立方体产品 smoke](../../benchmarks/coding/product_open_cube_execution_evidence_20260831.json)：
   任意交付文件名、一次 CAE、零 Solver，通过产品执行验收；未做物理 oracle。
 - [Provider 恢复 smoke](../../benchmarks/coding/coding_run_resume_provider_smoke_20260902.json)和

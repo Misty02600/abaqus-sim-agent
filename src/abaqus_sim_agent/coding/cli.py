@@ -98,6 +98,7 @@ from abaqus_sim_agent.execution import (
 )
 from abaqus_sim_agent.retrieval import AbaqusDocumentIndex
 from abaqus_sim_agent.skills import skill_library_path
+from abaqus_sim_agent.telemetry import add_phoenix_argument, telemetry_session
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -293,6 +294,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--amendment-reason",
         help="Audit reason for resume-time configuration or task changes",
     )
+    add_phoenix_argument(parser)
     return parser
 
 
@@ -322,6 +324,15 @@ class _ConsoleQuestion:
 
 def run_cli(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    try:
+        with telemetry_session(args.phoenix, environment="cli"):
+            return _run_cli_session(args)
+    except (ValueError, RuntimeError) as exc:
+        print(f"error: {exc}")
+        return 1
+
+
+def _run_cli_session(args: argparse.Namespace) -> int:
     if args.list_knowledge_packs:
         return _print_knowledge_packs()
     key = None

@@ -1,0 +1,106 @@
+{
+  "schema": "phoenix-local-integration-v1",
+  "date": "2026-09-27",
+  "evidence_kind": "offline_fixtures_with_real_local_backend",
+  "source_branch": "main",
+  "source_head": "aa7116f0377a6fd5f1173b057797ba54abe70478",
+  "dirty_worktree": true,
+  "versions": {
+    "pydantic-ai-slim": "2.47.0",
+    "pydantic-evals": "2.47.0",
+    "arize-phoenix-otel": "0.17.1",
+    "arize-phoenix-client": "3.5.0",
+    "openinference-instrumentation-pydantic-ai": "0.1.27",
+    "phoenix_server": "20.16.0",
+    "opentelemetry-sdk": "1.44.0"
+  },
+  "reception": {
+    "spans": 38,
+    "traces": 5,
+    "sessions": 5,
+    "feedback": 5,
+    "api_spans": 38,
+    "case_links": [
+      {
+        "case": "response",
+        "trace_id": "857745d9b54b1c2f1cc00019ae680af2",
+        "span_id": "e9f4b90be9a5eb66",
+        "passed": true
+      },
+      {
+        "case": "tool-loop",
+        "trace_id": "36e08ab062e3e762a27a5f0dbd3e6d23",
+        "span_id": "2e4765cd813897f8",
+        "passed": true
+      },
+      {
+        "case": "stream",
+        "trace_id": "c73657162113631bc116dde364dd1e43",
+        "span_id": "5ccc197df16b5bcb",
+        "passed": true
+      },
+      {
+        "case": "background-stop",
+        "trace_id": "ca7d498afa037123f2d632a2d5e2188a",
+        "span_id": "8074f1733720a681",
+        "passed": true
+      },
+      {
+        "case": "failure-resume",
+        "trace_id": "e94c1578fd44d6dbeee2a8278206f6fa",
+        "span_id": "211ef87f339ed5e3",
+        "passed": true
+      }
+    ],
+    "no_logfire_sdk": true,
+    "rendered_stream_tool_output_present": true,
+    "external_attempts": []
+  },
+  "restart": {
+    "api_spans": 38,
+    "database_counts": {
+      "spans": 38,
+      "traces": 5,
+      "project_sessions": 5,
+      "span_annotations": 5
+    },
+    "restart_retained": true
+  },
+  "distribution": {
+    "no_logfire_sdk": true,
+    "no_phoenix_server": true,
+    "no_evals_required": true,
+    "phoenix_sdk": "0.17.1",
+    "web_assets": [
+      "web_static\\index.html"
+    ],
+    "cli_web_help": true
+  },
+  "checks": {
+    "pytest_passed": 1272,
+    "pytest_deselected": 41,
+    "telemetry_tests_passed": 25,
+    "ruff_check": "passed",
+    "ruff_format_files": 559,
+    "basedpyright_errors": 0
+  },
+  "source_sha256": {
+    "pyproject.toml": "1b5dae47bc0a8e7170104374bcce8249fa3decd91c5a83df1af37fb2b2938898",
+    "uv.lock": "43d1d6a67bc90fc4382c630a0799b46175ef6d3e1b1c72f39630dbd71aef2560",
+    "src/abaqus_sim_agent/telemetry.py": "a6d7f8695ee79b6271fede466d1489c2f38523c308d3d41475c0335110127202",
+    "src/abaqus_sim_agent/evaluation/telemetry.py": "ff63da03a46cc9fab9d2bc82321b6095425a86d18e3839d45d6cc8ca16fda414",
+    "src/abaqus_sim_agent/coding/agent.py": "8850597d18f90fa7e67c68599bc145cae522e2eb299d5fe2caf31f57a9156b65",
+    "src/abaqus_sim_agent/coding/service.py": "ccd7b3f239ca3861edb3c7f74c6e2b389b8e9f66b12fc54602392a268c590144",
+    "src/abaqus_sim_agent/execution/abaqus2024.py": "b6b252456e12e207e348259a35af7217ce630dac5a35dc38261d22dd20b799c7",
+    "src/abaqus_sim_agent/web/controller.py": "ef55f4d19474772f91e1eff36d64ee9a5466958a38ba765d717dac1e94b1cdf3",
+    "tests/test_telemetry.py": "177209daf9ba5039580f563ba941008300df0173ae2668064d85064ad3ffc83f"
+  },
+  "real_provider_called": false,
+  "abaqus_called": false,
+  "datasets_experiments_migrated": false,
+  "limitations": [
+    "No reliable offline replay queue",
+    "No physical acceptance or model success-rate evidence",
+    "No high-throughput or real provider price coverage validation"
+  ]
+}

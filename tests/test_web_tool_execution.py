@@ -178,6 +178,14 @@ def _background_solver_app(tmp_path: Path):
                     ]
                 )
             solver_return = solver_returns[-1]
+            if solver_return.outcome == "interrupted":
+                # A stopped wait can return text; resume waiting on the same job.
+                solver_return = next(
+                    part
+                    for part in reversed(solver_returns)
+                    if isinstance(part.content, dict)
+                    and part.content.get("submitted") is True
+                )
             assert isinstance(solver_return.content, dict)
             if solver_return.content.get("submitted") is True:
                 return ModelResponse(

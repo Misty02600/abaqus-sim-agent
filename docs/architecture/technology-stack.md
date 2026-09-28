@@ -7,6 +7,7 @@ effective launch 为准。这里解释实际职责，不维护另一份依赖版
 
 | 技术 | 实际职责 | 当前边界 |
 |---|---|---|
+| Phoenix SDK / OpenInference / OpenTelemetry | 显式启用的 Agent、HTTP、runtime、verifier 追踪，Evals Case 与评分关联 | 官方 SDK 随包安装，--phoenix 才发送到独立本机服务；移除完整 Logfire SDK，上游 logfire-api shim 仍为间接依赖；不拥有状态/验收 |
 | Python 3.12 / uv / uv_build | 宿主、依赖、项目内 `.venv`、包构建 | 不等于 Abaqus vendor Python 3.10 |
 | Pydantic | strict 请求、配置、决策、证据和 outcome | 类型校验不能证明物理意图正确 |
 | Pydantic AI 2.47.0 | 模型/provider、原生 tool loop、typed output、deferred tools、usage | 当前只有一个产品 Coder；pydantic-evals 同步锁定 2.47.0，历史批次仍使用各自冻结环境 |

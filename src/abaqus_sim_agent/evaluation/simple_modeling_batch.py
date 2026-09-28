@@ -40,6 +40,10 @@ from abaqus_sim_agent.evaluation.task_baseline_runner import (
 )
 from abaqus_sim_agent.evaluation.task_baseline_service import run_service_live
 from abaqus_sim_agent.execution import DEFAULT_ABAQUS_2024_LAUNCHER
+from abaqus_sim_agent.telemetry import (
+    add_phoenix_argument,
+    telemetry_session,
+)
 
 
 def task_snapshots() -> dict:
@@ -254,30 +258,33 @@ def main():
     parser.add_argument("--run-root", type=Path)
     parser.add_argument("--launcher", type=Path, default=DEFAULT_ABAQUS_2024_LAUNCHER)
     parser.add_argument("--approve-spec-sha256")
+    add_phoenix_argument(parser)
     args = parser.parse_args()
-    if args.mode == "prepare":
-        if args.run_root is None:
-            parser.error("prepare requires --run-root")
-        prepare_spec(args.path, args.run_root, args.launcher)
-        print(
-            json.dumps(
-                {
-                    "spec": str(args.path.resolve()),
-                    "sha256": digest(args.path),
-                    "execution_started": False,
-                }
+    with telemetry_session(args.phoenix, environment="evaluation"):
+        if args.mode == "prepare":
+            if args.run_root is None:
+                parser.error("prepare requires --run-root")
+            prepare_spec(args.path, args.run_root, args.launcher)
+            print(
+                json.dumps(
+                    {
+                        "spec": str(args.path.resolve()),
+                        "sha256": digest(args.path),
+                        "execution_started": False,
+                    }
+                )
             )
-        )
-    elif args.mode == "run":
-        if not args.approve_spec_sha256:
-            parser.error("run requires approval of the exact spec digest")
-        print(
-            json.dumps(
-                asyncio.run(run_batch(args.path, args.approve_spec_sha256)), indent=2
+        elif args.mode == "run":
+            if not args.approve_spec_sha256:
+                parser.error("run requires approval of the exact spec digest")
+            print(
+                json.dumps(
+                    asyncio.run(run_batch(args.path, args.approve_spec_sha256)),
+                    indent=2,
+                )
             )
-        )
-    else:
-        print(json.dumps(asyncio.run(verify_batch(args.path)), indent=2))
+        else:
+            print(json.dumps(asyncio.run(verify_batch(args.path)), indent=2))
 
 
 if __name__ == "__main__":

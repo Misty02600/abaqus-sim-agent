@@ -10,6 +10,7 @@ from ..coding.model import (
     new_run_execution_config,
     take_gateway_api_key_from_environment,
 )
+from ..telemetry import add_phoenix_argument, instrument_web, telemetry_session
 from .controller import ServerConfig
 
 
@@ -46,11 +47,20 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--model", default=DEEPSEEK_V4_FLASH)
     parser.add_argument("--no-open", action="store_true")
+    add_phoenix_argument(parser)
     return parser.parse_args(argv)
 
 
 def main() -> None:
     args = parse_args()
+    try:
+        with telemetry_session(args.phoenix, environment="web"):
+            _serve(args)
+    except (ValueError, RuntimeError) as exc:
+        raise SystemExit(str(exc)) from None
+
+
+def _serve(args: argparse.Namespace) -> None:
     try:
         import uvicorn
 
@@ -93,4 +103,5 @@ def main() -> None:
                 print(f"无法自动打开浏览器：{exc}")
         await task
 
-    asyncio.run(serve())
+    with instrument_web(app):
+        asyncio.run(serve())

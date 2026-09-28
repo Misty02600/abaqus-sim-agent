@@ -10,14 +10,20 @@ authors = [
   { name = "Misty02600", email = "xiao02600@gmail.com" },
 ]
 dependencies = [
+  "arize-phoenix-otel==0.17.1",
   "beautifulsoup4>=4.14,<5",
   "lxml>=6.0,<7",
   "numpy>=2.5,<3",
   "onnxruntime>=1.29,<2",
+  "opentelemetry-api==1.44.0",
+  "opentelemetry-instrumentation-threading==0.65b0",
+  "opentelemetry-sdk==1.44.0",
+  "openinference-instrumentation-pydantic-ai==0.1.27",
   "platformdirs>=4.4,<5",
   "pydantic>=2.12,<3",
   "pydantic-ai-harness[skills]==0.33.0",
   "pydantic-ai-slim[openai]==2.47.0",
+  "requests>=2.34,<3",
   "snowballstemmer==3.0.1",
   "tokenizers>=0.23,<1",
 ]
@@ -25,6 +31,7 @@ dependencies = [
 [project.optional-dependencies]
 web = [
   "fastapi==0.116.1",
+  "opentelemetry-instrumentation-fastapi==0.65b0",
   "uvicorn==0.52.4",
   "pillow>=11,<13",
 ]
@@ -60,6 +67,7 @@ dev = [
   { include-group = "type" },
 ]
 eval = [
+  "arize-phoenix-client==3.5.0",
   "pydantic-evals==2.47.0",
 ]
 lint = [

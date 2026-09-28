@@ -1,6 +1,6 @@
 # 未完成计划
 
-最后更新：2026-09-23
+最后更新：2026-09-27
 
 | 顺序 | 优先级 | 计划 | 状态 | 概览 | 排序依据 |
 |---:|---|---|---|---|---|
@@ -11,7 +11,8 @@
 新UI计划的方案见[ADR-0025](../../adr/0025-local-web-workbench-over-coding-run.md)。以上顺序为当前安排，
 PLAN-0006不构成UI离线接线/API工作的硬依赖；本次未更改其优先级、状态或既有范围。
 
-已完成：[PLAN-0012：Agent 运行预算、超时、上下文压缩与收尾策略](../done/0012-agent-runtime-budget-and-context-policy.md)（普通产品 unlimited limits、runtime permission、可暂停 active wall、launch v7 compaction 与 Skill 绑定完成离线验证）、
+已完成：[PLAN-0014：Phoenix 本机追踪与评测关联](../done/0014-phoenix-local-observability.md)（官方 SDK 替换完整 Logfire；本机接收/重启留存、Case 评分关联、离线回归与 wheel 安装通过）、
+[PLAN-0012：Agent 运行预算、超时、上下文压缩与收尾策略](../done/0012-agent-runtime-budget-and-context-policy.md)（普通产品 unlimited limits、runtime permission、可暂停 active wall、launch v7 compaction 与 Skill 绑定完成离线验证）、
 [PLAN-0011：禁止 CAE 脚本内部提交 Solver Job](../done/0011-block-solver-submit-inside-cae-script.md)（最小 AST 阻断与离线合同测试完成，不构成动态 Python 沙箱）、
 [PLAN-0008：三路UI接线资格与比较](../done/0008-assistant-ui-integration-qualification.md)（官方最小定制/ExternalStore/AG-UI均通过确定性场景，非产品UI或仿真能力）、
 [PLAN-0007：用户提问与待答恢复](../done/0007-user-question-tool.md)（工程实现与离线验证，无真实模型收益结论）、

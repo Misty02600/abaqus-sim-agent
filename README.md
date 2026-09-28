@@ -49,6 +49,44 @@ Windows 的 Just recipes 需要 PowerShell 7.4+（`pwsh`）；直接运行上述
 持证集成测试需要先显式设置 `ABAQUS_LICENSED_TESTS=1`，再选择 `pytest -m abaqus`；这会使用本机许可证。
 不要把普通离线回归通过当作真实 Abaqus 闭环通过。
 
+## 按需查看本地 Phoenix Trace
+
+Phoenix 追踪 SDK 随产品安装，CLI、Web 和下列评测入口加 `--phoenix` 才启用。默认使用不变，无需账号或
+Token。需要查看追踪时，先在一个终端启动独立的本机 Phoenix 服务；首次使用由 uv 下载服务端依赖：
+
+```powershell
+$env:PHOENIX_WORKING_DIR = Join-Path $env:LOCALAPPDATA "abaqus-sim-agent/phoenix"
+$env:PHOENIX_HOST = "127.0.0.1"
+$env:PHOENIX_TELEMETRY_ENABLED = "false"
+$env:PHOENIX_ALLOW_EXTERNAL_RESOURCES = "false"
+uvx --python 3.12 --from arize-phoenix==20.16.0 phoenix serve
+```
+
+另一个终端启动原来的产品命令并加参数：
+
+```powershell
+uv run --no-sync abaqus-sim-agent-web --phoenix --root D:\abaqus-web `
+  --api-catalog-dir D:\abaqus-data\api-catalog --model-provider opencode-go
+```
+
+打开 [本机 Phoenix](http://127.0.0.1:6006)，进入 `abaqus-sim-agent` 项目，查看消息、工具参数/返回、
+工作段、runtime、verifier 和评测 Case。SQLite 数据保存在上面设置的目录，重启服务后仍可查看。
+普通 CLI 同样支持 `--phoenix`；不需要追踪时省略该参数。产品不自动启动或管理 Phoenix 服务。
+模型凭据与工作区仍按原方式提供，普通终端/Web 进度和 raw logs 保持原用途。
+
+服务换端口时，在产品终端设置官方 `PHOENIX_COLLECTOR_ENDPOINT`，例如 `http://127.0.0.1:6007`。
+目前只支持无鉴权的本机 HTTP 地址；不读取工作区 `.env.phoenix`，也不通过项目偏好自动开启。
+服务未启动或导出失败时会有 SDK 诊断，业务继续；未送达数据没有本地离线队列，之后启动服务不会自动补传。
+
+启用会保存脚本、问题和工具读入的私有文本；已知凭据过滤不等于任意正文匿名化。关闭二进制采集，不额外
+复制整个 ODB/CAE 或 raw log 文件。工作台删除会话不会删除 Phoenix 已保存的副本；通过 Phoenix 单独管理。
+
+首轮评测接线为 `evaluation.plate_tension`、`evaluation.task_baseline_runner`、
+`evaluation.task_baseline_pilot`、`evaluation.simple_modeling_batch`（模块前缀均为 `abaqus_sim_agent`）。
+评测组另含 Phoenix client：逐 Case 建立 Trace，将现有 assertion/score/label 复制为对应 span 的评分。
+原 Case、oracle、gate 和本地报告继续负责验收；没有迁移为 Phoenix Dataset/Experiment，也不回填旧报告。
+实现与验证范围见[验证证据](docs/architecture/verification-evidence.md)。
+
 ## 本地 Web 工作台
 
 已接入 FastAPI、React/TypeScript 和 assistant-ui ExternalStore。页面接受任意问题、解释请求、局部步骤或完整任务，支持文字答复、必要澄清、显式继续、

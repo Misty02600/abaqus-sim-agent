@@ -17,7 +17,6 @@ from uuid import uuid4
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic_evals import Case, Dataset
 from pydantic_evals.evaluators import ReportEvaluator, ReportEvaluatorContext
-from pydantic_evals.lifecycle import CaseLifecycle
 from pydantic_evals.reporting import ReportCase, ReportCaseFailure
 from pydantic_evals.reporting.analyses import ReportAnalysis, ScalarResult
 
@@ -31,6 +30,15 @@ from abaqus_sim_agent.evaluation.task_baseline import (
     simple_slots,
     simple_task_candidates,
     task_candidates,
+)
+from abaqus_sim_agent.evaluation.telemetry import (
+    PhoenixCaseLifecycle,
+    publish_evaluation_feedback,
+)
+from abaqus_sim_agent.telemetry import (
+    add_phoenix_argument,
+    telemetry_metadata,
+    telemetry_session,
 )
 
 
@@ -428,8 +436,9 @@ async def _run_batch(
     def save_progress():
         write_text_atomic(root / "batch.json", _json(snapshot()))
 
-    class Lifecycle(CaseLifecycle[TrialContext, TaskTrialReview, None]):
+    class Lifecycle(PhoenixCaseLifecycle[TrialContext, TaskTrialReview, None]):
         async def setup(self):
+            await super().setup()
             nonlocal stopped
             context = self.case.inputs
             if stopped:
@@ -451,6 +460,12 @@ async def _run_batch(
                 raise EnvironmentUnavailable("fixture workspace setup failed") from exc
 
         async def teardown(self, result: ReportCase | ReportCaseFailure | None):
+            try:
+                await self._save_trial(result)
+            finally:
+                await super().teardown(result)
+
+        async def _save_trial(self, result: ReportCase | ReportCaseFailure | None):
             slot = self.case.inputs.slot
             if slot not in started_at:
                 return
@@ -568,6 +583,7 @@ async def _run_batch(
                     "slots": slots,
                     "max_concurrency": max_concurrency,
                     "pydantic_evals_version": version("pydantic-evals"),
+                    "telemetry": telemetry_metadata(),
                     (
                         "effective_configuration"
                         if live
@@ -609,7 +625,13 @@ async def _run_batch(
                     retry_evaluators=None,
                     lifecycle=Lifecycle,
                     progress=False,
+                    metadata={
+                        "batch_id": batch_id,
+                        "purpose": purpose,
+                        "telemetry": telemetry_metadata(),
+                    },
                 )
+                await publish_evaluation_feedback(framework_report)
                 if framework_report.report_evaluator_failures:
                     raise RuntimeError(
                         "offline report evaluator failed; preserve original trial results"
@@ -696,26 +718,28 @@ def main() -> None:
     parser.add_argument("--max-concurrency", type=int, choices=(1, 2), default=1)
     parser.add_argument("--slot")
     parser.add_argument("--review-file", type=Path)
+    add_phoenix_argument(parser)
     args = parser.parse_args()
-    if args.mode == "review":
-        if args.slot is None or args.review_file is None:
-            parser.error(
-                "review requires --slot and --review-file (fixture review JSON)"
+    with telemetry_session(args.phoenix, environment="evaluation"):
+        if args.mode == "review":
+            if args.slot is None or args.review_file is None:
+                parser.error(
+                    "review requires --slot and --review-file (fixture review JSON)"
+                )
+            result = record_review(
+                args.root,
+                args.slot,
+                HumanReview.model_validate_json(args.review_file.read_bytes()),
             )
-        result = record_review(
-            args.root,
-            args.slot,
-            HumanReview.model_validate_json(args.review_file.read_bytes()),
-        )
-    elif args.mode == "demo":
-        result = asyncio.run(
-            run_offline_batch(
-                args.root, demo_fixture, max_concurrency=args.max_concurrency
+        elif args.mode == "demo":
+            result = asyncio.run(
+                run_offline_batch(
+                    args.root, demo_fixture, max_concurrency=args.max_concurrency
+                )
             )
-        )
-    else:
-        result = summarize_batch(args.root)
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+        else:
+            result = summarize_batch(args.root)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

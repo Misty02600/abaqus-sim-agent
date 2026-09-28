@@ -1,0 +1,225 @@
+{
+  "schema_version": "local-observability-poc-v1",
+  "date": "2026-09-27",
+  "batch_id": "poc-20260927-212819",
+  "evidence_kind": "deterministic_offline_fixture_not_model_or_physics_evaluation",
+  "project_branch": "main with pre-existing uncommitted changes; source hashes below",
+  "versions": {
+    "pydantic-ai-slim": "2.47.0",
+    "pydantic-ai-harness": "0.33.0",
+    "pydantic-evals": "2.47.0",
+    "logfire": "4.41.0",
+    "opentelemetry-sdk": "1.44.0",
+    "phoenix": "20.16.0",
+    "mlflow": "3.16.1",
+    "openinference_pydantic_ai_adapter": "0.1.27",
+    "python": "3.12.11"
+  },
+  "cases": {
+    "01-response": {
+      "passed": true,
+      "scenario": "01-response",
+      "wall_seconds": 1.0433476000325754
+    },
+    "02-tool-loop": {
+      "passed": true,
+      "scenario": "02-tool-loop",
+      "wall_seconds": 0.7696418999694288
+    },
+    "03-stream-iter": {
+      "passed": true,
+      "scenario": "03-stream-iter",
+      "wall_seconds": 0.8295393000007607
+    },
+    "04-background-stop": {
+      "passed": true,
+      "scenario": "04-background-stop",
+      "wall_seconds": 1.695387500047218
+    },
+    "05-failure-resume": {
+      "passed": true,
+      "scenario": "05-failure-resume",
+      "wall_seconds": 1.9340277999872342
+    }
+  },
+  "span_count": 49,
+  "agent_work_segments": 8,
+  "source_trace_count": 1,
+  "span_names": {
+    "chat function:respond:": 3,
+    "invoke_agent abaqus_2024_coder": 8,
+    "coding.work_segment": 8,
+    "execute {task}": 5,
+    "evaluator: {evaluator_name}": 5,
+    "case: {case_name}": 5,
+    "execute_tool write_file": 1,
+    "coding.verify": 2,
+    "chat function::stream": 1,
+    "chat function:model:": 7,
+    "execute_tool solver_job": 2,
+    "abaqus.runtime": 1,
+    "evaluate {name}": 1
+  },
+  "tokens_from_function_model_not_billing": {
+    "input": 820,
+    "output": 171
+  },
+  "source_business_run_ids": [
+    "web-371926c929164d859bf06ad7e0ef525a",
+    "web-3b3f87d89bad4ebdb91621ed18020419",
+    "web-70608a011ea44f8186b6b46176e79fc1",
+    "web-8750fe831eeb4cf68dae99607e564ed6",
+    "web-930a56e95fd047aa83db6251943a71d3"
+  ],
+  "source_files_unchanged": true,
+  "source_sha256": {
+    "src/abaqus_sim_agent/telemetry.py": "426b3bb47969531cebd226e47f54930a45c4ac304087a369e867cd8483baaadf",
+    "src/abaqus_sim_agent/coding/service.py": "ccd7b3f239ca3861edb3c7f74c6e2b389b8e9f66b12fc54602392a268c590144",
+    "src/abaqus_sim_agent/execution/abaqus2024.py": "b6b252456e12e207e348259a35af7217ce630dac5a35dc38261d22dd20b799c7",
+    "tests/test_open_requests.py": "b4fd8500393f1ff40fb5898543d0aa3215b2c62c8a8616cda9af1ff4a3943827",
+    "tests/test_web_streaming.py": "fd23afd88273cc4d19d6f95dd2a1b711dd1d1d485d0cfece1038810f92521f6f",
+    "tests/test_web_stop.py": "41410f6906e8548ad3f0032b0accbb9da3398bbf0aac6e367102b7bd93ccb7ca",
+    "tests/test_web_conversation.py": "c1c6953be51230936555d0de3e63a04305b36867a952e54759ff22a5cf39c08b",
+    "tests/support/web_solver.py": "2f5709fd38ccf15fc1af0f5cd73f36edae44919f31d6e59d13b3bc22b09124a1"
+  },
+  "raw_export_batches": [
+    {
+      "span_count": 3,
+      "sha256": "0358280b048e496216fdaedc299c21133dbad36f1b39d24fdb595168b1359f3f",
+      "phoenix": "SUCCESS",
+      "mlflow": "SUCCESS"
+    },
+    {
+      "span_count": 46,
+      "sha256": "c131506922907892b9e30211cbb560122aa5b0b03c3fe7eec07759527900e57e",
+      "phoenix": "SUCCESS",
+      "mlflow": "SUCCESS"
+    }
+  ],
+  "comparison": {
+    "source_span_count": 49,
+    "source_trace_count": 1,
+    "token_usage": {
+      "input": 820,
+      "output": 171
+    },
+    "backends": {
+      "phoenix": {
+        "span_count": 49,
+        "span_ids_equal": true,
+        "missing_ids": [],
+        "parent_mismatches": [],
+        "trace_ids": [
+          "01a0e30d620e89308d3fbac1757e14bf"
+        ],
+        "feedback_count": 5,
+        "source_names_preserved": true,
+        "runtime_execution_id": "b4302946976b4aa79c30148cee2f7712",
+        "runtime_case_id": "04-background-stop",
+        "runtime_run_id": "web-3b3f87d89bad4ebdb91621ed18020419",
+        "case_assertions_present": 5
+      },
+      "mlflow": {
+        "span_count": 49,
+        "span_ids_equal": true,
+        "missing_ids": [],
+        "parent_mismatches": [],
+        "trace_ids": [
+          "01a0e30d620e89308d3fbac1757e14bf"
+        ],
+        "feedback_count": 5,
+        "source_names_preserved": true,
+        "runtime_execution_id": "b4302946976b4aa79c30148cee2f7712",
+        "runtime_case_id": "04-background-stop",
+        "runtime_run_id": "web-3b3f87d89bad4ebdb91621ed18020419",
+        "case_assertions_present": 5
+      }
+    },
+    "trace_ids_equal": true
+  },
+  "restart": {
+    "phoenix": {
+      "http_status": 200,
+      "original_spans_present": 49,
+      "original_spans_exact": true,
+      "total_spans_including_format_probe": 50,
+      "case_feedback_count": 5,
+      "database_bytes": 1941504,
+      "api_span_count": 49
+    },
+    "mlflow": {
+      "http_status": 200,
+      "original_spans_present": 49,
+      "original_spans_exact": true,
+      "total_spans_including_format_probe": 50,
+      "case_feedback_count": 5,
+      "database_bytes": 1523712,
+      "api_span_count": 49,
+      "api_assessment_count": 5
+    },
+    "source_files_unchanged": true
+  },
+  "mapping_probe": {
+    "original_span_id": "ceda1b69708c9e97",
+    "new_span_id": "d3d2f666fbae4a52",
+    "new_trace_id": "065970018ff14c579be2a76adca6dd56",
+    "purpose": "rendering-only transformation of captured streaming span; not a new agent run",
+    "project": "poc-20260927-212819-mapping-probe",
+    "mlflow_experiment_id": "2",
+    "output_fields": {
+      "llm.output_messages.0.message.role": "assistant",
+      "llm.output_messages.0.message.tool_calls.1.tool_call.function.name": "final_result_ResponseDecision",
+      "llm.output_messages.0.message.tool_calls.1.tool_call.function.arguments": "{\"summary\":\"第一段，第二段。\"}",
+      "llm.output_messages.0.message.tool_calls.1.tool_call.id": "reply",
+      "output.value": "[{\"id\": \"reply\", \"name\": \"final_result_ResponseDecision\", \"arguments\": \"{\\\"summary\\\":\\\"第一段，第二段。\\\"}\"}]",
+      "output.mime_type": "application/json"
+    },
+    "export_results": {
+      "phoenix": "SUCCESS",
+      "mlflow": "SUCCESS"
+    }
+  },
+  "feedback_mapping": {
+    "automatic_before_adapter": {
+      "phoenix": 0,
+      "mlflow": 0
+    },
+    "after_copying_existing_assertions": {
+      "phoenix": 5,
+      "mlflow": 5
+    },
+    "no_agent_rerun": true,
+    "no_new_physics_scores": true
+  },
+  "constraints": {
+    "application_emitter_external_connection_attempts": [],
+    "no_real_model": true,
+    "no_licensed_abaqus": true,
+    "no_benchmark_oracle_case_definition_changes": true
+  },
+  "ui_observations": {
+    "phoenix": {
+      "raw_v5_tool_output": "preserved in raw gen_ai.output.messages; missing from dedicated Output panel",
+      "official_processor_probe": "restores structured tool-call display for captured streaming sample; not a full rerun",
+      "business_filter": "attributes['case_id'] == '04-background-stop' returns 12 spans",
+      "session_grouping": "one dataset trace with five business run IDs appears as one native session"
+    },
+    "mlflow": {
+      "raw_v5_tool_output": "visible as structured YAML/raw data; input displayed twice in inspected streaming panel",
+      "business_filter": "Span name = abaqus.runtime returns matching trace; custom span IDs visible in Attributes; no arbitrary span attribute option in inspected trace filter",
+      "windows_mime_workaround": "process-only sitecustomize sets .js MIME to application/javascript; no OS registry changes",
+      "windows_job_execution": "server warns job execution backend does not support Windows; OTLP/feedback worked",
+      "session_grouping": "one dataset trace with five business run IDs appears as one native session"
+    }
+  },
+  "recommendation": "Phoenix remains default candidate with official OpenInferenceSpanProcessor and explicit feedback/identity mapping; MLflow did not demonstrate reduced benchmark/report code in this PoC.",
+  "not_validated": [
+    "real providers",
+    "real Abaqus jobs",
+    "high volume or performance ranking",
+    "native platform dataset/experiment migration",
+    "end-to-end all-scenario adapter rendering",
+    "full four-level native session/case/job hierarchy"
+  ],
+  "raw_audit_directory": "var/audits/otel-poc-20260927/poc-20260927-212819"
+}

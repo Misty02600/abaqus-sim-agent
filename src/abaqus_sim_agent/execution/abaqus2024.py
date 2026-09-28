@@ -15,6 +15,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from abaqus_sim_agent import telemetry
+
 DEFAULT_ABAQUS_2024_LAUNCHER = Path(r"D:\SIMULIA\Commands\abq2024.bat")
 _JOB_NAME_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,79}$")
 _CREATE_NEW_PROCESS_GROUP = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x200)
@@ -333,13 +335,14 @@ class Abaqus2024Runner:
         timeout_seconds: float | None = None,
     ) -> str:
         execution_id = uuid4().hex
-        self._solver_tasks[execution_id] = asyncio.create_task(
-            self.run_solver_job(
-                job_name,
-                input_file=input_file,
-                timeout_seconds=timeout_seconds,
+        with telemetry.execution_context(execution_id=execution_id):
+            self._solver_tasks[execution_id] = asyncio.create_task(
+                self.run_solver_job(
+                    job_name,
+                    input_file=input_file,
+                    timeout_seconds=timeout_seconds,
+                )
             )
-        )
         return execution_id
 
     async def wait_solver_job(self, execution_id: str) -> AbaqusExecutionResult:
@@ -409,6 +412,42 @@ class Abaqus2024Runner:
         )
 
     async def _run(
+        self,
+        invocation: AbaqusInvocation,
+        command: Sequence[str],
+        *,
+        timeout_seconds: float | None,
+        diagnostic_stem: str | None = None,
+        input_artifacts: Sequence[str] = (),
+    ) -> AbaqusExecutionResult:
+        with telemetry.span(
+            "abaqus.runtime",
+            invocation=invocation.value,
+            execution_source="trusted_oracle"
+            if invocation is AbaqusInvocation.TRUSTED_ABAQUS_PYTHON
+            else "workspace",
+            parent_attributes=telemetry.execution_attributes(),
+        ) as observed:
+            result = await self._run_observed(
+                invocation,
+                command,
+                timeout_seconds=timeout_seconds,
+                diagnostic_stem=diagnostic_stem,
+                input_artifacts=input_artifacts,
+            )
+            observed.set_attributes(
+                {
+                    "process_succeeded": result.succeeded,
+                    "stage_succeeded": result.stage_succeeded,
+                    "timed_out": result.timed_out,
+                    "process_duration_seconds": result.duration_seconds,
+                }
+            )
+            if result.exit_code is not None:
+                observed.set_attribute("exit_code", result.exit_code)
+            return result
+
+    async def _run_observed(
         self,
         invocation: AbaqusInvocation,
         command: Sequence[str],

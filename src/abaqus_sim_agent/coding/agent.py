@@ -6,7 +6,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Literal
 
 from pydantic_ai import Agent, DeferredToolRequests, RunContext, ToolOutput
-from pydantic_ai.capabilities import Capability
+from pydantic_ai.capabilities import Capability, Instrumentation
 from pydantic_ai.models import Model
 from pydantic_ai_harness import Coder, Skills, StepPersistence, ToolGuardrail
 from pydantic_ai_harness.compaction import ClearToolResults, WarnNearLimits
@@ -84,6 +84,10 @@ from abaqus_sim_agent.coding.user_questions import (
     QuestionProtocol,
     UserQuestionCapability,
     register_ask_user,
+)
+from abaqus_sim_agent.telemetry import (
+    TELEMETRY_CREDENTIAL_ENV_PATTERNS,
+    instrumentation_settings,
 )
 
 CODER_GENERAL_SHELL_POLICY_VERSION = "coder-general-shell-disabled-v1"
@@ -315,6 +319,8 @@ def create_abaqus_coding_agent(
         coder,
         StepPersistence(store=step_store or _create_step_store(request.state_dir)),
     ]
+    if (trace_settings := instrumentation_settings()) is not None:
+        capabilities.append(Instrumentation(settings=trace_settings))
     if planning_enabled:
         planning = Planning[_CodingAgentDependencies]()
         if not product_shell_enabled:
@@ -573,7 +579,8 @@ def _configure_coder(
             return Shell[_CodingAgentDependencies](
                 cwd=workspace,
                 denied_commands=("abaqus", "abq"),
-                denied_env_patterns=LLM_API_KEY_ENV_PATTERNS,
+                denied_env_patterns=LLM_API_KEY_ENV_PATTERNS
+                + TELEMETRY_CREDENTIAL_ENV_PATTERNS,
                 tools=RUN_SCOPED_TOOL_NAMES,
             )
         if isinstance(capability, RepoContext) and not has_repo_context:

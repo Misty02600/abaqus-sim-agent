@@ -25,6 +25,7 @@ from pydantic_ai.exceptions import RunCancelled, ToolFailed
 from pydantic_ai.messages import ModelMessage, ModelResponse, ToolReturnPart
 from pydantic_ai_harness.step_persistence import StepStore
 
+from abaqus_sim_agent import telemetry
 from abaqus_sim_agent.coding.amendments import amendment_prompt
 from abaqus_sim_agent.coding.api_lookup import ApiCatalogMode
 from abaqus_sim_agent.coding.clarification import ClarificationProvider
@@ -209,9 +210,38 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
             新协议不在本方法中读取Console输入；答复提交后需按当前effective request恢复。
             legacy协议保留原来的同步澄清行为。
         """
-        with CodingRunFileLock(self.request.state_dir) as lock:
-            self._run_lock = lock
-            return await self._run_exclusive()
+        with telemetry.span(
+            "coding.work_segment",
+            cancelled_exceptions=(asyncio.CancelledError, UserStoppedError),
+            run_id=self.request.run_id,
+            parent_attributes=telemetry.execution_attributes(),
+        ) as observed:
+            with telemetry.execution_context(run_id=self.request.run_id):
+                with CodingRunFileLock(self.request.state_dir) as lock:
+                    self._run_lock = lock
+                    result = await self._run_exclusive()
+            if isinstance(result, CodingRunResult):
+                observed.set_attribute("product.status", result.outcome.status.value)
+                observed.set_attribute(
+                    "verification_scope", result.outcome.verification_scope or "none"
+                )
+            else:
+                observed.set_attribute(
+                    "product.status",
+                    "waiting_for_user"
+                    if isinstance(result, WaitingForUser)
+                    else "waiting_for_tool_execution",
+                )
+            if isinstance(result, (WaitingForUser, CodingRunResult)):
+                usage = (
+                    result.usage
+                    if isinstance(result, WaitingForUser)
+                    else result.outcome.usage
+                )
+                observed.set_attribute(
+                    "model_requests_cumulative", usage.model_requests
+                )
+            return result
 
     async def _run_exclusive(
         self,
@@ -219,6 +249,11 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
         CodingRunResult[VerificationAttemptT] | WaitingForUser | WaitingForToolExecution
     ):
         start = await self._prepare_start()
+        telemetry.set_attributes(
+            task_revision=self._current_task_revision,
+            continuation_id=self._current_continuation_id or "",
+            resume=self.resume,
+        )
         started = start.started
         shared_usage = start.usage
         clarifications = start.clarifications
@@ -580,13 +615,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                             self._current_task_revision,
                         ),
                     )
-                    verification = await self.verifier.verify(
-                        self.request,
-                        self.dependencies.runner,
-                        self._verification_snapshot(),
-                        self._verification_executions(),
-                        decision,
-                    )
+                    verification = await self._verify(decision)
                     self._append_event(
                         "verification",
                         verification.model_dump(mode="json"),
@@ -1382,13 +1411,7 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                 verification=verification,
             )
         try:
-            terminal_verification = await self.verifier.verify(
-                self.request,
-                self.dependencies.runner,
-                self._verification_snapshot(),
-                self._verification_executions(),
-                None,
-            )
+            terminal_verification = await self._verify(None)
         except Exception as exc:
             self._append_event(
                 "budget_exhaustion_verification_error",
@@ -1532,6 +1555,25 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
         write_text_atomic(archive, value)
         self._write_text("outcome.json", value)
         self._view_outcome = outcome.model_dump_json().encode()
+
+    async def _verify(
+        self, decision: ReadyForVerificationDecision | None
+    ) -> VerificationAttemptT:
+        with telemetry.span("coding.verify", run_id=self.request.run_id) as observed:
+            result = await self.verifier.verify(
+                self.request,
+                self.dependencies.runner,
+                self._verification_snapshot(),
+                self._verification_executions(),
+                decision,
+            )
+            observed.set_attribute("verification.passed", result.passed)
+            observed.set_attribute("verification_scope", result.scope)
+            if result.failure_stage is not None:
+                observed.set_attribute(
+                    "verification.failure_stage", result.failure_stage
+                )
+            return result
 
     def _verification_snapshot(self) -> WorkspaceSnapshot:
         return self._revision_workspace_snapshot or self.initial_snapshot

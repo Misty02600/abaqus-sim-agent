@@ -11,6 +11,8 @@
 
 | 决定 | 状态与作用域 |
 |---|---|
+| [0044：本机 Phoenix 观测](0044-local-phoenix-observability.md) | 已采纳；官方 SDK 随产品分发，--phoenix 显式发送到独立本机服务；Case 与评分关联，不接管状态/oracle |
+| [0042：显式启用的 Logfire 观测](0042-opt-in-logfire-observability.md) | 已由 [0044](0044-local-phoenix-observability.md) 替代；原云端接口与数据边界决定保留 |
 | [0008：Pydantic AI Harness 单 Coder](0008-pydantic-ai-harness-abaqus-coding-run.md) | 已采纳；替代旧 LangGraph、多角色及首轮控制面路线，后续 scope/恢复/问答按下列决定扩展 |
 | [0017：按活动组件组织产品包](0017-package-by-component-coding-run.md) | 已采纳；组件职责与消费方端口 |
 | [0015：产品 Coder 不暴露通用 Shell](0015-disable-general-shell-for-product-coder.md) | 普通产品决定已由 0032 替代；旧冻结 profile 与原失败依据保留 |

@@ -15,6 +15,7 @@ from uuid import uuid4
 
 from pydantic import SecretStr
 
+from .. import telemetry
 from ..api_catalog import ApiCatalog
 from ..coding.amendments import (
     CodingRunConfigPatch,
@@ -1613,7 +1614,12 @@ class RunController:
                         finished_at=datetime.now(UTC),
                     )
                     raise asyncio.CancelledError("会话正在删除")
-            return await self._execute_solver_execution(execution, runner)
+            with telemetry.execution_context(
+                run_id=execution.thread_id,
+                invocation_id=execution.invocation_id,
+                execution_id=execution.execution_id,
+            ):
+                return await self._execute_solver_execution(execution, runner)
         except Exception as exc:
             with self._mutex:
                 current = self.tool_executions.load(
@@ -2510,7 +2516,10 @@ class RunController:
                     run_id, invocation.invocation_id
                 ),
             ) as service:
-                result = await service.run_step()
+                with telemetry.execution_context(
+                    invocation_id=invocation.invocation_id
+                ):
+                    result = await service.run_step()
             with CodingRunFileLock(registration.request.state_dir):
                 persisted = load_resume_state(registration.request.state_dir)
             with self._mutex:

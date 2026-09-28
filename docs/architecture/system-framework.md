@@ -68,6 +68,31 @@ Catalog 与文档索引是显式选择的外部知识数据，和 run state 分�
 
 ## 并发、持久化与崩溃边界
 
+### 可选启用的遥测
+
+CLI/Web 和首轮评测入口使用 `--phoenix` 启动一次官方 Phoenix SDK 会话。默认关闭；只向无鉴权本机 HTTP
+服务发送，默认 `127.0.0.1:6006`，可用官方 `PHOENIX_COLLECTOR_ENDPOINT` 改本机端口。不读取工作区
+`.env.phoenix` 或项目偏好；入口负责配置、跨线程上下文传播及有界关闭，每个 run 不重配全局 SDK。
+完整 Logfire SDK、旧启用参数和云端 Token 接线已移除；Pydantic 上游仍间接依赖 `logfire-api` 空操作 shim。
+
+Pydantic AI 原生 instrumentation 采集模型和工具；官方 OpenInference processor 转换 Phoenix 消息展示，
+官方 HTTP instrumentation 采集 Web 请求。宿主增加工作段、runtime、verifier，并以
+run/revision/continuation/invocation/execution ID 关联。`session.id` 使用现有 run ID；后台执行与
+submit/wait 分开记录，等待后开启新工作段，不恢复跨进程 span。usage 只记录明确标注的累计快照。
+
+Evals 2.47 的内置 Case spans 依赖完整 Logfire SDK，移除后由公开 `CaseLifecycle` 建立每次 Case 的
+`evaluation.case` span，并填回 `ReportCase` 的 trace/span ID；原 span_tree evaluator 继续使用同一
+provider。评测专用 Phoenix client 将已有 assertion/score/label 复制为 span annotation，发送失败只警告。
+Case、oracle、gate 和本地报告的所有权不变；未迁移 Dataset/Experiment，也不自动修改历史结果。
+
+Phoenix 服务独立运行，SQLite 与追踪数据由它保存，产品包不内嵌服务或启动服务。详细内容可含消息、脚本和
+私有资料；已知模型凭据过滤不保证任意正文匿名化。不采集 HTTP body/header 或二进制附件，不配置 Console
+exporter；原始 stdout/stderr、state 和 oracle 继续由原路径保存。工作台删除不清空 Phoenix 副本。
+进程退出在业务收尾后尝试有界 SDK shutdown；服务不可用或导出失败不改变业务 outcome、不重跑业务，
+也没有离线补传队列。数据与所有权决定见 [ADR-0044](../adr/0044-local-phoenix-observability.md)。
+
+### 执行与会话
+
 - 一个 state 目录只允许一个持有 OS 非阻塞文件锁的活动工作段。锁 handle 不传给子进程；锁文件存在不表示持锁。
 - 待答释放执行锁，答复写入和继续执行重新取锁。锁按 state 隔离，不保证不同 run 共用 workspace 的事务隔离。
 - Web 实例另持有 management root 单实例锁，并只允许一个主动模型工作段；SSE 断开不取消工作段。

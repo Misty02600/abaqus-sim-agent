@@ -40,6 +40,10 @@ from abaqus_sim_agent.evaluation.task_baseline_runner import (
 )
 from abaqus_sim_agent.evaluation.task_baseline_service import run_service_live
 from abaqus_sim_agent.execution import DEFAULT_ABAQUS_2024_LAUNCHER, Abaqus2024Runner
+from abaqus_sim_agent.telemetry import (
+    add_phoenix_argument,
+    telemetry_session,
+)
 from abaqus_sim_agent.verification.assets import plate_tension_oracle_script
 from abaqus_sim_agent.verification.bar_run import bar_tension_3d_oracle_script
 from abaqus_sim_agent.verification.bar_tension_3d import BarTension3DMeasurements
@@ -441,59 +445,64 @@ def main():
     parser.add_argument("--run-root", type=Path)
     parser.add_argument("--launcher", type=Path, default=DEFAULT_ABAQUS_2024_LAUNCHER)
     parser.add_argument("--approve-spec-sha256")
+    add_phoenix_argument(parser)
     args = parser.parse_args()
-    if args.mode == "prepare":
-        if args.run_root is None:
-            parser.error("prepare requires --run-root")
-        prepare_pilot_spec(args.path, args.run_root, args.launcher)
-        print(
-            json.dumps(
-                {
-                    "spec": str(args.path.resolve()),
-                    "sha256": digest(args.path),
-                    "execution_started": False,
-                }
-            )
-        )
-    elif args.mode == "run":
-        if not args.approve_spec_sha256:
-            parser.error("run requires --approve-spec-sha256 after user approval")
-        print(
-            json.dumps(
-                asyncio.run(
-                    run_pilot(args.path, approved_sha256=args.approve_spec_sha256)
-                ),
-                indent=2,
-            )
-        )
-    elif args.mode == "verify":
-        print(json.dumps(asyncio.run(verify_pilot(args.path)), indent=2))
-    else:
-        root = args.path.resolve(strict=True)
-        with CodingRunFileLock(root):
-            batch = _load(root)
-            if batch.purpose != "live_development_pilot" or batch.status == "running":
-                raise ValueError("review template requires a settled live pilot")
-            row = batch.records[0]
-            from abaqus_sim_agent.evaluation.task_baseline import REVIEW_ITEMS
-
+    with telemetry_session(args.phoenix, environment="evaluation"):
+        if args.mode == "prepare":
+            if args.run_root is None:
+                parser.error("prepare requires --run-root")
+            prepare_pilot_spec(args.path, args.run_root, args.launcher)
             print(
                 json.dumps(
                     {
-                        "source": "human",
-                        "reviewer": "",
-                        "reviewed_at": None,
-                        "trial_result_sha256": digest(
-                            _context(root, row.slot).state_dir / "trial-result.json"
-                        ),
-                        "checks": {
-                            k: {"state": "unknown", "reason": "", "evidence": []}
-                            for k in REVIEW_ITEMS
-                        },
-                    },
+                        "spec": str(args.path.resolve()),
+                        "sha256": digest(args.path),
+                        "execution_started": False,
+                    }
+                )
+            )
+        elif args.mode == "run":
+            if not args.approve_spec_sha256:
+                parser.error("run requires --approve-spec-sha256 after user approval")
+            print(
+                json.dumps(
+                    asyncio.run(
+                        run_pilot(args.path, approved_sha256=args.approve_spec_sha256)
+                    ),
                     indent=2,
                 )
             )
+        elif args.mode == "verify":
+            print(json.dumps(asyncio.run(verify_pilot(args.path)), indent=2))
+        else:
+            root = args.path.resolve(strict=True)
+            with CodingRunFileLock(root):
+                batch = _load(root)
+                if (
+                    batch.purpose != "live_development_pilot"
+                    or batch.status == "running"
+                ):
+                    raise ValueError("review template requires a settled live pilot")
+                row = batch.records[0]
+                from abaqus_sim_agent.evaluation.task_baseline import REVIEW_ITEMS
+
+                print(
+                    json.dumps(
+                        {
+                            "source": "human",
+                            "reviewer": "",
+                            "reviewed_at": None,
+                            "trial_result_sha256": digest(
+                                _context(root, row.slot).state_dir / "trial-result.json"
+                            ),
+                            "checks": {
+                                k: {"state": "unknown", "reason": "", "evidence": []}
+                                for k in REVIEW_ITEMS
+                            },
+                        },
+                        indent=2,
+                    )
+                )
 
 
 if __name__ == "__main__":

@@ -62,9 +62,18 @@ from abaqus_sim_agent.coding.service import (
 )
 from abaqus_sim_agent.coding.workspace import ResolvedWorkspace, WorkspaceResolver
 from abaqus_sim_agent.evaluation.clarification_policy import load_cases
+from abaqus_sim_agent.evaluation.telemetry import (
+    PhoenixCaseLifecycle,
+    publish_evaluation_feedback,
+)
 from abaqus_sim_agent.execution import DEFAULT_ABAQUS_2024_LAUNCHER, Abaqus2024Runner
 from abaqus_sim_agent.retrieval import AbaqusDocumentIndex
 from abaqus_sim_agent.skills import skill_library_path
+from abaqus_sim_agent.telemetry import (
+    add_phoenix_argument,
+    telemetry_metadata,
+    telemetry_session,
+)
 from abaqus_sim_agent.verification.assets import plate_tension_oracle_script
 from abaqus_sim_agent.verification.plate_tension import PlateTensionOracleSpec
 from abaqus_sim_agent.verification.run import (
@@ -595,10 +604,12 @@ async def run_evaluation(
         max_concurrency=1,
         retry_task=None,
         retry_evaluators=None,
-        metadata=experiment_metadata,
+        metadata={**experiment_metadata, "telemetry": telemetry_metadata()},
+        lifecycle=PhoenixCaseLifecycle,
     )
     gate = gate_report(report)
     _write_evaluation_artifacts(run_root, report, gate)
+    await publish_evaluation_feedback(report)
     report.print(include_output=True, include_reasons=True)
     return gate
 
@@ -810,22 +821,24 @@ def main() -> None:
             "interruption; task-level evaluation retries remain disabled."
         ),
     )
+    add_phoenix_argument(parser)
     args = parser.parse_args()
-    gate = asyncio.run(
-        run_evaluation(
-            args.run_root.resolve(),
-            model_gateway=args.model_provider,
-            model_name=args.model,
-            http_retries=args.http_retries,
-            api_catalog_dir=args.api_catalog_dir,
-            api_catalog_mode=args.api_catalog_mode,
-            concept_index_dir=args.concept_index_dir,
-            concept_retrieval_mode=args.concept_retrieval_mode,
-            clarification_policy_case=args.clarification_policy_case,
-            resume_infrastructure_once=args.resume_infrastructure_once,
+    with telemetry_session(args.phoenix, environment="evaluation"):
+        gate = asyncio.run(
+            run_evaluation(
+                args.run_root.resolve(),
+                model_gateway=args.model_provider,
+                model_name=args.model,
+                http_retries=args.http_retries,
+                api_catalog_dir=args.api_catalog_dir,
+                api_catalog_mode=args.api_catalog_mode,
+                concept_index_dir=args.concept_index_dir,
+                concept_retrieval_mode=args.concept_retrieval_mode,
+                clarification_policy_case=args.clarification_policy_case,
+                resume_infrastructure_once=args.resume_infrastructure_once,
+            )
         )
-    )
-    raise SystemExit(0 if gate.passed else 1)
+        raise SystemExit(0 if gate.passed else 1)
 
 
 if __name__ == "__main__":

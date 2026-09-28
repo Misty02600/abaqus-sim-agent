@@ -20,6 +20,7 @@ Web 主线仍未执行。外部 Job 对账、数据库控制面、多进程 Coor
 
 | 能力 / 入口 | 对外含义 | 重要边界 | 实现 |
 |---|---|---|---|
+| `--phoenix` | CLI/Web 与代表评测入口显式向本机 Phoenix 记录消息、工具和业务 Trace | 默认关闭；服务独立启动和保存数据；不改变 outcome、恢复或本地证据 | [telemetry](../../src/abaqus_sim_agent/telemetry.py)、[ADR-0044](../adr/0044-local-phoenix-observability.md) |
 | `abaqus-sim-agent` | 在指定或启动目录工作区执行开放 coding goal | 默认不预设板、单元、文件名或物理答案；完成只表示执行证据通过 | [CLI](../../src/abaqus_sim_agent/coding/cli.py) |
 | `abaqus-sim-agent-web` | 从普通回环 URL 创建本地会话；新会话必须先选择已有 ASCII 工作区，之后可发送消息、回答问题并查看执行与产物 | 不自动创建托管空工作区；started 后默认打开浏览器；无感 session + CSRF，仅本机单用户、一个主动模型工作段，REST 写入、SSE 通知重取 | [Web app](../../src/abaqus_sim_agent/web/app.py)、[ADR-0037](../adr/0037-open-loopback-web-with-plain-local-url.md)、[ADR-0041](../adr/0041-require-selected-workspace-for-web-runs.md) |
 | `CodingRunRequest` / `CodingRunOutcome` | strict 请求、limits、runtime policy、产物、验收 scope 和终态 | 普通产品 limits unlimited；模型只申请验收，最终 outcome 归宿主 | [合同](../../src/abaqus_sim_agent/coding/contracts.py) |
