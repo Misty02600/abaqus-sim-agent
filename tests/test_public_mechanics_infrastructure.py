@@ -1,5 +1,6 @@
 import asyncio
 from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -69,6 +70,7 @@ def test_solid_goal_uses_contract_values_without_ambiguous_ranges():
     assert "y ≤ 0.2" not in changed.goal()
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.parametrize("first_failure", ["503", "read_timeout"])
 def test_sdk_retry_transport_records_actual_attempts_without_secrets(
     tmp_path, first_failure
@@ -381,6 +383,29 @@ def test_suite_same_run_resume_retains_usage_and_file_work(tmp_path, monkeypatch
 
 
 def test_knowledge_discovery_profile_copies_and_binds_resources(tmp_path, monkeypatch):
+    # Exercise copying and sealing with small source/runtime inputs, not the installed SDK tree.
+    source = tmp_path / "source"
+    (source / "src").mkdir(parents=True)
+    (source / "src/fixture.py").write_text("value = 1\n", encoding="utf-8")
+    (source / "src/__pycache__").mkdir()
+    (source / "src/__pycache__/fixture.pyc").write_bytes(b"ignored")
+    (source / "pyproject.toml").write_text("# fixture project\n", encoding="utf-8")
+    (source / "uv.lock").write_text("# fixture lock\n", encoding="utf-8")
+    runtime = tmp_path / "runtime"
+    runtime.mkdir()
+    (runtime / "client.py").write_text("# fixture dependency\n", encoding="utf-8")
+    launcher = runtime / "abq2024.bat"
+    launcher.write_text("rem not executed\n", encoding="ascii")
+    dependency = SimpleNamespace(
+        files=["client.py"],
+        locate_file=lambda name: runtime / name,
+        metadata={"Name": "fixture-dependency"},
+        version="1.0",
+    )
+    monkeypatch.setattr(suite, "ROOT", source)
+    monkeypatch.setattr(suite, "DEFAULT_ABAQUS_2024_LAUNCHER", launcher)
+    monkeypatch.setattr(suite, "distribution", lambda name: dependency)
+    monkeypatch.setattr(suite, "distributions", lambda: [dependency])
     root = tmp_path / "run"
     catalog = tmp_path / "catalog"
     knowledge = tmp_path / "knowledge"
@@ -419,6 +444,19 @@ def test_knowledge_discovery_profile_copies_and_binds_resources(tmp_path, monkey
         "README.md": suite.file_digest(root / "knowledge-resources/README.md")
     }
     assert (root / "knowledge-resources/README.md").read_text() == ("bounded reference")
+    assert (root / "snapshot/src/fixture.py").read_bytes() == (
+        source / "src/fixture.py"
+    ).read_bytes()
+    assert not (root / "snapshot/src/__pycache__").exists()
+    seal = read_json(root / "seal.json")
+    assert seal["runtime_files"] == {
+        str((runtime / "client.py").resolve()): suite.file_digest(runtime / "client.py")
+    }
+    monkeypatch.setattr(suite, "ROOT", root / "snapshot")
+    suite.verify_binding(root)
+    (root / "knowledge-resources/README.md").write_text("changed", encoding="utf-8")
+    with pytest.raises(ValueError, match="bound input changed"):
+        suite.verify_binding(root)
 
 
 def test_concurrent_wave_starts_both_cases_and_bounds_runtime(tmp_path, monkeypatch):

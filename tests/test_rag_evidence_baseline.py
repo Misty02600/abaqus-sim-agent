@@ -5,10 +5,6 @@ from dataclasses import asdict
 
 import pytest
 from pydantic import ValidationError
-from tests.test_equation_prose import DEFINITIONS, EQUATION, EXPLANATION
-from tests.test_evidence_blocks import tokenizer
-from tests.test_evidence_units import registry
-from tests.test_unified_retrieval import Backend, Ranker
 
 from abaqus_sim_agent.evaluation import rag_evidence_baseline as baseline
 from abaqus_sim_agent.evaluation import rag_evidence_baseline_cli as cli
@@ -19,6 +15,10 @@ from abaqus_sim_agent.retrieval.equation_prose import (
 )
 from abaqus_sim_agent.retrieval.evidence_blocks import TokenBoundChildren
 from abaqus_sim_agent.retrieval.structured_projection import project_evidence_unit
+from tests.test_equation_prose import DEFINITIONS, EQUATION, EXPLANATION
+from tests.test_evidence_blocks import tokenizer
+from tests.test_evidence_units import registry
+from tests.test_unified_retrieval import Backend, Ranker
 
 
 class PageBackend(Backend):

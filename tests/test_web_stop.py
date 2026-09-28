@@ -12,18 +12,18 @@ from fastapi.testclient import TestClient
 from pydantic import SecretStr
 from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models.function import FunctionModel
-from tests.test_web_streaming import poll
-from tests.test_web_tool_execution import _background_solver_app
-from tests.test_web_workbench import (
+
+from abaqus_sim_agent.web.app import create_app
+from abaqus_sim_agent.web.controller import ServerConfig
+from tests.support.web import (
     Client,
     api_catalog_dir,
     create,
     login,
     settled,
 )
-
-from abaqus_sim_agent.web.app import create_app
-from abaqus_sim_agent.web.controller import ServerConfig
+from tests.support.web_solver import _background_solver_app
+from tests.support.web_streaming import poll
 
 
 @pytest.mark.parametrize("tool_name", ["run_cae_script", "run_abaqus_python"])

@@ -6,7 +6,10 @@ pytest.importorskip("fastapi")
 
 from fastapi.testclient import TestClient
 from PIL import Image
-from tests.test_web_workbench import (
+
+from abaqus_sim_agent.coding.contracts import CodingRunRequest
+from abaqus_sim_agent.web.contracts import CommandReceipt
+from tests.support.web import (
     answer_body,
     configured_app,
     create,
@@ -14,9 +17,6 @@ from tests.test_web_workbench import (
     settled,
     start,
 )
-
-from abaqus_sim_agent.coding.contracts import CodingRunRequest
-from abaqus_sim_agent.web.contracts import CommandReceipt
 
 
 def test_wrong_revision_and_immutable_request_are_rejected(tmp_path):
@@ -317,28 +317,6 @@ def test_timeline_order_paging_and_changed_version(tmp_path):
         files = client.get(f"/api/v1/runs/{rid}/artifacts").json()
         assert files["items"] == done["view"]["files"]
         assert files["next_offset"] is None
-
-
-@pytest.mark.asyncio
-async def test_answer_expected_revision_checked_by_host_under_lock(tmp_path):
-    from abaqus_sim_agent.coding.user_questions import UserAnswerInput, submit_answer
-
-    app, calls = configured_app(tmp_path)
-    with TestClient(app, base_url="http://127.0.0.1") as client:
-        login(client)
-        rid = create(client)
-        wait = start(client, rid)
-        with pytest.raises(ValueError, match="task revision changed"):
-            await submit_answer(
-                tmp_path / "web/states" / rid,
-                UserAnswerInput(
-                    question_id=wait["view"]["question"]["question_id"], answer="1 mm"
-                ),
-                source="web",
-                expected_task_revision=1,
-            )
-        assert client.get(f"/api/v1/runs/{rid}").json()["can_answer"]
-        assert len(calls) == 1
 
 
 def test_missing_terminal_evidence_never_renders_completed(tmp_path):

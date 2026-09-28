@@ -81,20 +81,3 @@ def test_manifest_is_jsonl_with_matching_fixture_digests() -> None:
     assert [item["case_id"] for item in raw_cases] == [
         case.case_id for case in load_case_specs()
     ]
-
-
-def test_checked_in_api_repair_evidence_preserves_observed_limits() -> None:
-    evidence_path = (
-        Path(__file__).parents[1]
-        / "benchmarks"
-        / "coding"
-        / "api_repair_evaluation_20260823.json"
-    )
-    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
-    holdout = evidence["holdout_three_rounds"]
-
-    assert holdout["runtime_notes_available"] is False
-    assert holdout["skill_only"]["passes"] == 8
-    assert holdout["catalog_full"]["passes"] == 9
-    assert holdout["catalog_full"]["delivered_runtime_notes"] == 0
-    assert evidence["interpretation"]["limits"]

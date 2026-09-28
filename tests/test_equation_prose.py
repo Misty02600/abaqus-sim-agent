@@ -1,7 +1,5 @@
 import lxml.etree as etree
 import pytest
-from tests.test_evidence_blocks import tokenizer
-from tests.test_evidence_units import registry
 
 from abaqus_sim_agent.evaluation.structural_chunking import extract_source_blocks
 from abaqus_sim_agent.retrieval.equation_prose import build_equation_prose_units
@@ -12,6 +10,8 @@ from abaqus_sim_agent.retrieval.evidence_blocks import (
 from abaqus_sim_agent.retrieval.evidence_units import build_evidence_units
 from abaqus_sim_agent.retrieval.evidence_windows import source_role
 from abaqus_sim_agent.retrieval.structured_projection import project_evidence_unit
+from tests.test_evidence_blocks import tokenizer
+from tests.test_evidence_units import registry
 
 EQUATION = '<div class="equation"><math><mi>x</mi><mo>=</mo><mn>1</mn></math></div>'
 DEFINITIONS = '<p>where</p><dl class="variablelist"><dt>x</dt><dd><p>variable description <math><mi>x</mi></math></p></dd></dl>'

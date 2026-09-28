@@ -2,14 +2,14 @@ import json
 from dataclasses import replace
 
 import pytest
-from tests.test_equation_prose import DEFINITIONS, EQUATION, EXPLANATION
-from tests.test_evidence_units import registry
 
 from abaqus_sim_agent.evaluation.equation_context_delivery import (
     context_references,
     deliver_with_context_references,
 )
 from abaqus_sim_agent.retrieval.equation_prose import build_equation_prose_units
+from tests.test_equation_prose import DEFINITIONS, EQUATION, EXPLANATION
+from tests.test_evidence_units import registry
 
 
 def fixture():

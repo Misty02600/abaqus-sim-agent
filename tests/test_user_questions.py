@@ -4,7 +4,6 @@ import json
 import pytest
 from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import FunctionModel
-from tests.test_task_baseline_service import FakeAbaqusProcess
 
 from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
@@ -40,6 +39,7 @@ from abaqus_sim_agent.coding.workspace import WorkspaceResolver
 from abaqus_sim_agent.evaluation.task_baseline import baseline_execution_config
 from abaqus_sim_agent.execution import Abaqus2024Runner
 from abaqus_sim_agent.skills import skill_library_path
+from tests.support.abaqus import FakeAbaqusProcess
 
 
 def call(name, args, call_id="call"):
@@ -552,9 +552,17 @@ async def test_wrong_answer_id_conflict_and_workspace_drift_are_rejected(tmp_pat
     await service.run_step()
     state = service.request.state_dir
     before = (state / "user_questions.json").read_bytes()
+    with pytest.raises(ValueError, match="task revision changed"):
+        await submit_answer(
+            state,
+            UserAnswerInput(question_id="q", answer="1 mm"),
+            source="web",
+            expected_task_revision=1,
+        )
     with pytest.raises(ValueError, match="question id"):
         await submit_answer(state, UserAnswerInput(question_id="other", answer="1 mm"))
     assert (state / "user_questions.json").read_bytes() == before
+    assert (await inspect_question(state)).question_id == "q"
     await submit_answer(state, UserAnswerInput(question_id="q", answer="1 mm"))
     with pytest.raises(ValueError, match="overwrite"):
         await submit_answer(state, UserAnswerInput(question_id="q", answer="2 mm"))

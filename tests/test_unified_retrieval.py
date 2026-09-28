@@ -1,6 +1,5 @@
 import pytest
 from pydantic import ValidationError
-from tests.test_evidence_blocks import parent, tokenizer
 
 from abaqus_sim_agent.evaluation.cross_encoder import ScoredPassage
 from abaqus_sim_agent.evaluation.unified_retrieval import (
@@ -13,6 +12,7 @@ from abaqus_sim_agent.evaluation.unified_retrieval import (
 )
 from abaqus_sim_agent.retrieval.evidence_blocks import TokenBoundChildren
 from abaqus_sim_agent.retrieval.types import Document
+from tests.test_evidence_blocks import parent, tokenizer
 
 
 class Backend:

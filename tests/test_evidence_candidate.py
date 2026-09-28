@@ -4,11 +4,11 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from tests.test_evidence_blocks import tokenizer
 
 from abaqus_sim_agent.evaluation import evidence_candidate as candidate
 from abaqus_sim_agent.retrieval.evidence_blocks import TokenBoundChildren
 from abaqus_sim_agent.retrieval.flat_store import FlatDocumentStore
+from tests.test_evidence_blocks import tokenizer
 
 
 def prepared(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
@@ -80,6 +80,7 @@ def test_source_changes_fail_before_build_or_replay(
         candidate._check_binding(output)
 
 
+@pytest.mark.local_assets
 def test_index_roundtrip_binds_all_embeddings_and_persists_before_query(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):

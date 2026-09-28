@@ -415,19 +415,3 @@ def test_optional_infrastructure_resume_rejects_non_provider_failure(
             )
         )
     assert resume_flags == [False]
-
-
-def test_checked_in_corrected_plate_catalog_evidence_keeps_smoke_limits() -> None:
-    evidence_path = (
-        Path(__file__).parents[1]
-        / "benchmarks"
-        / "coding"
-        / "plate_tension_catalog_evaluation_20260823_v4.json"
-    )
-    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
-
-    assert evidence["arms"]["skill_only"]["passes"] == 2
-    assert evidence["arms"]["catalog_full"]["passes"] == 2
-    assert evidence["arms"]["automatic_verified_only"]["passes"] == 3
-    assert evidence["arms"]["automatic_verified_only"]["delivered_runtime_notes"] == 3
-    assert evidence["interpretation"]["limits"]

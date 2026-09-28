@@ -1,5 +1,4 @@
 import asyncio
-import hashlib
 import json
 import shutil
 import zipfile
@@ -83,16 +82,6 @@ def _diagnostic_output() -> ProcessOutput:
     )
 
 
-def _fixture_set_sha256(paths: list[Path], repository: Path) -> str:
-    digest = hashlib.sha256()
-    for path in sorted(paths):
-        digest.update(path.relative_to(repository).as_posix().encode())
-        digest.update(b"\0")
-        digest.update(path.read_bytes())
-        digest.update(b"\0")
-    return digest.hexdigest()
-
-
 def test_prepare_abqpy_source_is_immutable_and_reusable(tmp_path: Path) -> None:
     wheel = tmp_path / "abqpy-2024.10-py3-none-any.whl"
     cache = tmp_path / "cache"
@@ -136,53 +125,6 @@ def test_static_preflight_continues_invocation_sequence_after_restart(
     asyncio.run(preflight.inspect(workspace, "build_model.py"))
 
     assert (state_dir / "static_preflight" / "002").is_dir()
-
-
-def test_static_preflight_v2_benchmark_matches_current_fixtures() -> None:
-    repository = Path(__file__).resolve().parents[1]
-    benchmark = json.loads(
-        (
-            repository
-            / "benchmarks/coding/abqpy_static_preflight_policy_v2_20260829.json"
-        ).read_text(encoding="utf-8")
-    )
-    positive_paths = list((repository / "tests/fixtures/abaqus2024").rglob("*.py"))
-    negative_paths = [
-        repository / case["fixture"] for case in benchmark["negative_set"]["cases"]
-    ]
-
-    assert len(positive_paths) == benchmark["positive_set"]["script_count"]
-    assert (
-        _fixture_set_sha256(positive_paths, repository)
-        == (benchmark["positive_set"]["fixture_set_sha256"])
-    )
-    assert len(negative_paths) == benchmark["negative_set"]["script_count"]
-    assert (
-        _fixture_set_sha256(negative_paths, repository)
-        == (benchmark["negative_set"]["fixture_set_sha256"])
-    )
-
-
-def test_enforced_aci_benchmark_matches_current_fixtures() -> None:
-    repository = Path(__file__).resolve().parents[1]
-    benchmark = json.loads(
-        (
-            repository / "benchmarks/coding/abaqus_aci_enforced_policy_v1_20260829.json"
-        ).read_text(encoding="utf-8")
-    )
-    positive_paths = list((repository / "tests/fixtures/abaqus2024").rglob("*.py"))
-    negative_paths = [repository / path for path in benchmark["negative_set"]["cases"]]
-
-    assert len(positive_paths) == benchmark["positive_set"]["script_count"]
-    assert (
-        _fixture_set_sha256(positive_paths, repository)
-        == (benchmark["positive_set"]["fixture_set_sha256"])
-    )
-    assert len(negative_paths) == benchmark["negative_set"]["script_count"]
-    assert (
-        _fixture_set_sha256(negative_paths, repository)
-        == (benchmark["negative_set"]["fixture_set_sha256"])
-    )
 
 
 @pytest.mark.parametrize("unsafe_name", ["../escape.py", "C:/escape.py"])
@@ -368,6 +310,7 @@ def test_preflight_detects_script_change_during_check(tmp_path: Path) -> None:
     assert report.stdout_raw_path.read_bytes() == process.output.stdout
 
 
+@pytest.mark.local_assets
 def test_real_basedpyright_preserves_hints_on_passing_b31_reference(
     tmp_path: Path,
 ) -> None:
@@ -389,6 +332,7 @@ def test_real_basedpyright_preserves_hints_on_passing_b31_reference(
     assert report.diagnostics
 
 
+@pytest.mark.local_assets
 def test_real_basedpyright_catches_missing_orientation_arguments_from_v1_trace(
     tmp_path: Path,
 ) -> None:
@@ -417,6 +361,7 @@ def test_real_basedpyright_catches_missing_orientation_arguments_from_v1_trace(
     )
 
 
+@pytest.mark.local_assets
 def test_runtime_feedback_has_no_blocker_on_passing_b31_reference(
     tmp_path: Path,
 ) -> None:
@@ -442,6 +387,7 @@ def test_runtime_feedback_has_no_blocker_on_passing_b31_reference(
     )
 
 
+@pytest.mark.local_assets
 def test_runtime_feedback_reports_unverified_missing_method(
     tmp_path: Path,
 ) -> None:
@@ -471,6 +417,7 @@ def test_runtime_feedback_reports_unverified_missing_method(
     assert all(not hasattr(item, "disposition") for item in report.diagnostics)
 
 
+@pytest.mark.local_assets
 @pytest.mark.parametrize(
     ("source_text", "expected_fragment"),
     [

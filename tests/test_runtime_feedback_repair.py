@@ -80,6 +80,7 @@ def test_paired_plan_reverses_arm_order() -> None:
         build_trial_plan(("a",), repetitions=0)
 
 
+@pytest.mark.local_assets
 def test_paired_manifest_binds_complete_local_runtime_chain(tmp_path: Path) -> None:
     if not DEFAULT_WHEEL.is_file():
         pytest.skip("fixed abqpy source is unavailable")
@@ -162,6 +163,7 @@ def test_pilot_rejects_missing_provider_key_before_creating_batch(
     assert not root.exists()
 
 
+@pytest.mark.local_assets
 def test_checked_in_cases_have_expected_static_qualification(tmp_path: Path) -> None:
     repository = Path(__file__).parents[1]
     wheel = repository / "var/api-catalog/sources/abqpy-2024.10-py3-none-any.whl"

@@ -25,7 +25,7 @@ def test_disconnect_and_graceful_shutdown_drain_active_segment(tmp_path):
 import sys, threading
 from pathlib import Path
 import uvicorn
-from tests.test_web_workbench import configured_app
+from tests.support.web import configured_app
 block = threading.Event()
 app, calls = configured_app(Path(sys.argv[1]), block=block)
 server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=int(sys.argv[2]), access_log=False, timeout_graceful_shutdown=1))
@@ -39,7 +39,7 @@ server.run()
         encoding="utf-8",
     )
     repo = Path(__file__).resolve().parents[1]
-    env = dict(os.environ, PYTHONPATH=str(repo))
+    env = dict(os.environ, PYTHONPATH=os.pathsep.join((str(repo / "src"), str(repo))))
     log = tmp_path / "server.log"
     with log.open("w", encoding="utf-8") as output:
         process = subprocess.Popen(

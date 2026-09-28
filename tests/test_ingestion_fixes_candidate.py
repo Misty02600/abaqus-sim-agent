@@ -2,12 +2,12 @@ import json
 from pathlib import Path
 
 import pytest
-from tests.test_equation_prose import DEFINITIONS, EQUATION, EXPLANATION
-from tests.test_evidence_blocks import tokenizer
 
 from abaqus_sim_agent.evaluation import evidence_candidate as io
 from abaqus_sim_agent.evaluation import ingestion_fixes_candidate as candidate
 from abaqus_sim_agent.retrieval.evidence_blocks import TokenBoundChildren
+from tests.test_equation_prose import DEFINITIONS, EQUATION, EXPLANATION
+from tests.test_evidence_blocks import tokenizer
 
 
 def prepared(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):

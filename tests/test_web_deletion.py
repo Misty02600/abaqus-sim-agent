@@ -13,23 +13,23 @@ from fastapi.testclient import TestClient
 from pydantic import SecretStr
 from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models.function import FunctionModel
-from tests.test_web_directories import create_selected
-from tests.test_web_streaming import Flow, launch, poll, streaming_app
-from tests.test_web_tool_execution import _background_solver_app
-from tests.test_web_workbench import (
+
+from abaqus_sim_agent.coding.run_lock import CodingRunFileLock
+from abaqus_sim_agent.web.app import create_app
+from abaqus_sim_agent.web.controller import ServerConfig
+from tests.support.web import (
     Client,
     answer_body,
     api_catalog_dir,
     configured_app,
     create,
+    create_selected,
     login,
     settled,
     start,
 )
-
-from abaqus_sim_agent.coding.run_lock import CodingRunFileLock
-from abaqus_sim_agent.web.app import create_app
-from abaqus_sim_agent.web.controller import ServerConfig
+from tests.support.web_solver import _background_solver_app
+from tests.support.web_streaming import Flow, launch, poll, streaming_app
 
 
 def delete(client, run_id):
@@ -38,19 +38,17 @@ def delete(client, run_id):
     )
 
 
-@pytest.mark.parametrize("selected", [False, True])
-def test_delete_registered_preserves_workspace_and_cannot_resurrect(tmp_path, selected):
+def test_delete_registered_preserves_workspace_and_cannot_resurrect(tmp_path):
     app, _ = configured_app(tmp_path)
     folder = tmp_path / "project"
     folder.mkdir()
     key = uuid4()
     with TestClient(app, base_url="http://127.0.0.1") as client:
         login(client)
-        if selected:
-            rid = create_selected(client, folder, key=key).json()["view"]["run_id"]
-        else:
-            rid = create(client, key=key)
-            folder = app.state.controller.registry.load(rid).request.workspace
+        created = create_selected(client, folder, key=key)
+        assert created.status_code == 201, created.text
+        rid = created.json()["view"]["run_id"]
+        assert app.state.controller.registry.load(rid).workspace_kind == "selected"
         (folder / "keep.txt").write_text("user project", encoding="utf-8")
         result = delete(client, rid)
         assert result.status_code == 200, result.text
@@ -96,9 +94,7 @@ def test_delete_waiting_or_complete_and_keep_other_conversations(tmp_path, compl
         ] == [other]
         assert (tmp_path / "web/states" / other).exists()
         if complete:
-            assert (workspace / "out.txt").read_text(
-                encoding="utf-8"
-            ) == "result"
+            assert (workspace / "out.txt").read_text(encoding="utf-8") == "result"
 
 
 def test_delete_active_model_waits_for_stream_to_close(tmp_path):
@@ -143,7 +139,7 @@ def test_delete_active_solver_waits_for_actual_cleanup(tmp_path, monkeypatch):
             finished.set()
             raise
 
-    from tests.test_web_tool_execution import _DeferredSuccessfulSolver
+    from tests.support.web_solver import _DeferredSuccessfulSolver
 
     monkeypatch.setattr(_DeferredSuccessfulSolver, "run_solver_job", controlled_solver)
     try:

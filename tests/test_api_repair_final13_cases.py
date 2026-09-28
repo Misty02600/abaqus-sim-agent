@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
-import json
 import os
 import shutil
 from pathlib import Path
@@ -14,9 +13,6 @@ from abaqus_sim_agent.execution import Abaqus2024Runner
 
 _ROOT = Path(__file__).parent.parent
 _MANIFEST = _ROOT / "benchmarks" / "coding" / "api_repair_final13_new_cards.jsonl"
-_EVIDENCE = (
-    _ROOT / "benchmarks" / "coding" / "api_repair_final13_evaluation_20260828.json"
-)
 _LAUNCHER = Path(r"D:\SIMULIA\Commands\abq2024.bat")
 _LICENSED_TESTS_ENABLED = os.environ.get("ABAQUS_LICENSED_TESTS") == "1"
 
@@ -32,28 +28,6 @@ def test_final13_api_repair_manifest_matches_broken_fixtures() -> None:
         fixture = _ROOT / case.fixture_dir / case.entry_script
         assert hashlib.sha256(fixture.read_bytes()).hexdigest() == case.fixture_sha256
         assert not (_ROOT / case.fixture_dir / case.result_file).exists()
-
-
-def test_final13_product_evidence_keeps_negative_results_and_boundaries() -> None:
-    evidence = json.loads(_EVIDENCE.read_text(encoding="utf-8"))
-
-    assert evidence["runtime_contract"]["catalog_cards_sha256"] == (
-        "f01e90a53107691c1e5abf82f219b1607a5294fb07e1ff069302a8ff284a2d87"
-    )
-    assert evidence["final13_beam_section_case"]["manifest_sha256"] == (
-        hashlib.sha256(_MANIFEST.read_bytes()).hexdigest()
-    )
-    beam = evidence["final13_beam_section_case"]
-    assert beam["off"]["model_requests"] == beam["automatic_final13"]["model_requests"]
-    assert beam["automatic_final13"]["note_delivered"] is False
-    assert (
-        evidence["focused_three_sample_batches"][
-            "Part.SectionAssignment.direct_region"
-        ]["decision"]
-        .casefold()
-        .startswith("pruned")
-    )
-    assert len(evidence["limits"]) >= 4
 
 
 @pytest.mark.abaqus

@@ -7,7 +7,6 @@ import httpx
 import pytest
 from openai import AsyncOpenAI
 from pydantic import SecretStr
-from tests.test_task_baseline_service import FakeAbaqusProcess, context_for
 
 from abaqus_sim_agent.evaluation import task_baseline_pilot as pilot
 from abaqus_sim_agent.evaluation.task_baseline import (
@@ -25,6 +24,8 @@ from abaqus_sim_agent.evaluation.task_baseline_runner import (
 from abaqus_sim_agent.evaluation.task_baseline_service import run_service_live
 from abaqus_sim_agent.execution import ProcessOutput
 from abaqus_sim_agent.execution.abaqus2024 import WindowsProcessStrategy
+from tests.support.abaqus import FakeAbaqusProcess
+from tests.test_task_baseline_service import context_for
 
 
 def spec_fixture(tmp_path):
@@ -223,6 +224,7 @@ async def test_unapproved_run_never_reads_key_or_dispatches(tmp_path, monkeypatc
     assert not root.exists()
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_live_entry_uses_real_adapter_with_mock_http_and_keeps_post_review_separate(
     tmp_path, monkeypatch
@@ -273,6 +275,7 @@ async def test_live_entry_uses_real_adapter_with_mock_http_and_keeps_post_review
     assert {p: p.read_bytes() for p in original_files} == before
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("bad", ["wrong_rf", "invalid_results", "oracle_timeout"])
 async def test_postcheck_distinguishes_numeric_failure_from_extraction_unknown(
@@ -295,6 +298,7 @@ async def test_postcheck_distinguishes_numeric_failure_from_extraction_unknown(
     assert len(calls) == 4
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_live_review_rejects_fixture_and_stale_binding(tmp_path, monkeypatch):
     install_fake_live_resources(monkeypatch)
@@ -325,6 +329,7 @@ def test_pilot_rejects_unapproved_budget_increase(tmp_path):
         pilot.T1PilotSpec.model_validate_json(json.dumps(data))
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_oracle_reservation_without_receipt_never_buys_second_attempt(
     tmp_path, monkeypatch
@@ -350,6 +355,7 @@ async def test_oracle_reservation_without_receipt_never_buys_second_attempt(
     assert len(calls) == 3
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_human_pass_cannot_override_numeric_fail(tmp_path, monkeypatch):
     install_fake_live_resources(monkeypatch, wrong_rf=True)
@@ -374,6 +380,7 @@ async def test_human_pass_cannot_override_numeric_fail(tmp_path, monkeypatch):
     assert record_review(root, slot, review)["counts"]["fail"] == 1
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_changed_post_report_is_not_reused_as_valid_score(tmp_path, monkeypatch):
     calls, _ = install_fake_live_resources(monkeypatch)
@@ -397,6 +404,7 @@ def test_spec_cannot_create_the_reserved_run_directory(tmp_path):
     assert not root.exists()
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_empty_tool_arguments_are_diagnosed_without_changing_product_terminal(
     tmp_path, monkeypatch
@@ -439,6 +447,7 @@ async def test_empty_tool_arguments_are_diagnosed_without_changing_product_termi
     assert (state / "trial-result.json").read_bytes() == original
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_response_read_failure_still_retries_and_records_no_error_text(
     tmp_path, monkeypatch
@@ -462,6 +471,7 @@ async def test_response_read_failure_still_retries_and_records_no_error_text(
     assert b"fixture-secret" not in raw
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_response_diagnostic_does_not_swallow_cancellation(tmp_path, monkeypatch):
     calls, bodies = install_fake_live_resources(monkeypatch, first_read_cancel=True)
@@ -485,6 +495,7 @@ async def test_response_diagnostic_does_not_swallow_cancellation(tmp_path, monke
     assert resume["status"] == "interrupted"
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_child_http_cancellation_preserves_pilot_receipt_without_framework_error(
     tmp_path, monkeypatch
@@ -515,6 +526,7 @@ async def test_child_http_cancellation_preserves_pilot_receipt_without_framework
     assert not (state / "post-verification").exists()
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_failed_logical_request_is_counted_once_despite_eleven_http_attempts(
     tmp_path, monkeypatch

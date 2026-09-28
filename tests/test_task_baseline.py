@@ -6,7 +6,6 @@ import httpx
 import pytest
 from openai import AsyncOpenAI
 from pydantic import SecretStr
-from tests.test_coding_amendments import _persist_base_state
 
 from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.cli import run_cli
@@ -37,6 +36,7 @@ from abaqus_sim_agent.evaluation.task_baseline_runner import (
     summarize_batch,
 )
 from abaqus_sim_agent.execution import Abaqus2024Runner
+from tests.test_coding_amendments import _persist_base_state
 
 
 def question(field="thickness", text="What is the plate thickness in mm?"):
@@ -131,6 +131,7 @@ def test_artifact_acceptance_does_not_rewrite_terminal_status():
     ).full_delivery_passed
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 def test_actual_cli_and_baseline_http_configuration_parity_with_sdk_retry(
     tmp_path, monkeypatch
 ):

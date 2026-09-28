@@ -9,8 +9,6 @@ from pydantic import SecretStr
 from pydantic_ai.messages import ModelRequest, UserPromptPart
 from pydantic_ai.models import ModelRequestParameters
 from pydantic_ai.tools import ToolDefinition
-from tests.test_document_policy_integration import bound
-from tests.test_runtime_evidence_service import evidence
 
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
 from abaqus_sim_agent.coding.model import DeepSeekGateway, create_deepseek_chat_model
@@ -31,8 +29,11 @@ from abaqus_sim_agent.evaluation.document_policy_behavior import (
     execute_batch,
     http_attempt_recorder,
 )
+from tests.test_document_policy_integration import bound
+from tests.test_runtime_evidence_service import evidence
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_actual_go_http_body_only_differs_in_output_cap(monkeypatch):
     bodies = []
@@ -259,6 +260,7 @@ def test_runtime_manifest_must_match_sealed_configuration():
         verify_runtime_manifest(experiment, runtime | {"planning": True})
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_calibrated_harness_batch_to_predeclared_review_without_network(
     tmp_path, monkeypatch

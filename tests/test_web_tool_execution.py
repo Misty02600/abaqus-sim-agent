@@ -11,35 +11,23 @@ import pytest
 
 pytest.importorskip("fastapi")
 from fastapi.testclient import TestClient
-from pydantic import SecretStr
-from pydantic_ai.messages import (
-    ModelResponse,
-    ToolCallPart,
-    ToolReturnPart,
+
+from abaqus_sim_agent.execution import (
+    AbaqusExecutionResult,
 )
-from pydantic_ai.models.function import FunctionModel
-from tests.test_web_workbench import (
-    Client,
+from abaqus_sim_agent.web.contracts import ToolExecution
+from tests.support.web import (
     answer_body,
-    api_catalog_dir,
     configured_app,
     create,
     login,
     settled,
     start,
 )
-
-from abaqus_sim_agent.coding.contracts import CodingRunBudget
-from abaqus_sim_agent.execution import (
-    AbaqusExecutionResult,
-    AbaqusInvocation,
-    ArtifactChange,
-    ArtifactChangeKind,
-    ArtifactFingerprint,
+from tests.support.web_solver import (
+    _background_solver_app,
+    _result,
 )
-from abaqus_sim_agent.web.app import create_app
-from abaqus_sim_agent.web.contracts import ToolExecution
-from abaqus_sim_agent.web.controller import ServerConfig
 
 
 def _complete_run(client: TestClient) -> tuple[str, dict]:
@@ -48,27 +36,6 @@ def _complete_run(client: TestClient) -> tuple[str, dict]:
     response = client.post(f"/api/v1/runs/{run_id}/answers", json=answer_body(waiting))
     assert response.status_code == 202, response.text
     return run_id, settled(client, run_id, status="completed")
-
-
-def _result(tmp_path: Path, workspace: Path) -> AbaqusExecutionResult:
-    stdout = tmp_path / "solver.stdout.bin"
-    stderr = tmp_path / "solver.stderr.bin"
-    stdout.write_bytes(b"solver ok")
-    stderr.write_bytes(b"")
-    return AbaqusExecutionResult(
-        invocation=AbaqusInvocation.SOLVER_JOB,
-        command=("abq2024.bat", "job=demo", "input=demo.inp"),
-        workspace=workspace,
-        exit_code=0,
-        timed_out=False,
-        duration_seconds=0.25,
-        stdout="solver ok",
-        stderr="",
-        stdout_encoding="utf-8",
-        stderr_encoding="utf-8",
-        stdout_raw_path=stdout,
-        stderr_raw_path=stderr,
-    )
 
 
 def _selected_solver_workspace(tmp_path: Path) -> Path:
@@ -104,168 +71,6 @@ class _BlockingSolver:
         except asyncio.CancelledError:
             self.cancelled.set()
             raise
-
-
-class _DeferredSuccessfulSolver:
-    def __init__(
-        self, tmp_path: Path, workspace: Path, release: threading.Event
-    ) -> None:
-        self.tmp_path = tmp_path
-        self.workspace = workspace
-        self.release = release
-        self.started = threading.Event()
-        self.calls = 0
-        self.process_started = None
-
-    def set_solver_process_started_callback(self, callback) -> None:
-        self.process_started = callback
-
-    async def run_solver_job(self, *args, **kwargs) -> AbaqusExecutionResult:
-        self.calls += 1
-        self.started.set()
-        if self.process_started is not None:
-            self.process_started(4343)
-        await asyncio.to_thread(self.release.wait)
-        odb = self.workspace / "demo.odb"
-        odb.write_bytes(b"fixture odb")
-        fingerprint = ArtifactFingerprint(
-            path=odb.name,
-            size_bytes=odb.stat().st_size,
-            sha256=hashlib.sha256(odb.read_bytes()).hexdigest(),
-        )
-        return _result(self.tmp_path, self.workspace).model_copy(
-            update={
-                "artifact_changes": (
-                    ArtifactChange(
-                        kind=ArtifactChangeKind.CREATED,
-                        path=odb.name,
-                        after=fingerprint,
-                    ),
-                )
-            }
-        )
-
-
-def _background_solver_app(tmp_path: Path):
-    release = threading.Event()
-    runners: list[_DeferredSuccessfulSolver] = []
-    model_calls: list[list] = []
-    solver_call_id = "solver-submit-1"
-
-    def model_factory(**kwargs):
-        def model(messages, info):
-            model_calls.append(messages)
-            solver_returns = [
-                part
-                for message in messages
-                for part in message.parts
-                if isinstance(part, ToolReturnPart) and part.tool_name == "solver_job"
-            ]
-            if not solver_returns:
-                return ModelResponse(
-                    parts=[
-                        ToolCallPart(
-                            "solver_job",
-                            {
-                                "request": {
-                                    "action": "submit",
-                                    "job_name": "demo",
-                                    "input_file": "demo.inp",
-                                }
-                            },
-                            tool_call_id=solver_call_id,
-                        )
-                    ]
-                )
-            solver_return = solver_returns[-1]
-            if solver_return.outcome == "interrupted":
-                # A stopped wait can return text; resume waiting on the same job.
-                solver_return = next(
-                    part
-                    for part in reversed(solver_returns)
-                    if isinstance(part.content, dict)
-                    and part.content.get("submitted") is True
-                )
-            assert isinstance(solver_return.content, dict)
-            if solver_return.content.get("submitted") is True:
-                return ModelResponse(
-                    parts=[
-                        ToolCallPart(
-                            "solver_job",
-                            {
-                                "request": {
-                                    "action": "wait",
-                                    "execution_id": solver_return.content[
-                                        "execution_id"
-                                    ],
-                                }
-                            },
-                            tool_call_id="solver-wait-1",
-                        )
-                    ]
-                )
-            if solver_return.content.get("succeeded") is not True:
-                name = next(
-                    tool.name
-                    for tool in info.output_tools
-                    if tool.name.endswith("FailedDecision")
-                )
-                return ModelResponse(
-                    parts=[
-                        ToolCallPart(
-                            name,
-                            {
-                                "status": "failed",
-                                "failure_stage": "solver_cancelled",
-                                "summary": "Solver execution was cancelled by the user.",
-                            },
-                            tool_call_id="cancelled-response",
-                        )
-                    ]
-                )
-            assert solver_return.content["succeeded"] is True
-            name = next(
-                tool.name
-                for tool in info.output_tools
-                if tool.name.endswith("ReadyForVerificationDecision")
-            )
-            return ModelResponse(
-                parts=[
-                    ToolCallPart(
-                        name,
-                        {
-                            "status": "ready_for_verification",
-                            "deliverables": [{"relative_path": "demo.odb"}],
-                            "summary": "Solver completed and result was consumed.",
-                        },
-                        tool_call_id="final-response",
-                    )
-                ]
-            )
-
-        return FunctionModel(model), Client()
-
-    def runner_factory(workspace, state, **kwargs):
-        runner = _DeferredSuccessfulSolver(tmp_path, workspace, release)
-        runners.append(runner)
-        return runner
-
-    app = create_app(
-        ServerConfig(
-            root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
-            stream_model=False,
-            budget=CodingRunBudget(
-                max_model_requests=4,
-                max_abaqus_calls=1,
-                max_solver_calls=1,
-            ),
-        ),
-        api_key=SecretStr("fixture-key"),
-        model_factory=model_factory,
-        runner_factory=runner_factory,
-    )
-    return app, release, runners, model_calls, solver_call_id
 
 
 def test_tool_execution_api_persists_terminal_solver_result(tmp_path: Path) -> None:
@@ -319,6 +124,15 @@ def test_tool_execution_api_persists_terminal_solver_result(tmp_path: Path) -> N
         ]
         assert restored["status"] == "completed"
         assert restored["result_sha256"] == execution["result_sha256"]
+        # 重启后没有活动 Future，确定性覆盖从持久化结果读取已完成执行的路径。
+        controller = app2.state.controller
+        assert controller._tool_tasks == {}
+        assert (
+            asyncio.run(
+                controller._wait_solver_execution(run_id, restored["execution_id"])
+            )
+            == result
+        )
 
 
 def test_running_solver_is_visible_and_can_be_cancelled_without_model_stop(
@@ -505,46 +319,6 @@ def test_background_solver_completion_returns_in_same_invocation(
             assert len(model_calls) == 3
     finally:
         release.set()
-
-
-def test_background_solver_already_completed_wait_returns_immediately(
-    tmp_path: Path,
-) -> None:
-    app, release, runners, model_calls, _solver_call_id = _background_solver_app(
-        tmp_path
-    )
-    release.set()
-    with TestClient(app, base_url="http://127.0.0.1") as client:
-        login(client)
-        workspace = _selected_solver_workspace(tmp_path)
-        created = client.post(
-            "/api/v1/runs",
-            json={
-                "idempotency_key": str(uuid4()),
-                "goal": "Run the existing demo Solver job and report its result.",
-                "workspace": str(workspace),
-            },
-        )
-        assert created.status_code == 201, created.text
-        run_id = created.json()["view"]["run_id"]
-        response = client.post(
-            f"/api/v1/runs/{run_id}/start",
-            json={"command_id": str(uuid4())},
-        )
-        assert response.status_code == 202, response.text
-
-        done = settled(client, run_id, status="completed")
-        assert done["view"]["outcome"]["summary"] == (
-            "Solver completed and result was consumed."
-        )
-        [invocation] = app.state.controller.invocations.list(run_id)
-        [execution] = app.state.controller.tool_executions.list(run_id)
-        assert invocation.status == "completed"
-        assert invocation.resume_count == 0
-        assert execution.status == "completed"
-        assert execution.tool_call_id is None
-        assert sum(runner.calls for runner in runners) == 1
-        assert len(model_calls) == 3
 
 
 def test_background_solver_cancel_returns_failure_to_wait_call(

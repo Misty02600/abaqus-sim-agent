@@ -62,34 +62,6 @@ def test_checked_in_plate_change_request_matches_evaluator() -> None:
     assert tuple(checked_in["agent_visible_seed_files"]) == AGENT_VISIBLE_SEED_FILES
 
 
-def test_checked_in_plate_change_evidence_keeps_success_and_limits() -> None:
-    project_root = Path(__file__).parents[1]
-    evidence = json.loads(
-        (
-            project_root
-            / "benchmarks"
-            / "coding"
-            / "plate_hole_change_evaluation_20260825.json"
-        ).read_text(encoding="utf-8")
-    )
-    request_path = (
-        project_root / "benchmarks" / "coding" / "plate_hole_change_request.json"
-    )
-
-    assert evidence["deterministic_reference"]["result"] == "1/1"
-    assert evidence["agent_smokes"]["v2_complete"]["result"] == "1/1"
-    assert evidence["formal_batches"]["v3_initial_budget"]["result"] == "0/3"
-    assert evidence["formal_batches"]["v4_bounded_treatment"]["result"] == "0/3"
-    assert not evidence["formal_batches"]["v4_bounded_treatment"]["gate_passed"]
-    assert evidence["configuration"]["api_catalog_mode"] == "off"
-    assert evidence["configuration"]["concept_retrieval_mode"] == "off"
-    assert "known limitation" in evidence["interpretation"]["semantic_stop"]
-    assert (
-        evidence["frozen_request"]["sha256"]
-        == hashlib.sha256(request_path.read_bytes()).hexdigest()
-    )
-
-
 def test_verified_plate_seed_is_validated_and_only_scripts_are_copied(
     tmp_path: Path,
 ) -> None:

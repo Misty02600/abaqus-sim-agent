@@ -8,9 +8,6 @@ from pydantic import BaseModel, ValidationError
 from pydantic_ai.exceptions import UnexpectedModelBehavior
 from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models.function import FunctionModel
-from tests.test_beam_section_change_evaluation import _make_source_run as beam_source
-from tests.test_plate_change_evaluation import _make_source_run as plate_source
-from tests.test_task_baseline import _fixture_review
 
 from abaqus_sim_agent.coding.contracts import CodingRunOutcome
 from abaqus_sim_agent.coding.resume import CodingRunResumeError, load_resume_state
@@ -31,41 +28,10 @@ from abaqus_sim_agent.evaluation.task_baseline_service import (
 )
 from abaqus_sim_agent.execution import ProcessOutput
 from abaqus_sim_agent.execution.abaqus2024 import WindowsProcessStrategy
-
-
-class FakeAbaqusProcess:
-    def __init__(self, stem):
-        self.stem = stem
-        self.calls = []
-
-    async def run(self, command, *, cwd, timeout_seconds):
-        self.calls.append((tuple(command), cwd, timeout_seconds))
-        marker = f"fixture-{len(self.calls)}"
-        if "cae" in command:
-            (cwd / f"{self.stem}.cae").write_text(marker)
-            (cwd / f"{self.stem}.inp").write_text(marker)
-        elif "python" in command:
-            (cwd / "results.json").write_text(
-                json.dumps({"fixture": True, "stage": marker})
-            )
-        else:
-            (cwd / f"{self.stem}.odb").write_text(marker)
-            (cwd / f"{self.stem}.sta").write_text(
-                "THE ANALYSIS HAS COMPLETED SUCCESSFULLY"
-            )
-            if "'RF3'" in (cwd / "build_model.py").read_text():
-                (cwd / f"{self.stem}.dat").write_text(
-                    "***WARNING: OUTPUT REQUEST RF3 IS NOT VALID SINCE IT REQUESTS OUTPUT AT A DOF THAT IS NOT ACTIVE\n"
-                )
-                return ProcessOutput(
-                    exit_code=0,
-                    stdout=b"***WARNING: OUTPUT REQUEST RF3 IS NOT VALID SINCE IT REQUESTS OUTPUT AT A DOF THAT IS NOT ACTIVE\n",
-                    stderr=b"",
-                )
-            (cwd / f"{self.stem}.dat").write_text("")
-        return ProcessOutput(
-            exit_code=0, stdout=b"offline simulated process", stderr=b""
-        )
+from tests.support.abaqus import FakeAbaqusProcess
+from tests.test_beam_section_change_evaluation import _make_source_run as beam_source
+from tests.test_plate_change_evaluation import _make_source_run as plate_source
+from tests.test_task_baseline import _fixture_result, _fixture_review
 
 
 def prepared_case(tmp_path, task_id):
@@ -410,12 +376,21 @@ async def test_service_fixture_rejects_actual_windows_process_strategy(
 async def test_service_adapter_runs_in_existing_parallel_batch_and_review_is_posthoc(
     tmp_path,
 ):
-    prepared = {task_id: prepared_case(tmp_path, task_id) for task_id in TASK_IDS}
+    # All four adapters have their own integration test. Here two real adapters
+    # retain concurrent execution and repeated clarification-state isolation.
+    prepared = {
+        task_id: prepared_case(tmp_path, task_id)
+        for task_id in (TASK_IDS[0], TASK_IDS[2])
+    }
     calls = []
+    service_calls = []
 
     async def task(context):
-        item = prepared[context.slot.split("/")[0]]
         calls.append(context.slot)
+        item = prepared.get(context.slot.split("/")[0])
+        if item is None:
+            return _fixture_result(context)
+        service_calls.append(context.slot)
         return await run_service_fixture(
             context,
             item,
@@ -427,6 +402,7 @@ async def test_service_adapter_runs_in_existing_parallel_batch_and_review_is_pos
     summary = await run_offline_batch(root, task, max_concurrency=2)
     assert summary["counts"] == {"pass": 0, "fail": 0, "unknown": 12}
     assert len(calls) == 12
+    assert len(service_calls) == 6
     slot = planned_slots()[0]
     evidence = f"trials/{slot}/state/service-checks.json"
     review = _fixture_review(slot)

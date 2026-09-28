@@ -6,7 +6,6 @@ import httpx
 import pytest
 from openai import AsyncOpenAI
 from pydantic import SecretStr, ValidationError
-from tests.test_task_baseline_service import FakeAbaqusProcess
 
 from abaqus_sim_agent.evaluation import simple_modeling_batch as pair
 from abaqus_sim_agent.evaluation.serial_runtime import SerialRuntime
@@ -20,6 +19,7 @@ from abaqus_sim_agent.evaluation.task_baseline_runner import (
 )
 from abaqus_sim_agent.execution import ProcessOutput
 from abaqus_sim_agent.execution.abaqus2024 import WindowsProcessStrategy
+from tests.support.abaqus import FakeAbaqusProcess
 
 
 def spec_fixture(tmp_path, *, human_confirmed=False):
@@ -225,6 +225,7 @@ def install_resources(
     return requests, calls, lambda: maximum
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_pair_runs_models_concurrently_but_serializes_runtime_and_keeps_reviews_pending(
     tmp_path, monkeypatch
@@ -273,6 +274,7 @@ async def test_pair_runs_models_concurrently_but_serializes_runtime_and_keeps_re
     )
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("variant", ["wrong_bar", "skip_clarification"])
 async def test_pair_rejects_wrong_signed_reference_or_missing_clarification(
@@ -390,6 +392,7 @@ def test_spec_refuses_existing_paths_and_nested_run_root(tmp_path):
     assert not root.exists()
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_unmapped_question_stays_waiting_without_blocking_the_other_task(
     tmp_path, monkeypatch
@@ -406,6 +409,7 @@ async def test_unmapped_question_stays_waiting_without_blocking_the_other_task(
     assert len(calls) == 4
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("unmapped", [False, True])
 async def test_human_confirmed_profile_never_uses_question_regex(

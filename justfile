@@ -16,15 +16,10 @@ clean_update_worktree := assert(git != "") + (if shell("git status --porcelain -
 sync:
     {{ assert(uv != "") }}uv sync --all-groups
 
-# 运行项目测试
+# 运行全部适用的离线工程测试
 [group("quality")]
 test:
     {{ assert(uv != "") }}uv run pytest
-
-# 运行低层组件回归
-[group("quality")]
-test-component:
-    {{ assert(uv != "") }}uv run pytest -m component
 
 # 检查 Ruff lint 和格式
 [group("quality")]
@@ -62,7 +57,6 @@ finish-template-update:
     uv run --no-sync ruff format --check .
     uv run --no-sync basedpyright
     uv run --no-sync pytest
-    uv run --no-sync pytest -m component
 
 # 安装 pre-commit 和 commit-msg hooks
 [group("hooks")]

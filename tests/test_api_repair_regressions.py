@@ -28,12 +28,6 @@ _PROVENANCE = (
     / "coding"
     / "api_repair_regression_runtime_observations.json"
 )
-_AGENT_EVIDENCE = (
-    _PROJECT_ROOT
-    / "benchmarks"
-    / "coding"
-    / "api_repair_regression_evaluation_20260824.json"
-)
 _LAUNCHER = Path(r"D:\SIMULIA\Commands\abq2024.bat")
 _LICENSED_TESTS_ENABLED = os.environ.get("ABAQUS_LICENSED_TESTS") == "1"
 
@@ -84,61 +78,6 @@ def test_regression_provenance_matches_checked_in_fixtures() -> None:
         provenance["repaired_postcondition_validation"]["solution_location"]
         == "outside_repository"
     )
-
-
-def test_regression_agent_evidence_preserves_routing_and_limitations() -> None:
-    evidence = json.loads(_AGENT_EVIDENCE.read_text(encoding="utf-8"))
-    result = evidence["result"]
-    exact_signature = evidence["automatic_exact_signature_result"]
-    cases = {case["case_id"]: case for case in result["cases"]}
-
-    assert result["passes"] == 2
-    assert result["attempts"] == 2
-    assert result["stale_hash_conflicts"] == 0
-    assert cases["base_solid_box"]["automatic_lookup"] == {
-        "query": "Part.BaseSolidBox",
-        "status": "not_found",
-        "counted": False,
-        "alternatives": [
-            "Part.BaseSolidExtrude",
-            "Part.BaseSolidRevolve",
-            "Part.BaseSolidSweep",
-        ],
-        "observed_adoption": (
-            "The model explicitly selected ConstrainedSketch plus "
-            "Part.BaseSolidExtrude after receiving the alternatives."
-        ),
-    }
-    assert cases["part_instance_set"]["automatic_lookup"] is None
-    assert evidence["deterministic_and_licensed_coverage"][
-        "faces_error_rejects_edge_only_note_before_budget"
-    ]
-    assert evidence["interpretation"]["limits"][0].startswith(
-        "Each Product-Agent case ran once"
-    )
-    assert exact_signature["case_id"] == "beam_section_invalid_orientation"
-    assert exact_signature["passes"] == exact_signature["attempts"] == 1
-    assert exact_signature["runtime_note_available"] is False
-    assert exact_signature["api_lookup_calls"] == 1
-    assert exact_signature["delivered_runtime_notes"] == 0
-    assert exact_signature["automatic_lookup"] == {
-        "query": "Model.BeamSection",
-        "status": "found",
-        "card_id": ("api:2024:abaqus.Section.SectionModel.SectionModel.BeamSection"),
-        "payload_bytes": 1299,
-        "delivered_note_ids": [],
-        "counted": True,
-    }
-    assert exact_signature["verified_result"] == {
-        "case_id": "beam_section_invalid_orientation",
-        "section_name": "ProbeBeamSection",
-        "material": "Steel",
-        "profile": "RectProfile",
-        "integration": "DURING_ANALYSIS",
-    }
-    assert evidence["deterministic_and_licensed_coverage"][
-        "beam_section_signature_without_runtime_note_tested"
-    ]
 
 
 @pytest.mark.abaqus

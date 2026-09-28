@@ -422,18 +422,31 @@ API 意图准备、评测专用语义发现和历史失败反馈各有独立实�
 
 ## 测试与真实任务评测
 
-默认 `pytest` 只运行当前产品主路径与核心合同；检索/证据处理、可选策略等低层组件回归，以及评测基础设施和
-持证 Abaqus 集成测试显式分层，避免日常回归反复执行与本次产品改动无关的内部算法或冻结试验：
+默认 `pytest`／`just test` 运行全部适用的离线工程测试，包括测评器、评分、数据加载和批次管理的代码回归。
+按被测行为维护用例，不再由文件名清单划分默认、component 和 evaluation 集合。需要局部反馈时直接选择文件：
 
 ```console
 uv run --no-sync pytest -q
-uv run --no-sync pytest -q -m component
-uv run --no-sync pytest -q -m evaluation
+uv run --no-sync pytest -q tests/test_web_workbench.py
+uv run --no-sync pytest -q tests/test_task_baseline_service.py
 ```
 
 持证集成测试需要先设置 `ABAQUS_LICENSED_TESTS=1`，再运行 `pytest -m abaqus`；这会使用本机许可证。
-`component` 仍由 CI 和发布检查显式运行；`evaluation` 可独立复核冻结 evaluator、benchmark 与研究回归。
-一次性实验的历史证据由版本化 benchmark/report 与 Git 历史保留，不额外维护一套历史 pytest。
+依赖本机私有 abqpy 源码等资产的用例标记 `local_assets`，可显式选择
+`pytest -m "local_assets and not abaqus and not live_model"`；`live_model` 标记的用例也不进入默认集。
+覆盖默认 `-m` 表达式时，应写全本次需要的资源排除条件。
+CI 和发布检查使用同一默认离线集合。真实 Agent 能力／检索效果测评继续使用各自的显式入口。
+历史报告与 seal 保留原 bytes；仅复述旧批次成绩的断言不再约束日常代码回归。
+调用当前代码验证容差、格式兼容、篡改拒绝和失败处理的历史样本仍可作为工程测试输入。
+
+测试默认设置 `ALLOW_MODEL_REQUESTS=False`，清除继承的 Provider 密钥，并将默认私有知识包位置指向临时目录。
+HTTPX 的真实网络传输只放行本机回环地址。使用 `MockTransport` 验证真实 SDK 协议的测试须显式启用
+`mock_model_requests` fixture；该 fixture 放行模型接口但保留外部 HTTP 拦截。子进程不自动继承 Python
+monkeypatch，相关测试须显式使用临时工作区、测试环境与假模型／固定进程脚本。
+共享的假进程、Web 应用工厂与 HTTP 操作放在 `tests/support/`，新测试从这里复用，避免从其他测试模块
+导入 helper。只用于单个场景的辅助函数留在对应测试文件；公共隔离 fixture 位于 `tests/conftest.py`。
+Web 测试优先覆盖 HTTP 接线、会话持久化和执行生命周期；纯宿主条件直接在宿主测试中验证。
+同一正常流程的前置步骤可并入完整场景，停止、删除、取消等不同副作用仍分别覆盖。
 真实模型行为测试与持证任务另行运行，
 分别记录实际调用和验收结果。
 

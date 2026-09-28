@@ -9,8 +9,13 @@ from fastapi.testclient import TestClient
 from pydantic import SecretStr
 from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import FunctionModel
-from tests.test_web_tool_execution import _DeferredSuccessfulSolver
-from tests.test_web_workbench import (
+
+from abaqus_sim_agent.coding.amendments import load_amendment_ledger
+from abaqus_sim_agent.coding.resume import load_resume_state, write_resume_state
+from abaqus_sim_agent.coding.run_lock import CodingRunFileLock
+from abaqus_sim_agent.web.app import create_app
+from abaqus_sim_agent.web.controller import ServerConfig
+from tests.support.web import (
     Client,
     answer_body,
     api_catalog_dir,
@@ -20,12 +25,7 @@ from tests.test_web_workbench import (
     settled,
     start,
 )
-
-from abaqus_sim_agent.coding.amendments import load_amendment_ledger
-from abaqus_sim_agent.coding.resume import load_resume_state, write_resume_state
-from abaqus_sim_agent.coding.run_lock import CodingRunFileLock
-from abaqus_sim_agent.web.app import create_app
-from abaqus_sim_agent.web.controller import ServerConfig
+from tests.support.web_solver import _DeferredSuccessfulSolver
 
 
 def policy_body(

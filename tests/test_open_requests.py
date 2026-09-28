@@ -7,13 +7,6 @@ from fastapi.testclient import TestClient
 from pydantic import SecretStr
 from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import FunctionModel
-from tests.test_web_workbench import (
-    Client,
-    NoProcess,
-    api_catalog_dir,
-    login,
-    settled,
-)
 
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.application import prepare_new_run
@@ -22,6 +15,13 @@ from abaqus_sim_agent.coding.launch import LaunchManifest
 from abaqus_sim_agent.execution import Abaqus2024Runner
 from abaqus_sim_agent.web.app import create_app
 from abaqus_sim_agent.web.controller import ServerConfig
+from tests.support.web import (
+    Client,
+    NoProcess,
+    api_catalog_dir,
+    login,
+    settled,
+)
 
 
 def open_request_app(tmp_path, mode="response"):
@@ -79,9 +79,9 @@ def open_request_app(tmp_path, mode="response"):
         root=tmp_path / "web",
         api_catalog_dir=api_catalog_dir(tmp_path),
         stream_model=False,
-        budget=CodingRunBudget(
+        **CodingRunBudget(
             max_model_requests=5, max_abaqus_calls=0, max_solver_calls=0
-        ),
+        ).as_request_controls(),
     )
     return create_app(
         config,

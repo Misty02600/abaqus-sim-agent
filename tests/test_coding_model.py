@@ -39,11 +39,6 @@ from abaqus_sim_agent.coding.model import (
 )
 
 
-def test_model_http_defaults_match_product_policy() -> None:
-    assert DEFAULT_MODEL_HTTP_RETRIES == 4
-    assert DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS == 300.0
-
-
 def test_create_deepseek_model_has_pinned_identity_and_explicit_retries() -> None:
     model, client = create_deepseek_v4_flash_model(
         api_key=SecretStr("test-key"),
@@ -51,8 +46,8 @@ def test_create_deepseek_model_has_pinned_identity_and_explicit_retries() -> Non
     try:
         assert model.model_name == DEEPSEEK_V4_FLASH
         assert str(client.base_url).rstrip("/") == DEEPSEEK_BASE_URL
-        assert client.max_retries == DEFAULT_MODEL_HTTP_RETRIES
-        assert client.timeout == DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS
+        assert client.max_retries == DEFAULT_MODEL_HTTP_RETRIES == 4
+        assert client.timeout == DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS == 300.0
     finally:
         asyncio.run(client.close())
 
@@ -237,6 +232,7 @@ def test_go_mapping_preserves_historical_thinking_and_tool_history() -> None:
     assert zen_assistant["reasoning_content"] == "private reasoning"
 
 
+@pytest.mark.usefixtures("mock_model_requests")
 @pytest.mark.asyncio
 async def test_go_http_replays_thinking_after_tool_return_and_json_history_restore(
     tmp_path, monkeypatch

@@ -8,9 +8,6 @@ import pytest
 from pydantic import ValidationError
 from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import FunctionModel
-from tests.test_coding_resume import _execution
-from tests.test_coding_service import _request
-from tests.test_document_policy import BINDING, SCOPE, FakePort, FakeValidator, first
 
 from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
@@ -50,6 +47,9 @@ from abaqus_sim_agent.coding.service import (
 )
 from abaqus_sim_agent.coding.verification_port import VerificationAttempt
 from abaqus_sim_agent.execution import AbaqusInvocation
+from tests.test_coding_resume import _execution
+from tests.test_coding_service import _request
+from tests.test_document_policy import BINDING, SCOPE, FakePort, FakeValidator, first
 
 
 def bound(tmp_path, *, needs=()):

@@ -97,11 +97,8 @@ jobs:
       - name: Install test dependencies
         run: uv sync --locked --no-dev --group test --group eval --extra web
 
-      - name: pytest
+      - name: pytest offline engineering regressions
         run: uv run --no-sync pytest
-
-      - name: pytest component regressions
-        run: uv run --no-sync pytest -m component
 
   web:
     name: Web build and package

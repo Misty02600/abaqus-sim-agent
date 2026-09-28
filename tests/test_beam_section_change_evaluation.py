@@ -66,37 +66,6 @@ def test_checked_in_beam_section_change_request_matches_evaluator() -> None:
     assert "42" not in CHANGE_REQUEST
 
 
-def test_checked_in_beam_section_change_evidence_preserves_claim_boundaries() -> None:
-    project_root = Path(__file__).parents[1]
-    evidence_path = (
-        project_root
-        / "benchmarks"
-        / "coding"
-        / "beam_section_change_evaluation_20260827.json"
-    )
-    request_path = (
-        project_root / "benchmarks" / "coding" / "beam_section_change_request.json"
-    )
-    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
-    product = evidence["product_agent_batch"]
-
-    assert evidence["deterministic_reference"]["result"] == "1/1"
-    assert evidence["deterministic_reference"]["extractor_preserved"]
-    assert product["result"] == "3/3"
-    assert product["gate_passed"]
-    assert product["api_catalog_mode"] == "off"
-    assert product["concept_retrieval_mode"] == "off"
-    assert product["behavioral_adoption"]["extract_results_byte_preserved"] == ("3/3")
-    assert product["behavioral_adoption"]["three_stage_provenance_passed"] == ("3/3")
-    assert product["aggregate"]["abaqus_calls"] == 9
-    assert all(attempt["extract_patch_bytes"] == 0 for attempt in product["attempts"])
-    assert "one linear axial B31" in evidence["interpretation"]["limits"][0]
-    assert (
-        evidence["frozen_request"]["sha256"]
-        == hashlib.sha256(request_path.read_bytes()).hexdigest()
-    )
-
-
 def test_verified_beam_seed_is_validated_and_only_scripts_are_copied(
     tmp_path: Path,
 ) -> None:

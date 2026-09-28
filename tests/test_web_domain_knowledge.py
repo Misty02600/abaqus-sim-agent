@@ -14,18 +14,18 @@ from pydantic_ai.messages import (
     ToolReturnPart,
 )
 from pydantic_ai.models.function import FunctionModel
-from tests.test_web_workbench import (
+
+from abaqus_sim_agent.execution import Abaqus2024Runner
+from abaqus_sim_agent.web.app import create_app
+from abaqus_sim_agent.web.contracts import Registration
+from abaqus_sim_agent.web.controller import ServerConfig
+from tests.support.web import (
     Client,
     NoProcess,
     api_catalog_dir,
     login,
     settled,
 )
-
-from abaqus_sim_agent.execution import Abaqus2024Runner
-from abaqus_sim_agent.web.app import create_app
-from abaqus_sim_agent.web.contracts import Registration
-from abaqus_sim_agent.web.controller import ServerConfig
 
 
 def _write_pack(root: Path) -> None:

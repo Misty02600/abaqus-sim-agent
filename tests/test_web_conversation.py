@@ -14,18 +14,19 @@ from pydantic_ai.messages import (
     UserPromptPart,
 )
 from pydantic_ai.models.function import FunctionModel
-from tests.test_web_workbench import (
-    Client,
-    NoProcess,
-    api_catalog_dir,
-    login,
-    settled,
-)
 
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
 from abaqus_sim_agent.execution import Abaqus2024Runner
 from abaqus_sim_agent.web.app import create_app
 from abaqus_sim_agent.web.controller import ServerConfig
+from tests.support.web import (
+    Client,
+    NoProcess,
+    api_catalog_dir,
+    login,
+    message_body,
+    settled,
+)
 
 
 def conversation_app(
@@ -107,9 +108,9 @@ def conversation_app(
         api_catalog_dir=api_catalog_dir(tmp_path),
         stream_model=False,
         context_warning_threshold_tokens=context_warning_threshold_tokens,
-        budget=CodingRunBudget(
+        **CodingRunBudget(
             max_model_requests=10, max_abaqus_calls=0, max_solver_calls=0
-        ),
+        ).as_request_controls(),
     )
     return create_app(
         config,
@@ -161,15 +162,6 @@ def first_message(client, goal="Remember ALPHA"):
         == 202
     )
     return rid, settled(client, rid, status="completed")
-
-
-def message_body(snapshot, text, command_id=None):
-    return {
-        "command_id": str(command_id or uuid4()),
-        "text": text,
-        "expected_task_revision": snapshot["view"]["task_revision"],
-        "expected_amendment_sequence": snapshot["view"]["amendment_sequence"],
-    }
 
 
 def test_three_turns_keep_context_order_budget_and_survive_restart(tmp_path):
@@ -461,7 +453,7 @@ def test_provider_failure_keeps_new_message_and_explicit_continue(tmp_path):
 
 
 def test_pending_question_and_reconcile_cannot_be_bypassed_with_message(tmp_path):
-    from tests.test_web_workbench import configured_app, create, start
+    from tests.support.web import configured_app, create, start
 
     app, observed = configured_app(tmp_path)
     with TestClient(app, base_url="http://127.0.0.1") as client:

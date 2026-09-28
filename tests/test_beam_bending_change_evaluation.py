@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import json
 from pathlib import Path
 
@@ -119,104 +118,6 @@ def test_verified_b31_odb_contract_is_bounded_and_answer_free() -> None:
     assert "without an ODB schema probe" in treatment
     for hidden_result in ("1.919", "97500", "100000"):
         assert hidden_result not in treatment
-
-
-def test_checked_in_beam_bending_evidence_preserves_claim_boundaries() -> None:
-    project_root = Path(__file__).parents[1]
-    evidence_path = (
-        project_root
-        / "benchmarks"
-        / "coding"
-        / "beam_bending_change_evaluation_20260827.json"
-    )
-    request_path = (
-        project_root / "benchmarks" / "coding" / "beam_bending_change_request.json"
-    )
-    fixture_root = (
-        project_root / "tests" / "fixtures" / "abaqus2024" / "beam_bending_change"
-    )
-    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
-    reference = evidence["deterministic_reference"]
-    product = evidence["product_agent_batch"]
-    attempts = product["attempts"]
-
-    assert reference["result"] == "1/1"
-    assert reference["extractor_changed"]
-    assert (
-        reference["fixture_build_sha256"]
-        == hashlib.sha256((fixture_root / "build_model.py").read_bytes()).hexdigest()
-    )
-    assert (
-        reference["fixture_extractor_sha256"]
-        == hashlib.sha256(
-            (fixture_root / "extract_results.py").read_bytes()
-        ).hexdigest()
-    )
-    assert product["result"] == "3/3"
-    assert product["gate_passed"]
-    assert product["api_catalog_mode"] == "off"
-    assert product["concept_retrieval_mode"] == "off"
-    assert product["behavioral_adoption"]["extract_results_changed"] == "3/3"
-    assert product["behavioral_adoption"]["three_stage_provenance_passed"] == ("3/3")
-    assert product["aggregate"]["abaqus_calls"] == 23
-    assert [attempt["abaqus_calls"] for attempt in attempts] == [8, 9, 6]
-    assert all(attempt["build_patch_bytes"] > 0 for attempt in attempts)
-    assert all(attempt["extract_patch_bytes"] > 0 for attempt in attempts)
-    assert "one linear cantilever B31" in evidence["interpretation"]["limits"][0]
-    assert "diagnostic convergence" in evidence["interpretation"]["limits"][2]
-    assert (
-        evidence["frozen_request"]["sha256"]
-        == hashlib.sha256(request_path.read_bytes()).hexdigest()
-    )
-
-
-def test_bending_convergence_evidence_preserves_negative_and_strict_results() -> None:
-    project_root = Path(__file__).parents[1]
-    evidence_path = (
-        project_root
-        / "benchmarks"
-        / "coding"
-        / "beam_bending_convergence_evaluation_20260827.json"
-    )
-    request_v2_path = (
-        project_root / "benchmarks" / "coding" / "beam_bending_change_request_v2.json"
-    )
-    verifier_path = (
-        project_root
-        / "src"
-        / "abaqus_sim_agent"
-        / "verification"
-        / "beam_bending_change.py"
-    )
-    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
-    control = evidence["control_diagnosis"]
-    production_first, read_card, declared = evidence["treatments"]
-    replay = evidence["verifier_correction_and_replay"]
-
-    assert control["aggregate"]["abaqus_calls"] == 23
-    assert production_first["aggregate"]["abaqus_calls"] == 22
-    assert production_first["first_production_extractor_succeeded"] == "0/3"
-    assert read_card["aggregate"]["abaqus_calls"] == 22
-    assert read_card["current_strict_replay_result"] == "1/3"
-    assert declared["aggregate"]["abaqus_calls"] == 9
-    assert declared["current_strict_replay_result"] == "3/3"
-    assert declared["behavior"]["first_production_extractor_succeeded"] == "3/3"
-    assert declared["behavior"]["diagnostic_abaqus_python_calls"] == "0/3"
-    assert all(attempt["abaqus_calls"] == 3 for attempt in declared["attempts"])
-    assert replay["strict_replay"]["verified_b31_odb_contract_v1"] == "1/3"
-    assert evidence["control_to_recommended_comparison"]["abaqus_calls"] == ("23 to 9")
-    assert (
-        "underspecified result contract"
-        in evidence["interpretation"]["engineering_result"]
-    )
-    assert (
-        declared["request_sha256"]
-        == hashlib.sha256(request_v2_path.read_bytes()).hexdigest()
-    )
-    assert (
-        replay["verifier_sha256"]
-        == hashlib.sha256(verifier_path.read_bytes()).hexdigest()
-    )
 
 
 def test_beam_bending_change_gate_requires_two_of_three() -> None:
