@@ -24,7 +24,7 @@ from abaqus_sim_agent.evaluation.beam_section_change import (
     build_dataset,
     gate_report,
 )
-from abaqus_sim_agent.evaluation.beam_tension import GOLD_REQUEST
+from abaqus_sim_agent.evaluation.seed_contracts import BEAM_SOURCE_GOAL as GOLD_REQUEST
 from abaqus_sim_agent.evaluation.verified_beam_seed import (
     BEAM_AGENT_VISIBLE_SEED_FILES,
     load_verified_beam_seed,
@@ -32,15 +32,15 @@ from abaqus_sim_agent.evaluation.verified_beam_seed import (
 from abaqus_sim_agent.evaluation.verified_plate_seed import (
     create_seeded_workspace,
 )
+from abaqus_sim_agent.verification.beam_reference import (
+    BeamTensionMeasurements,
+    verify_beam_tension,
+)
 from abaqus_sim_agent.verification.beam_section_change import (
     verify_beam_section_change,
 )
 from abaqus_sim_agent.verification.beam_section_change_run import (
     BeamSectionChangeVerificationAttempt,
-)
-from abaqus_sim_agent.verification.beam_tension import (
-    BeamTensionMeasurements,
-    verify_beam_tension,
 )
 from abaqus_sim_agent.verification.model_change_evidence import (
     WorkspaceChangeReport,

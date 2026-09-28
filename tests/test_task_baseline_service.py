@@ -26,7 +26,7 @@ from abaqus_sim_agent.evaluation.task_baseline_service import (
     _tool_argument_failure,
     run_service_fixture,
 )
-from abaqus_sim_agent.execution import ProcessOutput
+from abaqus_sim_agent.execution import Abaqus2024Runner, ProcessOutput
 from abaqus_sim_agent.execution.abaqus2024 import WindowsProcessStrategy
 from tests.support.abaqus import FakeAbaqusProcess
 from tests.test_beam_section_change_evaluation import _make_source_run as beam_source
@@ -205,7 +205,7 @@ async def test_real_service_all_four_cards_with_fake_model_and_process(
     async def no_oracle(*args, **kwargs):
         raise AssertionError("reference oracle must not run inside service")
 
-    monkeypatch.setattr(prepared.reference_verifier, "verify", no_oracle)
+    monkeypatch.setattr(Abaqus2024Runner, "run_trusted_abaqus_python", no_oracle)
     row = await run_service_fixture(
         context, prepared, model=scripted_model(prepared), process_strategy=process
     )

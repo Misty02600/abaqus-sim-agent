@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from abaqus_sim_agent.verification.beam_run import beam_input_contract_passed
-from abaqus_sim_agent.verification.beam_tension import (
+from abaqus_sim_agent.verification.beam_input import beam_input_contract_passed
+from abaqus_sim_agent.verification.beam_reference import (
     BeamTensionMeasurements,
     verify_beam_tension,
 )

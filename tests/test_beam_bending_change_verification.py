@@ -6,7 +6,7 @@ from abaqus_sim_agent.verification.beam_bending_change import (
     parse_beam_bending_input,
     verify_beam_bending_change,
 )
-from abaqus_sim_agent.verification.beam_tension import BeamTensionMeasurements
+from abaqus_sim_agent.verification.beam_reference import BeamTensionMeasurements
 
 
 def _measurements(**overrides: object) -> BeamTensionMeasurements:

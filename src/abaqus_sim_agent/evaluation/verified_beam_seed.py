@@ -13,12 +13,12 @@ from abaqus_sim_agent.coding.contracts import (
     CodingRunRequest,
     CodingRunStatus,
 )
-from abaqus_sim_agent.evaluation.beam_tension import GOLD_REQUEST
+from abaqus_sim_agent.evaluation.seed_contracts import BEAM_SOURCE_GOAL as GOLD_REQUEST
 from abaqus_sim_agent.evaluation.verified_plate_seed import (
     sha256_bytes,
     sha256_file,
 )
-from abaqus_sim_agent.verification.beam_tension import BeamTensionVerification
+from abaqus_sim_agent.verification.beam_reference import BeamTensionVerification
 
 BEAM_SOURCE_ARTIFACTS = (
     "build_model.py",

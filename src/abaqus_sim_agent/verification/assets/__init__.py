@@ -17,3 +17,11 @@ def plate_material_change_oracle_script() -> Path:
 
 def plate_load_change_oracle_script() -> Path:
     return Path(__file__).resolve().parent / "extract_plate_load_change_oracle.py"
+
+
+def beam_tension_oracle_script() -> Path:
+    return Path(__file__).resolve().parent / "beam_tension_oracle.py"
+
+
+def bar_tension_3d_oracle_script() -> Path:
+    return Path(__file__).resolve().parent / "bar_tension_3d_oracle.py"

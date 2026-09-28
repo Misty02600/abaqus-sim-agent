@@ -74,7 +74,7 @@ Product treatment 支持时才扩展 policy；不因单条模型轨迹自动写�
   节省或 gate 收益。
 - Product v2：三条都在生产文件、静态预检和 Abaqus 前因 OpenCode Go `Request timed out` 结束；该批对
   v2 adoption 无效，不能把 0/3 归因静态策略。完整冻结结果见
-  [`beam_tension_b31_abqpy_preflight_evaluation_20260829.json`](../../../benchmarks/coding/beam_tension_b31_abqpy_preflight_evaluation_20260829.json)。
+  [`beam_tension_b31_abqpy_preflight_evaluation_20260829.json`](https://github.com/Misty02600/abaqus-sim-agent/blob/aa7116f0377a6fd5f1173b057797ba54abe70478/benchmarks/coding/beam_tension_b31_abqpy_preflight_evaluation_20260829.json)。
 
 因此当前推荐 B31 profile 仍是未启用 preflight 的 v7。v2 只能描述为已实现、离线门槛通过、Product 行为
 待重测的 opt-in candidate。

@@ -19,8 +19,8 @@
 
 - 唯一产品 Agent 是 `abaqus_2024_coder`，使用 Pydantic AI 原生 tool loop、typed output、依赖注入与 Harness Coder/Skills/StepPersistence。Runner、verifier、evaluator、查询工具和宿主 service 均不是 Agent。
 - Agent 在单一工作区编写普通动态 Abaqus Python；不强制 DeckDraft/ChangeSet 或确定性 renderer。包内领域 Skill 是产品提示与知识资源，和本文件的仓库维护指令分开。
-- `CodingRunService` 拥有会话、limits、runtime policy、usage、恢复与最终 outcome。新普通 CLI/Web 使用 `ask_user(question)`；宿主保存 `waiting_for_user` 后释放运行锁，用户等待不消耗 active wall。普通产品的模型请求、提问、低成本工具和 active wall 均 unlimited；固定评测可显式有限。项目仍处于开发期，不承诺 pre-release 产品 run/state 的向后兼容或迁移；不兼容 state 必须显式拒绝，不能猜测升级。冻结 Gold、trial、seal 和报告仍保留原合同与证据，不回填新协议。
-- 缺少会改变物理问题的必要输入时先澄清，不能根据常见值、模板或检索结果补造参数。新会话可以先读工作区事实；Abaqus API、文件名等实现问题由 Agent 处理。旧 Gold 的预先澄清条件保持原合同。
+- `CodingRunService` 拥有会话、limits、runtime policy、usage、恢复与最终 outcome。新普通 CLI/Web 使用 `ask_user(question)`；宿主保存 `waiting_for_user` 后释放运行锁，用户等待不消耗 active wall。普通产品的模型请求、提问、低成本工具和 active wall 均 unlimited；固定评测可显式有限。项目仍处于开发期，不承诺 pre-release 产品 run/state 的向后兼容或迁移；不兼容 state 必须显式拒绝，不能猜测升级。保留的trial、seal和报告不回填新协议；旧Gold独立驱动已退出活动入口，冻结报告和输入仍保留。
+- 缺少会改变物理问题的必要输入时先澄清，不能根据常见值、模板或检索结果补造参数。新会话可以先读工作区事实；Abaqus API、文件名等实现问题由 Agent 处理。
 - `ready_for_verification` 只申请验收，必须声明非空、无重复的工作区相对交付物 manifest。普通 CLI 的 `execution_evidence` 验证 fresh 交付物、fresh Python 的 3.10 语法和每种已用 runtime 的最后一次 stage；不证明完整自然语言语义或物理正确。固定 evaluator 才注入模型不可见的 `task_oracle`。
 - 新普通产品会话是标准 Harness Coder：保留工作区 Shell，但按配置路径和 `abaqus*` / `abq*` 版本化名称拒绝直接启动 vendor launcher；Abaqus 执行使用 `run_cae_script`、`solver_job(action=submit|wait)`、`run_abaqus_python`。冻结 evaluator 继续使用各自保存的工具合同；`run_trusted_abaqus_python` 永不注册给模型。
 - 建模脚本应只生成模型与 INP，求解经独立 Solver 工具，提取经 Abaqus Python/odbAccess。宿主在 CAE runtime 前确定性拒绝 AST 中直接出现的 `.submit(...)` 和 `.waitForCompletion(...)`；`getattr`、`exec` 和运行时重绑定等动态绕行不在该最小策略覆盖范围内，不得宣传为 Python 沙箱。
@@ -46,7 +46,7 @@
 - 新普通产品自动绑定随应用安装的 Catalog，不要求用户选择目录；默认 `automatic_verified_only` 且不暴露主动查询工具；`full`、`full_with_discovery`、`automatic_exact_signature` 由显式 profile 选择。Concept、diagnostic advisory、bounded document policy、ACI、typed probe 和纯编辑限制仍按显式 profile 启用；旧冻结评测的 `off` 条件不回填。当前入口与组合见 [知识接入](docs/architecture/knowledge-access.md)。
 - `full_with_discovery` 已接入产品：discovery 返回候选名称，必须继续 exact lookup 才有卡片证据；候选、静态声明、runtime note 和实际运行成功不能互相替代。检索不能补造缺失物理输入。
 - 2026 官方文档、2024 abqpy 静态声明与 Abaqus 2024 runtime evidence 分别标来源；不能把文档命中视为版本兼容或任务收益。不自动将 probe、失败修复或单题解法写入全局 Skill、Catalog 或跨 run Memory。
-- 固定 Gold、verified-seed change、API repair、检索评测和开放产品任务分开。变更任务先重新验证 source 合同、验收与 hash，再缓存种子 bytes；共享执行证据不能代替逐 Case oracle。suite 按每个 Case 的 gate 验收，不能用总通过数掩盖失败 Case。
+- 公开力学、verified-seed change、API repair、检索评测和开放产品任务分开。领域仿真按物理Case计数，输入变体不增加题目权重。变更任务先重新验证 source 合同、验收与 hash，再缓存种子 bytes；共享执行证据不能代替逐 Case oracle。suite 按每个 Case 的 gate 验收，不能用总通过数掩盖失败 Case。
 - 旧 request、Prompt/Skill、profile、预算、source/lock/index 绑定、trial、seal 和报告保留原值；新配置或新合同使用新批次，不能回填旧成绩。失败、Provider 中断、人工干预和 post-hoc replay 必须保留并区分。
 - 小样本通过不代表稳定成功率；接线通过、检索命中、模型采纳和物理收益分别留证。运行记录与允许声明见 [验证证据入口](docs/architecture/verification-evidence.md)，具体数值只在对应冻结报告中维护。
 

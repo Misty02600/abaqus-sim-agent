@@ -494,7 +494,7 @@ async def run_service_fixture(
 
     Note:
         注入的Python函数/策略是可信测试代码，不构成网络或进程沙箱。
-        不调用reference_verifier，不自动resume，不把运行后检查反馈回Agent。
+        不在Agent运行中调用物理oracle，不自动resume，不把运行后检查反馈回Agent。
     """
     if (
         not isinstance(model, FunctionModel)

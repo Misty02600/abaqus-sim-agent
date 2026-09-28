@@ -1,3 +1,5 @@
+"""梁截面/弯曲修改任务复用的参考schema与物理检查。"""
+
 from __future__ import annotations
 
 import math
@@ -5,7 +7,7 @@ from collections.abc import Mapping
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from abaqus_sim_agent.verification.plate_tension import NumericCheck
+from abaqus_sim_agent.verification.numeric import NumericCheck
 
 _EXPECTED_X_COORDINATES = tuple(float(index * 5) for index in range(21))
 
@@ -138,7 +140,7 @@ def verify_beam_tension(
     input_contract_passed: bool,
     spec: BeamTensionOracleSpec | None = None,
 ) -> BeamTensionVerification:
-    """根据独立 ODB 测量和产物证据验收 B31 轴向拉伸 Gold case。"""
+    """根据独立 ODB 测量和产物证据验收 B31 轴向拉伸 reference model。"""
     expected = spec or BeamTensionOracleSpec()
     required_artifacts = {
         "build_model.py",

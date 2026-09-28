@@ -12,8 +12,17 @@ from typing import Any
 from uuid import uuid4
 
 import httpx
+from pydantic_evals.reporting import EvaluationReportAdapter, ScalarResult
 
 from abaqus_sim_agent.coding.persistence import write_text_atomic
+from abaqus_sim_agent.evaluation.mechanics_grading import (
+    evaluate_saved_results,
+    observe_saved_case,
+)
+from abaqus_sim_agent.evaluation.public_mechanics_cases import (
+    PUBLIC_MECHANICS_PROTOCOL,
+    load_frozen_cases,
+)
 
 
 def save_json(path: Path, value):
@@ -141,7 +150,7 @@ def summarize_case(root: Path, name: str):
     last = attempts[-1] if attempts else {}
     if outcome:
         classification = (
-            "formal_pass" if outcome["status"] == "completed" else "task_failed"
+            "completed" if outcome["status"] == "completed" else "task_failed"
         )
     elif resume:
         classification = {
@@ -193,9 +202,25 @@ def summarize_case(root: Path, name: str):
 
 
 def build_report(root: Path, *, bindings_unchanged: bool):
+    return asyncio.run(build_report_async(root, bindings_unchanged=bindings_unchanged))
+
+
+async def build_report_async(root: Path, *, bindings_unchanged: bool):
     manifest = read_json(root / "manifest.json")
+    if manifest.get("version") != PUBLIC_MECHANICS_PROTOCOL:
+        raise ValueError("historical reports require their original worker")
+    cases = load_frozen_cases(root, manifest["case_ids"])
+    scoring_ids = manifest.get("scoring_case_ids")
+    if (
+        not isinstance(scoring_ids, list)
+        or not scoring_ids
+        or not all(isinstance(name, str) for name in scoring_ids)
+        or len(set(scoring_ids)) != len(scoring_ids)
+    ):
+        raise ValueError("invalid frozen scoring_case_ids")
     rows = []
-    for name in manifest["case_ids"]:
+    for case in cases:
+        name = case.case_id
         try:
             rows.append(summarize_case(root, name))
         except (ValueError, KeyError, TypeError, OSError) as exc:
@@ -210,8 +235,52 @@ def build_report(root: Path, *, bindings_unchanged: bool):
                     "solver_calls": None,
                 }
             )
+        rows[-1]["metadata"] = case.metadata.model_dump(mode="json")
+        rows[-1]["included_in_score"] = name in scoring_ids
+    scored = [row for row in rows if row["included_in_score"]]
+    observations = {
+        case.case_id: observe_saved_case(
+            root, case, row, manifest, bindings_unchanged=bindings_unchanged
+        )
+        for case, row in zip(cases, rows, strict=True)
+    }
+    native = await evaluate_saved_results(
+        cases,
+        observations,
+        tuple(scoring_ids),
+        {
+            "protocol": manifest["version"],
+            "root": str(root),
+            "scoring_case_ids": scoring_ids,
+        },
+    )
+    verdicts = {
+        case.name: case.labels["task_status"].value
+        for case in native.cases
+        if not case.evaluator_failures and "task_status" in case.labels
+    }
+    for row in rows:
+        row["task_verdict"] = verdicts.get(row["case_id"], "grading_error")
+    summary = {
+        item.title: item.value
+        for item in native.analyses
+        if isinstance(item, ScalarResult)
+    }
+    summary_valid = not native.report_evaluator_failures
     report = {
-        "schema_version": "public-mechanics-report-v5",
+        "schema_version": "public-mechanics-report-v7",
+        "scoring": {
+            "case_ids": [row["case_id"] for row in scored],
+            "reference_case_ids": scoring_ids,
+            "full_set_selected": {row["case_id"] for row in scored} == set(scoring_ids),
+            "case_count": len(scored),
+            "classification_counts": dict(
+                Counter(row["classification"] for row in scored)
+            ),
+            "weighting": "one_per_physical_case",
+            "task_summary": summary,
+            "summary_valid": summary_valid,
+        },
         "verification_policy": manifest.get("verification_policy"),
         "profile": {
             "foundation": manifest.get("foundation"),
@@ -220,28 +289,75 @@ def build_report(root: Path, *, bindings_unchanged: bool):
             "max_task_concurrency": manifest.get("max_task_concurrency", 1),
             "max_runtime_concurrency": manifest.get("max_runtime_concurrency", 1),
         },
-        "script_review_status": "not_recorded_by_automatic_report",
+        "script_review_status": "see_bound_requirements_review_and_task_verdict",
         "at": datetime.now(UTC).isoformat(),
         "trials": rows,
         "bindings_unchanged": bindings_unchanged,
         "seal_sha256": hashlib.sha256((root / "seal.json").read_bytes()).hexdigest(),
-        "note": "Derived view. Interrupted, unknown and posthoc results are not formal passes. HTTP usage is not billing.",
+        "native_report": "pydantic-evals-report.json",
+        "note": "Derived view. Task pass requires completion, saved verification and a bound requirements review. Incomplete/posthoc/evidence failures remain in the planned denominator. HTTP usage is not billing.",
     }
+    write_text_atomic(
+        root / "pydantic-evals-report.json",
+        EvaluationReportAdapter.dump_json(native, indent=2).decode("utf-8"),
+    )
+    write_text_atomic(
+        root / "pydantic-evals-report.txt",
+        native.render(
+            include_reasons=True,
+            include_durations=False,
+            include_averages=False,
+            width=160,
+        ),
+    )
     save_json(root / "report.json", report)
+    if not summary_valid:
+        summary_line = "整批评分器异常：汇总不可用，详见原生报告report_evaluator_failures；不生成通过率结论。"
+    elif summary.get("planned_tasks") == 0:
+        summary_line = "本批没有计分题，仅展示诊断记录，不生成通过率。"
+    else:
+        summary_line = (
+            f"已确认任务通过：{summary.get('tasks_passed', 0)}/{summary.get('planned_tasks', 0)}；"
+            f"待审：{summary.get('tasks_pending_review', 0)}。未运行/中断不是已证实的物理失败，且不从计划分母剔除。"
+        )
     lines = [
         "# 公开力学评测运行报告",
         "",
         "自动派生视图，不修改原 outcome；收到的 usage 不包含失败调用账单。自动结果检查与评测者脚本审查分开记录。",
         "",
-        "| 案例 | 状态 | 收到响应 | HTTP尝试/失败/未知 | Abaqus/Solver |",
-        "|---|---|---:|---|---|",
+        "计分成员来自本批冻结的manifest，标签不改变分母；历史诊断题不计分。这里只汇总自动终态，不替代脚本审查。",
+        "",
+        summary_line,
+        "",
+        "| 案例 | 计分 | 运行状态 | 任务判定 | 收到响应 | HTTP尝试/失败/未知 | Abaqus/Solver |",
+        "|---|---|---|---|---:|---|---|",
     ]
     for row in rows:
         u = row["received_usage"] or {}
         h = row["http"]
         lines.append(
-            f"| {row['case_id']} | {row['classification']} | {u.get('requests', 'unknown')} | "
+            f"| {row['case_id']} | {'是' if row['included_in_score'] else '否'} | {row['classification']} | {row['task_verdict']} | {u.get('requests', 'unknown')} | "
             f"{h['attempts']}/{h['failed']}/{h['unknown']} | {row['abaqus_calls']}/{row['solver_calls']} |"
+        )
+    lines.extend(
+        [
+            "",
+            "## 案例元数据（来自冻结cases.json）",
+            "",
+            "| 案例 | 测评目的 | 标签 | 来源 | 文档版本 |",
+            "|---|---|---|---|---|",
+        ]
+    )
+    for case in cases:
+        metadata = case.metadata
+        source = metadata.source
+        reference = _table_text(source.reference)
+        if source.url is not None:
+            reference += f" · [来源]({source.url})"
+        lines.append(
+            f"| {case.case_id} | {_table_text(metadata.description)} | "
+            f"{', '.join(metadata.tags)} | {source.kind}: {reference} | "
+            f"{_table_text(source.document_version or '未指定')} |"
         )
     lines.extend(
         [
@@ -253,3 +369,7 @@ def build_report(root: Path, *, bindings_unchanged: bool):
     )
     write_text_atomic(root / "report.md", "\n".join(lines) + "\n")
     return report
+
+
+def _table_text(value: str) -> str:
+    return value.replace("|", "\\|").replace("\r", " ").replace("\n", " ")

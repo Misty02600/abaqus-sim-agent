@@ -6,11 +6,11 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from abaqus_sim_agent.verification.beam_tension import (
+from abaqus_sim_agent.verification.beam_reference import (
     BeamTensionMeasurements,
     BeamTensionOracleSpec,
 )
-from abaqus_sim_agent.verification.plate_tension import NumericCheck
+from abaqus_sim_agent.verification.numeric import NumericCheck
 
 _FORBIDDEN_LOAD_KEYWORDS = (
     "*body force",

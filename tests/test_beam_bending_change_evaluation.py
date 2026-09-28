@@ -36,7 +36,7 @@ from abaqus_sim_agent.verification.beam_bending_change import (
 from abaqus_sim_agent.verification.beam_bending_change_run import (
     BeamBendingChangeVerificationAttempt,
 )
-from abaqus_sim_agent.verification.beam_tension import BeamTensionMeasurements
+from abaqus_sim_agent.verification.beam_reference import BeamTensionMeasurements
 from abaqus_sim_agent.verification.model_change_evidence import WorkspaceChangeReport
 
 

@@ -27,7 +27,7 @@ from abaqus_sim_agent.execution import (
 from abaqus_sim_agent.verification.plate_output_warning_repair_run import (
     PlateOutputWarningRepairRunVerifier,
 )
-from abaqus_sim_agent.verification.plate_tension import PlateTensionMeasurements
+from abaqus_sim_agent.verification.plate_reference import PlateTensionMeasurements
 
 _SOURCE_BUILD = b"value = 'source'\n"
 _DEFECTIVE_BUILD = (

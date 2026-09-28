@@ -18,28 +18,6 @@ from abaqus_sim_agent.execution.abaqus2024 import Abaqus2024Runner, ProcessOutpu
 TOKEN = "private-telemetry-value-7fe730"
 
 
-@pytest.fixture(autouse=True)
-def isolated_telemetry_environment(monkeypatch, tmp_path):
-    from pydantic_ai import models
-
-    from abaqus_sim_agent.coding import domain_knowledge
-
-    monkeypatch.setattr(models, "ALLOW_MODEL_REQUESTS", False)
-    for name in tuple(os.environ):
-        if name.startswith(("PHOENIX_", "OTEL_")) or name in {
-            "DEEPSEEK_API_KEY",
-            "OPENCODE_API_KEY",
-            "OPENAI_API_KEY",
-            "ANTHROPIC_API_KEY",
-        }:
-            monkeypatch.delenv(name)
-    monkeypatch.setattr(
-        domain_knowledge,
-        "domain_knowledge_packs_root",
-        lambda: tmp_path / "user-knowledge-packs",
-    )
-
-
 @pytest.fixture
 def captured(monkeypatch, tmp_path):
     exporter = InMemorySpanExporter()
@@ -237,12 +215,8 @@ def test_actual_web_file_delivery_links_verifier(captured, tmp_path):
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient
 
-    from tests.test_open_requests import (
-        login,
-        new_request,
-        open_request_app,
-        settled,
-    )
+    from tests.support.web import login, settled
+    from tests.test_open_requests import new_request, open_request_app
 
     exporter, _ = captured
     app, _ = open_request_app(tmp_path, mode="script")

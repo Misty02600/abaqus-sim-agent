@@ -39,15 +39,16 @@
 
 ## 固定 CAE 案例
 
-plate CPS4R、3D bar C3D8R、beam B31 的参考与 oracle 都有持证记录，Agent 在部分冻结配置下曾通过
-各自 smoke gate。历史 plate 成绩早于后续 strict clarification 合同，不能作为新协议稳定性证据。
-模型变更的共享 seed/provenance 已实现，但 plate suite 没有同一配置下的全套通过记录。
+从[简短案例清单](../../benchmarks/coding/domain_mechanics_inventory.md)按物理能力查阅领域仿真Case，经典解析、厂商与NAFEMS仅作为来源标签。
+[合同与证据详表](../../benchmarks/coding/domain_mechanics_case_details.md)分列逐题判据、参考资格、正式Agent结果与事后修正，以及当前入口漂移和本机资源依赖。
+这里的端到端表示领域任务Eval的运行范围，不另立一类成绩，也不与参考脚本/假模型工程测试混计。
 
-- [Coding 评测入口](../../benchmarks/coding/README.md)：完整历史、profile 和冻结报告。
-- [strict 澄清评测](../../benchmarks/coding/plate_clarification_policy_evaluation_20260830.json)：
-  决策层澄清与持证闭环分别统计，真实漏问/超时不能被旧通过结果掩盖。
-- [B31 runtime allowlist](../../benchmarks/coding/beam_tension_b31_runtime_allowlist_evaluation_20260829.json)：
-  固定 profile 的 gate 与正常路径兼容；不能单因果归于 allowlist 或 Catalog。
+当前领域仿真保留20个Case定义，新批次默认选15题评分；显式选择历史题只作非计分诊断。v25按批次冻结类型化metadata与评分名单，报告读取冻结快照；
+Pydantic Evals的单题/整批规则只投影已存证据，自动通过与完整需求待审分开，见[结果报告约定](../../benchmarks/coding/result_reporting.md)。
+接线和离线校验不代表15题已完成真实Agent验收。旧Gold独立运行入口已退出；冻结报告与输入保留。输入变体的交互结果单独报告，不增加仿真题权重。
+模型变更的共享seed/provenance继续使用，但plate suite没有同一配置下的全套通过记录。
+
+- [Coding评测入口](../../benchmarks/coding/README.md)：当前路由与证据边界。
 - [plate 变更 suite](../../benchmarks/coding/plate_model_change_suite_evaluation_20260825.json)、
   [B31 截面变更](../../benchmarks/coding/beam_section_change_evaluation_20260827.json)：
   每个 Case 独立验收新需求和原合同，不能用总通过数抵消失败 Case。

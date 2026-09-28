@@ -19,7 +19,7 @@
   超时进程树和 artifact freshness，并保留原始 stdout/stderr bytes 与执行记录。
 - 缺少会改变物理问题的输入时必须澄清，不能从模板或检索结果补造材料、尺寸、载荷等参数。
 - 新普通会话通过 `ask_user(question)`交接必要输入；launch v10 可直接交付 typed 文字答复，并绑定 context policy、Skill digest、UTF-8/CP936 文件策略、必选 API Catalog 与可选私有知识快照；文件/执行请求仍返回`ready_for_verification`或`failed`；
-  旧run、Gold及其他未迁移profile保留`needs_input`协议。普通 CLI 的
+  未迁移的固定评测profile按各自合同使用`needs_input`协议。普通 CLI 的
   `execution_evidence` 验收 fresh 交付物、Python 3.10 语法和最后一次已使用的 runtime stage，
   **不证明物理正确，也不覆盖全部自然语言语义**。固定 evaluator 才使用独立 INP/ODB `task_oracle`。
 - 支持 Harness/file-backed 会话续跑、累计预算和显式任务修订；未决 Abaqus effect 停在
@@ -137,7 +137,7 @@ workspace/execution状态划定本段fresh evidence。显式修改任务合同�
 
 新普通CLI/Web会话可仅回答问题，不要求生成文件或调用Abaqus；页面显示“已回答”，不赋予执行验收范围。
 只做一个环节时，不要求其他环节的材料、载荷或边界条件；只在当前请求确实依赖缺失事实时澄清。
-开发期旧产品 state 不迁移；固定 Gold、trial 与报告仍保留原合同和证据。见
+开发期旧产品 state 不迁移；保留的冻结trial与报告仍按原合同解释。见
 [ADR-0030](docs/adr/0030-drop-pre-release-coding-run-state-compatibility.md)。
 
 当前只接受本机单用户访问，每个服务只有一个主动工作段，忙时拒绝第二个执行。浏览器断开不停止任务；
@@ -176,20 +176,18 @@ CLI/Web 的本次选择只保存进相应会话。恢复读取已保存的会话
 Web 宿主按会话网关使用
 启动时捕获的对应凭据。详细边界见[配置输入与恢复记录](docs/architecture/system-framework.md#配置输入运行合同与恢复记录)。
 
-下面的板拉伸请求要求先询问厚度。使用普通产品 CLI 运行它，仍只获得 `execution_evidence`，
-不是后面的 Gold 物理验收：
+普通产品 CLI 接受用户任务，完成范围为 `execution_evidence`：
 
 ```powershell
 $env:DEEPSEEK_API_KEY = "<your-key>"
-New-Item -ItemType Directory -Force -Path D:\abaqus-runs\plate-interactive
+New-Item -ItemType Directory -Force -Path D:\abaqus-runs\coding-demo
 uv run abaqus-sim-agent `
-  --request-file benchmarks\coding\plate_tension_request.json `
-  --workspace D:\abaqus-runs\plate-interactive
+  --goal "创建 list_files.py，运行时列出当前目录的文件名" `
+  --workspace D:\abaqus-runs\coding-demo
 ```
 
 也可使用 `--goal "<任务要求>"`，与 `--request-file` 二选一。后者接受 UTF-8 文本或带 `goal` 字段的
-JSON，并不自动加载 Gold 的 verifier 或预算。非交互澄清使用
-新建run时，旧`--answers benchmarks/coding/plate_tension_answers.json`会明确选择legacy协议；
+JSON，不自动加载物理verifier。新建run时，旧`--answers <ANSWERS_JSON>`会明确选择legacy协议；
 已保存的新协议run拒绝混用该旧格式，请使用`--answer-file`。切换 Go 时增加
 `--model-provider opencode-go --model deepseek-v4-flash` 并配置对应密钥。
 
@@ -211,7 +209,7 @@ uv run --no-sync abaqus-sim-agent --resume <STATE_DIR> --cancel-question <QUESTI
 答复ID必须匹配该run当前问题；同ID同答复幂等，不同答复不覆盖。待答期间修改goal/配置须先显式撤销问题。
 已执行Abaqus后收到新工程答复，会形成新task revision，旧产物不能验收新要求；未决runtime reconcile优先。
 新普通 CLI/Web 会话使用 launch v10，绑定 Catalog、context policy、文件编码策略与实际 filesystem Skill digest；不兼容的开发期
-state 显式拒绝。旧 Gold 及显式评测 profile 的历史证据保留，不回填新默认。
+state 显式拒绝。显式评测profile的历史证据不回填新默认。
 这证明问答交接可运行，不保证模型一定识别缺参，也不构成外部Job恢复；见[ADR-0024](docs/adr/0024-host-owned-user-question-waiting.md)。
 
 宿主以 `abq2024` 启动 Abaqus，命令需能通过 PATH 找到；`--state-dir` 可指定工作区外的证据目录，
@@ -340,12 +338,12 @@ resume、Web continuation 和 task revision 继续使用原快照，不能重新
 uv sync --extra static-preflight
 New-Item -ItemType Directory -Force -Path D:\abaqus-runs\plate-static
 uv run abaqus-sim-agent `
-  --request-file benchmarks\coding\plate_tension_request.json `
+  --request-file D:\abaqus-data\request.json `
   --workspace D:\abaqus-runs\plate-static `
   --static-preflight-mode on `
   --allowed-cae-script build_model.py `
   --allowed-abaqus-python-script extract_results.py `
-  --allowed-solver-input plate_tension.inp
+  --allowed-solver-input model.inp
 ```
 
 首次开启静态检查时，程序从 PyPI 官方固定 URL 获取 abqpy 2024.10 wheel，校验大小和 SHA-256 后缓存；已有有效
@@ -510,16 +508,8 @@ uv run --no-sync python -m abaqus_sim_agent.evaluation.task_baseline_runner summ
 人工取答不计active wall，恢复仍累计原请求和运行预算；没有新增批次轮询器或自然语言判题器。
 批次已落盘的trial/summary不因产品续跑而改写，续跑须单独授权并另存关联记录；不将其回填为原批次通过。
 
-固定Gold包含二维板CPS4R、三维杆C3D8R和B31梁；另有verified-seed截面、载荷、几何与材料变更。
-它们只证明各自的固定合同。三次至少两次通过是smoke gate，不是稳定成功率；
-参考脚本通过、Agent通过、检索命中和物理验收分别报告。
-
-显式启动持证plate Gold（会调用模型和Abaqus，并为各次尝试创建独立空工作区）：
-
-```powershell
-uv run --group eval python -m abaqus_sim_agent.evaluation.plate_tension `
-  --run-root D:\abaqus-runs\plate-eval
-```
+领域仿真统一使用20个公开力学Case，按物理问题计数，输入变体不增加题目权重。旧plate/bar/B31 Gold独立评测已删除。
+案例、数值口径与运行条件见[案例清单](benchmarks/coding/domain_mechanics_inventory.md)；参考脚本、真实Agent与事后修复分别报告。
 
 已有模型变更必须使用一个经当前合同重新校验的成功source run，仅从缓存复制两份脚本：
 
@@ -532,7 +522,7 @@ uv run --group eval python -m abaqus_sim_agent.evaluation.model_change_suite `
 
 完整运行命令、每个profile的真实结果、失败样本和限制统一保存在以下入口，不在根README重复实验流水：
 
-- [Coding / Gold / verified-seed评测](benchmarks/coding/README.md)：含B31 v7、截面变更、弯曲合同v2、plate suite和API修复。
+- [领域仿真 / verified-seed / 修复评测](benchmarks/coding/README.md)：当前运行入口与独立证据。
 - [RAG / BM25 / Dense / RRF评测](benchmarks/rag/README.md)：含开发集、已消费held-out、复现与当前证据基线。
 - [文档行为阶段A](benchmarks/coding/behavior_measurement_phase_a_20260912.json)：离线校准；不代表阶段B/C已执行。
 - [API Catalog证据](benchmarks/api_catalog/abaqus_api_catalog_final15_20260828.json)：固定构建来源、runtime notes与benchmark。

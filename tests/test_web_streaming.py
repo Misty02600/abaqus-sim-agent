@@ -277,7 +277,9 @@ def test_go_http_streaming_adapter_retry_and_transport_close(
             http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
         )
 
-    monkeypatch.setattr("abaqus_sim_agent.coding.deepseek_gateway.AsyncOpenAI", client_factory)
+    monkeypatch.setattr(
+        "abaqus_sim_agent.coding.deepseek_gateway.AsyncOpenAI", client_factory
+    )
     config = ServerConfig(
         root=tmp_path / "web",
         overrides=RunOptions(

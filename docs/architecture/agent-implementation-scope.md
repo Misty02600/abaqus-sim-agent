@@ -64,7 +64,7 @@ JSONL 追加实现与 0.33 相同，仍没有并行写入锁。宿主补丁精�
 | `ready_for_verification` | 声明非空、去重的工作区相对 manifest，申请宿主验收；不是完成声明 |
 | `failed` | 当前任务无法继续，由宿主形成失败 outcome |
 
-新普通 CLI/Web 会话必须绑定 Catalog，并可使用 ask_user。旧 run、旧 Gold、旧 `--answers` 与未迁移的
+新普通 CLI/Web 会话必须绑定 Catalog，并可使用 ask_user。冻结run、旧 `--answers` 与未迁移的
 Concept/ACI/document/纯编辑组合按保存合同使用 legacy；不从“新默认”推导旧 run 自动换协议。
 CLI 对新会话可先读取工作区事实再提问；缺失材料、尺寸、载荷等必要物理输入仍不能补造或带缺参执行。
 
@@ -112,7 +112,7 @@ CLI 对新会话可先读取工作区事实再提问；缺失材料、尺寸、�
 
 ## 固定任务边界
 
-from-scratch plate/bar/B31 与 verified-seed plate/beam change 都是独立固定合同。变更任务重新验证源 run
+从零领域仿真使用公开力学Case；旧plate/bar/B31 Gold独立评测已删除。verified-seed plate/beam change仍有独立合同。变更任务重新验证源 run
 和产物 hash 后缓存种子 bytes；具体 Case 决定哪些脚本可改、哪些必须逐字节保留，独立验收新需求和回归。
 suite 按各 Case 的重复 gate 通过，不能用总成功数抵消失败 Case，也不能推导任意 `.cae` 修改能力。
 具体规格、结果和局限见 [验证证据入口](verification-evidence.md)。
