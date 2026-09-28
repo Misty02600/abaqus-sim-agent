@@ -32,9 +32,6 @@ from abaqus_sim_agent.coding.api_lookup import (
 from abaqus_sim_agent.coding.api_lookup import (
     register_api_lookup_tool as _register_api_lookup_tool,
 )
-from abaqus_sim_agent.coding.api_lookup import (
-    resolve_api_catalog_mode as _resolve_api_catalog_mode,
-)
 from abaqus_sim_agent.coding.concept_lookup import (
     ConceptRetrievalMode as _ConceptRetrievalMode,
 )
@@ -204,8 +201,7 @@ def create_abaqus_coding_agent(
     request: CodingRunRequest,
     *,
     skill_library: Path | None = None,
-    api_catalog_enabled: bool = False,
-    api_catalog_mode: _ApiCatalogMode | None = None,
+    api_catalog_mode: _ApiCatalogMode = "off",
     concept_retrieval_mode: _ConceptRetrievalMode = "off",
     diagnostic_retrieval_mode: _DiagnosticRetrievalMode = "off",
     diagnostic_retrieval_instructions_enabled: bool | None = None,
@@ -231,9 +227,7 @@ def create_abaqus_coding_agent(
         model: Pydantic AI 使用的模型实现。
         request: 已解析工作区、运行时和预算合同。
         skill_library: 可选的领域 Skill 库目录。
-        api_catalog_enabled: 兼容旧调用方的开关；未显式指定模式时，
-            ``True`` 映射为 ``full``，``False`` 映射为 ``off``。
-        api_catalog_mode: Catalog 注入模式。显式值优先于兼容开关；
+        api_catalog_mode: Catalog 注入模式，底层工厂默认 ``off``；普通产品装配显式传入已启用模式。
             ``automatic_verified_only`` 仅在运行时失败后注入已验证短注释。
             ``automatic_exact_signature`` 只在精确 traceback 唯一命中时
             注入紧凑签名，并附带适用的已验证短注释。
@@ -275,10 +269,6 @@ def create_abaqus_coding_agent(
         if request.edit_scope is not None and planning_enabled:
             raise ValueError("pure-edit effective config must disable Planning")
         model = ConfiguredModel(model, execution_config)
-    resolved_api_catalog_mode = _resolve_api_catalog_mode(
-        api_catalog_enabled=api_catalog_enabled,
-        api_catalog_mode=api_catalog_mode,
-    )
     bounded_documents = request.document_policy is not None
     if bounded_documents and concept_retrieval_mode != "tool":
         raise ValueError("bounded_v1 requires concept_retrieval_mode=tool")
@@ -443,9 +433,8 @@ def create_abaqus_coding_agent(
         output_type=outputs,
         instructions=_build_instructions(
             request,
-            api_catalog_enabled=resolved_api_catalog_mode
-            in {"full", "full_with_discovery"},
-            api_discovery_enabled=resolved_api_catalog_mode == "full_with_discovery",
+            api_catalog_enabled=api_catalog_mode in {"full", "full_with_discovery"},
+            api_discovery_enabled=api_catalog_mode == "full_with_discovery",
             concept_retrieval_enabled=concept_retrieval_mode == "tool"
             and not bounded_documents,
             diagnostic_retrieval_enabled=(
@@ -492,13 +481,13 @@ def create_abaqus_coding_agent(
             agent,
             probe_protocol_mode=probe_protocol_mode,
             probe_target_scripts=probe_target_scripts,
-            api_catalog_mode=resolved_api_catalog_mode,
+            api_catalog_mode=api_catalog_mode,
             diagnostic_retrieval_mode=diagnostic_retrieval_mode,
             background_solver_enabled=product_shell_enabled,
         )
-    if resolved_api_catalog_mode in {"full", "full_with_discovery"}:
+    if api_catalog_mode in {"full", "full_with_discovery"}:
         _register_api_lookup_tool(agent)
-    if resolved_api_catalog_mode == "full_with_discovery":
+    if api_catalog_mode == "full_with_discovery":
         _register_api_discovery_tool(agent)
     if concept_retrieval_mode == "tool":
         if bounded_documents:

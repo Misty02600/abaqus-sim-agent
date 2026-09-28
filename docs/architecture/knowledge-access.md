@@ -17,6 +17,9 @@
 request 保存 schema、card/member hash 和 runtime release。创建和恢复均核对绑定，Catalog 缺失、损坏或变化时
 在模型调用前拒绝。旧冻结报告和 evaluator 中的 `off` 仍是历史实验条件，不是当前产品配置。
 
+底层 `create_abaqus_coding_agent()` 只接受 `api_catalog_mode`，不提供旧式 `api_catalog_enabled`
+开关或兼容转换。工厂默认 `off` 供显式评测等调用使用；普通产品装配始终传入 launch 中已启用的模式。
+
 当前 Catalog 是精确卡片与对象方法目录，独立检索实验另有 BM25/E5 意图搜索。两者不能仅因都叫
 discovery 就视为同一产品接口。早期 [API 方案实验](../../benchmarks/api_catalog/api_discovery_loop_v1_20260915.md)
 没有经过 CodingRunService；后续提交 `74fa6e3` 才加入下面的产品目录工具和恢复接线。

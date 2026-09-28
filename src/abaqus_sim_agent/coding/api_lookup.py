@@ -56,7 +56,6 @@ __all__ = [
     "load_product_api_catalog",
     "register_api_discovery_tool",
     "register_api_lookup_tool",
-    "resolve_api_catalog_mode",
     "runtime_api_hint",
 ]
 
@@ -84,16 +83,6 @@ def bind_api_catalog(catalog: ApiCatalog) -> ApiCatalogBinding:
         member_count=manifest.member_count,
         members_sha256=manifest.members_sha256,
     )
-
-
-def resolve_api_catalog_mode(
-    *,
-    api_catalog_enabled: bool,
-    api_catalog_mode: ApiCatalogMode | None,
-) -> ApiCatalogMode:
-    if api_catalog_mode is not None:
-        return api_catalog_mode
-    return "full" if api_catalog_enabled else "off"
 
 
 def register_api_lookup_tool[AgentOutputT](
