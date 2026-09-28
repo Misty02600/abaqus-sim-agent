@@ -46,7 +46,7 @@
 |---|---|
 | [0005：可追溯地吸收与重构上游](0005-traceable-upstream-reuse.md) | 已采纳；替代 0001，保留独立仓库与许可证/来源义务 |
 | [0009：精确 Abaqus API Catalog](0009-exact-abaqus-api-catalog.md) | 已采纳；来源与证据合同保留，普通产品默认由 0036 更新，调用次数上限由 0031 部分替代 |
-| [0040：普通产品必须绑定 API Catalog](0040-require-api-catalog-for-product-runs.md) | 已采纳；更新 0009 的产品默认，移除产品 `off`，默认 automatic verified-only |
+| [0040：普通产品必须绑定 API Catalog](0040-require-api-catalog-for-product-runs.md) | 已采纳；产品必选与默认 automatic verified-only 保持，目录分发现按[包内资源](../architecture/knowledge-access.md#catalog-安装与升级) |
 | [0010：显式受预算的官方概念检索](0010-budgeted-official-concept-retrieval.md) | 已采纳；可选证据、不补物理输入，普通产品次数上限由 0031 部分替代 |
 | [0022：独立比较 BM25、Dense、RRF 后再采用](0022-evaluate-bm25-dense-rrf-before-agent-adoption.md) | 已采纳；保留算法对照与采用门槛，不代表 RRF 已替换默认 Concept 路径 |
 | [0028：本机私有领域知识包绑定为只读内容快照](0028-bind-user-domain-knowledge-as-read-only-snapshots.md) | 已采纳；仅本机私有内容、run 快照与恢复绑定，不开放分发、任意代码插件或新权限；默认位置与发现方式由 0029 局部替代 |

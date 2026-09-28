@@ -61,12 +61,8 @@ __all__ = [
 ]
 
 
-def load_product_api_catalog(directory: Path, *, workspace: Path) -> ApiCatalog:
-    resolved = directory.resolve(strict=True)
-    resolved_workspace = workspace.resolve(strict=True)
-    if resolved == resolved_workspace or resolved.is_relative_to(resolved_workspace):
-        raise ValueError("API catalog must be outside the Agent workspace")
-    catalog = ApiCatalog.open(resolved)
+def load_product_api_catalog(directory: Path) -> ApiCatalog:
+    catalog = ApiCatalog.open(directory)
     if catalog.manifest is None:
         raise ValueError("persisted API catalog is missing its manifest")
     return catalog

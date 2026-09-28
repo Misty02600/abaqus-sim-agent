@@ -17,7 +17,6 @@ from pydantic_ai.models.function import FunctionModel
 from tests.test_web_workbench import (
     Client,
     NoProcess,
-    api_catalog_dir,
     login,
     settled,
 )
@@ -77,7 +76,6 @@ def test_web_lists_and_binds_explicit_private_knowledge_pack(tmp_path: Path) -> 
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
             knowledge_packs_root=packs,
         ),
     )
@@ -155,7 +153,6 @@ def test_selected_pack_is_readable_through_product_agent_tools(tmp_path: Path) -
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
             knowledge_packs_root=packs,
             stream_model=False,
         ),

@@ -49,6 +49,10 @@ Windows 的 Just recipes 需要 PowerShell 7.4+（`pwsh`）；直接运行上述
 持证集成测试需要先显式设置 `ABAQUS_LICENSED_TESTS=1`，再选择 `pytest -m abaqus`；这会使用本机许可证。
 不要把普通离线回归通过当作真实 Abaqus 闭环通过。
 
+Catalog 随应用包安装和升级，不需要首次启动下载或解压到 AppData。升级后已有会话仍核对原 Catalog
+内容绑定，不能恢复时明确报错。第三方文档内容的公开再分发许可尚未确认，详见
+[Catalog 来源与许可说明](src/abaqus_sim_agent/api_catalog/data/THIRD_PARTY_NOTICES.md)。
+
 ## 本地 Web 工作台
 
 已接入 FastAPI、React/TypeScript 和 assistant-ui ExternalStore。页面接受任意问题、解释请求、局部步骤或完整任务，支持文字答复、必要澄清、显式继续、
@@ -61,7 +65,6 @@ Windows 的 Just recipes 需要 PowerShell 7.4+（`pwsh`）；直接运行上述
 uv sync --locked --all-groups --extra web
 uv run --no-sync python scripts/build_web.py
 uv run --no-sync abaqus-sim-agent-web --root D:\abaqus-web `
-  --api-catalog-dir D:\abaqus-data\api-catalog `
   --model-provider opencode-go
 ```
 
@@ -129,8 +132,7 @@ $env:DEEPSEEK_API_KEY = "<your-key>"
 New-Item -ItemType Directory -Force -Path D:\abaqus-runs\plate-interactive
 uv run abaqus-sim-agent `
   --request-file benchmarks\coding\plate_tension_request.json `
-  --workspace D:\abaqus-runs\plate-interactive `
-  --api-catalog-dir D:\abaqus-data\api-catalog
+  --workspace D:\abaqus-runs\plate-interactive
 ```
 
 也可使用 `--goal "<任务要求>"`，与 `--request-file` 二选一。后者接受 UTF-8 文本或带 `goal` 字段的
@@ -211,11 +213,11 @@ Go的DeepSeek适配沿用Pydantic AI原生profile，将已保存的thinking内�
 2026-09-14已移除历史“不回传”覆盖；thinking enabled/high与HTTP重试配置不受影响。
 旧日志与结果保留，恢复时使用已有历史内容；缺失的推理内容不补造。新评测需重新封存源码版本。
 
-Catalog 是新普通会话的必选依赖；其余能力默认关闭，需要显式配置。实现或离线测试通过不等于已证明真实任务收益。
+Catalog 是随应用安装的新普通会话必选资源；其余能力默认关闭，需要显式配置。实现或离线测试通过不等于已证明真实任务收益。
 
 | 能力 | 启用方式与边界 |
 |---|---|
-| Exact API Catalog | 新 CLI/Web 必须提供 `--api-catalog-dir <目录>`；默认 `automatic_verified_only`，不暴露主动查询工具，只在符合条件的错误后附 verified note。可显式选择 `automatic_exact_signature`、`full` 或 `full_with_discovery`。 |
+| Exact API Catalog | 随应用包安装，CLI/Web 自动定位并直接读取，无需配置路径；默认 `automatic_verified_only`，不暴露主动查询工具，只在符合条件的错误后附 verified note。可显式选择 `automatic_exact_signature`、`full` 或 `full_with_discovery`。 |
 | 官方文档工具 | `--concept-index-dir <索引> --concept-retrieval-mode tool`；`search_abaqus_docs` 按需查询，也允许零查询，普通产品不设调用次数上限。 |
 | Solver diagnostic advisory | `--diagnostic-retrieval-mode advisory --concept-index-dir <含BM25的索引>`；仅为符合条件的Solver诊断附加RRF证据，不替换原runtime状态。 |
 | 静态反馈 | `--static-preflight-mode on` 启用固定 abqpy/BasedPyright 分析；默认 off。诊断随运行结果返回，语法错误始终在 Python runtime 前阻断。 |
@@ -263,7 +265,6 @@ uv run --no-sync abaqus-sim-agent --list-knowledge-packs
 uv run --no-sync abaqus-sim-agent `
   --goal "使用柔性电子参考资料完成当前建模请求" `
   --workspace D:\abaqus-runs\flexible-electronics `
-  --api-catalog-dir D:\abaqus-data\api-catalog `
   --knowledge-pack flexible-electronics-fea
 ```
 
@@ -289,7 +290,6 @@ New-Item -ItemType Directory -Force -Path D:\abaqus-runs\plate-static
 uv run abaqus-sim-agent `
   --request-file benchmarks\coding\plate_tension_request.json `
   --workspace D:\abaqus-runs\plate-static `
-  --api-catalog-dir D:\abaqus-data\api-catalog `
   --static-preflight-mode on `
   --abqpy-static-wheel var\api-catalog\sources\abqpy-2024.10-py3-none-any.whl `
   --static-preflight-cache-dir D:\abaqus-runs\static-preflight-cache `
@@ -323,7 +323,7 @@ uv run python -m abaqus_sim_agent.retrieval search `
   --index-dir var\rag --mode hybrid "plane stress reduced integration quadrilateral"
 ```
 
-构建新的本地Catalog目录，再做精确查询；不要覆盖已封存的目录：
+以下是维护与评测入口；普通 CLI/Web 使用包内 Catalog，无需执行。构建新的本地 Catalog 目录后再做精确查询；不要覆盖已封存的目录：
 
 ```powershell
 uv run python -m abaqus_sim_agent.api_catalog build `

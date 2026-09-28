@@ -461,8 +461,6 @@ def test_cli_loads_and_persists_scope_before_real_file_tools(
             "scope-cli",
             "--edit-scope-file",
             str(scope_file),
-            "--api-catalog-dir",
-            str(catalog),
         ]
     )
     assert code == 0

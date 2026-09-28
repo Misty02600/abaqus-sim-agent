@@ -63,8 +63,8 @@ task revision、workspace/execution baseline 和累计 usage 保持；写入不�
 活动工作段、待消费 Solver、`needs_reconcile`、外部锁或不确定命令状态拒绝修改。有限次数始终表示会话累计
 总上限，调低至不高于已用量会使后续调用自然被现有 runtime gate 拒绝。
 
-Catalog 与文档索引是显式选择的外部知识数据，和 run state 分开；可恢复产品入口核对 request/launch 中的
-内容绑定。显式工厂的只读参考资料尚无同等 launch 快照保证，见 [知识接入](knowledge-access.md)。
+Catalog 是随应用安装的包内资源，CLI/Web 自动定位并直接读取，不复制到用户数据目录。
+显式文档索引仍是外部数据，两者和 run state 分开；可恢复产品入口核对 request/launch 中的内容绑定。显式工厂的只读参考资料尚无同等 launch 快照保证，见 [知识接入](knowledge-access.md)。
 
 ## 并发、持久化与崩溃边界
 

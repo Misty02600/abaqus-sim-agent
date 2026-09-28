@@ -13,13 +13,31 @@
 | 力学 Skill 与只读参考资料 | 显式 Agent 工厂 / 评测入口 | 基础层 `foundation_skill_profile="linear_structural_fea_v1"`；专题层 `structural_topic_skill_profile="structural_mechanics_v1"`；参考脚本仍由独立 `knowledge_resources_dir` 提供，普通 CLI/launch 尚无资料选择和快照绑定 |
 | 本机私有领域知识包 | CLI `--knowledge-pack` / Web 新会话显式选择；默认 off | 从用户级应用数据根发现 strict manifest，launch v10 绑定 state 快照；模型只经两个只读文件工具按需读取 |
 
-新普通 CLI/Web 会话必须绑定工作区外的 Catalog artifact；产品不再提供 `off`。launch v10 保存路径、模式，
+新普通 CLI/Web 会话自动绑定随应用安装的包内 Catalog；产品不提供路径选项或 `off`。launch v10 保存解析后的路径、模式，
 request 保存 schema、card/member hash 和 runtime release。创建和恢复均核对绑定，Catalog 缺失、损坏或变化时
 在模型调用前拒绝。旧冻结报告和 evaluator 中的 `off` 仍是历史实验条件，不是当前产品配置。
 
 当前 Catalog 是精确卡片与对象方法目录，独立检索实验另有 BM25/E5 意图搜索。两者不能仅因都叫
 discovery 就视为同一产品接口。早期 [API 方案实验](../../benchmarks/api_catalog/api_discovery_loop_v1_20260915.md)
 没有经过 CodingRunService；后续提交 `74fa6e3` 才加入下面的产品目录工具和恢复接线。
+
+## Catalog 安装与升级
+
+2026-09-27 用户确定普通产品按已安装的 CLI 应用设计：Catalog 作为
+`abaqus_sim_agent/api_catalog/data/` 包资源随 wheel/sdist 分发，CLI/Web 使用同一定位函数直接读取。
+不增加 AppData 副本、首次启动解压、联网下载、独立数据发行或工作区外置检查。
+普通 CLI/Web 的 `--api-catalog-dir` 已移除；Catalog 模式仍可显式选择。
+评测和 Catalog 构建/查询命令继续支持显式外部数据，不改写冻结 artifact。
+
+当前包内数据来自 `abaqus-2024-reference-context-v2`，三个 JSON/JSONL 文件保持原始 bytes。
+Catalog 随应用升级；恢复仍按保存的路径加载并核对原始内容绑定，升级导致内容不同或路径失效时明确拒绝，
+不会静默重绑，也不自动保存多版数据。冻结评测所需旧数据由评测归档保留。
+
+本次产品分发选择调整了 ADR-0009/0040 中人工提供工作区外目录的要求，保留来源分层、必选 Catalog、
+默认模式和内容绑定合同；旧 ADR 的当时背景与决定正文保留。
+包内 [来源与许可说明](../../src/abaqus_sim_agent/api_catalog/data/THIRD_PARTY_NOTICES.md)
+记录官方文档提取内容的再分发许可尚未确认；代码 MIT 许可证不自动覆盖它。
+打包与本地安装验证不表示已经获得公开发布许可。
 
 ## 产品 API discovery
 
@@ -116,7 +134,8 @@ Runtime note 的 `verified` 只覆盖说明中明确验证的行为。调用未�
 
 [当前 runtime notes](../../benchmarks/api_catalog/abaqus_2024_runtime_notes.jsonl) 是新 Catalog 的构建输入；
 [final15 原始快照](../../benchmarks/api_catalog/abaqus_2024_runtime_notes_final15_20260828.jsonl) 保留旧报告绑定的
-原始 bytes。修订当前说明后须生成新的不可变 Catalog 目录，由新会话显式选择；已有目录及 run 绑定不会自动更新。
+原始 bytes。修订当前说明后须重新构建 Catalog；产品选定的新数据随应用包更新，评测按新批次显式选择。
+已有冻结目录和 run 内容绑定不回填。
 
 ## 相关决定与证据
 

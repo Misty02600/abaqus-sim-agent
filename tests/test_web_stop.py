@@ -16,7 +16,6 @@ from tests.test_web_streaming import poll
 from tests.test_web_tool_execution import _background_solver_app
 from tests.test_web_workbench import (
     Client,
-    api_catalog_dir,
     create,
     login,
     settled,
@@ -63,7 +62,6 @@ def test_stop_current_task_cancels_foreground_runtime_and_waits_for_cleanup(
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
             stream_model=False,
         ),
         api_key=SecretStr("fixture"),

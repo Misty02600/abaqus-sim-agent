@@ -340,3 +340,29 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
             item.add_marker(pytest.mark.evaluation)
         elif layer == "component":
             item.add_marker(pytest.mark.component)
+
+
+@pytest.fixture
+def product_catalog_path(tmp_path_factory):
+    from abaqus_sim_agent.api_catalog import ApiCatalog
+
+    path = tmp_path_factory.mktemp("product-catalog") / "catalog"
+    ApiCatalog([], runtime_release="2024").write(path)
+    return path
+
+
+@pytest.fixture(autouse=True)
+def bundled_product_catalog(monkeypatch, product_catalog_path):
+    import sys
+
+    from abaqus_sim_agent.coding import application, cli
+
+    monkeypatch.setattr(
+        application, "bundled_catalog_path", lambda: product_catalog_path
+    )
+    monkeypatch.setattr(cli, "bundled_catalog_path", lambda: product_catalog_path)
+    controller = sys.modules.get("abaqus_sim_agent.web.controller")
+    if controller is not None:
+        monkeypatch.setattr(
+            controller, "bundled_catalog_path", lambda: product_catalog_path
+        )

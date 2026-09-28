@@ -22,12 +22,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="ASCII任务根目录（workspace与state分别建立）",
     )
     parser.add_argument(
-        "--api-catalog-dir",
-        type=Path,
-        required=True,
-        help="Abaqus API Catalog目录",
-    )
-    parser.add_argument(
         "--api-catalog-mode",
         choices=(
             "full",
@@ -59,7 +53,6 @@ def main() -> None:
         raise SystemExit("请安装Web依赖：uv sync --extra web --all-groups") from exc
     config = ServerConfig(
         root=args.root,
-        api_catalog_dir=args.api_catalog_dir,
         api_catalog_mode=args.api_catalog_mode,
         execution=new_run_execution_config(
             model_provider=args.model_provider, model_name=args.model

@@ -1,0 +1,47 @@
+{
+  "schema_version": "2",
+  "built_at": "2026-09-14T13:45:48.886079Z",
+  "runtime_release": "2024",
+  "official_release": "2026 FD02",
+  "abqpy_version": "2024.10",
+  "cards_file": "methods.jsonl",
+  "card_count": 5224,
+  "conflict_count": 47,
+  "cards_sha256": "a826238b3b358d275f65c40a831ad2294db3f51b17e9d451e4a211c8e6120279",
+  "member_count": 150,
+  "members_sha256": "7f2b811dff9dcc5faf841fb2c7382c409c58ea29af142ce4989d13b779f441d0",
+  "source_digests": {
+    "official_scripting_reference": "12f12f146b7d6241085fa981358a9b8b0e64f8e4d852a4a5ac4fa205dacbb313",
+    "abqpy_source": "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504",
+    "runtime_notes": "d0afabd8d54f322a12dcecf3d160c5cddee4f56dbef525b27361cb29b96f621a"
+  },
+  "sources": [
+    {
+      "kind": "abqpy",
+      "release": "2024",
+      "version": "2024.10",
+      "source_path": "abqpy-2024.10",
+      "source_url": null,
+      "document_id": null,
+      "section_id": null
+    },
+    {
+      "kind": "official",
+      "release": "2026 FD02",
+      "version": null,
+      "source_path": "SIMACAEKERRefMap",
+      "source_url": null,
+      "document_id": null,
+      "section_id": null
+    },
+    {
+      "kind": "runtime",
+      "release": "2024",
+      "version": null,
+      "source_path": "runtime-notes",
+      "source_url": null,
+      "document_id": null,
+      "section_id": null
+    }
+  ]
+}

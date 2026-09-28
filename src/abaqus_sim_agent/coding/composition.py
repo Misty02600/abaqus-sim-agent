@@ -76,10 +76,7 @@ async def open_coding_run(
     )
     if api_catalog is None:
         assert launch.api_catalog_dir is not None
-        api_catalog = load_product_api_catalog(
-            launch.api_catalog_dir,
-            workspace=request.workspace,
-        )
+        api_catalog = load_product_api_catalog(launch.api_catalog_dir)
     if request.api_catalog != bind_api_catalog(api_catalog):
         raise ValueError("API catalog does not match the persisted request binding")
     with materialize_domain_knowledge_bundle(

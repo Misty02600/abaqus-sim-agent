@@ -4,6 +4,9 @@
 
 已采纳（2026-09-23）。用户确认取消普通产品的 `off` 选项，由 Codex 实施。
 
+2026-09-27 普通产品改为自动读取包内 Catalog，目录配置和外置检查的当前语义见
+[Catalog 安装与升级](../architecture/knowledge-access.md#catalog-安装与升级)；下文保留当时决定。
+
 ## 背景
 
 旧入口把 Catalog 作为可选能力：未传目录时使用 `off`，传目录时默认 `full`。这同时混合了两个问题：

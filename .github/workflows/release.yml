@@ -85,6 +85,13 @@ jobs:
               bad_member = wheel.testzip()
               if bad_member is not None:
                   raise SystemExit(f"wheel 包含损坏成员: {bad_member}")
+              catalog_files = {
+                  name: wheel.read(f"abaqus_sim_agent/api_catalog/data/{name}")
+                  for name in (
+                      "manifest.json", "methods.jsonl", "members.jsonl",
+                      "THIRD_PARTY_NOTICES.md", "ABQPY_LICENSE.txt",
+                  )
+              }
 
           with tarfile.open(sdist_path, "r:gz") as sdist:
               members = sdist.getmembers()
@@ -94,6 +101,13 @@ jobs:
                   path = PurePosixPath(member.name)
                   if path.is_absolute() or ".." in path.parts:
                       raise SystemExit(f"sdist 包含不安全路径: {member.name}")
+              prefix = PurePosixPath(members[0].name).parts[0]
+              for name, expected in catalog_files.items():
+                  resource = sdist.extractfile(
+                      f"{prefix}/src/abaqus_sim_agent/api_catalog/data/{name}"
+                  )
+                  if resource is None or resource.read() != expected:
+                      raise SystemExit(f"wheel/sdist Catalog 不一致: {name}")
           PY
 
       - name: Generate release notes

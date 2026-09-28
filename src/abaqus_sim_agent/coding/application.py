@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from ..api_catalog.bundled import bundled_catalog_path
 from ..skills import skill_library_path
 from .api_lookup import (
     DEFAULT_PRODUCT_API_CATALOG_MODE,
@@ -58,7 +59,6 @@ def prepare_new_run(
     state_dir: Path,
     execution: ModelExecutionConfig,
     runtime: RuntimeProfile,
-    api_catalog_dir: Path,
     api_catalog_mode: ProductApiCatalogMode = DEFAULT_PRODUCT_API_CATALOG_MODE,
     limits: CodingRunLimits | None = None,
     runtime_policy: RuntimeExecutionPolicy | None = None,
@@ -69,10 +69,8 @@ def prepare_new_run(
     resolved = WorkspaceResolver().resolve_interactive(
         run_id=run_id, workspace=workspace, state_dir=state_dir
     )
-    api_catalog = load_product_api_catalog(
-        api_catalog_dir,
-        workspace=resolved.workspace,
-    )
+    api_catalog_dir = bundled_catalog_path()
+    api_catalog = load_product_api_catalog(api_catalog_dir)
     request = CodingRunRequest(
         run_id=run_id,
         goal=goal,

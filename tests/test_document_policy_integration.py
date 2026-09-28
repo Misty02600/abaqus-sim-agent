@@ -560,8 +560,6 @@ def test_cli_bounded_profile_persists_launch_and_ignores_edited_spec_on_resume(
                 str(spec_path),
                 "--concept-retrieval-mode",
                 "tool",
-                "--api-catalog-dir",
-                str(catalog),
             ]
         )
         == 0

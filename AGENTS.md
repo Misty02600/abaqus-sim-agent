@@ -40,7 +40,7 @@
 
 ## 知识与评测
 
-- 新普通产品必须绑定 Catalog，默认 `automatic_verified_only` 且不暴露主动查询工具；`full`、`full_with_discovery`、`automatic_exact_signature` 由显式 profile 选择。Concept、diagnostic advisory、bounded document policy、ACI、typed probe 和纯编辑限制仍按显式 profile 启用；旧冻结评测的 `off` 条件不回填。当前入口与组合见 [知识接入](docs/architecture/knowledge-access.md)。
+- 新普通产品自动定位并读取随应用包分发的 Catalog；不要求用户配置目录，不增加 AppData 副本或工作区外置检查。默认 `automatic_verified_only` 且不暴露主动查询工具；`full`、`full_with_discovery`、`automatic_exact_signature` 由显式 profile 选择。Concept、diagnostic advisory、bounded document policy、ACI、typed probe 和纯编辑限制仍按显式 profile 启用；旧冻结评测的 `off` 条件不回填。当前入口与组合见 [知识接入](docs/architecture/knowledge-access.md)。
 - `full_with_discovery` 已接入产品：discovery 返回候选名称，必须继续 exact lookup 才有卡片证据；候选、静态声明、runtime note 和实际运行成功不能互相替代。检索不能补造缺失物理输入。
 - 2026 官方文档、2024 abqpy 静态声明与 Abaqus 2024 runtime evidence 分别标来源；不能把文档命中视为版本兼容或任务收益。不自动将 probe、失败修复或单题解法写入全局 Skill、Catalog 或跨 run Memory。
 - 固定 Gold、verified-seed change、API repair、检索评测和开放产品任务分开。变更任务先重新验证 source 合同、验收与 hash，再缓存种子 bytes；共享执行证据不能代替逐 Case oracle。suite 按每个 Case 的 gate 验收，不能用总通过数掩盖失败 Case。

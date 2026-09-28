@@ -17,7 +17,6 @@ from pydantic_ai.models.function import FunctionModel
 from tests.test_web_workbench import (
     Client,
     NoProcess,
-    api_catalog_dir,
     login,
     settled,
 )
@@ -104,7 +103,6 @@ def conversation_app(
 
     config = ServerConfig(
         root=tmp_path / "web",
-        api_catalog_dir=api_catalog_dir(tmp_path),
         stream_model=False,
         context_warning_threshold_tokens=context_warning_threshold_tokens,
         budget=CodingRunBudget(

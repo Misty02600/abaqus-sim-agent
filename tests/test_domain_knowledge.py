@@ -216,7 +216,6 @@ def test_prepare_new_run_binds_selected_pack_to_launch_v7(tmp_path: Path) -> Non
             model_name="fixture-model",
         ),
         runtime=RuntimeProfile(launcher_path=tmp_path / "never-run.bat"),
-        api_catalog_dir=catalog,
         **CodingRunBudget(
             max_abaqus_calls=0,
             max_solver_calls=0,

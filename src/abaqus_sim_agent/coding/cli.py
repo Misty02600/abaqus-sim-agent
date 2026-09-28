@@ -13,6 +13,7 @@ from uuid import uuid4
 from pydantic import SecretStr
 
 from abaqus_sim_agent.api_catalog import ApiCatalog
+from abaqus_sim_agent.api_catalog.bundled import bundled_catalog_path
 from abaqus_sim_agent.coding.amendments import (
     CodingRunAmendmentLedger,
     CodingRunConfigPatch,
@@ -188,11 +189,6 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=None,
         help="OpenAI SDK HTTP retries per logical model request",
-    )
-    parser.add_argument(
-        "--api-catalog-dir",
-        type=Path,
-        help="Required exact Abaqus API catalog outside the Agent workspace",
     )
     parser.add_argument(
         "--http-timeout-seconds",
@@ -465,7 +461,7 @@ def _run_cli_once(
                 ),
             )
             skill_library = args.skills_dir or skill_library_path()
-            api_catalog_dir = args.api_catalog_dir
+            api_catalog_dir = bundled_catalog_path()
             requested_api_catalog_mode = cast(
                 ProductApiCatalogMode | None,
                 args.api_catalog_mode,
@@ -498,10 +494,7 @@ def _run_cli_once(
         print(f"Workspace: {resolved.workspace}")
         print(f"State: {resolved.state_dir}")
 
-        api_catalog = _load_api_catalog(
-            api_catalog_dir,
-            workspace=resolved.workspace,
-        )
+        api_catalog = _load_api_catalog(api_catalog_dir)
         assert api_catalog_dir is not None
         api_catalog_mode = _resolve_api_catalog_mode(
             requested_api_catalog_mode,
@@ -733,7 +726,6 @@ def _validate_resume_arguments(args: argparse.Namespace) -> None:
         "--skills-dir": args.skills_dir,
         "--knowledge-pack": args.knowledge_pack,
         "--list-knowledge-packs": args.list_knowledge_packs or None,
-        "--api-catalog-dir": args.api_catalog_dir,
         "--api-catalog-mode": args.api_catalog_mode,
         "--concept-index-dir": args.concept_index_dir,
         "--concept-retrieval-mode": args.concept_retrieval_mode,
@@ -877,15 +869,11 @@ def _print_knowledge_packs() -> int:
     return 1 if inventory.issues else 0
 
 
-def _load_api_catalog(
-    directory: Path | None,
-    *,
-    workspace: Path,
-) -> ApiCatalog:
+def _load_api_catalog(directory: Path | None) -> ApiCatalog:
     if directory is None:
-        raise ValueError("new runs require --api-catalog-dir")
+        raise ValueError("product runs require an API catalog")
     resolved = directory.resolve(strict=True)
-    catalog = load_product_api_catalog(resolved, workspace=workspace)
+    catalog = load_product_api_catalog(resolved)
     print(
         f"API catalog: {resolved} "
         f"({len(catalog.cards)} cards, runtime={catalog.runtime_release})"
@@ -902,7 +890,7 @@ def _resolve_api_catalog_mode(
     catalog: ApiCatalog | None,
 ) -> ProductApiCatalogMode:
     if catalog is None:
-        raise ValueError("product runs require --api-catalog-dir")
+        raise ValueError("product runs require an API catalog")
     return requested or DEFAULT_PRODUCT_API_CATALOG_MODE
 
 

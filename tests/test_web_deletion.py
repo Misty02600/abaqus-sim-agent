@@ -19,7 +19,6 @@ from tests.test_web_tool_execution import _background_solver_app
 from tests.test_web_workbench import (
     Client,
     answer_body,
-    api_catalog_dir,
     configured_app,
     create,
     login,
@@ -96,9 +95,7 @@ def test_delete_waiting_or_complete_and_keep_other_conversations(tmp_path, compl
         ] == [other]
         assert (tmp_path / "web/states" / other).exists()
         if complete:
-            assert (workspace / "out.txt").read_text(
-                encoding="utf-8"
-            ) == "result"
+            assert (workspace / "out.txt").read_text(encoding="utf-8") == "result"
 
 
 def test_delete_active_model_waits_for_stream_to_close(tmp_path):
@@ -201,7 +198,6 @@ def test_delete_active_vendor_stage_cancels_before_removing_state(
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
             stream_model=False,
         ),
         api_key=SecretStr("fixture"),
@@ -363,7 +359,6 @@ def test_delete_shell_terminates_parent_and_child_processes(tmp_path, tool_name)
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
             stream_model=False,
         ),
         api_key=SecretStr("fixture"),

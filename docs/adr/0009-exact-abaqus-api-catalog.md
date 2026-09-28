@@ -7,6 +7,9 @@
 API Catalog 的工具范围、来源、trace 与默认启用策略继续有效；普通产品的独立调用次数预算由
 [ADR-0031](0031-remove-product-tool-call-count-limits.md) 部分替代。
 
+2026-09-27 普通产品改为自动读取包内 Catalog，目录配置和外置检查的当前语义见
+[Catalog 安装与升级](../architecture/knowledge-access.md#catalog-安装与升级)；下文保留当时决定。
+
 ## 日期
 
 2026-08-23

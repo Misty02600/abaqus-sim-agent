@@ -36,7 +36,7 @@ Web 主线仍未执行。外部 Job 对账、数据库控制面、多进程 Coor
 | 三个 typed Abaqus 阶段 | CAE 建模、Solver submit/wait、Abaqus Python 提取 | Abaqus 默认 allow、Solver 默认 deny；可允许有限次数，进程 timeout 默认 unlimited；普通会话的 `solver_job` 分离提交和等待 | [工具](../../src/abaqus_sim_agent/coding/runtime_tools.py)、[ADR-0033](../adr/0033-split-solver-submit-and-wait-actions.md) |
 | 执行前语法检查与可选静态反馈 | Python 3.10 解析失败阻止本次脚本执行；BasedPyright 诊断随运行结果返回 | 编辑可保留半成品；静态分析默认 off，无 API 案例阻断或原样重试逃生口 | [ADR-0038](../adr/0038-unify-runtime-syntax-and-static-feedback.md) |
 | Web Solver `ToolExecution` | 在宿主后台运行并观察 `solver_job(action=submit)` | submit 立即返回 execution ID；wait 读取同一结果；当前宿主可取消，重启中的活动进程不重附着 | [controller](../../src/abaqus_sim_agent/web/controller.py) |
-| 必选 API Catalog 与显式模式 | 默认仅在错误后附 verified note；`full` / `full_with_discovery` 可暴露主动查询 | 新 CLI/Web 会话必须绑定 Catalog；默认模式不暴露查询工具，discovery 候选仍需 exact lookup | [知识接入](knowledge-access.md)、[ADR-0040](../adr/0040-require-api-catalog-for-product-runs.md) |
+| 必选 API Catalog 与显式模式 | 默认仅在错误后附 verified note；`full` / `full_with_discovery` 可暴露主动查询 | 新 CLI/Web 自动读取并绑定包内 Catalog，无需配置路径；默认模式不暴露查询工具，discovery 候选仍需 exact lookup | [知识接入](knowledge-access.md)、[ADR-0040](../adr/0040-require-api-catalog-for-product-runs.md) |
 | UTF-8/CP936 工作区文本 | Abaqus 生成文本可正确读取、搜索、编辑和 Web 预览 | 编码严格识别；已有文件保持原编码，新文件 UTF-8，hash 绑定原始 bytes | [Agent 范围](agent-implementation-scope.md) |
 | 本机私有领域知识包 | 从用户级应用数据目录列出，并由新 CLI/Web 会话显式选择一个或多个包 | 默认 off；launch v10 绑定不可变 state 快照，包只提供参考文本，不增加 instructions、工具、权限或验收语义 | [知识接入](knowledge-access.md)、[ADR-0029](../adr/0029-discover-private-knowledge-from-user-data.md) |
 | 可选文档、ACI、probe、纯编辑策略 | 按显式 profile 增加证据或约束 | 默认关闭；冻结评测保留原合同，开发期旧产品 state 不迁移；接线不代表收益 | [Agent 范围](agent-implementation-scope.md) |

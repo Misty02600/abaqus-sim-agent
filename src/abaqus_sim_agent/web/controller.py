@@ -16,6 +16,7 @@ from uuid import uuid4
 from pydantic import SecretStr
 
 from ..api_catalog import ApiCatalog
+from ..api_catalog.bundled import bundled_catalog_path
 from ..coding.amendments import (
     CodingRunConfigPatch,
     RuntimeExecutionPolicyPatch,
@@ -128,7 +129,6 @@ DELETE_STOP_TIMEOUT_SECONDS = 20.0
 @dataclass(frozen=True)
 class ServerConfig:
     root: Path
-    api_catalog_dir: Path
     api_catalog_mode: ProductApiCatalogMode = DEFAULT_PRODUCT_API_CATALOG_MODE
     knowledge_packs_root: Path | None = None
     stream_model: bool = True
@@ -296,7 +296,7 @@ class RunController:
         runner_factory: RunnerFactory = Abaqus2024Runner,
     ):
         self.config, self.api_key = config, api_key
-        self.api_catalog = ApiCatalog.open(config.api_catalog_dir.resolve(strict=True))
+        self.api_catalog = ApiCatalog.open(bundled_catalog_path())
         self.registry = RunRegistry(config.root)
         self.threads = ThreadStore(self.registry)
         self.invocations = InvocationStore(self.registry)
@@ -1136,7 +1136,6 @@ class RunController:
                 state_dir=state,
                 execution=self.config.execution,
                 runtime=self.config.runtime,
-                api_catalog_dir=self.config.api_catalog_dir,
                 api_catalog_mode=self.config.api_catalog_mode,
                 **controls,
                 knowledge_pack_ids=command.knowledge_pack_ids,

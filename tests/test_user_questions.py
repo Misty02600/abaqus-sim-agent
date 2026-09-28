@@ -73,6 +73,9 @@ def test_cli_catalog_questions_resume_preserves_schema_binding_and_lookup_usage(
         runtime_release="2024",
     )
     catalog.write(catalog_dir)
+    monkeypatch.setattr(
+        "abaqus_sim_agent.coding.cli.bundled_catalog_path", lambda: catalog_dir
+    )
     state, workspace = tmp_path / "state", tmp_path / "workspace"
     workspace.mkdir()
     steps = []
@@ -139,8 +142,6 @@ def test_cli_catalog_questions_resume_preserves_schema_binding_and_lookup_usage(
                 str(workspace),
                 "--state-dir",
                 str(state),
-                "--api-catalog-dir",
-                str(catalog_dir),
                 "--api-catalog-mode",
                 mode,
             ]
@@ -626,8 +627,6 @@ def test_cli_default_asks_outside_event_loop_and_run_lock(tmp_path, monkeypatch)
                 str(workspace),
                 "--state-dir",
                 str(state),
-                "--api-catalog-dir",
-                str(catalog),
             ]
         )
         == 0

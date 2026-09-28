@@ -10,18 +10,15 @@ from abaqus_sim_agent.web.cli import parse_args
 def test_web_cli_opens_plain_local_url_by_default_and_supports_opt_out(
     tmp_path: Path,
 ) -> None:
-    catalog = tmp_path / "api-catalog"
-    default = parse_args(["--root", str(tmp_path), "--api-catalog-dir", str(catalog)])
+    default = parse_args(["--root", str(tmp_path)])
     assert default.no_open is False
     assert default.port == 8765
-    assert default.api_catalog_dir == catalog
+    assert not hasattr(default, "api_catalog_dir")
 
     disabled = parse_args(
         [
             "--root",
             str(tmp_path),
-            "--api-catalog-dir",
-            str(catalog),
             "--no-open",
         ]
     )
@@ -32,8 +29,6 @@ def test_web_cli_opens_plain_local_url_by_default_and_supports_opt_out(
             [
                 "--root",
                 str(tmp_path),
-                "--api-catalog-dir",
-                str(catalog),
                 "--open",
             ]
         )

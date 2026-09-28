@@ -98,7 +98,6 @@ def configured_app(tmp_path, *, fail=False, block=None, crash_once=None):
 
     config = ServerConfig(
         root=tmp_path / "web",
-        api_catalog_dir=api_catalog_dir(tmp_path),
         stream_model=False,
         budget=CodingRunBudget(
             max_model_requests=8, max_abaqus_calls=0, max_solver_calls=0

@@ -3,27 +3,20 @@
 import json
 import shutil
 import subprocess
-import tempfile
 from pathlib import Path
 
-from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.persistence import write_bytes_atomic
 from abaqus_sim_agent.web.app import create_app
 from abaqus_sim_agent.web.controller import ServerConfig
 
 root = Path(__file__).resolve().parents[1]
 frontend = root / "webui"
-with tempfile.TemporaryDirectory(prefix="abaqus-web-schema-") as temporary:
-    catalog_dir = Path(temporary) / "api-catalog"
-    ApiCatalog([], runtime_release="2024").write(catalog_dir)
-    app = create_app(
-        ServerConfig(root=root / "var" / "schema-only", api_catalog_dir=catalog_dir)
-    )
-    (frontend / "openapi.json").write_text(
-        json.dumps(app.openapi(), ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-        newline="\n",
-    )
+app = create_app(ServerConfig(root=root / "var" / "schema-only"))
+(frontend / "openapi.json").write_text(
+    json.dumps(app.openapi(), ensure_ascii=False, indent=2) + "\n",
+    encoding="utf-8",
+    newline="\n",
+)
 npm = shutil.which("npm.cmd") or shutil.which("npm")
 if npm is None:
     raise SystemExit("请安装Node.js 22+与npm")

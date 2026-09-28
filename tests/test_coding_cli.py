@@ -55,7 +55,7 @@ def test_parser_leaves_workspace_unset_for_cwd_default() -> None:
     assert args.model_provider is None
     assert args.model is None
     assert args.http_retries is None
-    assert args.api_catalog_dir is None
+    assert not hasattr(args, "api_catalog_dir")
     assert args.api_catalog_mode is None
     assert args.diagnostic_retrieval_mode is None
     assert args.static_preflight_mode == "off"
@@ -243,8 +243,6 @@ def test_cli_binds_and_reads_selected_private_knowledge_pack(
             "cli-private-pack",
             "--knowledge-pack",
             "private-fea",
-            "--api-catalog-dir",
-            str(_catalog_dir(tmp_path)),
         ]
     )
 
@@ -363,8 +361,6 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
             "cli-resume-test",
             "--model-provider",
             gateway,
-            "--api-catalog-dir",
-            str(_catalog_dir(tmp_path)),
         ]
     )
     assert first_exit == 1
@@ -435,8 +431,6 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
             "cli-resume-test",
             "--model-provider",
             "opencode-go",
-            "--api-catalog-dir",
-            str(_catalog_dir(tmp_path)),
         ]
     )
 
@@ -571,8 +565,6 @@ def test_cli_task_revision_preserves_old_outcome_and_reverifies_fresh_work(
                 str(state_dir),
                 "--run-id",
                 "cli-task-revision",
-                "--api-catalog-dir",
-                str(_catalog_dir(tmp_path)),
             ]
         )
         == 0
@@ -700,8 +692,6 @@ def test_cli_resolves_startup_cwd_before_model_configuration(
             str(state_dir),
             "--run-id",
             "cli-test",
-            "--api-catalog-dir",
-            str(_catalog_dir(tmp_path)),
         ]
     )
 
@@ -734,8 +724,6 @@ def test_cli_explicit_workspace_overrides_startup_cwd(
             str(state_dir),
             "--run-id",
             "cli-workspace-test",
-            "--api-catalog-dir",
-            str(_catalog_dir(tmp_path)),
         ]
     )
 
@@ -768,8 +756,6 @@ def test_cli_opencode_gateway_reads_only_opencode_key(
             "cli-opencode-test",
             "--model-provider",
             "opencode-zen",
-            "--api-catalog-dir",
-            str(_catalog_dir(tmp_path)),
         ]
     )
 
@@ -778,7 +764,9 @@ def test_cli_opencode_gateway_reads_only_opencode_key(
     assert "OPENCODE_API_KEY must not be empty" in output
 
 
-def test_cli_loads_catalog_only_outside_workspace(tmp_path: Path) -> None:
+def test_cli_loads_catalog_without_workspace_location_restrictions(
+    tmp_path: Path,
+) -> None:
     workspace = tmp_path / "workspace"
     workspace.mkdir()
     catalog_dir = tmp_path / "catalog"
@@ -796,7 +784,7 @@ def test_cli_loads_catalog_only_outside_workspace(tmp_path: Path) -> None:
         runtime_release="2024",
     ).write(catalog_dir)
 
-    loaded = _load_api_catalog(catalog_dir, workspace=workspace.resolve())
+    loaded = _load_api_catalog(catalog_dir)
 
     assert loaded is not None
     assert loaded.lookup("Part.Set").status == "found"
@@ -806,8 +794,7 @@ def test_cli_loads_catalog_only_outside_workspace(tmp_path: Path) -> None:
 
     nested_catalog = workspace / "catalog"
     ApiCatalog([], runtime_release="2024").write(nested_catalog)
-    with pytest.raises(ValueError, match="outside"):
-        _load_api_catalog(nested_catalog, workspace=workspace.resolve())
+    assert _load_api_catalog(nested_catalog).cards == ()
 
 
 def test_cli_catalog_mode_defaults_and_validates_catalog_presence() -> None:

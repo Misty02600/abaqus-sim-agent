@@ -10,7 +10,6 @@ from pydantic_ai.models.function import FunctionModel
 from tests.test_web_workbench import (
     Client,
     NoProcess,
-    api_catalog_dir,
     login,
     settled,
 )
@@ -77,7 +76,6 @@ def open_request_app(tmp_path, mode="response"):
 
     config = ServerConfig(
         root=tmp_path / "web",
-        api_catalog_dir=api_catalog_dir(tmp_path),
         stream_model=False,
         budget=CodingRunBudget(
             max_model_requests=5, max_abaqus_calls=0, max_solver_calls=0
@@ -180,7 +178,6 @@ def test_text_completion_cannot_hide_file_changes(tmp_path):
 async def test_response_output_is_enabled_only_for_open_request_agent(tmp_path):
     config = ServerConfig(
         root=tmp_path / "host",
-        api_catalog_dir=api_catalog_dir(tmp_path),
     )
     (tmp_path / "workspace").mkdir()
     prepared = prepare_new_run(
@@ -190,7 +187,6 @@ async def test_response_output_is_enabled_only_for_open_request_agent(tmp_path):
         state_dir=tmp_path / "state",
         execution=config.execution,
         runtime=config.runtime,
-        api_catalog_dir=config.api_catalog_dir,
     )
     observed = []
 
