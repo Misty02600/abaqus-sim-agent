@@ -4,7 +4,7 @@ from collections.abc import Mapping
 
 from pydantic import BaseModel, ConfigDict
 
-from abaqus_sim_agent.verification.beam_tension import (
+from abaqus_sim_agent.verification.beam_reference import (
     BeamTensionMeasurements,
     BeamTensionOracleSpec,
     BeamTensionVerification,

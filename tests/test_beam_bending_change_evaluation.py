@@ -37,7 +37,7 @@ from abaqus_sim_agent.verification.beam_bending_change import (
 from abaqus_sim_agent.verification.beam_bending_change_run import (
     BeamBendingChangeVerificationAttempt,
 )
-from abaqus_sim_agent.verification.beam_tension import BeamTensionMeasurements
+from abaqus_sim_agent.verification.beam_reference import BeamTensionMeasurements
 from abaqus_sim_agent.verification.model_change_evidence import WorkspaceChangeReport
 
 
@@ -181,13 +181,6 @@ def test_bending_convergence_evidence_preserves_negative_and_strict_results() ->
     request_v2_path = (
         project_root / "benchmarks" / "coding" / "beam_bending_change_request_v2.json"
     )
-    verifier_path = (
-        project_root
-        / "src"
-        / "abaqus_sim_agent"
-        / "verification"
-        / "beam_bending_change.py"
-    )
     evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
     control = evidence["control_diagnosis"]
     production_first, read_card, declared = evidence["treatments"]
@@ -213,9 +206,9 @@ def test_bending_convergence_evidence_preserves_negative_and_strict_results() ->
         declared["request_sha256"]
         == hashlib.sha256(request_v2_path.read_bytes()).hexdigest()
     )
-    assert (
-        replay["verifier_sha256"]
-        == hashlib.sha256(verifier_path.read_bytes()).hexdigest()
+    # 冻结证据绑定当时的实现；当前模块拆分不能回填历史源码hash。
+    assert replay["verifier_sha256"] == (
+        "2a8e0cd8d65109af3cb99665914f501da9965cc8ac758fdbad6098eaa694d0c7"
     )
 
 

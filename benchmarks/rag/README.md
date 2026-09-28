@@ -99,7 +99,7 @@ Provenance checksums:
 ## Downstream status
 
 Concept retrieval remains off by default. The frozen
-[`bar_tension_3d` Concept experiment](../coding/bar_tension_3d_concept_evaluation_20260824.json)
+[`bar_tension_3d` Concept experiment](https://github.com/Misty02600/abaqus-sim-agent/blob/aa7116f0377a6fd5f1173b057797ba54abe70478/benchmarks/coding/bar_tension_3d_concept_evaluation_20260824.json)
 observed 3/3 pre-CAE lookup adoption after adding a prompt-only policy, but no
 closed-loop success improvement over the 2/3 control. Merely exposing the tool
 produced zero Concept lookups in 3/3 runs. Retrieval quality and tool adoption

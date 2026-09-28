@@ -40,10 +40,12 @@ from abaqus_sim_agent.evaluation.task_baseline_runner import (
 )
 from abaqus_sim_agent.evaluation.task_baseline_service import run_service_live
 from abaqus_sim_agent.execution import DEFAULT_ABAQUS_2024_LAUNCHER, Abaqus2024Runner
-from abaqus_sim_agent.verification.assets import plate_tension_oracle_script
-from abaqus_sim_agent.verification.bar_run import bar_tension_3d_oracle_script
-from abaqus_sim_agent.verification.bar_tension_3d import BarTension3DMeasurements
-from abaqus_sim_agent.verification.plate_tension import PlateTensionMeasurements
+from abaqus_sim_agent.verification.assets import (
+    bar_tension_3d_oracle_script,
+    plate_tension_oracle_script,
+)
+from abaqus_sim_agent.verification.bar_measurements import BarTension3DMeasurements
+from abaqus_sim_agent.verification.plate_reference import PlateTensionMeasurements
 
 REPOSITORY = Path(__file__).resolve().parents[3]
 REFERENCES = {"right_mean_u1": 0.1, "mean_s11": 210.0, "left_sum_rf1": -4200.0}

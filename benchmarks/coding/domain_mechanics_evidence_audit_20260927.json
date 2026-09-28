@@ -1,0 +1,2264 @@
+{
+  "audited_at": "2026-09-27",
+  "repository_baseline": "aa7116f0377a6fd5f1173b057797ba54abe70478",
+  "scope": "Read-only excerpts of existing local evidence; no Provider, Abaqus, rescoring, or complete seal revalidation. This is not a new benchmark protocol or an aggregate success-rate report.",
+  "batches": [
+    {
+      "directory": "public-mechanics-agent-v1-20260915",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-agent-v1-20260915/manifest.json",
+        "sha256": "0766b39b2f5c84cc3964a380706706ac75e8e5caa8b0ee79d727fd817d494b4f"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-agent-v1-20260915/seal.json",
+        "sha256": "bb866e3388917218bd2de64c65a0aa60da830219546b37c5f5c3e320ce402abf"
+      },
+      "report": null,
+      "version": "public-mechanics-e2e-v1",
+      "verification_policy": null,
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 10,
+        "http_timeout_seconds": 60.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "uniform-axial-bar": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "stepped-axial-bar": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "cantilever-tip-load": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "cantilever-uniform-load": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "plate-with-hole-tension": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "solid-cantilever-directional-bending": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": null,
+      "script_review_status": null,
+      "trials": [
+        {
+          "case_id": "uniform-axial-bar",
+          "reported_classification": null,
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-agent-v1-20260915/uniform-axial-bar/state/outcome.json",
+            "sha256": "8c80c90d695fbc898b12e9eba59c20d3221d6cc30d1222721bf80eada5f62fe9"
+          },
+          "outcome_status": "completed",
+          "failure_stage": null,
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 20,
+            "input_tokens": 376463,
+            "output_tokens": 13929,
+            "tool_calls": 23,
+            "api_lookup_calls": 0,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 5,
+            "solver_calls": 1,
+            "wall_time_seconds": 252.59334550000494,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": null
+        },
+        {
+          "case_id": "stepped-axial-bar",
+          "reported_classification": null,
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-agent-v1-20260915/stepped-axial-bar/state/outcome.json",
+            "sha256": "3642ee5e0b5f06939a64f24432ae88730378f557ec6d0e0626b9618a070b5f9c"
+          },
+          "outcome_status": "completed",
+          "failure_stage": null,
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 23,
+            "input_tokens": 742235,
+            "output_tokens": 29468,
+            "tool_calls": 30,
+            "api_lookup_calls": 5,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 7,
+            "solver_calls": 1,
+            "wall_time_seconds": 610.3454525999841,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": null
+        },
+        {
+          "case_id": "cantilever-tip-load",
+          "reported_classification": null,
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-agent-v1-20260915/cantilever-tip-load/state/outcome.json",
+            "sha256": "4ff29325905dbc16f1da8d08ebe9e2c48edfc458c4c030d7555d8b37633fe0e7"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 2464147,
+            "output_tokens": 62982,
+            "tool_calls": 49,
+            "api_lookup_calls": 5,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 12,
+            "solver_calls": 2,
+            "wall_time_seconds": 934.0589465000085,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": null
+        },
+        {
+          "case_id": "cantilever-uniform-load",
+          "reported_classification": null,
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-agent-v1-20260915/cantilever-uniform-load/state/outcome.json",
+            "sha256": "c5d1fcf428180ae15a437c73bb7309005efcfa51081e9e8e540815c774cefbe9"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 1975336,
+            "output_tokens": 50513,
+            "tool_calls": 46,
+            "api_lookup_calls": 5,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 12,
+            "solver_calls": 2,
+            "wall_time_seconds": 805.4077023999998,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": null
+        },
+        {
+          "case_id": "plate-with-hole-tension",
+          "reported_classification": null,
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": null
+        },
+        {
+          "case_id": "solid-cantilever-directional-bending",
+          "reported_classification": null,
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": null
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-agent-v2-20260915",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-agent-v2-20260915/manifest.json",
+        "sha256": "193ab74b58c3d41e8c76fe5c60cd2667f49af69a5bd13bd7dbbf0f571b817fe5"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-agent-v2-20260915/seal.json",
+        "sha256": "1a90e7015b43084c4f29dde9181f16630b4ab8209864be95cc40543ec4de7efb"
+      },
+      "report": null,
+      "version": "public-mechanics-e2e-v2-measurement-fix",
+      "verification_policy": null,
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 10,
+        "http_timeout_seconds": 60.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "cantilever-uniform-load": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "plate-with-hole-tension": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "solid-cantilever-directional-bending": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": null,
+      "script_review_status": null,
+      "trials": [
+        {
+          "case_id": "cantilever-uniform-load",
+          "reported_classification": null,
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": null
+        },
+        {
+          "case_id": "plate-with-hole-tension",
+          "reported_classification": null,
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": null
+        },
+        {
+          "case_id": "solid-cantilever-directional-bending",
+          "reported_classification": null,
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": null
+        }
+      ],
+      "handoff": {
+        "path": "D:/abaqus-runs/public-mechanics-agent-v2-20260915/user_pause_handoff.json",
+        "sha256": "a11de3ee8cb41fddd745ba0349c05c94ad52a1b809b7fecec442d09d6ffc09e1",
+        "case_status": {
+          "cantilever-uniform-load": "host_interrupted_no_final_outcome",
+          "plate-with-hole-tension": "not_started",
+          "solid-cantilever-directional-bending": "not_started"
+        }
+      }
+    },
+    {
+      "directory": "public-mechanics-infra-v3-release-20260915",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-infra-v3-release-20260915/manifest.json",
+        "sha256": "f49869b6c6a158fc56551492ed35b0086201909f50a35abadda7ec2d50d0bff1"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-infra-v3-release-20260915/seal.json",
+        "sha256": "772c9657c5c3d30067f2755401fd0add043e4ea2a87bc7107807ce1a4fadec36"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-infra-v3-release-20260915/report.json",
+        "sha256": "9dc2e26b2755c654e57cb80a5bdb3fb299d61d282a84d72a66b32dbbbf88480a"
+      },
+      "version": "public-mechanics-e2e-v3-recoverable",
+      "verification_policy": null,
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 1,
+        "http_timeout_seconds": 180.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "plate-with-hole-tension": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "solid-cantilever-directional-bending": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": null,
+      "trials": [
+        {
+          "case_id": "plate-with-hole-tension",
+          "reported_classification": "not_started",
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": 0
+        },
+        {
+          "case_id": "solid-cantilever-directional-bending",
+          "reported_classification": "not_started",
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": 0
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-knowledge-api-v5-20260916",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-knowledge-api-v5-20260916/manifest.json",
+        "sha256": "f7d2ad476c672383f576408502e5defda0c75614c82f8c8e6e75ba6d771e589d"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-knowledge-api-v5-20260916/seal.json",
+        "sha256": "90a6f4fb3c027e7817d055a3d991f4dd1e91c26dc30e09413e208880489e140d"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-knowledge-api-v5-20260916/report.json",
+        "sha256": "634672fd677b5d5416fae39a9fe1687d44b5058624632b5044f2f0e280ee82d2"
+      },
+      "version": "public-mechanics-e2e-v5-knowledge-discovery",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 1,
+        "http_timeout_seconds": 180.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "plate-with-hole-tension": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "solid-cantilever-directional-bending": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "plate-with-hole-tension",
+          "reported_classification": "formal_pass",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-knowledge-api-v5-20260916/plate-with-hole-tension/state/outcome.json",
+            "sha256": "ad9caf7acc543e5b3b6449f107243d705b9203fb7d131d90e82941a0dabd8458"
+          },
+          "outcome_status": "completed",
+          "failure_stage": null,
+          "amendment_sequence": 2,
+          "outcome_usage": {
+            "model_requests": 51,
+            "input_tokens": 3609944,
+            "output_tokens": 68827,
+            "tool_calls": 60,
+            "api_lookup_calls": 7,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 16,
+            "solver_calls": 4,
+            "wall_time_seconds": 3198.533148300001,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "completed",
+          "last_error_type": null,
+          "attempt_count": 8
+        },
+        {
+          "case_id": "solid-cantilever-directional-bending",
+          "reported_classification": "formal_pass",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-knowledge-api-v5-20260916/solid-cantilever-directional-bending/state/outcome.json",
+            "sha256": "b6d3cc44964cfeb876f19c9d4a6d93c2af8ffee0fc9fd155923c7e6a4e32addf"
+          },
+          "outcome_status": "completed",
+          "failure_stage": null,
+          "amendment_sequence": 3,
+          "outcome_usage": {
+            "model_requests": 59,
+            "input_tokens": 5285278,
+            "output_tokens": 97010,
+            "tool_calls": 68,
+            "api_lookup_calls": 8,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 16,
+            "solver_calls": 3,
+            "wall_time_seconds": 6156.258801900009,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "completed",
+          "last_error_type": null,
+          "attempt_count": 15
+        }
+      ],
+      "interpretation": "Original formal batch: provider_interrupted for both cases. Current report formal_pass labels describe post-hoc amended continuations, not formal passes. See public_mechanics_knowledge_api_v5_20260916.md."
+    },
+    {
+      "directory": "public-mechanics-sol-test-20260915",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-sol-test-20260915/manifest.json",
+        "sha256": "271a9f2db332234422bcdecfa7a062a4db22a04fffe997a172aa234b805f39a8"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-sol-test-20260915/seal.json",
+        "sha256": "833be5ef7dc7699bb83466ddcf3299085b8d7c5cf3c80d5c19f6c4cb1fbae915"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-sol-test-20260915/report.json",
+        "sha256": "249c111eed45abe2eb5b513b663a8d61ec5480c8b3aced550a729a982ae40fa6"
+      },
+      "version": "public-mechanics-e2e-v3-recoverable",
+      "verification_policy": null,
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 1,
+        "http_timeout_seconds": 180.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "solid-cantilever-directional-bending": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "plate-with-hole-tension": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": null,
+      "trials": [
+        {
+          "case_id": "solid-cantilever-directional-bending",
+          "reported_classification": "task_failed",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-sol-test-20260915/solid-cantilever-directional-bending/state/outcome.json",
+            "sha256": "72f59e191cfa5fb2527a10e1ba980b319ee7e2fc92cd827024a2f618b1533122"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 3345508,
+            "output_tokens": 97347,
+            "tool_calls": 60,
+            "api_lookup_calls": 8,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 10,
+            "solver_calls": 2,
+            "wall_time_seconds": 1258.3035298999748,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "failed",
+          "last_error_type": null,
+          "attempt_count": 1
+        },
+        {
+          "case_id": "plate-with-hole-tension",
+          "reported_classification": "task_failed",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-sol-test-20260915/plate-with-hole-tension/state/outcome.json",
+            "sha256": "8409353b26f605b6f62e4017e9adcf30d28408444edaccf707ba83d7c4fc5406"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 2348211,
+            "output_tokens": 59905,
+            "tool_calls": 50,
+            "api_lookup_calls": 5,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 12,
+            "solver_calls": 1,
+            "wall_time_seconds": 506.64722859999165,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "failed",
+          "last_error_type": null,
+          "attempt_count": 1
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v10-nafems-le1-elliptic-membrane-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v10-nafems-le1-elliptic-membrane-20260917/manifest.json",
+        "sha256": "9844d4d76df9ad66a8b3ffcfd902bfb81bea61ffd4fbac87a56fee44c43489ad"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v10-nafems-le1-elliptic-membrane-20260917/seal.json",
+        "sha256": "6703dec92f969b3b36ca0c14cc9e6fe2d1026ce529e6231f5dc1c48cee30c31e"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v10-nafems-le1-elliptic-membrane-20260917/report.json",
+        "sha256": "a100a62623d030ef205d3b34538902d05edd8ea1e58641e84f8407d36a20ec0a"
+      },
+      "version": "public-mechanics-e2e-v10-nafems-le1-elliptic-membrane-extension",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "nafems-le1-elliptic-membrane": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "nafems-le1-elliptic-membrane",
+          "reported_classification": "task_failed",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v10-nafems-le1-elliptic-membrane-20260917/nafems-le1-elliptic-membrane/state/outcome.json",
+            "sha256": "9ed8df009966f237a2972148644eea4ca9474835a3b91f43ed54850e0306ca8f"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 2448716,
+            "output_tokens": 71762,
+            "tool_calls": 49,
+            "api_lookup_calls": 8,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 13,
+            "solver_calls": 0,
+            "wall_time_seconds": 1424.6457796000032,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "failed",
+          "last_error_type": null,
+          "attempt_count": 1
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v11-nafems-le10-thick-plate-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v11-nafems-le10-thick-plate-20260917/manifest.json",
+        "sha256": "70bb3bb202c99c38b9cfa1e3515b7a7170a02e2f91dab7ac7ed6094e17c3a151"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v11-nafems-le10-thick-plate-20260917/seal.json",
+        "sha256": "0e2146889016b4cbc39028bbf3434914f18f9dc1154db70e1236c1bba7ee4055"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v11-nafems-le10-thick-plate-20260917/report.json",
+        "sha256": "70f262713ada8e7d80c121a2a21d30d18f2a9171a7c701b7463c47c7599549fd"
+      },
+      "version": "public-mechanics-e2e-v11-nafems-le10-thick-plate-extension",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "nafems-le10-thick-plate-pressure": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "nafems-le10-thick-plate-pressure",
+          "reported_classification": "task_failed",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v11-nafems-le10-thick-plate-20260917/nafems-le10-thick-plate-pressure/state/outcome.json",
+            "sha256": "53fbf240ef7076b7664290dce0c2952c0f824c2bbc14778ffff53b17d6b87850"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 3314915,
+            "output_tokens": 79565,
+            "tool_calls": 50,
+            "api_lookup_calls": 5,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 10,
+            "solver_calls": 1,
+            "wall_time_seconds": 1280.9698277999705,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "failed",
+          "last_error_type": null,
+          "attempt_count": 1
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v12-nafems-le3-hemisphere-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v12-nafems-le3-hemisphere-20260917/manifest.json",
+        "sha256": "411944b5cacc62e6677f17b762469fe77b3867c2acc538bc4c383d873adb14dc"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v12-nafems-le3-hemisphere-20260917/seal.json",
+        "sha256": "cbac06dea52d4fa64e838b32ea1a669d3cfacc0d116e607a53edf927fa4433a3"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v12-nafems-le3-hemisphere-20260917/report.json",
+        "sha256": "dbdafb0acded6096f9e94c879415071fc4ce47b2445e6e14412ad832c4d2ca6d"
+      },
+      "version": "public-mechanics-e2e-v12-nafems-le3-hemisphere-extension",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "nafems-le3-hemisphere-point-loads": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "nafems-le3-hemisphere-point-loads",
+          "reported_classification": "task_failed",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v12-nafems-le3-hemisphere-20260917/nafems-le3-hemisphere-point-loads/state/outcome.json",
+            "sha256": "bd18b314a1941215d6f8aa14fecb35c9c167dfd61cd1968dbde4ebfbbd61e263"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 4271129,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 4063616,
+            "output_tokens": 108309,
+            "provider_details": {
+              "prompt_cache_hit_tokens": 180608,
+              "prompt_cache_miss_tokens": 17282,
+              "reasoning_tokens": 74711
+            },
+            "tool_calls": 46,
+            "api_lookup_calls": 8,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 9,
+            "solver_calls": 1,
+            "wall_time_seconds": 1248.8327779999818,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "failed",
+          "last_error_type": null,
+          "attempt_count": 1
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v13-foundation-api-regression-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v13-foundation-api-regression-20260917/manifest.json",
+        "sha256": "6099c2a302fa25cc5257df9a45a6c6aa3f2445867a4b7be797925239f127857e"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v13-foundation-api-regression-20260917/seal.json",
+        "sha256": "17817cf28b6cdf13e81f2bb6dced8db5fbfd8f2aecefcc2ebe3fd8d38f8ef941"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v13-foundation-api-regression-20260917/report.json",
+        "sha256": "e47d01e5c3f0fce93243b1ecef2fefcdc29a028764aa7d16190b3612ee128983"
+      },
+      "version": "public-mechanics-e2e-v13-foundation-api-regression",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "cantilever-tip-load": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "circular-shaft-pure-torsion": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "plane-stress-uniform-tension": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "cantilever-tip-load",
+          "reported_classification": "task_failed",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v13-foundation-api-regression-20260917/cantilever-tip-load/state/outcome.json",
+            "sha256": "54b59fa0669f1b48959a95939dac958895c35404ca2802acf4defb3f17d8b3bd"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 2537445,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 2413312,
+            "output_tokens": 65428,
+            "provider_details": {},
+            "tool_calls": 49,
+            "api_lookup_calls": 4,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 9,
+            "solver_calls": 0,
+            "wall_time_seconds": 1121.2477777999884,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "failed",
+          "last_error_type": null,
+          "attempt_count": 1
+        },
+        {
+          "case_id": "circular-shaft-pure-torsion",
+          "reported_classification": "formal_pass",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v13-foundation-api-regression-20260917/circular-shaft-pure-torsion/state/outcome.json",
+            "sha256": "c6afc7103143c76b67c94136fa6d1de01c4e5250360f29e720c56aebc36ca9f7"
+          },
+          "outcome_status": "completed",
+          "failure_stage": null,
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 16,
+            "input_tokens": 492398,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 424320,
+            "output_tokens": 25263,
+            "provider_details": {
+              "prompt_cache_hit_tokens": 393344,
+              "prompt_cache_miss_tokens": 35768,
+              "reasoning_tokens": 18540
+            },
+            "tool_calls": 21,
+            "api_lookup_calls": 4,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 4,
+            "solver_calls": 1,
+            "wall_time_seconds": 152.58158460000413,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "completed",
+          "last_error_type": null,
+          "attempt_count": 1
+        },
+        {
+          "case_id": "plane-stress-uniform-tension",
+          "reported_classification": "formal_pass",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v13-foundation-api-regression-20260917/plane-stress-uniform-tension/state/outcome.json",
+            "sha256": "63895b2951ab5543096e05ad010ac8f8f6315b81ecd4e6f78f3a1a6e9a5b772d"
+          },
+          "outcome_status": "completed",
+          "failure_stage": null,
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 26,
+            "input_tokens": 1229553,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 1170304,
+            "output_tokens": 37227,
+            "provider_details": {
+              "prompt_cache_hit_tokens": 1170304,
+              "prompt_cache_miss_tokens": 52277,
+              "reasoning_tokens": 26703
+            },
+            "tool_calls": 32,
+            "api_lookup_calls": 7,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 5,
+            "solver_calls": 1,
+            "wall_time_seconds": 251.62477380000928,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "completed",
+          "last_error_type": null,
+          "attempt_count": 1
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v14-nafems-le5-z-section-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v14-nafems-le5-z-section-20260917/manifest.json",
+        "sha256": "6ffc5eda9622ae849b78d77595b99c9d8da533c26c71affbbc143a954b12b336"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v14-nafems-le5-z-section-20260917/seal.json",
+        "sha256": "d1e1e52bd938cc66362b69decd26a7d6d05010725bf263a21d84b586577c11fc"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v14-nafems-le5-z-section-20260917/report.json",
+        "sha256": "20963d44a1e2b90e16531c64a1429d8350224649a4690a44f6cde5f14afd356f"
+      },
+      "version": "public-mechanics-e2e-v14-nafems-le5-z-section",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "nafems-le5-z-section-cantilever": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "nafems-le5-z-section-cantilever",
+          "reported_classification": "formal_pass",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v14-nafems-le5-z-section-20260917/nafems-le5-z-section-cantilever/state/outcome.json",
+            "sha256": "236a143617056990252b2778c9c3b0a16ffef8be698ab1d2bd22febbe70da2d4"
+          },
+          "outcome_status": "completed",
+          "failure_stage": null,
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 36,
+            "input_tokens": 2416155,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 2091264,
+            "output_tokens": 73616,
+            "provider_details": {
+              "prompt_cache_hit_tokens": 72960,
+              "prompt_cache_miss_tokens": 23400,
+              "reasoning_tokens": 27523
+            },
+            "tool_calls": 48,
+            "api_lookup_calls": 8,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 9,
+            "solver_calls": 1,
+            "wall_time_seconds": 1194.9365403999836,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "completed",
+          "last_error_type": null,
+          "attempt_count": 2
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v15-nafems-le2-cylindrical-shell-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v15-nafems-le2-cylindrical-shell-20260917/manifest.json",
+        "sha256": "bf4303da581eb619924ef6f14972a81a1a295164fd9805b1452d2624e9bec087"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v15-nafems-le2-cylindrical-shell-20260917/seal.json",
+        "sha256": "2e2752720dab69960223a80a4cfdff90e593fd31429a7ae108ec7254464a50e8"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v15-nafems-le2-cylindrical-shell-20260917/report.json",
+        "sha256": "71135e70b87510122b6b356c96268db615219e2102a6268a98e25e52585e7bfa"
+      },
+      "version": "public-mechanics-e2e-v15-nafems-le2-cylindrical-shell",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "nafems-le2-cylindrical-shell-patch": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "nafems-le2-cylindrical-shell-patch",
+          "reported_classification": "provider_interrupted",
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": "interrupted",
+          "last_error_type": "ModelHTTPError",
+          "attempt_count": 2
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v16-nafems-le4-axisymmetric-shell-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v16-nafems-le4-axisymmetric-shell-20260917/manifest.json",
+        "sha256": "5267259e417f48eaf1e0a9cf0215954f09c508f994e60c2b7f95d658e3066786"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v16-nafems-le4-axisymmetric-shell-20260917/seal.json",
+        "sha256": "bf75635892e10e64bed6b6e14ec87692603663cbc9b1fdce8d73c22d4fe204af"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v16-nafems-le4-axisymmetric-shell-20260917/report.json",
+        "sha256": "f2b540ee379c9fd081bb620d7fcc49a6a0485a7fc3dac43fc87ff1e242832358"
+      },
+      "version": "public-mechanics-e2e-v16-nafems-le4-axisymmetric-hyperbolic-shell",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "nafems-le4-axisymmetric-hyperbolic-shell": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "nafems-le4-axisymmetric-hyperbolic-shell",
+          "reported_classification": "formal_pass",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v16-nafems-le4-axisymmetric-shell-20260917/nafems-le4-axisymmetric-hyperbolic-shell/state/outcome.json",
+            "sha256": "10c352fafe0b3155d7eb080602181e41cbcf1df5e97fc0da186a58bf57b0cd40"
+          },
+          "outcome_status": "completed",
+          "failure_stage": null,
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 28,
+            "input_tokens": 2298236,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 2199808,
+            "output_tokens": 75459,
+            "provider_details": {
+              "prompt_cache_hit_tokens": 6912,
+              "prompt_cache_miss_tokens": 9409,
+              "reasoning_tokens": 41430
+            },
+            "tool_calls": 42,
+            "api_lookup_calls": 7,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 9,
+            "solver_calls": 3,
+            "wall_time_seconds": 1200.4736341999815,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "completed",
+          "last_error_type": null,
+          "attempt_count": 1
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v17-nafems-le7-axisymmetric-cylinder-sphere-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v17-nafems-le7-axisymmetric-cylinder-sphere-20260917/manifest.json",
+        "sha256": "adf7a346c40aaa13c754e533dd41909601597a9b98e700f7723b75482453cfec"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v17-nafems-le7-axisymmetric-cylinder-sphere-20260917/seal.json",
+        "sha256": "0affcd3d0e3f41d6293e4388b546dd511cfbb14070ea9cbfac00c6e51e32895b"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v17-nafems-le7-axisymmetric-cylinder-sphere-20260917/report.json",
+        "sha256": "2d1eb61284684b2ccaab0a3430d42bb397a05e4f46443bd76616d4a7b61e170b"
+      },
+      "version": "public-mechanics-e2e-v17-nafems-le7-axisymmetric-cylinder-sphere",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "nafems-le7-axisymmetric-cylinder-sphere": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "nafems-le7-axisymmetric-cylinder-sphere",
+          "reported_classification": "formal_pass",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v17-nafems-le7-axisymmetric-cylinder-sphere-20260917/nafems-le7-axisymmetric-cylinder-sphere/state/outcome.json",
+            "sha256": "cba1019991fc29180c37d805aec18992eff5de590206d0ab31212aaf2435bc17"
+          },
+          "outcome_status": "completed",
+          "failure_stage": null,
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 29,
+            "input_tokens": 2785045,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 2214912,
+            "output_tokens": 185996,
+            "provider_details": {
+              "prompt_cache_hit_tokens": 968704,
+              "prompt_cache_miss_tokens": 46416,
+              "reasoning_tokens": 145343
+            },
+            "tool_calls": 42,
+            "api_lookup_calls": 2,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 8,
+            "solver_calls": 2,
+            "wall_time_seconds": 1359.52505820003,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "completed",
+          "last_error_type": null,
+          "attempt_count": 2
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v18-nafems-le8-axisymmetric-crown-knuckle-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v18-nafems-le8-axisymmetric-crown-knuckle-20260917/manifest.json",
+        "sha256": "1edcc3ef13416a9cadb4886ac1cd4267f01863d0c6d39184cdc35f85bbfc3727"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v18-nafems-le8-axisymmetric-crown-knuckle-20260917/seal.json",
+        "sha256": "5bf29b4751440f65a058394a658b9b62aeb94d3b26cdb4994d77b291550518f8"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v18-nafems-le8-axisymmetric-crown-knuckle-20260917/report.json",
+        "sha256": "4478c2195c31fdcaf9e3b60de7cdac8c2203d8946d1188681cf5cf2287fed32f"
+      },
+      "version": "public-mechanics-e2e-v18-nafems-le8-axisymmetric-crown-knuckle-shell",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "nafems-le8-axisymmetric-crown-knuckle-shell": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "nafems-le8-axisymmetric-crown-knuckle-shell",
+          "reported_classification": "interrupted",
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": "interrupted",
+          "last_error_type": "UnexpectedModelBehavior",
+          "attempt_count": 1
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v19-nafems-le9-branched-axisymmetric-shell-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v19-nafems-le9-branched-axisymmetric-shell-20260917/manifest.json",
+        "sha256": "f15b90e6fef4c09517568651e7f6f0b01f92369bad3843a7e7420ba070365531"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v19-nafems-le9-branched-axisymmetric-shell-20260917/seal.json",
+        "sha256": "0973b080148af8fe2e0d43993c6a0a42f0b7492adcceae5a3500567d25a4ed09"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v19-nafems-le9-branched-axisymmetric-shell-20260917/report.json",
+        "sha256": "5acfb6bf0cbfa20d0fdeaa0a87365c8c97fd427c1b24ec92677b36cc7610ba25"
+      },
+      "version": "public-mechanics-e2e-v19-nafems-le9-branched-axisymmetric-shell",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "nafems-le9-branched-axisymmetric-shell": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "nafems-le9-branched-axisymmetric-shell",
+          "reported_classification": "provider_interrupted",
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": "interrupted",
+          "last_error_type": "ModelHTTPError",
+          "attempt_count": 2
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v21-foundation-diverse-linear-20260918",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v21-foundation-diverse-linear-20260918/manifest.json",
+        "sha256": "45aa6155ee15f5e9bbd68f52fe8261a6dd3b2d33b5de31502df29c2982b12816"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v21-foundation-diverse-linear-20260918/seal.json",
+        "sha256": "3138decf7fdab4c68bcfee164cce42005bf1c0a0c7fb1f1ca26b7e82f0ad1013"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v21-foundation-diverse-linear-20260918/report.json",
+        "sha256": "93d02af6cbd5550649ff61075b507b8acaf8857e511713bda937d8fcfb62b929"
+      },
+      "version": "public-mechanics-e2e-v21-foundation-diverse-linear",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 1,
+        "http_timeout_seconds": 180.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "cantilever-tip-load": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "thick-cylinder-internal-pressure": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "nafems-le6-skew-plate": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "plate-with-hole-tension": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "cantilever-tip-load",
+          "reported_classification": "formal_pass",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v21-foundation-diverse-linear-20260918/cantilever-tip-load/state/outcome.json",
+            "sha256": "0f8b3e53c7fe87a240052caf74c74746061d758edbdc81d6ab2915e5df966a1e"
+          },
+          "outcome_status": "completed",
+          "failure_stage": null,
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 32,
+            "input_tokens": 1473693,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 1422336,
+            "output_tokens": 42235,
+            "provider_details": {},
+            "tool_calls": 50,
+            "api_lookup_calls": 8,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 9,
+            "solver_calls": 1,
+            "wall_time_seconds": 1228.2498477000045,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "completed",
+          "last_error_type": null,
+          "attempt_count": 2
+        },
+        {
+          "case_id": "thick-cylinder-internal-pressure",
+          "reported_classification": "task_failed",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v21-foundation-diverse-linear-20260918/thick-cylinder-internal-pressure/state/outcome.json",
+            "sha256": "d38e2669cba79809b48644bfbf134cb811925539638a8f8f3b8593fa478af0a5"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 2553125,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 2453760,
+            "output_tokens": 73392,
+            "provider_details": {},
+            "tool_calls": 53,
+            "api_lookup_calls": 8,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 11,
+            "solver_calls": 1,
+            "wall_time_seconds": 1165.3830554999877,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "failed",
+          "last_error_type": null,
+          "attempt_count": 2
+        },
+        {
+          "case_id": "nafems-le6-skew-plate",
+          "reported_classification": "not_started",
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": 0
+        },
+        {
+          "case_id": "plate-with-hole-tension",
+          "reported_classification": "not_started",
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": 0
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v22-foundation-routing-rule-20260918-rerun1",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v22-foundation-routing-rule-20260918-rerun1/manifest.json",
+        "sha256": "cfbee51f6495e6b405c13e870b764cd487a5bce2d5aed7d2a23c9f28c0ae5e41"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v22-foundation-routing-rule-20260918-rerun1/seal.json",
+        "sha256": "f1720a41c0b72d04b819dda9e6662e62a8d616af14bd55161d8fff6fd9cd6ce0"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v22-foundation-routing-rule-20260918-rerun1/report.json",
+        "sha256": "12ebf263c2c90c776f928f62bb0a2484e7756c6be06dd946a0ec93053bc111a3"
+      },
+      "version": "public-mechanics-e2e-v22-foundation-routing-rule",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 1,
+        "http_timeout_seconds": 180.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "uniform-axial-bar": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "nafems-le6-skew-plate": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "plate-with-hole-tension": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "uniform-axial-bar",
+          "reported_classification": "formal_pass",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v22-foundation-routing-rule-20260918-rerun1/uniform-axial-bar/state/outcome.json",
+            "sha256": "5a0b9636afd5dda3b5970fc4ab9c250595bc41f6083ec12a9ac8d860fa5d0cb9"
+          },
+          "outcome_status": "completed",
+          "failure_stage": null,
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 14,
+            "input_tokens": 432032,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 390400,
+            "output_tokens": 24306,
+            "provider_details": {},
+            "tool_calls": 24,
+            "api_lookup_calls": 5,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 3,
+            "solver_calls": 1,
+            "wall_time_seconds": 223.35489790001884,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "completed",
+          "last_error_type": null,
+          "attempt_count": 1
+        },
+        {
+          "case_id": "nafems-le6-skew-plate",
+          "reported_classification": "task_failed",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v22-foundation-routing-rule-20260918-rerun1/nafems-le6-skew-plate/state/outcome.json",
+            "sha256": "d687aca78456106e516d28019b66e6d555e6c6ef623765a43d5a53f5e708ff12"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 2340370,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 2270464,
+            "output_tokens": 58571,
+            "provider_details": {},
+            "tool_calls": 45,
+            "api_lookup_calls": 7,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 13,
+            "solver_calls": 0,
+            "wall_time_seconds": 780.909563299967,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "failed",
+          "last_error_type": null,
+          "attempt_count": 1
+        },
+        {
+          "case_id": "plate-with-hole-tension",
+          "reported_classification": "provider_interrupted",
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": "interrupted",
+          "last_error_type": "ModelAPIError",
+          "attempt_count": 1
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v6-torsion-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v6-torsion-20260917/manifest.json",
+        "sha256": "40d2239c5c4447e008eb59f06dccf9cf4290b304339c53f1237ef09cca5e2d4d"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v6-torsion-20260917/seal.json",
+        "sha256": "36f8e55849ab765b63c972b9307240e19c6c2ca13d41373e93a29e5d30239f48"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v6-torsion-20260917/report.json",
+        "sha256": "d5225e33556abff8805b51ab5b13cf9e91cbaa2b821b3bfa5219cff078910370"
+      },
+      "version": "public-mechanics-e2e-v6-case-extension",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "circular-shaft-pure-torsion": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "circular-shaft-pure-torsion",
+          "reported_classification": "task_failed",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v6-torsion-20260917/circular-shaft-pure-torsion/state/outcome.json",
+            "sha256": "fca59b4822435b421de3bdd7eef161b19f3fbfd10e7a2be2da69dea110c3e4fa"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 2361308,
+            "output_tokens": 54245,
+            "tool_calls": 50,
+            "api_lookup_calls": 8,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 13,
+            "solver_calls": 1,
+            "wall_time_seconds": 609.712197300003,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "failed",
+          "last_error_type": null,
+          "attempt_count": 1
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v7-plane-stress-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v7-plane-stress-20260917/manifest.json",
+        "sha256": "c4c117713f2a52d75919d412dccd4d2432149a07574adeb0084116dd577e45d4"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v7-plane-stress-20260917/seal.json",
+        "sha256": "05eb05c5e19369a303d55013bcefaec9cbe0ff1be7869c35dad9f6dbd19737f2"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v7-plane-stress-20260917/report.json",
+        "sha256": "243b81e24c5cbe49bcdf853035e45627903db4019e983a28445b1a37828394bb"
+      },
+      "version": "public-mechanics-e2e-v7-plane-stress-extension",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "plane-stress-uniform-tension": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "plane-stress-uniform-tension",
+          "reported_classification": "task_failed",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v7-plane-stress-20260917/plane-stress-uniform-tension/state/outcome.json",
+            "sha256": "22dddea652594b28330bc7ecb4b3bd7dd5a9ecb96c96842c4d96ef5ddb6d0f2e"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 2218358,
+            "output_tokens": 55088,
+            "tool_calls": 51,
+            "api_lookup_calls": 8,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 12,
+            "solver_calls": 2,
+            "wall_time_seconds": 664.0462235000014,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "failed",
+          "last_error_type": null,
+          "attempt_count": 1
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v8-axisymmetric-pressure-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v8-axisymmetric-pressure-20260917/manifest.json",
+        "sha256": "d132d601e770db6bcc53cf8e270e472f9f68e16e5670c70463cc37cb7e1bf1c8"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v8-axisymmetric-pressure-20260917/seal.json",
+        "sha256": "11a003c0aa4a3512a6e1a0cb6a0699e33c684fe712d41fb7f0c3b8233faf260d"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v8-axisymmetric-pressure-20260917/report.json",
+        "sha256": "3cfae4930bab489915b98dedd8aa35b3eb1a74e13deb59129eee3fb0f274564d"
+      },
+      "version": "public-mechanics-e2e-v8-axisymmetric-pressure-extension",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "thick-cylinder-internal-pressure": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "thick-cylinder-internal-pressure",
+          "reported_classification": "task_failed",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v8-axisymmetric-pressure-20260917/thick-cylinder-internal-pressure/state/outcome.json",
+            "sha256": "496b1dec5941e8b7f07da43fc6e67164b65ca550bff840903dc909c058f9de14"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 2353755,
+            "output_tokens": 48842,
+            "tool_calls": 51,
+            "api_lookup_calls": 8,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 9,
+            "solver_calls": 1,
+            "wall_time_seconds": 854.4636323000013,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "failed",
+          "last_error_type": null,
+          "attempt_count": 1
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-v9-nafems-le6-skew-plate-20260917",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-v9-nafems-le6-skew-plate-20260917/manifest.json",
+        "sha256": "1bfdd296590b6c7b9377cc034b81e7bf5da617db074c9bfc2eee733c1179a8b7"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-v9-nafems-le6-skew-plate-20260917/seal.json",
+        "sha256": "3db60fa559bf06e02c9e90b2b62846d45e3b476f549479cfb53c89c3119ec928"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-v9-nafems-le6-skew-plate-20260917/report.json",
+        "sha256": "44f96c9b159ff506af3fc552048011b56ad1eee9ebbc106d9b92b9160377540e"
+      },
+      "version": "public-mechanics-e2e-v9-nafems-le6-skew-plate-extension",
+      "verification_policy": "results_first_v1",
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 0,
+        "http_timeout_seconds": 600.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "nafems-le6-skew-plate": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": 1,
+      "script_review_status": "not_recorded_by_automatic_report",
+      "trials": [
+        {
+          "case_id": "nafems-le6-skew-plate",
+          "reported_classification": "task_failed",
+          "outcome_file": {
+            "path": "D:/abaqus-runs/public-mechanics-v9-nafems-le6-skew-plate-20260917/nafems-le6-skew-plate/state/outcome.json",
+            "sha256": "c60fb387a6b6ac8ce066084ebe1139af2bc19f7a83813298783c240017189ae4"
+          },
+          "outcome_status": "failed",
+          "failure_stage": "model_budget",
+          "amendment_sequence": 0,
+          "outcome_usage": {
+            "model_requests": 40,
+            "input_tokens": 3419850,
+            "output_tokens": 85082,
+            "tool_calls": 55,
+            "api_lookup_calls": 8,
+            "concept_lookup_calls": 0,
+            "diagnostic_retrieval_calls": 0,
+            "syntax_edit_checks": 0,
+            "syntax_runtime_checks": 0,
+            "syntax_denials": 0,
+            "static_preflight_calls": 0,
+            "abaqus_calls": 11,
+            "solver_calls": 2,
+            "wall_time_seconds": 1813.0448936999892,
+            "estimated_cost_usd": null
+          },
+          "persisted_status": "failed",
+          "last_error_type": null,
+          "attempt_count": 2
+        }
+      ]
+    },
+    {
+      "directory": "public-mechanics-web-followup-20260915",
+      "manifest": {
+        "path": "D:/abaqus-runs/public-mechanics-web-followup-20260915/manifest.json",
+        "sha256": "75cad6883d98d79dc218e1e55eb21176897e4c393cba3269bcf3399333a019c7"
+      },
+      "seal": {
+        "path": "D:/abaqus-runs/public-mechanics-web-followup-20260915/seal.json",
+        "sha256": "0942ea97fcc06b2a8ac9cf2e3fd57b295763cbd88e2f4e36c006acedaffd1475"
+      },
+      "report": {
+        "path": "D:/abaqus-runs/public-mechanics-web-followup-20260915/report.json",
+        "sha256": "266ecf39a8a878852fbd2fb47926a67252a0d73e5febf25e544d70df71919019"
+      },
+      "version": "public-mechanics-e2e-v2-measurement-fix",
+      "verification_policy": null,
+      "execution_config": {
+        "model_provider": "opencode-go",
+        "model_name": "deepseek-v4-flash",
+        "http_retries": 10,
+        "http_timeout_seconds": 60.0,
+        "reasoning_policy": "enabled_high",
+        "planning_enabled": true,
+        "interaction_policy": "workspace_facts_first"
+      },
+      "budgets": {
+        "plate-with-hole-tension": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        },
+        "solid-cantilever-directional-bending": {
+          "max_clarifications": 0,
+          "max_model_requests": 40,
+          "max_api_lookup_calls": 8,
+          "max_concept_lookup_calls": 2,
+          "max_diagnostic_retrieval_calls": 2,
+          "max_static_preflight_calls": 12,
+          "max_abaqus_calls": 18,
+          "max_solver_calls": 6,
+          "wall_time_seconds": 2700.0
+        }
+      },
+      "max_explicit_resumes": null,
+      "script_review_status": null,
+      "trials": [
+        {
+          "case_id": "plate-with-hole-tension",
+          "reported_classification": null,
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": null
+        },
+        {
+          "case_id": "solid-cantilever-directional-bending",
+          "reported_classification": null,
+          "outcome_file": null,
+          "outcome_status": null,
+          "failure_stage": null,
+          "amendment_sequence": null,
+          "outcome_usage": null,
+          "persisted_status": null,
+          "last_error_type": null,
+          "attempt_count": null
+        }
+      ]
+    }
+  ],
+  "reference_observations": [
+    {
+      "case_id": "nafems-le2-cylindrical-shell-patch",
+      "measurement": {
+        "path": "D:/abaqus-runs/qualify-le2-s8r-20260917/oracle_measurement.json",
+        "sha256": "5055533d15e73f0f348c4ca5379a8bfa3cf11f80c1668a0815a9f4e68caea91d"
+      },
+      "metrics": {
+        "e_outer_s11": 59705437.0,
+        "reaction_m3": -500.00099182128906
+      },
+      "scope": "Existing independent reference measurement, not an Agent outcome or proof of full three-stage reference delivery."
+    },
+    {
+      "case_id": "nafems-le3-hemisphere-point-loads",
+      "measurement": {
+        "path": "D:/Projects/abaqus-agent/abaqus-sim-agent/tmp/nafems_le3_qualification/oracle_measurement.json",
+        "sha256": "be8cad88fba3fb9c0950d0fd4817daf6cf7637f6d6ccd0258681071fb14dfe5d"
+      },
+      "metrics": {
+        "a_u1": 0.1848989874124527
+      },
+      "scope": "Existing independent reference measurement, not an Agent outcome or proof of full three-stage reference delivery."
+    },
+    {
+      "case_id": "nafems-le5-z-section-cantilever",
+      "measurement": {
+        "path": "D:/Projects/abaqus-agent/abaqus-sim-agent/tmp/nafems_le5_qualification/oracle_measurement_v14.json",
+        "sha256": "a94a20c3983e5c61a36784b201acf0c43546ad10dab48f4bf1b72cb0c705421a"
+      },
+      "metrics": {
+        "a_sigma_xx": -109847982.0
+      },
+      "scope": "Existing independent reference measurement, not an Agent outcome or proof of full three-stage reference delivery."
+    },
+    {
+      "case_id": "nafems-le9-branched-axisymmetric-shell",
+      "measurement": {
+        "path": "D:/abaqus-runs/qualify-le9-sax2-20260917/oracle-output.json",
+        "sha256": "3a50da9e16c948f1f782fded6a957b32337e4f84c9bacdcc3f17ce3fef531d69"
+      },
+      "metrics": {
+        "c_outer_s11": -314810596.994308,
+        "reaction_z": 1570797.25
+      },
+      "scope": "Existing independent reference measurement, not an Agent outcome or proof of full three-stage reference delivery."
+    },
+    {
+      "case_id": "nafems-le11-thermal-solid",
+      "measurement": {
+        "path": "D:/Projects/abaqus-agent/abaqus-sim-agent/tmp/le11_oracle_result.json",
+        "sha256": "8f1cda3d62bc6d71dd98f9a030f58cb28bf71037f522125e5306da45ca48e7ec"
+      },
+      "metrics": {
+        "a_sigma_zz": -103261344.0
+      },
+      "scope": "Existing independent reference measurement, not an Agent outcome or proof of full three-stage reference delivery."
+    },
+    {
+      "case_id": "nafems-le4-axisymmetric-hyperbolic-shell",
+      "solver_status_files": [
+        {
+          "path": "D:/abaqus-runs/qualify-le4-sax2-20260917/le4.sta",
+          "sha256": "7b4f428d263ea327210ccb8989245814970877b24891322a05d89de029b98018",
+          "completed_text_present": true
+        },
+        {
+          "path": "D:/abaqus-runs/qualify-le4-sax2-20260917/le4_si.sta",
+          "sha256": "0ceceeadb57cc7782b2b64de0b364f141f60f9fab9cacae9a44c094e62f22283",
+          "completed_text_present": true
+        }
+      ],
+      "scope": "Existing reference Solver completion only; no structured reference oracle verdict located in this directory."
+    },
+    {
+      "case_id": "nafems-le7-axisymmetric-cylinder-sphere",
+      "solver_status_files": [
+        {
+          "path": "D:/abaqus-runs/qualify-le7-sax2-20260917/le7.sta",
+          "sha256": "09858cbd6e3a1d479c2ffae367eda235ade8239ed7de3bc28cbea6abd39eed77",
+          "completed_text_present": true
+        }
+      ],
+      "scope": "Existing reference Solver completion only; no structured reference oracle verdict located in this directory."
+    },
+    {
+      "case_id": "nafems-le8-axisymmetric-crown-knuckle-shell",
+      "solver_status_files": [
+        {
+          "path": "D:/abaqus-runs/qualify-le8-sax2-20260917/le8.sta",
+          "sha256": "e12d264f838a7541e58ef4f0e38ed1e54f110b0371a4692f4dc6eb311c110862",
+          "completed_text_present": true
+        }
+      ],
+      "scope": "Existing reference Solver completion only; no structured reference oracle verdict located in this directory."
+    }
+  ]
+}

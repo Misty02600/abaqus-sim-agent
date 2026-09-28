@@ -58,7 +58,6 @@ def test_candidates_have_blocked_execution_and_paired_visible_facts():
     assert "plate_thickness" not in missing.candidate.goal
     assert THICKNESS_LINE not in missing.workspace_files["requirements.md"].decode()
     assert "human_review_checklist_and_reference_ready" in complete.pending_gates
-    assert complete.reference_verifier is not None
     assert complete.candidate.verification_scope == "execution_evidence"
     assert not complete.clarification.enabled
     assert missing.clarification.enabled

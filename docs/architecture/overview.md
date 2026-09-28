@@ -40,7 +40,7 @@ Web 主线仍未执行。外部 Job 对账、数据库控制面、多进程 Coor
 | UTF-8/CP936 工作区文本 | Abaqus 生成文本可正确读取、搜索、编辑和 Web 预览 | 编码严格识别；已有文件保持原编码，新文件 UTF-8，hash 绑定原始 bytes | [Agent 范围](agent-implementation-scope.md) |
 | 本机私有领域知识包 | 从用户级应用数据目录列出，并由新 CLI/Web 会话显式选择一个或多个包 | 默认 off；launch v10 绑定不可变 state 快照，包只提供参考文本，不增加 instructions、工具、权限或验收语义 | [知识接入](knowledge-access.md)、[ADR-0029](../adr/0029-discover-private-knowledge-from-user-data.md) |
 | 可选文档、ACI、probe、纯编辑策略 | 按显式 profile 增加证据或约束 | 默认关闭；冻结评测保留原合同，开发期旧产品 state 不迁移；接线不代表收益 | [Agent 范围](agent-implementation-scope.md) |
-| 固定 evaluator | Gold、verified-seed change、API repair 和检索对照 | 逐 Case 合同与 gate；不等于任意 CAE capability envelope | [验证证据](verification-evidence.md) |
+| 固定 evaluator | 公开力学、verified-seed change、API repair 和检索对照 | 逐 Case 合同与 gate；不等于任意 CAE capability envelope | [验证证据](verification-evidence.md) |
 
 ## 组件与状态所有权
 
@@ -99,7 +99,7 @@ Harness 文件存储，同一 state 有 OS 独占锁。文件记录支持本地�
 - Web 主停止只能取消仍绑定当前 `AgentRun` 的工作段；已后台化的 Solver 保留独立生命周期。停止不是暂停，
   也不保证终止脱离宿主管理的外部进程。
 - 工作台工程接线和浏览器确定性场景通过，不代表 PLAN-0010 的真实 Provider/Abaqus 主线已经验收。
-- 固定 plate/bar/beam 与模型变更案例只证明各自冻结合同。不同 Prompt、协议或批次的成绩不能合并成当前成功率。
+- 公开力学与模型变更案例只证明各自合同；旧Gold独立评测已删除。不同 Prompt、协议或批次的成绩不能合并成当前成功率。
 - 知识接线、命中、读卡、任务采纳和物理收益需要分别验证。当前支持结论与历史证据由
   [验证证据入口](verification-evidence.md)集中路由，不在本页维护实验流水账。
 

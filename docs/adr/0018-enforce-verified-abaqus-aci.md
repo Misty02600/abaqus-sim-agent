@@ -126,7 +126,7 @@ abqpy 的错误容器类型写成产品真值。
   [`abaqus_aci_enforced_policy_v1_20260829.json`](../../benchmarks/coding/abaqus_aci_enforced_policy_v1_20260829.json)。
 - 首次正式 B31 treatment 三条都在生产文件前因 Go `Request timed out` 结束，syntax/API/Abaqus 调用均为
   0；该批对 Product adoption 无效，不补第四条，也不替代 v7。见
-  [`beam_tension_b31_aci_enforced_evaluation_20260829.json`](../../benchmarks/coding/beam_tension_b31_aci_enforced_evaluation_20260829.json)。
+  [`beam_tension_b31_aci_enforced_evaluation_20260829.json`](https://github.com/Misty02600/abaqus-sim-agent/blob/aa7116f0377a6fd5f1173b057797ba54abe70478/benchmarks/coding/beam_tension_b31_aci_enforced_evaluation_20260829.json)。
 
 主要实现：
 

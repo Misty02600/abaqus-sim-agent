@@ -138,7 +138,7 @@ def test_static_preflight_continues_invocation_sequence_after_restart(
     assert (state_dir / "static_preflight" / "002").is_dir()
 
 
-def test_static_preflight_v2_benchmark_matches_current_fixtures() -> None:
+def test_static_preflight_v2_preserves_frozen_report_and_negative_fixtures() -> None:
     repository = Path(__file__).resolve().parents[1]
     benchmark = json.loads(
         (
@@ -146,15 +146,14 @@ def test_static_preflight_v2_benchmark_matches_current_fixtures() -> None:
             / "benchmarks/coding/abqpy_static_preflight_policy_v2_20260829.json"
         ).read_text(encoding="utf-8")
     )
-    positive_paths = list((repository / "tests/fixtures/abaqus2024").rglob("*.py"))
     negative_paths = [
         repository / case["fixture"] for case in benchmark["negative_set"]["cases"]
     ]
 
-    assert len(positive_paths) == benchmark["positive_set"]["script_count"]
-    assert (
-        _fixture_set_sha256(positive_paths, repository)
-        == (benchmark["positive_set"]["fixture_set_sha256"])
+    # 正例集中的旧Gold脚本已删除；保留原报告身份，不把当前目录冒充旧快照。
+    assert benchmark["positive_set"]["script_count"] == 21
+    assert benchmark["positive_set"]["fixture_set_sha256"] == (
+        "9e1485be853aa86308c479919dbbc2d4086efca5e9cf42017c779c763361eddc"
     )
     assert len(negative_paths) == benchmark["negative_set"]["script_count"]
     assert (
@@ -163,20 +162,19 @@ def test_static_preflight_v2_benchmark_matches_current_fixtures() -> None:
     )
 
 
-def test_enforced_aci_benchmark_matches_current_fixtures() -> None:
+def test_enforced_aci_preserves_frozen_report_and_negative_fixtures() -> None:
     repository = Path(__file__).resolve().parents[1]
     benchmark = json.loads(
         (
             repository / "benchmarks/coding/abaqus_aci_enforced_policy_v1_20260829.json"
         ).read_text(encoding="utf-8")
     )
-    positive_paths = list((repository / "tests/fixtures/abaqus2024").rglob("*.py"))
     negative_paths = [repository / path for path in benchmark["negative_set"]["cases"]]
 
-    assert len(positive_paths) == benchmark["positive_set"]["script_count"]
-    assert (
-        _fixture_set_sha256(positive_paths, repository)
-        == (benchmark["positive_set"]["fixture_set_sha256"])
+    # 正例集中的旧Gold脚本已删除；保留原报告身份，不把当前目录冒充旧快照。
+    assert benchmark["positive_set"]["script_count"] == 21
+    assert benchmark["positive_set"]["fixture_set_sha256"] == (
+        "9e1485be853aa86308c479919dbbc2d4086efca5e9cf42017c779c763361eddc"
     )
     assert len(negative_paths) == benchmark["negative_set"]["script_count"]
     assert (

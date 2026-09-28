@@ -6,6 +6,10 @@ import pytest
 
 EVALUATION_TEST_FILES = frozenset(
     {
+        "test_case_metadata.py",
+        "test_mechanics_grading.py",
+        "test_plate_reference.py",
+        "test_beam_reference.py",
         "test_abaqus2024_container_probe.py",
         "test_abaqus2024_surface_traction_probe.py",
         "test_api_catalog_verified_notes.py",
@@ -46,11 +50,11 @@ EVALUATION_TEST_FUNCTIONS = frozenset(
         ),
         (
             "test_static_preflight.py",
-            "test_static_preflight_v2_benchmark_matches_current_fixtures",
+            "test_static_preflight_v2_preserves_frozen_report_and_negative_fixtures",
         ),
         (
             "test_static_preflight.py",
-            "test_enforced_aci_benchmark_matches_current_fixtures",
+            "test_enforced_aci_preserves_frozen_report_and_negative_fixtures",
         ),
     }
 )

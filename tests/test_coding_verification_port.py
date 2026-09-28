@@ -19,7 +19,10 @@ from abaqus_sim_agent.coding.verification_port import (
 )
 from abaqus_sim_agent.coding.workspace import WorkspaceSnapshot
 from abaqus_sim_agent.execution import Abaqus2024Runner, AbaqusExecutionResult
-from abaqus_sim_agent.verification.run import PlateTensionVerificationAttempt
+
+
+class _TaskAttempt(VerificationAttempt):
+    measurement: float | None = None
 
 
 class _GenericVerifier:
@@ -35,8 +38,8 @@ class _GenericVerifier:
         return VerificationAttempt(passed=True, feedback="verified")
 
 
-def test_plate_attempt_extends_task_agnostic_verification_attempt() -> None:
-    attempt = PlateTensionVerificationAttempt(
+def test_task_attempt_extends_task_agnostic_verification_attempt() -> None:
+    attempt = _TaskAttempt(
         passed=False,
         feedback="ODB verification failed",
         failure_stage="verification",

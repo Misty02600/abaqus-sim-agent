@@ -27,7 +27,7 @@ from abaqus_sim_agent.evaluation.plate_change import (
     build_dataset,
     gate_report,
 )
-from abaqus_sim_agent.evaluation.plate_tension import GOLD_REQUEST
+from abaqus_sim_agent.evaluation.seed_contracts import PLATE_SOURCE_GOAL as GOLD_REQUEST
 from abaqus_sim_agent.evaluation.verified_plate_seed import (
     AGENT_VISIBLE_SEED_FILES,
     create_seeded_workspace,
@@ -42,7 +42,7 @@ from abaqus_sim_agent.verification.plate_change import (
 from abaqus_sim_agent.verification.plate_change_run import (
     PlateHoleChangeVerificationAttempt,
 )
-from abaqus_sim_agent.verification.plate_tension import (
+from abaqus_sim_agent.verification.plate_reference import (
     PlateTensionMeasurements,
     verify_plate_tension,
 )

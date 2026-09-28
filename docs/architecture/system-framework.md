@@ -32,7 +32,7 @@ Web CLI 在服务 started 后默认打开普通 `127.0.0.1` URL。浏览器首�
 ## 数据放在哪里
 
 **Workspace** 保存模型可见的脚本和 CAE/INP/ODB/JSON 等交付物。交互 CLI 默认使用启动时的绝对工作目录，
-也可显式指定。from-scratch Gold 要求空目录；verified-seed change 先验证 source 的合同、完成状态和 hash，
+也可显式指定。公开力学从零Case要求空目录；verified-seed change 先验证 source 的合同、完成状态和 hash，
 缓存脚本 bytes 后再建立新工作区，避免校验后源文件改变。
 
 **State directory** 必须位于 workspace 外；普通交互默认在 `%LOCALAPPDATA%/abaqus-sim-agent/runs/<run_id>`。

@@ -1,8 +1,8 @@
+from abaqus_sim_agent.verification.beam_reference import BeamTensionMeasurements
 from abaqus_sim_agent.verification.beam_section_change import (
     BeamSectionChangeOracleSpec,
     verify_beam_section_change,
 )
-from abaqus_sim_agent.verification.beam_tension import BeamTensionMeasurements
 
 
 def _measurements(**overrides: object) -> BeamTensionMeasurements:

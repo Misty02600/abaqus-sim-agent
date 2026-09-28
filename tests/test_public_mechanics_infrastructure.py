@@ -16,7 +16,11 @@ from abaqus_sim_agent.coding.model import (
     new_run_execution_config,
 )
 from abaqus_sim_agent.evaluation import public_mechanics_suite as suite
-from abaqus_sim_agent.evaluation.public_mechanics_cases import get_case
+from abaqus_sim_agent.evaluation.public_mechanics_cases import (
+    BASIC_LINEAR_CASE_IDS,
+    PUBLIC_MECHANICS_PROTOCOL,
+    get_case,
+)
 from abaqus_sim_agent.evaluation.public_mechanics_control import (
     ObservedTransport,
     append_event,
@@ -39,7 +43,9 @@ def root_fixture(tmp_path):
     save_json(
         tmp_path / "manifest.json",
         {
+            "version": PUBLIC_MECHANICS_PROTOCOL,
             "case_ids": names,
+            "scoring_case_ids": list(BASIC_LINEAR_CASE_IDS),
             "batch_id": "test",
             "foundation": True,
             "catalog_mode": "full",
@@ -55,9 +61,25 @@ def root_fixture(tmp_path):
             },
         },
     )
-    save_json(tmp_path / "seal.json", {})
+    save_json(
+        tmp_path / "cases.json",
+        [get_case(name).model_dump(mode="json") for name in names],
+    )
+    seal_contracts(tmp_path)
     save_json(tmp_path / "goals.json", {n: get_case(n).goal() for n in names})
     return names
+
+
+def seal_contracts(root):
+    save_json(
+        root / "seal.json",
+        {
+            "files": {
+                name: suite.file_digest(root / name)
+                for name in ("cases.json", "manifest.json")
+            }
+        },
+    )
 
 
 def test_solid_goal_uses_contract_values_without_ambiguous_ranges():
@@ -426,6 +448,7 @@ def test_concurrent_wave_starts_both_cases_and_bounds_runtime(tmp_path, monkeypa
     manifest = read_json(tmp_path / "manifest.json")
     manifest.update(max_task_concurrency=2, max_runtime_concurrency=2)
     save_json(tmp_path / "manifest.json", manifest)
+    seal_contracts(tmp_path)
     monkeypatch.setattr(suite, "_checked_preflight", lambda root: None)
     monkeypatch.setattr(suite, "verify_binding", lambda root: None)
     monkeypatch.setattr(suite, "_ensure_health", lambda root: None)

@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import runpy
 import sys
-from pathlib import Path
 from types import ModuleType
 from typing import Protocol, cast
 
 import pytest
 
 from abaqus_sim_agent.verification.assets import plate_tension_oracle_script
-from abaqus_sim_agent.verification.run import _build_oracle_request
 
 
 class _SelectAnalysisStep(Protocol):
@@ -26,15 +24,6 @@ def _load_step_selector(monkeypatch: pytest.MonkeyPatch) -> _SelectAnalysisStep:
     monkeypatch.setitem(sys.modules, "odbAccess", odb_access)
     namespace = runpy.run_path(str(plate_tension_oracle_script()))
     return cast(_SelectAnalysisStep, namespace["_select_analysis_step"])
-
-
-def test_oracle_request_does_not_disclose_a_hidden_step_name(tmp_path: Path) -> None:
-    odb_path = tmp_path / "plate_tension.odb"
-
-    request = _build_oracle_request(odb_path)
-
-    assert request == {"odb_path": str(odb_path)}
-    assert "step_name" not in request
 
 
 def test_oracle_accepts_the_only_analysis_step_regardless_of_name(

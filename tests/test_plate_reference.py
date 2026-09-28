@@ -1,4 +1,4 @@
-from abaqus_sim_agent.verification.plate_tension import (
+from abaqus_sim_agent.verification.plate_reference import (
     PlateTensionMeasurements,
     PlateTensionOracleSpec,
     verify_plate_tension,

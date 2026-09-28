@@ -38,7 +38,7 @@ from abaqus_sim_agent.verification.plate_change import (
     PlateHoleInputContract,
     parse_plate_hole_input,
 )
-from abaqus_sim_agent.verification.plate_tension import (
+from abaqus_sim_agent.verification.plate_reference import (
     PlateTensionMeasurements,
     PlateTensionVerification,
     verify_plate_tension,

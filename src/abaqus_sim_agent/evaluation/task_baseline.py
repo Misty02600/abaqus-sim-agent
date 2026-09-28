@@ -34,26 +34,16 @@ from abaqus_sim_agent.coding.model import (
     new_run_execution_config,
 )
 from abaqus_sim_agent.coding.user_questions import QuestionProtocol
-from abaqus_sim_agent.coding.verification_port import CodingRunVerifier
-from abaqus_sim_agent.evaluation.bar_tension_3d import GOLD_REQUEST as BAR_REQUIREMENTS
 from abaqus_sim_agent.evaluation.beam_section_change import CHANGE_REQUEST
 from abaqus_sim_agent.evaluation.plate_output_warning_repair import (
     REPAIR_GOAL,
     derive_defective_seed,
 )
-from abaqus_sim_agent.evaluation.plate_tension import GOLD_REQUEST
+from abaqus_sim_agent.evaluation.seed_contracts import BAR_REQUIREMENTS
+from abaqus_sim_agent.evaluation.seed_contracts import PLATE_SOURCE_GOAL as GOLD_REQUEST
 from abaqus_sim_agent.evaluation.verified_beam_seed import load_verified_beam_seed
 from abaqus_sim_agent.evaluation.verified_plate_seed import load_verified_plate_seed
 from abaqus_sim_agent.skills import skill_library_path
-from abaqus_sim_agent.verification.assets import plate_tension_oracle_script
-from abaqus_sim_agent.verification.bar_run import BarTension3DRunVerifier
-from abaqus_sim_agent.verification.beam_section_change_run import (
-    BeamSectionChangeRunVerifier,
-)
-from abaqus_sim_agent.verification.plate_output_warning_repair_run import (
-    PlateOutputWarningRepairRunVerifier,
-)
-from abaqus_sim_agent.verification.run import PlateTensionRunVerifier
 
 TaskId = Literal[
     "requirements-plate-v1",
@@ -295,7 +285,6 @@ class PreparedTask:
     candidate: TaskCandidate
     workspace_files: Mapping[str, bytes]
     seed_provenance: BaseModel | None
-    reference_verifier: CodingRunVerifier
     clarification: ThicknessClarificationFixture
     pending_gates: tuple[str, ...]
 
@@ -334,37 +323,21 @@ def prepare_task(
         if task_id == "requirements-bar3d-v1":
             requirements = BAR_REQUIREMENTS.replace("当前空工作目录", "当前工作目录")
         files = {"requirements.md": requirements.encode("utf-8")}
-        verifier = (
-            BarTension3DRunVerifier()
-            if task_id == "requirements-bar3d-v1"
-            else PlateTensionRunVerifier(plate_tension_oracle_script())
-        )
         gates += ("human_review_checklist_and_reference_ready",)
     else:
         if source_run_dir is None:
             raise ValueError("verified source run is required")
         if task.seed_kind == "verified_beam":
             seed = load_verified_beam_seed(source_run_dir)
-            verifier = BeamSectionChangeRunVerifier(
-                source_run_id=seed.outcome.run_id,
-                source_run_verified=True,
-                seed_texts=seed.seed_texts,
-            )
         else:
             source = load_verified_plate_seed(source_run_dir)
             seed = derive_defective_seed(source)
-            verifier = PlateOutputWarningRepairRunVerifier(
-                defective_build=seed.seed_files["build_model.py"],
-                source_build=source.seed_files["build_model.py"],
-                source_extractor=source.seed_files["extract_results.py"],
-            )
         files = dict(seed.seed_files)
         provenance = seed.provenance
     return PreparedTask(
         task,
         MappingProxyType(files),
         provenance,
-        verifier,
         ThicknessClarificationFixture(enabled=task_id == TASK_IDS[2]),
         gates,
     )

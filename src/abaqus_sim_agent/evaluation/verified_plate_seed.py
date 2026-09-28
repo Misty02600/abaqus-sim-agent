@@ -16,8 +16,8 @@ from abaqus_sim_agent.coding.contracts import (
     CodingRunStatus,
 )
 from abaqus_sim_agent.coding.workspace import ResolvedWorkspace, WorkspaceResolver
-from abaqus_sim_agent.evaluation.plate_tension import GOLD_REQUEST
-from abaqus_sim_agent.verification.plate_tension import PlateTensionVerification
+from abaqus_sim_agent.evaluation.seed_contracts import PLATE_SOURCE_GOAL as GOLD_REQUEST
+from abaqus_sim_agent.verification.plate_reference import PlateTensionVerification
 
 SOURCE_ARTIFACTS = (
     "build_model.py",

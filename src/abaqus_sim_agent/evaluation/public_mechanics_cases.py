@@ -1,11 +1,37 @@
 """公开力学问题的 Abaqus 端到端合同；不是产品建模 IR。"""
 
+import hashlib
+import json
 import math
+from collections.abc import Sequence
+from pathlib import Path
 from typing import Literal, TypedDict
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, TypeAdapter
 
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
+from abaqus_sim_agent.evaluation.case_metadata import CaseMetadata, SourceRef
+
+PUBLIC_MECHANICS_PROTOCOL = "public-mechanics-e2e-v25-native-result-grading"
+
+# 物理Case身份决定评分范围；标签和载荷工况不增加权重。
+BASIC_LINEAR_CASE_IDS = (
+    "cantilever-uniform-load",
+    "circular-shaft-pure-torsion",
+    "thick-cylinder-internal-pressure",
+    "plate-with-hole-tension",
+    "solid-cantilever-directional-bending",
+    "nafems-le1-elliptic-membrane",
+    "nafems-le2-cylindrical-shell-patch",
+    "nafems-le3-hemisphere-point-loads",
+    "nafems-le4-axisymmetric-hyperbolic-shell",
+    "nafems-le5-z-section-cantilever",
+    "nafems-le6-skew-plate",
+    "nafems-le7-axisymmetric-cylinder-sphere",
+    "nafems-le8-axisymmetric-crown-knuckle-shell",
+    "nafems-le9-branched-axisymmetric-shell",
+    "nafems-le10-thick-plate-pressure",
+)
 
 
 class Metric(BaseModel):
@@ -37,7 +63,7 @@ class MechanicsCase(BaseModel):
         "solid_beam",
     ]
     description: str
-    source: str
+    metadata: CaseMetadata
     adaptation: str
     length: float
     width: float
@@ -154,7 +180,16 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             height=0.0,
             load=10000.0,
             segments=((1000.0, 100.0),),
-            source=axial,
+            metadata=CaseMetadata(
+                description="检查轴向载荷、伸长与反力和应力提取。",
+                tags=("axial-load", "displacement", "reaction-balance"),
+                source=SourceRef(
+                    kind="project_analytic",
+                    reference=axial,
+                    url=None,
+                    document_version=None,
+                ),
+            ),
             description="mm-N-MPa 单位。一维轴向杆沿 X 从0到1000 mm，A=100 mm²，E=200000 MPa、nu=0.3。左端轴向固定，右端+X 10000 N。",
             adaptation="允许 T3D2/T3D3。所有杆节点 U2=U3=0，仅代表一维轴向运动；U1 仅在左端约束。截面积是全部截面物理输入，不另猜三维形状。",
             metrics={
@@ -171,7 +206,21 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             height=0.0,
             load=10000.0,
             segments=((400.0, 100.0), (600.0, 200.0)),
-            source=axial,
+            metadata=CaseMetadata(
+                description="检查分段截面、界面位移连续性及各段应力。",
+                tags=(
+                    "axial-load",
+                    "section-assignment",
+                    "displacement",
+                    "reaction-balance",
+                ),
+                source=SourceRef(
+                    kind="project_analytic",
+                    reference=axial,
+                    url=None,
+                    document_version=None,
+                ),
+            ),
             description="mm-N-MPa 单位。一维轴向杆：x=0..400 mm 的A=100 mm²，x=400..1000 mm 的A=200 mm²，E=200000 MPa、nu=0.3。x=400共节点连续连接；左端轴向固定，右端+X 10000 N。",
             adaptation="允许 T3D2/T3D3；不能让一个单元跨越x=400截面界面。所有节点U2=U3=0，U1只约束左端。不用平均截面积替代分段。",
             metrics={
@@ -189,7 +238,21 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             width=20.0,
             height=50.0,
             load=1000.0,
-            source=beam,
+            metadata=CaseMetadata(
+                description="检查端载梁截面方向、挠度、转角及反力矩。",
+                tags=(
+                    "bending",
+                    "section-orientation",
+                    "displacement",
+                    "reaction-balance",
+                ),
+                source=SourceRef(
+                    kind="project_analytic",
+                    reference=beam,
+                    url=None,
+                    document_version=None,
+                ),
+            ),
             description="mm-N-MPa 单位。沿X长1000 mm的三维wire梁，矩形截面全局Y向高50 mm、Z向宽20 mm，E=200000 MPa、nu=.3；左端固支全部梁自由度，右端-Y 1000 N。",
             adaptation="允许 B31/B32 梁；自行设置正确截面方向。根部名义弯曲应力定义为 abs(左端RM3)*(50/2)/(20*50^3/12)，不是取约束角点实体应力峰值。RF输出对应的RM、U对应的UR须按实际ODB字段读取。",
             metrics={
@@ -210,7 +273,21 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             height=50.0,
             load=1.0,
             distributed=True,
-            source=beam,
+            metadata=CaseMetadata(
+                description="检查真实均布载荷、梁挠度与反力矩，区分同合力端载。",
+                tags=(
+                    "distributed-load",
+                    "bending",
+                    "displacement",
+                    "reaction-balance",
+                ),
+                source=SourceRef(
+                    kind="project_analytic",
+                    reference=beam,
+                    url=None,
+                    document_version=None,
+                ),
+            ),
             description="mm-N-MPa 单位。沿X长1000 mm的三维wire梁，矩形截面Y向高50 mm、Z向宽20 mm，E=200000 MPa、nu=.3；左端全固支，全跨度-Y均布线载荷1 N/mm。",
             adaptation="允许 B31/B32；使用真正的均布线载荷，不以端部集中力替代。截面方向自行实现；根部名义弯曲应力由abs(RM3)*25/(20*50^3/12)恢复，RM来自ODB而非参考常数。",
             metrics={
@@ -230,7 +307,16 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             width=20.0,
             height=0.0,
             load=100000.0,
-            source="Saint-Venant circular-shaft torsion: phi=T*L/(G*J), tau_max=T*R/J.",
+            metadata=CaseMetadata(
+                description="检查扭矩方向、转角及由ODB反力矩恢复的名义剪应力。",
+                tags=("torsion", "displacement", "reaction-balance"),
+                source=SourceRef(
+                    kind="project_analytic",
+                    reference="Saint-Venant circular-shaft torsion: phi=T*L/(G*J), tau_max=T*R/J.",
+                    url=None,
+                    document_version=None,
+                ),
+            ),
             description=(
                 "mm-N-MPa 单位。沿X长1000 mm的圆截面wire轴，直径20 mm，"
                 "E=200000 MPa、nu=0.3；左端固支，右端施加绕+X的100000 Nmm纯扭矩。"
@@ -259,9 +345,16 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             young=200000.0,
             poisson=0.3,
             load=0.05,
-            source=(
-                "Uniform plane-stress extension: epsilon_x=delta/L, "
-                "sigma_11=E*epsilon_x, resultant=sigma_11*thickness*width."
+            metadata=CaseMetadata(
+                description="检查二维轴向变形、自由收缩边界及均匀应力。",
+                tags=("axial-load", "displacement", "reaction-balance"),
+                source=SourceRef(
+                    kind="project_analytic",
+                    reference="Uniform plane-stress extension: epsilon_x=delta/L, "
+                    "sigma_11=E*epsilon_x, resultant=sigma_11*thickness*width.",
+                    url=None,
+                    document_version=None,
+                ),
             ),
             description=(
                 "mm-N-MPa 单位。二维平面应力矩形板：x=0..100 mm、y=0..20 mm、厚度2 mm，"
@@ -290,11 +383,23 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             young=200000.0,
             poisson=0.3,
             load=100.0,
-            source=(
-                "Lamé thick-cylinder solution for an open-ended axisymmetric cylinder: "
-                "sigma_r=A-B/r^2, sigma_theta=A+B/r^2, "
-                "u=((1-nu)Ar+(1+nu)B/r)/E. Cross-section area means are "
-                "mean(sigma_r)=A-B/(ab) and mean(sigma_theta)=A+B/(ab)."
+            metadata=CaseMetadata(
+                description="检查轴对称内压、径向位移及径向和环向应力的取数定义。",
+                tags=(
+                    "pressure",
+                    "coordinate-components",
+                    "displacement",
+                    "local-stress",
+                ),
+                source=SourceRef(
+                    kind="project_analytic",
+                    reference="Lamé thick-cylinder solution for an open-ended axisymmetric cylinder: "
+                    "sigma_r=A-B/r^2, sigma_theta=A+B/r^2, "
+                    "u=((1-nu)Ar+(1+nu)B/r)/E. Cross-section area means are "
+                    "mean(sigma_r)=A-B/(ab) and mean(sigma_theta)=A+B/(ab).",
+                    url=None,
+                    document_version=None,
+                ),
             ),
             description=(
                 "mm-N-MPa 单位。开口端厚壁圆筒的二维轴对称 r-z 截面："
@@ -327,10 +432,25 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             young=210.0e9,
             poisson=0.3,
             load=700.0,
-            source=(
-                "NAFEMS P18.LE6 / TNSB Rev. 3 (1990), also reproduced by the Abaqus 2024 "
-                "Benchmarks Guide: skew plate under normal pressure; reference lower-surface "
-                "maximum principal stress at plate center E = 0.802 MPa."
+            metadata=CaseMetadata(
+                description="检查斜板支承、壳下表面主应力及压力反力平衡。",
+                tags=(
+                    "pressure",
+                    "bending",
+                    "shell-section-output",
+                    "local-stress",
+                    "reaction-balance",
+                ),
+                source=SourceRef(
+                    kind="nafems",
+                    reference="NAFEMS P18.LE6 / TNSB Rev. 3 (1990), also reproduced by the Abaqus 2024 "
+                    "Benchmarks Guide: skew plate under normal pressure; reference lower-surface "
+                    "maximum principal stress at plate center E = 0.802 MPa.",
+                    url=HttpUrl(
+                        "https://www.nafems.org/publications/resource_center/p18/"
+                    ),
+                    document_version="TNSB Rev. 3 (1990)",
+                ),
             ),
             description=(
                 "m-N-Pa 单位。NAFEMS P18.LE6 斜板：平面内为边长均为1 m、A点内角30°的平行四边形，"
@@ -362,7 +482,23 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             poisson=0.0,
             load=100.0,
             refinement=True,
-            source="https://ansyshelp.ansys.com/public/Views/Secured/corp/v242/en/wb_vm/wbvt_VM-WB-MECH-002.html",
+            metadata=CaseMetadata(
+                description="检查孔边应力集中、局部应力口径及粗细网格一致性。",
+                tags=(
+                    "stress-concentration",
+                    "local-stress",
+                    "mesh-refinement",
+                    "reaction-balance",
+                ),
+                source=SourceRef(
+                    kind="ansys",
+                    reference="VM-WB-MECH-002",
+                    url=HttpUrl(
+                        "https://ansyshelp.ansys.com/public/Views/Secured/corp/v242/en/wb_vm/wbvt_VM-WB-MECH-002.html"
+                    ),
+                    document_version="2024 R2",
+                ),
+            ),
             description="m-N-Pa 单位。3D实体板x=0..15、y=0..5、z=0..1 m；贯穿圆孔轴线x=7.5,y=2.5，半径0.5 m；E=1000 Pa、nu=0。x=0端面全固定，x=15端面+X均匀拉伸面力100 Pa。",
             adaptation="必须保留完整3D实体，不用对称缩减；允许C3D4/C3D10/C3D8/C3D8R/C3D20/C3D20R。只在端面使用法向拉伸pressure或traction，不附加节点约束/载荷。孔表面应力定义为S11外推到孔壁节点的未平均ELEMENT_NODAL贡献最大值，全局坐标，不用全板最大值或Mises替代。该Abaqus读取口径是本题的显式移植定义。",
             metrics={
@@ -380,7 +516,25 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             poisson=0.3,
             load=1.0,
             refinement=True,
-            source="https://ansyshelp.ansys.com/public/Views/Secured/corp/v252/en/ans_vm/Hlp_V_VM184.html",
+            metadata=CaseMetadata(
+                description="检查三维实体梁三个独立工况的载荷隔离、端面位移及粗细网格一致性。",
+                tags=(
+                    "axial-load",
+                    "bending",
+                    "load-case-isolation",
+                    "displacement",
+                    "mesh-refinement",
+                    "reaction-balance",
+                ),
+                source=SourceRef(
+                    kind="ansys",
+                    reference="VM184",
+                    url=HttpUrl(
+                        "https://ansyshelp.ansys.com/public/Views/Secured/corp/v252/en/ans_vm/Hlp_V_VM184.html"
+                    ),
+                    document_version="2025 R2",
+                ),
+            ),
             description="三维实体悬臂梁，三个独立方向载荷；具体尺寸和材料由合同生成。",
             adaptation="必须3D实体，允许C3D4/C3D10/C3D8/C3D8R/C3D20/C3D20R。一个INP/ODB包含依次X/Y/Z三个静力步，每步只有该方向载荷，不叠加前步载荷。合力在x=6端面对称分配；具体实现需保持物理等价并在报告中说明。自由端目标是该面对应方向位移最大值。不得用梁/杆替代。",
             metrics={
@@ -403,10 +557,19 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             young=210.0e9,
             poisson=0.3,
             load=10.0e6,
-            source=(
-                "NAFEMS P18.LE1 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2024 "
-                "Benchmarks Guide: elliptic membrane; target tangential edge stress "
-                "sigma_yy at inner point D = 92.7 MPa."
+            metadata=CaseMetadata(
+                description="检查曲边外压、对称边界和内边指定点的局部应力。",
+                tags=("pressure", "symmetry", "local-stress", "reaction-balance"),
+                source=SourceRef(
+                    kind="nafems",
+                    reference="NAFEMS P18.LE1 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2024 "
+                    "Benchmarks Guide: elliptic membrane; target tangential edge stress "
+                    "sigma_yy at inner point D = 92.7 MPa.",
+                    url=HttpUrl(
+                        "https://www.nafems.org/publications/resource_center/p18/"
+                    ),
+                    document_version="TNSB Rev. 3 (1990)",
+                ),
             ),
             description=(
                 "m-N-Pa 单位。NAFEMS P18.LE1 四分之一椭圆环形膜：内椭圆半轴"
@@ -438,10 +601,25 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             young=210.0e9,
             poisson=0.3,
             load=1.0e6,
-            source=(
-                "NAFEMS P18.LE10 / TNSB Rev. 3 (1990), reproduced by the Abaqus "
-                "Benchmarks Guide: thick plate under uniform pressure; target direct "
-                "stress sigma_yy at D=(2,0,0.6) = -5.38 MPa."
+            metadata=CaseMetadata(
+                description="检查厚板弯曲中的支承集合、局部应力和总反力。",
+                tags=(
+                    "pressure",
+                    "bending",
+                    "symmetry",
+                    "local-stress",
+                    "reaction-balance",
+                ),
+                source=SourceRef(
+                    kind="nafems",
+                    reference="NAFEMS P18.LE10 / TNSB Rev. 3 (1990), reproduced by the Abaqus "
+                    "Benchmarks Guide: thick plate under uniform pressure; target direct "
+                    "stress sigma_yy at D=(2,0,0.6) = -5.38 MPa.",
+                    url=HttpUrl(
+                        "https://www.nafems.org/publications/resource_center/p18/"
+                    ),
+                    document_version="TNSB Rev. 3 (1990)",
+                ),
             ),
             description=(
                 "m-N-Pa 单位。NAFEMS P18.LE10 四分之一椭圆环形厚板：内椭圆半轴"
@@ -478,10 +656,19 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             young=68.25e9,
             poisson=0.3,
             load=2000.0,
-            source=(
-                "NAFEMS P18.LE3 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
-                "Benchmarks Guide: hemisphere with point loads; target radial displacement "
-                "Ux at A=(10,0,0) = 0.185 m."
+            metadata=CaseMetadata(
+                description="检查曲面壳点载荷、包含转角的对称条件和指定点位移。",
+                tags=("symmetry", "displacement"),
+                source=SourceRef(
+                    kind="nafems",
+                    reference="NAFEMS P18.LE3 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                    "Benchmarks Guide: hemisphere with point loads; target radial displacement "
+                    "Ux at A=(10,0,0) = 0.185 m.",
+                    url=HttpUrl(
+                        "https://www.nafems.org/publications/resource_center/p18/"
+                    ),
+                    document_version="TNSB Rev. 3 (1990)",
+                ),
             ),
             description=(
                 "m-N-Pa 单位。NAFEMS P18.LE3 四分之一球壳：中面半径10 m、厚度0.04 m，"
@@ -508,10 +695,19 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             young=210.0e9,
             poisson=0.3,
             load=1.2e6,
-            source=(
-                "NAFEMS P18.LE5 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
-                "Benchmarks Guide: Z-section cantilever under end torque; reference "
-                "midsurface axial stress sigma_xx at A=(2.5,-1,-1) = -108 MPa."
+            metadata=CaseMetadata(
+                description="检查开口Z形壳的扭矩施加和指定点中面轴向应力。",
+                tags=("torsion", "shell-section-output", "local-stress"),
+                source=SourceRef(
+                    kind="nafems",
+                    reference="NAFEMS P18.LE5 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                    "Benchmarks Guide: Z-section cantilever under end torque; reference "
+                    "midsurface axial stress sigma_xx at A=(2.5,-1,-1) = -108 MPa.",
+                    url=HttpUrl(
+                        "https://www.nafems.org/publications/resource_center/p18/"
+                    ),
+                    document_version="TNSB Rev. 3 (1990)",
+                ),
             ),
             description=(
                 "m-N-Pa 单位。NAFEMS P18.LE5 Z形开口薄壁悬臂：轴线x=0..10 m；"
@@ -545,10 +741,25 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             young=210.0e9,
             poisson=0.3,
             load=1000.0,
-            source=(
-                "NAFEMS P18.LE2 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
-                "Benchmarks Guide: cylindrical shell bending patch test; reference outer-surface "
-                "tangential stress at E = 60 MPa."
+            metadata=CaseMetadata(
+                description="检查壳边弯矩、局部方向、外表面切向应力及反力矩。",
+                tags=(
+                    "bending",
+                    "coordinate-components",
+                    "shell-section-output",
+                    "local-stress",
+                    "reaction-balance",
+                ),
+                source=SourceRef(
+                    kind="nafems",
+                    reference="NAFEMS P18.LE2 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                    "Benchmarks Guide: cylindrical shell bending patch test; reference outer-surface "
+                    "tangential stress at E = 60 MPa.",
+                    url=HttpUrl(
+                        "https://www.nafems.org/publications/resource_center/p18/"
+                    ),
+                    document_version="TNSB Rev. 3 (1990)",
+                ),
             ),
             description=(
                 "m-N-Pa 单位。NAFEMS P18.LE2 圆柱壳扇区：中面半径1 m、轴向长度0.5 m、"
@@ -579,11 +790,25 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             young=210.0e9,
             poisson=0.3,
             load=1.0e6,
-            source=(
-                "NAFEMS P18.LE4 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
-                "Benchmarks Guide: axisymmetric hyperbolic shell under uniform internal "
-                "pressure; midsurface stress at K is sigma_phi_phi=-50 MPa and "
-                "sigma_theta_theta=+50 MPa."
+            metadata=CaseMetadata(
+                description="检查双曲壳内压与中面子午及环向应力的区分。",
+                tags=(
+                    "pressure",
+                    "shell-section-output",
+                    "coordinate-components",
+                    "reaction-balance",
+                ),
+                source=SourceRef(
+                    kind="nafems",
+                    reference="NAFEMS P18.LE4 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                    "Benchmarks Guide: axisymmetric hyperbolic shell under uniform internal "
+                    "pressure; midsurface stress at K is sigma_phi_phi=-50 MPa and "
+                    "sigma_theta_theta=+50 MPa.",
+                    url=HttpUrl(
+                        "https://www.nafems.org/publications/resource_center/p18/"
+                    ),
+                    document_version="TNSB Rev. 3 (1990)",
+                ),
             ),
             description=(
                 "m-N-Pa 单位。NAFEMS P18.LE4 轴对称双曲壳：母线满足 r=sqrt(1+z^2)，"
@@ -619,10 +844,24 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             young=210.0e9,
             poisson=0.3,
             load=1.0e6,
-            source=(
-                "NAFEMS P18.LE7 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
-                "Benchmarks Guide: axisymmetric cylinder/sphere under uniform internal "
-                "pressure; reference outer-surface axial stress at D is 25.9 MPa."
+            metadata=CaseMetadata(
+                description="检查球冠圆柱连接附近外表面应力及轴向反力。",
+                tags=(
+                    "pressure",
+                    "shell-section-output",
+                    "local-stress",
+                    "reaction-balance",
+                ),
+                source=SourceRef(
+                    kind="nafems",
+                    reference="NAFEMS P18.LE7 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                    "Benchmarks Guide: axisymmetric cylinder/sphere under uniform internal "
+                    "pressure; reference outer-surface axial stress at D is 25.9 MPa.",
+                    url=HttpUrl(
+                        "https://www.nafems.org/publications/resource_center/p18/"
+                    ),
+                    document_version="TNSB Rev. 3 (1990)",
+                ),
             ),
             description=(
                 "m-N-Pa 单位。NAFEMS P18.LE7 轴对称球冠-圆柱壳：圆柱中面半径1 m，"
@@ -657,10 +896,25 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             young=210.0e9,
             poisson=0.3,
             load=1.0e6,
-            source=(
-                "NAFEMS P18.LE8 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
-                "Benchmarks Guide: axisymmetric crown/knuckle/cylinder shell under uniform "
-                "internal pressure; reference outer-surface hoop stress at D is 94.5 MPa."
+            metadata=CaseMetadata(
+                description="检查过渡壳几何、指定外表面环向应力与轴向反力。",
+                tags=(
+                    "pressure",
+                    "shell-section-output",
+                    "coordinate-components",
+                    "local-stress",
+                    "reaction-balance",
+                ),
+                source=SourceRef(
+                    kind="nafems",
+                    reference="NAFEMS P18.LE8 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                    "Benchmarks Guide: axisymmetric crown/knuckle/cylinder shell under uniform "
+                    "internal pressure; reference outer-surface hoop stress at D is 94.5 MPa.",
+                    url=HttpUrl(
+                        "https://www.nafems.org/publications/resource_center/p18/"
+                    ),
+                    document_version="TNSB Rev. 3 (1990)",
+                ),
             ),
             description=(
                 "m-N-Pa 单位。NAFEMS P18.LE8 轴对称压力壳：圆柱中面半径0.25 m，"
@@ -703,11 +957,26 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             young=210.0e9,
             poisson=0.3,
             load=1.0e6,
-            source=(
-                "NAFEMS P18.LE9 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
-                "Benchmarks Guide: branched axisymmetric cylinder/spherical shell under "
-                "pressure; reference outer-surface axial stress at C on the upper cylinder "
-                "is -319.9 MPa."
+            metadata=CaseMetadata(
+                description="检查分支连接、分区压力及从Gauss厚度积分点外推壳面应力。",
+                tags=(
+                    "pressure",
+                    "junction-constraint",
+                    "shell-section-output",
+                    "local-stress",
+                    "reaction-balance",
+                ),
+                source=SourceRef(
+                    kind="nafems",
+                    reference="NAFEMS P18.LE9 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                    "Benchmarks Guide: branched axisymmetric cylinder/spherical shell under "
+                    "pressure; reference outer-surface axial stress at C on the upper cylinder "
+                    "is -319.9 MPa.",
+                    url=HttpUrl(
+                        "https://www.nafems.org/publications/resource_center/p18/"
+                    ),
+                    document_version="TNSB Rev. 3 (1990)",
+                ),
             ),
             description=(
                 "m-N-Pa 单位。NAFEMS P18.LE9 分支轴对称壳：圆柱中面半径0.707107 m，"
@@ -748,10 +1017,19 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             poisson=0.3,
             load=0.0,
             thermal_expansion=2.3e-4,
-            source=(
-                "NAFEMS P18.LE11 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
-                "Benchmarks Guide: solid cylinder/taper/sphere under prescribed temperature; "
-                "reference direct stress sigma_zz at A is -105 MPa."
+            metadata=CaseMetadata(
+                description="检查给定温度场、热膨胀及指定点轴向应力。",
+                tags=("thermal-strain", "symmetry", "local-stress"),
+                source=SourceRef(
+                    kind="nafems",
+                    reference="NAFEMS P18.LE11 / TNSB Rev. 3 (1990), reproduced by the Abaqus 2026 "
+                    "Benchmarks Guide: solid cylinder/taper/sphere under prescribed temperature; "
+                    "reference direct stress sigma_zz at A is -105 MPa.",
+                    url=HttpUrl(
+                        "https://www.nafems.org/publications/resource_center/p18/"
+                    ),
+                    document_version="TNSB Rev. 3 (1990)",
+                ),
             ),
             description=(
                 "m-N-Pa-°C 单位。NAFEMS P18.LE11 四分之一三维热弹性实体。"
@@ -779,3 +1057,41 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
 
 def get_case(case_id: str) -> MechanicsCase:
     return next(c for c in mechanics_cases() if c.case_id == case_id)
+
+
+def selected_case_ids(case_ids: Sequence[str] | None = None) -> tuple[str, ...]:
+    names = BASIC_LINEAR_CASE_IDS if case_ids is None else tuple(case_ids)
+    if not names or len(names) != len(set(names)):
+        raise ValueError("case selection must be nonempty and unique")
+    known = {case.case_id for case in mechanics_cases()}
+    if not set(names) <= known:
+        raise ValueError("unknown mechanics case in selection")
+    return names
+
+
+_CASE_LIST_ADAPTER = TypeAdapter(list[MechanicsCase])
+
+
+def load_frozen_cases(root: Path, case_ids: Sequence[str]) -> tuple[MechanicsCase, ...]:
+    """读取并验证该批次的Case快照，不从当前注册表补写元数据。
+
+    Raises:
+        ValueError: 快照摘要、Case顺序或唯一性不符合冻结选择。
+        ValidationError: 元数据或物理合同不符合当前schema。
+    """
+    raw = (root / "cases.json").read_bytes()
+    seal = json.loads((root / "seal.json").read_bytes())
+    manifest_raw = (root / "manifest.json").read_bytes()
+    if (
+        seal.get("files", {}).get("manifest.json")
+        != hashlib.sha256(manifest_raw).hexdigest()
+    ):
+        raise ValueError("frozen manifest digest mismatch")
+    expected = seal.get("files", {}).get("cases.json")
+    if expected != hashlib.sha256(raw).hexdigest():
+        raise ValueError("frozen cases digest mismatch")
+    cases = _CASE_LIST_ADAPTER.validate_json(raw)
+    names = tuple(case.case_id for case in cases)
+    if not names or len(set(names)) != len(names) or names != tuple(case_ids):
+        raise ValueError("frozen cases do not match manifest case_ids")
+    return tuple(cases)

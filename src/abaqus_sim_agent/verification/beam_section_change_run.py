@@ -19,16 +19,14 @@ from abaqus_sim_agent.coding.workspace import (
     artifact_evidence_from_snapshots,
 )
 from abaqus_sim_agent.execution import Abaqus2024Runner, AbaqusExecutionResult
-from abaqus_sim_agent.verification.beam_run import (
-    beam_input_contract_passed,
-    beam_tension_oracle_script,
-)
+from abaqus_sim_agent.verification.assets import beam_tension_oracle_script
+from abaqus_sim_agent.verification.beam_input import beam_input_contract_passed
+from abaqus_sim_agent.verification.beam_reference import BeamTensionMeasurements
 from abaqus_sim_agent.verification.beam_section_change import (
     BeamSectionChangeOracleSpec,
     BeamSectionChangeVerification,
     verify_beam_section_change,
 )
-from abaqus_sim_agent.verification.beam_tension import BeamTensionMeasurements
 from abaqus_sim_agent.verification.model_change_evidence import (
     ModelChangeExecutionProvenance,
     WorkspaceChangeReport,

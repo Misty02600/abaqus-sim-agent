@@ -19,6 +19,7 @@ from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.clarification import ScriptedClarificationProvider
 from abaqus_sim_agent.coding.contracts import (
+    ApiCatalogBinding,
     CodingRunBudget,
     CodingRunRequest,
     RuntimeProfile,
@@ -37,13 +38,19 @@ from abaqus_sim_agent.coding.resume import load_initial_snapshot
 from abaqus_sim_agent.coding.run_lock import CodingRunFileLock
 from abaqus_sim_agent.coding.service import CodingRunService
 from abaqus_sim_agent.coding.workspace import WorkspaceResolver
-from abaqus_sim_agent.evaluation.bar_tension_3d import _eval_api_catalog_binding
 from abaqus_sim_agent.evaluation.behavior_measurement import file_digest
-from abaqus_sim_agent.evaluation.public_mechanics_cases import get_case, mechanics_cases
+from abaqus_sim_agent.evaluation.public_mechanics_cases import (
+    BASIC_LINEAR_CASE_IDS,
+    PUBLIC_MECHANICS_PROTOCOL,
+    get_case,
+    load_frozen_cases,
+    selected_case_ids,
+)
 from abaqus_sim_agent.evaluation.public_mechanics_control import (
     ObservedTransport,
     append_event,
     build_report,
+    build_report_async,
     read_json,
     run_until_pause,
     save_json,
@@ -61,7 +68,25 @@ from abaqus_sim_agent.verification.public_mechanics_run import (
 )
 
 ROOT = Path(__file__).parents[3]
-VERSION = "public-mechanics-e2e-v23-no-planning-request80-relaxed-limits"
+VERSION = PUBLIC_MECHANICS_PROTOCOL
+
+
+def _eval_api_catalog_binding(
+    catalog: ApiCatalog | None,
+) -> ApiCatalogBinding | None:
+    if catalog is None:
+        return None
+    manifest = catalog.manifest
+    if manifest is None:
+        raise ValueError("persisted API catalog is missing its manifest")
+    return ApiCatalogBinding(
+        schema_version=manifest.schema_version,
+        cards_sha256=manifest.cards_sha256,
+        card_count=manifest.card_count,
+        member_count=manifest.member_count,
+        members_sha256=manifest.members_sha256,
+        runtime_release=manifest.runtime_release,
+    )
 
 
 def _write(path, value):
@@ -80,8 +105,8 @@ def _files(path):
 def prepare(
     root: Path,
     catalog: Path,
-    case_ids: list[str],
-    foundation: bool,
+    case_ids: list[str] | None = None,
+    foundation: bool = True,
     *,
     api_catalog_mode: Literal["full", "full_with_discovery"] = "full",
     knowledge_resources: Path | None = None,
@@ -92,9 +117,8 @@ def prepare(
 ):
     if root.exists():
         raise FileExistsError(root)
+    case_ids = list(selected_case_ids(case_ids))
     cases = [get_case(k) for k in case_ids]
-    if len({c.case_id for c in cases}) != len(cases):
-        raise ValueError("duplicate case")
     ApiCatalog.open(catalog)
     if max_task_concurrency not in (1, 2):
         raise ValueError("max_task_concurrency must be 1 or 2")
@@ -147,6 +171,7 @@ def prepare(
             "batch_id": uuid4().hex[:10],
             "created_at": datetime.now(UTC).isoformat(),
             "case_ids": case_ids,
+            "scoring_case_ids": list(BASIC_LINEAR_CASE_IDS),
             "foundation": foundation,
             "execution_config": config.model_dump(mode="json"),
             "catalog_mode": api_catalog_mode,
@@ -255,9 +280,11 @@ def verify_binding(root):
         name: get_case(name).goal() for name in manifest["case_ids"]
     }:
         raise ValueError("visible goals differ from frozen contracts")
-    saved = json.loads((root / "cases.json").read_bytes())
-    if saved != [get_case(c["case_id"]).model_dump(mode="json") for c in saved]:
+    saved = load_frozen_cases(root, manifest["case_ids"])
+    if saved != tuple(get_case(name) for name in manifest["case_ids"]):
         raise ValueError("serialized contracts differ from frozen executable contracts")
+    if manifest.get("scoring_case_ids") != list(BASIC_LINEAR_CASE_IDS):
+        raise ValueError("scoring case selection differs from frozen worker")
 
 
 async def preflight(root: Path):
@@ -667,7 +694,7 @@ async def run(root: Path, action="run", case_ids=None):
             pid=os.getpid(),
         )
         try:
-            build_report(root, bindings_unchanged=True)
+            await build_report_async(root, bindings_unchanged=True)
             for offset in range(0, len(names), task_concurrency):
                 if (root / "pause.json").exists():
                     break
@@ -688,7 +715,7 @@ async def run(root: Path, action="run", case_ids=None):
                         for name in wave
                     )
                 )
-                report = build_report(root, bindings_unchanged=True)
+                report = await build_report_async(root, bindings_unchanged=True)
                 rows = [
                     next(r for r in report["trials"] if r["case_id"] == name)
                     for name in wave
@@ -699,7 +726,7 @@ async def run(root: Path, action="run", case_ids=None):
                         flush=True,
                     )
                 if any(
-                    row["classification"] not in {"formal_pass", "task_failed"}
+                    row["classification"] not in {"completed", "task_failed"}
                     for row in rows
                 ):
                     save_json(
@@ -719,7 +746,7 @@ async def run(root: Path, action="run", case_ids=None):
                 verify_binding(root)
                 unchanged = True
             finally:
-                build_report(root, bindings_unchanged=unchanged)
+                await build_report_async(root, bindings_unchanged=unchanged)
                 append_event(
                     root / "control/events.jsonl", "batch_stopped", action=action
                 )
@@ -795,7 +822,12 @@ def main():
     )
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--catalog", type=Path)
-    parser.add_argument("--case", action="append", dest="cases")
+    parser.add_argument(
+        "--case",
+        action="append",
+        dest="cases",
+        help="prepare默认选择15个评分Case；可显式选择其他Case作非计分诊断",
+    )
     parser.add_argument("--control", action="store_true")
     parser.add_argument(
         "--api-catalog-mode",
@@ -832,7 +864,7 @@ def main():
         prepare(
             root,
             args.catalog.resolve(),
-            args.cases or [c.case_id for c in mechanics_cases()],
+            args.cases,
             not args.control,
             api_catalog_mode=args.api_catalog_mode,
             knowledge_resources=args.knowledge_resources.resolve()

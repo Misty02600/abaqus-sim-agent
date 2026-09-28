@@ -60,10 +60,6 @@ from abaqus_sim_agent.execution import (
     AbaqusInvocation,
     ProcessOutput,
 )
-from abaqus_sim_agent.verification.run import (
-    PlateTensionRunVerifier,
-    PlateTensionVerificationAttempt,
-)
 
 
 class _PassingVerifier:
@@ -890,7 +886,7 @@ def test_model_budget_failure_records_terminal_artifact_hash_after_repair(
             )
         raise AssertionError("The request limit should prevent a fifth model call")
 
-    class _RejectingVerifier(PlateTensionRunVerifier):
+    class _RejectingVerifier:
         def __init__(self) -> None:
             pass
 
@@ -901,7 +897,7 @@ def test_model_budget_failure_records_terminal_artifact_hash_after_repair(
             initial_snapshot: WorkspaceSnapshot,
             executions: Sequence[AbaqusExecutionResult],
             decision: ReadyForVerificationDecision | None = None,
-        ) -> PlateTensionVerificationAttempt:
+        ) -> VerificationAttempt:
             del runner, executions, decision
             current = WorkspaceResolver(captured_cwd=request.workspace).snapshot(
                 request.workspace
@@ -909,7 +905,7 @@ def test_model_budget_failure_records_terminal_artifact_hash_after_repair(
             artifacts, _freshness = artifact_evidence_from_snapshots(
                 initial_snapshot, current
             )
-            return PlateTensionVerificationAttempt(
+            return VerificationAttempt(
                 passed=False,
                 feedback="Repair the generated script.",
                 artifacts=artifacts,
