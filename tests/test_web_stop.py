@@ -12,18 +12,20 @@ from fastapi.testclient import TestClient
 from pydantic import SecretStr
 from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models.function import FunctionModel
-from tests.test_web_streaming import poll
-from tests.test_web_tool_execution import _background_solver_app
-from tests.test_web_workbench import (
+
+from abaqus_sim_agent.coding.model import DeepSeekGateway
+from abaqus_sim_agent.coding.preferences import RunPreferences
+from abaqus_sim_agent.web.app import create_app
+from abaqus_sim_agent.web.controller import ServerConfig
+from tests.support.web import (
     Client,
     api_catalog_dir,
     create,
     login,
     settled,
 )
-
-from abaqus_sim_agent.web.app import create_app
-from abaqus_sim_agent.web.controller import ServerConfig
+from tests.support.web_solver import _background_solver_app
+from tests.support.web_streaming import poll
 
 
 @pytest.mark.parametrize("tool_name", ["run_cae_script", "run_abaqus_python"])
@@ -63,10 +65,10 @@ def test_stop_current_task_cancels_foreground_runtime_and_waits_for_cleanup(
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
+            overrides=RunPreferences(api_catalog_dir=api_catalog_dir(tmp_path)),
             stream_model=False,
         ),
-        api_key=SecretStr("fixture"),
+        api_keys={DeepSeekGateway.OFFICIAL: SecretStr("fixture")},
         model_factory=model_factory,
         runner_factory=lambda *args, **kwargs: Runner(),
     )

@@ -1,8 +1,15 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
+from urllib.parse import urlsplit
 
+import httpx
 import pytest
+import requests.adapters
+from pydantic_ai import models
+
+from abaqus_sim_agent.coding import domain_knowledge, preferences
 
 EVALUATION_TEST_FILES = frozenset(
     {
@@ -340,3 +347,68 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
             item.add_marker(pytest.mark.evaluation)
         elif layer == "component":
             item.add_marker(pytest.mark.component)
+
+
+models.ALLOW_MODEL_REQUESTS = False
+
+
+@pytest.fixture(autouse=True)
+def offline_environment(monkeypatch, tmp_path):
+    monkeypatch.setattr(models, "ALLOW_MODEL_REQUESTS", False)
+    monkeypatch.setattr(
+        preferences, "user_settings_path", lambda: tmp_path / "user-settings.json"
+    )
+    for name in tuple(os.environ):
+        if name.startswith(("LOGFIRE_", "PHOENIX_", "OTEL_")):
+            monkeypatch.delenv(name)
+    for name in (
+        "DEEPSEEK_API_KEY",
+        "OPENCODE_API_KEY",
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(
+        domain_knowledge,
+        "domain_knowledge_packs_root",
+        lambda: tmp_path / "user-knowledge-packs",
+    )
+
+    def check_request(request):
+        if request.url.host not in {"127.0.0.1", "::1", "localhost"}:
+            pytest.fail(
+                f"External HTTP is disabled in tests ({request.url.host}); use MockTransport",
+                pytrace=False,
+            )
+
+    sync_request = httpx.HTTPTransport.handle_request
+    async_request = httpx.AsyncHTTPTransport.handle_async_request
+
+    def handle_request(transport, request):
+        check_request(request)
+        return sync_request(transport, request)
+
+    async def handle_async_request(transport, request):
+        check_request(request)
+        return await async_request(transport, request)
+
+    monkeypatch.setattr(httpx.HTTPTransport, "handle_request", handle_request)
+    monkeypatch.setattr(
+        httpx.AsyncHTTPTransport, "handle_async_request", handle_async_request
+    )
+    requests_send = requests.adapters.HTTPAdapter.send
+
+    def send(adapter, request, **kwargs):
+        if urlsplit(request.url).hostname not in {"127.0.0.1", "::1", "localhost"}:
+            pytest.fail(
+                "External Requests/OTLP HTTP is disabled in tests", pytrace=False
+            )
+        return requests_send(adapter, request, **kwargs)
+
+    monkeypatch.setattr(requests.adapters.HTTPAdapter, "send", send)
+
+
+@pytest.fixture
+def mock_model_requests(offline_environment, monkeypatch):
+    """允许 SDK 协议测试使用模型接口，外部 HTTP 拦截仍然生效。"""
+    monkeypatch.setattr(models, "ALLOW_MODEL_REQUESTS", True)

@@ -14,11 +14,11 @@ from typing import Protocol, cast
 from anyio import to_thread
 
 HARNESS_WINDOWS_NEWLINE_HASH_PATCH_VERSION = "harness-0.24.0-windows-newline-hash-v1"
-HARNESS_WINDOWS_SHELL_TREE_PATCH_VERSION = "harness-0.33.0-windows-shell-tree-v4"
-HARNESS_WINDOWS_JSONL_APPEND_PATCH_VERSION = "harness-0.33.0-windows-jsonl-append-v3"
+HARNESS_WINDOWS_SHELL_TREE_PATCH_VERSION = "harness-0.36.0-windows-shell-tree-v5"
+HARNESS_WINDOWS_JSONL_APPEND_PATCH_VERSION = "harness-0.36.0-windows-jsonl-append-v4"
 _NEWLINE_HASH_AFFECTED_HARNESS_VERSIONS = frozenset({"0.24.0"})
-_SHELL_TREE_AFFECTED_HARNESS_VERSIONS = frozenset({"0.33.0"})
-_JSONL_APPEND_AFFECTED_HARNESS_VERSIONS = frozenset({"0.33.0"})
+_SHELL_TREE_AFFECTED_HARNESS_VERSIONS = frozenset({"0.33.0", "0.36.0"})
+_JSONL_APPEND_AFFECTED_HARNESS_VERSIONS = frozenset({"0.33.0", "0.36.0"})
 _HASH_PATCH_MARKER = "_abaqus_sim_agent_newline_hash_patch_version"
 _SHELL_PATCH_MARKER = "_abaqus_sim_agent_shell_tree_patch_version"
 _JSONL_PATCH_MARKER = "_abaqus_sim_agent_jsonl_append_patch_version"
@@ -98,8 +98,9 @@ def apply_harness_windows_shell_tree_patch(
     上游 ``ShellToolset`` 的超时和后台清理路径使用 POSIX process-group
     API；Windows 不提供 ``os.getpgid``/``os.killpg``，因此超时会把整个
     Agent run 变成基础设施异常。本补丁仅作用于已复现版本，终止路径
-    使用 Windows ``taskkill /T /F`` 终止准确 PID 的进程树；0.33.0 另修复
-    前台命令的 task-group 退出吞掉取消请求后继续等待进程的问题。
+    使用 Windows ``taskkill /T /F`` 终止准确 PID 的进程树，并修复前台命令的
+    task-group 退出吞掉取消请求后继续等待进程的问题。0.36.0 源码核对确认
+    上述路径仍未修复，保留 0.33.0 与 0.36.0 的精确版本约束。
 
     Args:
         platform_name: 用于测试的平台名；默认读取 ``os.name``。
@@ -140,9 +141,7 @@ def apply_harness_windows_shell_tree_patch(
         "_kill_process_group",
         kill_process_group,
     )
-    if (harness_version or version("pydantic-ai-harness")) == "0.33.0" and hasattr(
-        shell_toolset_class, "run_command"
-    ):
+    if hasattr(shell_toolset_class, "run_command"):
         from .harness_shell import run_command
 
         shell_module = import_module("pydantic_ai_harness.shell._toolset")
@@ -170,8 +169,8 @@ def apply_harness_windows_jsonl_append_patch(
     同一模型响应中的并行工具会从多个worker thread打开同一
     ``tool_effects.jsonl``。Windows append handle不能保证这些文本写入彼此
     不覆盖，已复现完整记录被截成 ``ll}``，导致后续resume无法解析。
-    本补丁只包装已复现版本的event/tool-effect同步追加方法；不同进程仍由
-    CodingRun state的OS锁隔离。
+    0.36.0 的追加实现与已复现的 0.33.0 相同。本补丁只包装这两个版本的
+    event/tool-effect 同步追加方法；不同进程仍由 CodingRun state 的 OS 锁隔离。
 
     Args:
         platform_name: 用于测试的平台名；默认读取 ``os.name``。

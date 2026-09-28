@@ -183,12 +183,11 @@ def test_distinct_failure_mapping(tmp_path, raw, query, reason):
 def test_real_adapter_reuses_frozen_composition_and_preserves_equation_body(
     tmp_path, monkeypatch
 ):
-    from tests.test_rag_evidence_baseline import make
-
     from abaqus_sim_agent.evaluation.rag_evidence_baseline import RagEvidenceBaseline
     from abaqus_sim_agent.evaluation.unified_retrieval import (
         QuestionQuery as OldQuestion,
     )
+    from tests.test_rag_evidence_baseline import make
 
     args, _, _, _ = make(tmp_path, monkeypatch)
     baseline = RagEvidenceBaseline(*args)

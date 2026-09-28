@@ -16,8 +16,8 @@ dependencies = [
   "onnxruntime>=1.29,<2",
   "platformdirs>=4.4,<5",
   "pydantic>=2.12,<3",
-  "pydantic-ai-harness[skills]==0.33.0",
-  "pydantic-ai-slim[openai]==2.47.0",
+  "pydantic-ai-harness[skills]==0.36.0",
+  "pydantic-ai-slim[anthropic,bedrock,bedrock-mantle,cerebras,cohere,crusoe,google,groq,huggingface,mistral,openai,openrouter,snowflake,typesafe,zai]==2.51.0",
   "snowballstemmer==3.0.1",
   "tokenizers>=0.23,<1",
 ]
@@ -60,7 +60,7 @@ dev = [
   { include-group = "type" },
 ]
 eval = [
-  "pydantic-evals==2.47.0",
+  "pydantic-evals==2.51.0",
 ]
 lint = [
   "ruff>=0.15.0,<1.0.0",

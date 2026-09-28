@@ -4,21 +4,17 @@ import pytest
 
 pytest.importorskip("fastapi")
 from fastapi.testclient import TestClient
-from tests.test_web_workbench import answer_body, configured_app, login, settled, start
 
 from abaqus_sim_agent.coding.resume import load_resume_state
 from abaqus_sim_agent.web.contracts import Registration, WebError
-
-
-def create_selected(client, workspace, *, key=None):
-    return client.post(
-        "/api/v1/runs",
-        json={
-            "idempotency_key": str(key or uuid4()),
-            "goal": "Write out.txt after asking for thickness",
-            "workspace": str(workspace),
-        },
-    )
+from tests.support.web import (
+    answer_body,
+    configured_app,
+    create_selected,
+    login,
+    settled,
+    start,
+)
 
 
 def test_directory_browser_requires_session_and_has_no_file_side_effects(tmp_path):
@@ -50,7 +46,7 @@ def test_selected_workspace_runs_and_resumes_without_copying_existing_files(tmp_
     folder.mkdir()
     seed = folder / "reference.txt"
     seed.write_text("existing input", encoding="utf-8")
-    app, _ = configured_app(tmp_path)
+    app, calls = configured_app(tmp_path)
     key = uuid4()
     with TestClient(app, base_url="http://127.0.0.1") as client:
         login(client)
@@ -69,18 +65,22 @@ def test_selected_workspace_runs_and_resumes_without_copying_existing_files(tmp_
         assert create_selected(client, other, key=key).status_code == 409
         waiting = start(client, rid)
         assert seed.read_text(encoding="utf-8") == "existing input"
+    assert len(calls) == 1
 
-    restarted, _ = configured_app(tmp_path)
+    restarted, resumed = configured_app(tmp_path)
     with TestClient(restarted, base_url="http://127.0.0.1") as client:
         login(client)
         restored = client.get(f"/api/v1/runs/{rid}").json()
         assert restored["can_answer"]
         assert restored["workspace"] == str(folder.resolve())
         assert restored["view"]["question"] == waiting["view"]["question"]
+        assert resumed == []
         reply = client.post(f"/api/v1/runs/{rid}/answers", json=answer_body(restored))
         assert reply.status_code == 202, reply.text
         done = settled(client, rid, status="completed")
         assert done["view"]["verification"]["passed"]
+        assert done["view"]["usage"]["model_requests"] == 3
+        assert len(resumed) == 2
         files = {item["relative_path"]: item for item in done["view"]["files"]}
         assert not files["reference.txt"]["fresh"]
         assert files["out.txt"]["fresh"]

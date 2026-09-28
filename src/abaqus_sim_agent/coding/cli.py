@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import getpass
 import io
 import json
 import sys
@@ -37,7 +38,6 @@ from abaqus_sim_agent.coding.concept_lookup import (
     open_concept_index,
 )
 from abaqus_sim_agent.coding.context_policy import (
-    CONTEXT_POLICY_VERSION,
     bind_filesystem_skills,
 )
 from abaqus_sim_agent.coding.contracts import (
@@ -50,7 +50,6 @@ from abaqus_sim_agent.coding.contracts import (
     RuntimeAllowedWithLimit,
     RuntimeDenied,
     RuntimeExecutionPolicy,
-    RuntimeProfile,
     RuntimeScriptPolicy,
 )
 from abaqus_sim_agent.coding.deferred_runtime import WaitingForToolExecution
@@ -68,20 +67,21 @@ from abaqus_sim_agent.coding.execution_verifier import ExecutionEvidenceVerifier
 from abaqus_sim_agent.coding.launch import LaunchManifest as _LaunchManifest
 from abaqus_sim_agent.coding.launch import apply_launch_amendments
 from abaqus_sim_agent.coding.model import (
-    DEEPSEEK_V4_FLASH,
-    DEFAULT_MODEL_HTTP_RETRIES,
-    DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS,
-    DeepSeekGateway,
-    create_deepseek_chat_model,
-    new_run_execution_config,
     take_gateway_api_key_from_environment,
 )
+from abaqus_sim_agent.coding.model_connections import (
+    create_model as create_deepseek_chat_model,
+)
+from abaqus_sim_agent.coding.preference_arguments import (
+    add_preference_arguments,
+    preferences_from_args,
+)
+from abaqus_sim_agent.coding.preferences import resolve_run_config
 from abaqus_sim_agent.coding.resume import (
     load_effective_run_for_resume,
 )
 from abaqus_sim_agent.coding.static_preflight import (
-    PreparedAbqpySource,
-    prepare_abqpy_source,
+    prepare_static_preflight_source as _prepare_static_preflight_source,
 )
 from abaqus_sim_agent.coding.user_questions import (
     UserAnswerInput,
@@ -93,11 +93,9 @@ from abaqus_sim_agent.coding.user_questions import (
 )
 from abaqus_sim_agent.coding.workspace import WorkspaceResolver
 from abaqus_sim_agent.execution import (
-    DEFAULT_ABAQUS_2024_LAUNCHER,
     Abaqus2024Runner,
 )
 from abaqus_sim_agent.retrieval import AbaqusDocumentIndex
-from abaqus_sim_agent.skills import skill_library_path
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -106,6 +104,11 @@ def build_parser() -> argparse.ArgumentParser:
         description="Run one Abaqus 2024 coding task in the selected workspace.",
     )
     parser.add_argument("--goal", help="Natural-language coding goal")
+    parser.add_argument(
+        "--list-model-providers",
+        action="store_true",
+        help="列出模型提供商与候选模型，不检查 SDK 或凭据",
+    )
     parser.add_argument(
         "--answer-file", type=Path, help="UTF-8 question_id/answer JSON for --resume"
     )
@@ -150,69 +153,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--run-id", help="Stable ASCII run identifier")
     parser.add_argument(
-        "--launcher",
-        type=Path,
-        default=None,
-        help="Explicit Abaqus 2024 launcher path",
-    )
-    parser.add_argument(
-        "--skills-dir",
-        type=Path,
-        help="Agent Skill library; defaults to the installed package library",
-    )
-    parser.add_argument(
-        "--knowledge-pack",
-        action="append",
-        metavar="PACK_ID",
-        help="Enable one installed private domain knowledge pack; repeatable",
-    )
-    parser.add_argument(
         "--list-knowledge-packs",
         action="store_true",
         help="List private domain knowledge packs installed for this user and exit",
-    )
-    parser.add_argument(
-        "--model-provider",
-        type=DeepSeekGateway,
-        choices=list(DeepSeekGateway),
-        default=None,
-        help="Model gateway; defaults to the official DeepSeek API",
-    )
-    parser.add_argument(
-        "--model",
-        default=None,
-        help="DeepSeek model ID sent to the selected gateway",
-    )
-    parser.add_argument(
-        "--http-retries",
-        type=int,
-        default=None,
-        help="OpenAI SDK HTTP retries per logical model request",
-    )
-    parser.add_argument(
-        "--api-catalog-dir",
-        type=Path,
-        help="Required exact Abaqus API catalog outside the Agent workspace",
-    )
-    parser.add_argument(
-        "--http-timeout-seconds",
-        type=float,
-        help="HTTP timeout for a new run; persisted and immutable on resume",
-    )
-    parser.add_argument(
-        "--reasoning-policy",
-        choices=("provider_default", "enabled_high"),
-        help="New Go/V4-Flash runs default to enabled_high; other models keep provider defaults",
-    )
-    parser.add_argument(
-        "--api-catalog-mode",
-        choices=(
-            "full",
-            "full_with_discovery",
-            "automatic_verified_only",
-            "automatic_exact_signature",
-        ),
-        help=("Catalog behavior; defaults to automatic_verified_only"),
     )
     parser.add_argument(
         "--concept-index-dir",
@@ -236,25 +179,6 @@ def build_parser() -> argparse.ArgumentParser:
             "Attach bounded RRF documentation evidence to eligible Solver "
             "diagnostics; requires --concept-index-dir"
         ),
-    )
-    parser.add_argument(
-        "--static-preflight-mode",
-        choices=("off", "on"),
-        default="off",
-        help=(
-            "Run optional non-blocking abqpy/BasedPyright analysis; "
-            "diagnostics accompany runtime results"
-        ),
-    )
-    parser.add_argument(
-        "--abqpy-static-wheel",
-        type=Path,
-        help="Pinned abqpy wheel used only as static type source",
-    )
-    parser.add_argument(
-        "--static-preflight-cache-dir",
-        type=Path,
-        help="Immutable unpacked abqpy cache outside the Agent workspace",
     )
     parser.add_argument(
         "--allowed-cae-script",
@@ -293,6 +217,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--amendment-reason",
         help="Audit reason for resume-time configuration or task changes",
     )
+    add_preference_arguments(parser)
     return parser
 
 
@@ -322,6 +247,25 @@ class _ConsoleQuestion:
 
 def run_cli(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    try:
+        return _run_cli_session(args)
+    except (ValueError, RuntimeError) as exc:
+        print(f"error: {exc}")
+        return 1
+
+
+def _run_cli_session(args: argparse.Namespace) -> int:
+    if args.list_model_providers:
+        from .providers import provider_catalog
+
+        print(
+            json.dumps(
+                [p.model_dump(mode="json") for p in provider_catalog()],
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return 0
     if args.list_knowledge_packs:
         return _print_knowledge_packs()
     key = None
@@ -379,6 +323,8 @@ def _run_cli_once(
             )
         request: CodingRunRequest | None = None
         launch: _LaunchManifest | None = None
+        execution = None
+        settings = None
         fresh_goal: str | None = None
         fresh_run_id: str | None = None
         expected_amendment_sequence: int | None = None
@@ -413,6 +359,13 @@ def _run_cli_once(
                 _load_launch_manifest(request.state_dir),
                 effective.ledger,
             )
+            if (
+                args.model_base_url is not None
+                and args.model_base_url != launch.model_base_url
+            ):
+                raise ValueError(
+                    "恢复不能修改 model_base_url；仅可提供与会话相同的地址。"
+                )
             resolved = WorkspaceResolver().resolve_interactive(
                 run_id=request.run_id,
                 workspace=request.workspace,
@@ -451,25 +404,16 @@ def _run_cli_once(
                 state_dir=args.state_dir,
             )
             initial_snapshot = resolved.initial_snapshot
-            model_provider = cast(
-                DeepSeekGateway,
-                args.model_provider or DeepSeekGateway.OFFICIAL,
+            settings = resolve_run_config(
+                resolved.workspace, preferences_from_args(args)
             )
-            model_name = cast(str, args.model or DEEPSEEK_V4_FLASH)
-            http_retries = cast(
-                int,
-                (
-                    args.http_retries
-                    if args.http_retries is not None
-                    else DEFAULT_MODEL_HTTP_RETRIES
-                ),
-            )
-            skill_library = args.skills_dir or skill_library_path()
-            api_catalog_dir = args.api_catalog_dir
-            requested_api_catalog_mode = cast(
-                ProductApiCatalogMode | None,
-                args.api_catalog_mode,
-            )
+            execution = settings.execution
+            model_provider = execution.model_provider
+            model_name = execution.model_name
+            http_retries = execution.http_retries
+            skill_library = settings.skill_library
+            api_catalog_dir = settings.api_catalog_dir
+            requested_api_catalog_mode = settings.api_catalog_mode
             concept_index_dir = args.concept_index_dir
             requested_concept_mode = cast(
                 ConceptRetrievalMode,
@@ -479,12 +423,9 @@ def _run_cli_once(
                 DiagnosticRetrievalMode,
                 args.diagnostic_retrieval_mode or "off",
             )
-            static_preflight_mode = cast(
-                Literal["off", "on"],
-                args.static_preflight_mode,
-            )
-            static_wheel = args.abqpy_static_wheel
-            static_cache_dir = args.static_preflight_cache_dir
+            static_preflight_mode = settings.static_preflight_mode
+            static_wheel = settings.abqpy_static_wheel
+            static_cache_dir = settings.static_preflight_cache_dir
             document_policy_mode = args.document_policy_mode or "off"
             document_binding = None
             domain_knowledge = None
@@ -563,8 +504,8 @@ def _run_cli_once(
                 allowed_abaqus_python_scripts=args.allowed_abaqus_python_script,
                 allowed_solver_inputs=args.allowed_solver_input,
             )
-            launcher = args.launcher or DEFAULT_ABAQUS_2024_LAUNCHER
-            runtime = RuntimeProfile(launcher_path=launcher.resolve())
+            assert settings is not None
+            runtime = settings.runtime
             request = CodingRunRequest(
                 run_id=fresh_run_id,
                 goal=fresh_goal,
@@ -585,16 +526,6 @@ def _run_cli_once(
                 ),
                 runtime_policy=_effective_fresh_runtime_policy(args),
             )
-            execution = new_run_execution_config(
-                model_provider=model_provider,
-                model_name=model_name,
-                http_retries=http_retries,
-                http_timeout_seconds=args.http_timeout_seconds
-                if args.http_timeout_seconds is not None
-                else DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS,
-                reasoning_policy=args.reasoning_policy,
-                planning_enabled=False,
-            )
             use_questions = not (
                 args.answers
                 or request.edit_scope
@@ -602,12 +533,13 @@ def _run_cli_once(
                 or request.concept_index
             )
             domain_knowledge = prepare_domain_knowledge_bundle(
-                tuple(args.knowledge_pack or ()),
+                settings.knowledge_pack_ids,
                 state_dir=request.state_dir,
                 workspace=request.workspace,
             )
             schema_version = "coding-run-launch-v10"
             resolved_skill_library = skill_library.resolve(strict=True)
+            assert execution is not None
             launch = _LaunchManifest(
                 schema_version=schema_version,
                 **({"question_protocol": "ask_user_v1"} if use_questions else {}),
@@ -619,7 +551,7 @@ def _run_cli_once(
                             resolved_skill_library,
                             ("abaqus-2024-coding",),
                         ),
-                        "context_policy_version": CONTEXT_POLICY_VERSION,
+                        "context_policy_version": "model-window-tiered-summary-v1",
                     }
                 ),
                 document_policy=document_binding,
@@ -666,6 +598,27 @@ def _run_cli_once(
         api_key = retained_api_key or take_gateway_api_key_from_environment(
             model_provider
         )
+        if (
+            launch.model_base_url
+            and args.model_base_url is None
+            and retained_api_key is None
+        ):
+            if not sys.stdin.isatty():
+                raise ValueError(
+                    "自定义接口需要显式传入 --model-base-url 确认地址后才能使用环境凭据。"
+                )
+            api_key = SecretStr(
+                getpass.getpass(f"API Key for {launch.model_base_url}: ")
+            )
+        from .providers import LOCAL_AUTH_PROVIDERS, require_provider_dependencies
+
+        require_provider_dependencies(model_provider)
+        if (
+            not api_key
+            and model_provider not in LOCAL_AUTH_PROVIDERS
+            and sys.stdin.isatty()
+        ):
+            api_key = SecretStr(getpass.getpass(f"{model_provider.value} API Key: "))
         verifier = _product_verifier()
         print(
             f"Model: {model_provider.value}/{model_name} "
@@ -738,6 +691,7 @@ def _validate_resume_arguments(args: argparse.Namespace) -> None:
         "--concept-index-dir": args.concept_index_dir,
         "--concept-retrieval-mode": args.concept_retrieval_mode,
         "--diagnostic-retrieval-mode": args.diagnostic_retrieval_mode,
+        "--static-preflight-mode": args.static_preflight_mode,
         "--abqpy-static-wheel": args.abqpy_static_wheel,
         "--static-preflight-cache-dir": args.static_preflight_cache_dir,
         "--allowed-cae-script": args.allowed_cae_script,
@@ -763,6 +717,32 @@ def _append_requested_amendments(
     state_dir: Path,
 ) -> None:
     config = _config_patch_from_args(args)
+    if config is not None and (
+        config.model_provider is not None or config.model_name is not None
+    ):
+        effective = load_effective_run_for_resume(state_dir)
+        launch = apply_launch_amendments(
+            _load_launch_manifest(state_dir), effective.ledger
+        )
+        if launch.context_window is not None:
+            from .model_connections import resolve_context_window
+
+            values = {name: getattr(config, name) for name in config.model_fields_set}
+            values["context_window"] = resolve_context_window(
+                config.model_provider or launch.model_provider,
+                config.model_name or launch.model_name,
+                config.context_window,
+            )
+            if (
+                config.model_provider is not None
+                and config.model_provider != launch.model_provider
+            ):
+                from .providers import connection_environment
+
+                values["provider_environment"] = connection_environment(
+                    config.model_provider
+                )
+            config = CodingRunConfigPatch.model_validate(values)
     goal_requested = args.goal is not None or args.request_file is not None
     if args.amendment_reason is not None and config is None and not goal_requested:
         raise ValueError("--amendment-reason requires a configuration or task change")
@@ -798,6 +778,8 @@ def _config_patch_from_args(
         values["model_name"] = args.model
     if args.http_retries is not None:
         values["http_retries"] = args.http_retries
+    if args.context_window is not None:
+        values["context_window"] = args.context_window
     if not values:
         return None
     return CodingRunConfigPatch.model_validate(values)
@@ -936,39 +918,6 @@ def _resolve_concept_retrieval_mode(
         index.read_bm25_manifest()
         index.verify_bm25_corpus()
     return requested
-
-
-def _prepare_static_preflight_source(
-    *,
-    mode: Literal["off", "on"],
-    wheel: Path | None,
-    cache_dir: Path | None,
-    workspace: Path,
-) -> PreparedAbqpySource | None:
-    if mode == "off":
-        if wheel is not None or cache_dir is not None:
-            raise ValueError(
-                "off static preflight must not receive source or cache paths"
-            )
-        return None
-    if mode not in {"on"}:
-        raise ValueError(f"unknown static preflight mode: {mode}")
-    if wheel is None or cache_dir is None:
-        raise ValueError(
-            f"{mode} static preflight requires --abqpy-static-wheel and "
-            "--static-preflight-cache-dir"
-        )
-    resolved_wheel = wheel.resolve(strict=True)
-    resolved_cache = cache_dir.resolve()
-    for label, path in (("abqpy wheel", resolved_wheel), ("cache", resolved_cache)):
-        if path == workspace or path.is_relative_to(workspace):
-            raise ValueError(f"static preflight {label} must be outside the workspace")
-    source = prepare_abqpy_source(resolved_wheel, resolved_cache)
-    print(
-        f"Static preflight: {source.binding().policy_version} "
-        f"(abqpy={source.version}, basedpyright={source.basedpyright_version})"
-    )
-    return source
 
 
 def _runtime_script_policy(

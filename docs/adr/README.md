@@ -11,6 +11,7 @@
 
 | 决定 | 状态与作用域 |
 |---|---|
+| [0043：模型偏好与会话合同分离](0043-separate-model-preferences-from-session-contracts.md) | 已采纳；新建逐级选择，临时输入不回写偏好，恢复沿用会话与原网关凭据 |
 | [0008：Pydantic AI Harness 单 Coder](0008-pydantic-ai-harness-abaqus-coding-run.md) | 已采纳；替代旧 LangGraph、多角色及首轮控制面路线，后续 scope/恢复/问答按下列决定扩展 |
 | [0017：按活动组件组织产品包](0017-package-by-component-coding-run.md) | 已采纳；组件职责与消费方端口 |
 | [0015：产品 Coder 不暴露通用 Shell](0015-disable-general-shell-for-product-coder.md) | 普通产品决定已由 0032 替代；旧冻结 profile 与原失败依据保留 |

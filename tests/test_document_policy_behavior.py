@@ -5,7 +5,6 @@ import pytest
 from pydantic import ValidationError
 from pydantic_ai.messages import ModelResponse, TextPart
 from pydantic_ai.models.function import FunctionModel
-from tests.test_runtime_evidence_service import BINDING, evidence
 
 from abaqus_sim_agent.evaluation.document_policy_behavior import (
     BehaviorBatch,
@@ -16,6 +15,7 @@ from abaqus_sim_agent.evaluation.document_policy_behavior import (
     caused_by,
 )
 from abaqus_sim_agent.retrieval.evidence_contracts import QuestionQuery, SearchRequest
+from tests.test_runtime_evidence_service import BINDING, evidence
 
 
 def case(**updates):

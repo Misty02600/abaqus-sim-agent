@@ -8,6 +8,7 @@ from pathlib import Path
 
 from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.persistence import write_bytes_atomic
+from abaqus_sim_agent.coding.preferences import RunPreferences
 from abaqus_sim_agent.web.app import create_app
 from abaqus_sim_agent.web.controller import ServerConfig
 
@@ -17,7 +18,10 @@ with tempfile.TemporaryDirectory(prefix="abaqus-web-schema-") as temporary:
     catalog_dir = Path(temporary) / "api-catalog"
     ApiCatalog([], runtime_release="2024").write(catalog_dir)
     app = create_app(
-        ServerConfig(root=root / "var" / "schema-only", api_catalog_dir=catalog_dir)
+        ServerConfig(
+            root=root / "var" / "schema-only",
+            overrides=RunPreferences(api_catalog_dir=catalog_dir),
+        )
     )
     (frontend / "openapi.json").write_text(
         json.dumps(app.openapi(), ensure_ascii=False, indent=2) + "\n",

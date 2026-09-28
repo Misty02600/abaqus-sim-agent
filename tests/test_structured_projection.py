@@ -1,8 +1,6 @@
 import lxml.etree as etree
 import pytest
 from pydantic import ValidationError
-from tests.test_evidence_blocks import tokenizer
-from tests.test_evidence_units import registry
 
 from abaqus_sim_agent.retrieval.evidence_blocks import (
     EvidenceBlock,
@@ -17,6 +15,8 @@ from abaqus_sim_agent.retrieval.structured_projection import (
     project_evidence_unit,
     table_projection,
 )
+from tests.test_evidence_blocks import tokenizer
+from tests.test_evidence_units import registry
 
 
 def projected(body: str, *, limit: int = 256, allow_headerless: bool = False):

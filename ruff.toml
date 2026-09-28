@@ -5,4 +5,5 @@ extend-exclude = [
     "docs/scratch",
     "tests/fixtures/api_catalog/abqpy",
     "tests/fixtures/api_container_repair",
+    "tests/fixtures/runtime_feedback_repair",
 ]

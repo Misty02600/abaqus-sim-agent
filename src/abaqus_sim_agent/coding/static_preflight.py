@@ -505,3 +505,41 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def prepare_static_preflight_source(
+    *,
+    mode: Literal["off", "on"],
+    wheel: Path | None,
+    cache_dir: Path | None,
+    workspace: Path,
+) -> PreparedAbqpySource | None:
+    """为已解析的会话配置准备工作区外的静态源与缓存。
+
+    Returns:
+        开启时返回带来源指纹的静态源；关闭时返回 None。
+
+    Raises:
+        ValueError: 模式或路径组合无效，或来源/缓存落在工作区内。
+        OSError: wheel 不存在或缓存无法读取、创建。
+    """
+    if mode == "off":
+        if wheel is not None or cache_dir is not None:
+            raise ValueError(
+                "off static preflight must not receive source or cache paths"
+            )
+        return None
+    if mode not in {"on"}:
+        raise ValueError(f"unknown static preflight mode: {mode}")
+    if wheel is None or cache_dir is None:
+        raise ValueError(
+            f"{mode} static preflight requires --abqpy-static-wheel and "
+            "--static-preflight-cache-dir"
+        )
+    resolved_wheel = wheel.resolve(strict=True)
+    resolved_cache = cache_dir.resolve()
+    for label, path in (("abqpy wheel", resolved_wheel), ("cache", resolved_cache)):
+        if path == workspace or path.is_relative_to(workspace):
+            raise ValueError(f"static preflight {label} must be outside the workspace")
+    source = prepare_abqpy_source(resolved_wheel, resolved_cache)
+    return source

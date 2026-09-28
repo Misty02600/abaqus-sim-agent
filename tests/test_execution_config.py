@@ -1,6 +1,5 @@
 import pytest
 from pydantic import ValidationError
-from tests.test_coding_amendments import _persist_base_state
 
 from abaqus_sim_agent.coding.amendments import (
     CodingRunConfigPatch,
@@ -15,6 +14,7 @@ from abaqus_sim_agent.coding.model import (
     ModelExecutionConfig,
     new_run_execution_config,
 )
+from tests.test_coding_amendments import _persist_base_state
 
 
 def target_config(**changes):

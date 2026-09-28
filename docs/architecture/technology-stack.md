@@ -9,8 +9,8 @@ effective launch 为准。这里解释实际职责，不维护另一份依赖版
 |---|---|---|
 | Python 3.12 / uv / uv_build | 宿主、依赖、项目内 `.venv`、包构建 | 不等于 Abaqus vendor Python 3.10 |
 | Pydantic | strict 请求、配置、决策、证据和 outcome | 类型校验不能证明物理意图正确 |
-| Pydantic AI 2.47.0 | 模型/provider、原生 tool loop、typed output、deferred tools、usage | 当前只有一个产品 Coder；pydantic-evals 同步锁定 2.47.0，历史批次仍使用各自冻结环境 |
-| Harness 0.33.0 | workspace coding、Shell、Skills、StepPersistence；按配置单独组合 Planning | 产品显式使用 FileSystem 原工具集、run-scoped Shell 和可回读的 ToolOutputLimits；不注册 SubAgents。0.33 的 Windows JSONL 追加与进程树清理仍需版本补丁；换行 hash 使用上游实现 |
+| Pydantic AI 2.51.0 | 模型/provider、原生 tool loop、typed output、deferred tools、usage | 当前只有一个产品 Coder；pydantic-evals 同步锁定 2.51.0，历史批次仍使用各自冻结环境 |
+| Harness 0.36.0 | workspace coding、Shell、Skills、StepPersistence；Planning 仅保留历史适配 | 产品用 AbaqusTextFileSystem 保留 UTF-8/CP936 编码和 raw-byte hash，组合 run-scoped Shell 与可回读的 ToolOutputLimits；显式设置 sub_agents=False。0.36 的 Windows JSONL 追加与进程树清理仍需版本补丁 |
 | CodingRunService / asyncio | 问答、累计预算、修订、恢复、verifier 反馈 | 本地文件后端宿主，不是 durable scheduler |
 | FastAPI / Uvicorn / REST + SSE | 本地 Web 命令、只读快照和变更通知 | 只监听回环地址；SSE 不传递运行真值或逐 token 恢复日志 |
 | React / TypeScript / assistant-ui | Thread、消息、工具、产物与验证展示 | ExternalStore 消费宿主投影，不运行 Agent 或拥有产品状态 |
@@ -26,7 +26,14 @@ effective launch 为准。这里解释实际职责，不维护另一份依赖版
 
 ## 模型配置与兼容
 
-模型工厂支持显式 DeepSeek / OpenCode 网关，不隐藏切换 provider。当前目标 Go/V4-Flash 新 run 使用
+模型依赖使用 `pydantic-ai-slim` 的模型 extras，预装除 xAI 外的非实时模型 SDK。提供商目录不按 SDK 或凭据过滤；选择后缺包直接提示包名。
+原生路径使用 `infer_model` / `infer_provider_class`；OpenCode Go/Zen 继续限定 DeepSeek 并复用原有 reasoning/header 适配。
+模型候选复用 `known_model_names()`，允许手动输入；候选不是账号实时可用名单，也不决定默认推荐顺序。
+新普通会话保存有效窗口、可选 API 地址和非凭据的接口/区域环境绑定，恢复不会重新读取偏好或静默重绑环境。
+Web API Key 与 OAuth 令牌只在宿主内存；重启后重新提供凭据或复用本机已有登录。OpenAI Codex 用框架 PKCE/回调，
+GitHub Copilot 用框架设备流且必须提供自己的 OAuth Client ID。登录完成不等于推理 API 权限已经验收。
+
+模型工厂使用所选原生 provider 或 OpenCode 适配，不隐藏切换 provider。当前目标 Go/V4-Flash 新 run 使用
 typed `ModelExecutionConfig` 保存 thinking enabled/high、Planning 开关、HTTP 重试与超时等有效设置；普通产品
 默认关闭 Planning，冻结 profile 保留原设置。当前 launch 按保存的有效配置恢复；不兼容的开发期 state
 显式拒绝，不迁移。历史批次复现使用其冻结源码和依赖，不能套新默认后声称复现旧请求。

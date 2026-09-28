@@ -1,11 +1,18 @@
 from __future__ import annotations
 
-import re
+import json
 from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SecretStr,
+    field_validator,
+    model_validator,
+)
 
 from ..coding.contracts import (
     CodingRunLimits,
@@ -16,6 +23,8 @@ from ..coding.contracts import (
 )
 from ..coding.domain_knowledge import DomainKnowledgePackBinding
 from ..coding.launch import LaunchManifest
+from ..coding.preferences import RunPreferences
+from ..coding.providers import ModelProvider
 from ..coding.read_model import CodingRunView, FileView, MessageView
 from ..coding.workspace import WorkspaceSnapshot
 
@@ -24,13 +33,31 @@ class StrictModel(BaseModel):
     model_config = ConfigDict(strict=True, frozen=True, extra="forbid")
 
 
+class ModelConnection(StrictModel):
+    provider: ModelProvider
+    api_key: SecretStr = Field(default_factory=lambda: SecretStr(""))
+    model_base_url: str | None = None
+
+    @field_validator("provider", mode="before")
+    @classmethod
+    def parse_provider(cls, value: object) -> object:
+        return ModelProvider(value) if isinstance(value, str) else value
+
+
 class CreateRun(StrictModel):
     idempotency_key: UUID
     goal: str = Field(min_length=1, max_length=20000)
-    knowledge_pack_ids: tuple[str, ...] = Field(default=(), max_length=32)
     abaqus_permission: RuntimePermission | None = None
     solver_permission: RuntimePermission | None = None
     workspace: str = Field(min_length=1, max_length=4096)
+    preferences: RunPreferences = Field(default_factory=RunPreferences)
+
+    @field_validator("preferences", mode="before")
+    @classmethod
+    def parse_preferences(cls, value: object) -> object:
+        if isinstance(value, dict):
+            return RunPreferences.model_validate_json(json.dumps(value))
+        return value
 
     @field_validator("idempotency_key", mode="before")
     @classmethod
@@ -43,23 +70,6 @@ class CreateRun(StrictModel):
         if not value.strip():
             raise ValueError("任务目标不能为空")
         return value
-
-    @field_validator("knowledge_pack_ids", mode="before")
-    @classmethod
-    def valid_knowledge_pack_ids(cls, values: object) -> tuple[str, ...]:
-        if isinstance(values, list):
-            values = tuple(values)
-        if not isinstance(values, tuple) or not all(
-            isinstance(value, str) for value in values
-        ):
-            raise ValueError("知识包标识必须是字符串列表")
-        if len(values) != len(set(values)):
-            raise ValueError("知识包不能重复选择")
-        if any(
-            re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", value) is None for value in values
-        ):
-            raise ValueError("知识包标识格式不正确")
-        return values
 
 
 class RunCommand(StrictModel):
@@ -367,6 +377,7 @@ class RunSnapshot(StrictModel):
     version: str
     created_at: datetime
     model: str
+    model_base_url: str | None = None
     workspace: str
     title: str
     title_version: int = 0

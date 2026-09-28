@@ -3,15 +3,11 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from ..skills import skill_library_path
 from .api_lookup import (
-    DEFAULT_PRODUCT_API_CATALOG_MODE,
-    ProductApiCatalogMode,
     bind_api_catalog,
     load_product_api_catalog,
 )
 from .context_policy import (
-    CONTEXT_POLICY_VERSION,
     bind_filesystem_skills,
 )
 from .contracts import (
@@ -19,13 +15,13 @@ from .contracts import (
     CodingRunRequest,
     EvaluationToolLimits,
     RuntimeExecutionPolicy,
-    RuntimeProfile,
 )
 from .domain_knowledge import prepare_domain_knowledge_bundle
 from .launch import LaunchManifest, apply_launch_amendments
-from .model import ModelExecutionConfig
+from .preferences import ResolvedRunPreferences
 from .response_stream import StoppedReply, load_stopped_replies
 from .resume import load_effective_run_for_resume, load_original_request_for_resume
+from .static_preflight import prepare_static_preflight_source
 from .user_questions import UserAnswerInput, UserQuestion, submit_answer
 from .workspace import WorkspaceResolver, WorkspaceSnapshot
 
@@ -56,21 +52,23 @@ def prepare_new_run(
     goal: str,
     workspace: Path,
     state_dir: Path,
-    execution: ModelExecutionConfig,
-    runtime: RuntimeProfile,
-    api_catalog_dir: Path,
-    api_catalog_mode: ProductApiCatalogMode = DEFAULT_PRODUCT_API_CATALOG_MODE,
+    settings: ResolvedRunPreferences,
     limits: CodingRunLimits | None = None,
     runtime_policy: RuntimeExecutionPolicy | None = None,
     evaluation_tool_limits: EvaluationToolLimits | None = None,
-    knowledge_pack_ids: tuple[str, ...] = (),
     knowledge_packs_root: Path | None = None,
 ) -> PreparedCodingRun:
     resolved = WorkspaceResolver().resolve_interactive(
         run_id=run_id, workspace=workspace, state_dir=state_dir
     )
     api_catalog = load_product_api_catalog(
-        api_catalog_dir,
+        settings.api_catalog_dir,
+        workspace=resolved.workspace,
+    )
+    static_source = prepare_static_preflight_source(
+        mode=settings.static_preflight_mode,
+        wheel=settings.abqpy_static_wheel,
+        cache_dir=settings.static_preflight_cache_dir,
         workspace=resolved.workspace,
     )
     request = CodingRunRequest(
@@ -78,19 +76,20 @@ def prepare_new_run(
         goal=goal,
         workspace=resolved.workspace,
         state_dir=resolved.state_dir,
-        runtime=runtime,
+        runtime=settings.runtime,
         api_catalog=bind_api_catalog(api_catalog),
+        static_preflight=static_source.binding() if static_source else None,
         limits=limits or CodingRunLimits(),
         runtime_policy=runtime_policy or RuntimeExecutionPolicy(),
         evaluation_tool_limits=evaluation_tool_limits,
     )
     domain_knowledge = prepare_domain_knowledge_bundle(
-        knowledge_pack_ids,
+        settings.knowledge_pack_ids,
         state_dir=resolved.state_dir,
         workspace=resolved.workspace,
         packs_root=knowledge_packs_root,
     )
-    skill_library = skill_library_path().resolve()
+    skill_library = settings.skill_library.resolve(strict=True)
     launch = LaunchManifest(
         schema_version="coding-run-launch-v10",
         question_protocol="ask_user_v1",
@@ -101,10 +100,13 @@ def prepare_new_run(
             skill_library,
             ("abaqus-2024-coding",),
         ),
-        context_policy_version=CONTEXT_POLICY_VERSION,
-        api_catalog_dir=api_catalog_dir.resolve(strict=True),
-        api_catalog_mode=api_catalog_mode,
-        **execution.model_dump(),
+        context_policy_version="model-window-tiered-summary-v1",
+        api_catalog_dir=settings.api_catalog_dir.resolve(strict=True),
+        api_catalog_mode=settings.api_catalog_mode,
+        static_preflight_mode=settings.static_preflight_mode,
+        abqpy_static_wheel=settings.abqpy_static_wheel,
+        static_preflight_cache_dir=settings.static_preflight_cache_dir,
+        **settings.execution.model_dump(),
     )
     return PreparedCodingRun(request, resolved.initial_snapshot, launch)
 

@@ -1530,7 +1530,7 @@ def test_agent_can_lookup_optional_exact_api_catalog(tmp_path: Path) -> None:
     agent = create_abaqus_coding_agent(
         FunctionModel(model_function),
         request,
-        api_catalog_enabled=True,
+        api_catalog_mode="full",
     )
 
     result = asyncio.run(agent.run(request.goal, deps=dependencies))
@@ -1807,7 +1807,7 @@ def test_agent_parameter_lookup_is_scoped_and_independent_of_method_card(
     agent = create_abaqus_coding_agent(
         FunctionModel(model_function),
         request,
-        api_catalog_enabled=True,
+        api_catalog_mode="full",
     )
     result = asyncio.run(agent.run(request.goal, deps=dependencies))
 

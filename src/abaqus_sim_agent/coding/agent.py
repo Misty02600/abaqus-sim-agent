@@ -85,6 +85,7 @@ from abaqus_sim_agent.coding.user_questions import (
     UserQuestionCapability,
     register_ask_user,
 )
+from abaqus_sim_agent.execution.environment import PROVIDER_SECRET_PATTERNS
 
 CODER_GENERAL_SHELL_POLICY_VERSION = "coder-general-shell-disabled-v1"
 PRODUCT_CODER_SHELL_POLICY_VERSION = "coder-shell-abaqus-launcher-denied-v1"
@@ -304,7 +305,7 @@ def create_abaqus_coding_agent(
         raise ValueError(
             "product coding tools require an open ask_user response session"
         )
-    coder = Coder[_CodingAgentDependencies](request.workspace)
+    coder = Coder[_CodingAgentDependencies](request.workspace, sub_agents=False)
     coder = _configure_coder(
         coder,
         request.workspace,
@@ -326,7 +327,14 @@ def create_abaqus_coding_agent(
             )
         capabilities.append(planning)
     if context_policy_enabled:
-        capabilities.insert(1, build_context_policy())
+        capabilities.insert(
+            1,
+            build_context_policy(
+                context_window=execution_config.context_window
+                if execution_config
+                else None
+            ),
+        )
     if product_shell_enabled:
         capabilities.append(
             ToolGuardrail[_CodingAgentDependencies](
@@ -573,7 +581,7 @@ def _configure_coder(
             return Shell[_CodingAgentDependencies](
                 cwd=workspace,
                 denied_commands=("abaqus", "abq"),
-                denied_env_patterns=LLM_API_KEY_ENV_PATTERNS,
+                denied_env_patterns=LLM_API_KEY_ENV_PATTERNS + PROVIDER_SECRET_PATTERNS,
                 tools=RUN_SCOPED_TOOL_NAMES,
             )
         if isinstance(capability, RepoContext) and not has_repo_context:

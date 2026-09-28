@@ -8,9 +8,6 @@ from pydantic import BaseModel, ValidationError
 from pydantic_ai.exceptions import UnexpectedModelBehavior
 from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models.function import FunctionModel
-from tests.test_beam_section_change_evaluation import _make_source_run as beam_source
-from tests.test_plate_change_evaluation import _make_source_run as plate_source
-from tests.test_task_baseline import _fixture_review
 
 from abaqus_sim_agent.coding.contracts import CodingRunOutcome
 from abaqus_sim_agent.coding.resume import CodingRunResumeError, load_resume_state
@@ -31,6 +28,9 @@ from abaqus_sim_agent.evaluation.task_baseline_service import (
 )
 from abaqus_sim_agent.execution import ProcessOutput
 from abaqus_sim_agent.execution.abaqus2024 import WindowsProcessStrategy
+from tests.test_beam_section_change_evaluation import _make_source_run as beam_source
+from tests.test_plate_change_evaluation import _make_source_run as plate_source
+from tests.test_task_baseline import _fixture_review
 
 
 class FakeAbaqusProcess:

@@ -58,7 +58,7 @@ def test_parser_leaves_workspace_unset_for_cwd_default() -> None:
     assert args.api_catalog_dir is None
     assert args.api_catalog_mode is None
     assert args.diagnostic_retrieval_mode is None
-    assert args.static_preflight_mode == "off"
+    assert args.static_preflight_mode is None
     assert args.abqpy_static_wheel is None
     assert args.static_preflight_cache_dir is None
     assert args.allowed_cae_script is None
@@ -381,6 +381,8 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
             "5400",
             "--model",
             "deepseek-v4-flash" if gateway == "opencode-go" else "amended-model",
+            "--context-window",
+            "1000000",
             "--http-retries",
             "7",
             "--amendment-reason",
@@ -708,7 +710,7 @@ def test_cli_resolves_startup_cwd_before_model_configuration(
     output = capsys.readouterr().out
     assert exit_code == 1
     assert f"Workspace: {workspace.resolve()}" in output
-    assert "DEEPSEEK_API_KEY must not be empty" in output
+    assert "DEEPSEEK_API_KEY" in output
 
 
 def test_cli_explicit_workspace_overrides_startup_cwd(

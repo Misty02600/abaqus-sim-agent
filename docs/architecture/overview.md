@@ -32,7 +32,7 @@ Web 主线仍未执行。外部 Job 对账、数据库控制面、多进程 Coor
 | Web 停止当前任务 | 中断当前 Agent 工作段及其前台工具，保留已完成工作和累计状态 | 按 operation ID 防止过期停止；后台 Solver 继续运行并单独取消，终态 workspace 精确匹配后再继续 | [取消控制](../../src/abaqus_sim_agent/coding/response_stream.py)、[ADR-0036](../adr/0036-interrupt-web-work-segments-and-manage-background-jobs-separately.md) |
 | Web 删除会话 | 确认后结束本宿主受控执行，永久删除会话记录 | 工程文件保留，无回收站；不删除尚无法确认的外部执行记录 | [删除存储](../../src/abaqus_sim_agent/web/deletion.py)、[ADR-0035](../adr/0035-delete-web-conversation-records-and-keep-workspaces.md) |
 | Harness 文件与 Shell 工具 | 普通仓库编码、检查、测试和后台命令 | Shell 固定 workspace 并剥离 Provider 凭据；直接 Abaqus launcher 被拒绝；Planning 仅保留历史适配，新运行不启用 | [Agent](../../src/abaqus_sim_agent/coding/agent.py)、[ADR-0032](../adr/0032-restore-restricted-shell-for-product-coder.md) |
-| 1M context policy | DeepSeek history 超过 960K 时先清旧 tool result、再按需摘要 | summary 只改模型 history；typed capability activation 被保留，launch v10 绑定 Skill digest | [context policy](../../src/abaqus_sim_agent/coding/context_policy.py)、[PLAN-0012](../plans/done/0012-agent-runtime-budget-and-context-policy.md) |
+| 模型窗口与 context policy | 新普通会话按保存窗口的 90% 触发先清旧 tool result、再按需摘要；旧会话沿原策略 | summary 只改模型 history；typed capability activation 被保留，launch v10 绑定窗口和 Skill digest | [context policy](../../src/abaqus_sim_agent/coding/context_policy.py)、[PLAN-0012](../plans/done/0012-agent-runtime-budget-and-context-policy.md) |
 | 三个 typed Abaqus 阶段 | CAE 建模、Solver submit/wait、Abaqus Python 提取 | Abaqus 默认 allow、Solver 默认 deny；可允许有限次数，进程 timeout 默认 unlimited；普通会话的 `solver_job` 分离提交和等待 | [工具](../../src/abaqus_sim_agent/coding/runtime_tools.py)、[ADR-0033](../adr/0033-split-solver-submit-and-wait-actions.md) |
 | 执行前语法检查与可选静态反馈 | Python 3.10 解析失败阻止本次脚本执行；BasedPyright 诊断随运行结果返回 | 编辑可保留半成品；静态分析默认 off，无 API 案例阻断或原样重试逃生口 | [ADR-0038](../adr/0038-unify-runtime-syntax-and-static-feedback.md) |
 | Web Solver `ToolExecution` | 在宿主后台运行并观察 `solver_job(action=submit)` | submit 立即返回 execution ID；wait 读取同一结果；当前宿主可取消，重启中的活动进程不重附着 | [controller](../../src/abaqus_sim_agent/web/controller.py) |
@@ -41,6 +41,8 @@ Web 主线仍未执行。外部 Job 对账、数据库控制面、多进程 Coor
 | 本机私有领域知识包 | 从用户级应用数据目录列出，并由新 CLI/Web 会话显式选择一个或多个包 | 默认 off；launch v10 绑定不可变 state 快照，包只提供参考文本，不增加 instructions、工具、权限或验收语义 | [知识接入](knowledge-access.md)、[ADR-0029](../adr/0029-discover-private-knowledge-from-user-data.md) |
 | 可选文档、ACI、probe、纯编辑策略 | 按显式 profile 增加证据或约束 | 默认关闭；冻结评测保留原合同，开发期旧产品 state 不迁移；接线不代表收益 | [Agent 范围](agent-implementation-scope.md) |
 | 固定 evaluator | Gold、verified-seed change、API repair 和检索对照 | 逐 Case 合同与 gate；不等于任意 CAE capability envelope | [验证证据](verification-evidence.md) |
+
+普通 CLI/Web 的提供商选择来自无凭据、无 SDK 导入的目录，覆盖框架原生模型提供商及 OpenCode Go/Zen，暂不接入 xAI。选择时才检查依赖；CLI 支持环境凭据与隐藏输入，Web 可设置仅进程内保存的 API Key，并通过框架执行 OpenAI Codex / GitHub Copilot 登录。原生模型装配、会话窗口与认证边界见 [模型配置与兼容](technology-stack.md#模型配置与兼容)。SDK 接线与离线协议测试不等于真实提供商或任务效果已经验证。
 
 ## 组件与状态所有权
 
@@ -106,6 +108,8 @@ Harness 文件存储，同一 state 有 OS 独占锁。文件记录支持本地�
 ## 继续阅读
 
 - [一次 CodingRun](flows/simulation-run.md)：问答、恢复、修订与终态。
+- [配置输入与恢复记录](system-framework.md#配置输入运行合同与恢复记录)：默认值、request/launch、修订与 checkpoint 的所有权。
+- [配置逐字段合同](configuration-reference.md)：每个字段的来源、默认、校验、保存位置和修改边界。
 - [Solver 生命周期](flows/job-lifecycle.md)：外部进程与崩溃边界。
 - [Agent 与权限范围](agent-implementation-scope.md)、[知识接入](knowledge-access.md)。
 - [技术栈与讲解点](technology-stack.md)、[ADR 索引](../adr/README.md)。

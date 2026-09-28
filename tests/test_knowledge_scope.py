@@ -1,8 +1,8 @@
 import pytest
-from tests.test_coding_agent import _request
 
 from abaqus_sim_agent.coding.instructions import build_instructions
 from abaqus_sim_agent.coding.knowledge_scope import KNOWLEDGE_SCOPE_INSTRUCTIONS
+from tests.test_coding_agent import _request
 
 
 @pytest.mark.parametrize("enabled", [True, False])

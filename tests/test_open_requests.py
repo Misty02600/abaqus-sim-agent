@@ -7,21 +7,23 @@ from fastapi.testclient import TestClient
 from pydantic import SecretStr
 from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import FunctionModel
-from tests.test_web_workbench import (
+
+from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
+from abaqus_sim_agent.coding.application import prepare_new_run
+from abaqus_sim_agent.coding.contracts import CodingRunBudget
+from abaqus_sim_agent.coding.launch import LaunchManifest
+from abaqus_sim_agent.coding.model import DeepSeekGateway
+from abaqus_sim_agent.coding.preferences import RunPreferences, resolve_run_config
+from abaqus_sim_agent.execution import Abaqus2024Runner
+from abaqus_sim_agent.web.app import create_app
+from abaqus_sim_agent.web.controller import ServerConfig
+from tests.support.web import (
     Client,
     NoProcess,
     api_catalog_dir,
     login,
     settled,
 )
-
-from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
-from abaqus_sim_agent.coding.application import prepare_new_run
-from abaqus_sim_agent.coding.contracts import CodingRunBudget
-from abaqus_sim_agent.coding.launch import LaunchManifest
-from abaqus_sim_agent.execution import Abaqus2024Runner
-from abaqus_sim_agent.web.app import create_app
-from abaqus_sim_agent.web.controller import ServerConfig
 
 
 def open_request_app(tmp_path, mode="response"):
@@ -77,15 +79,15 @@ def open_request_app(tmp_path, mode="response"):
 
     config = ServerConfig(
         root=tmp_path / "web",
-        api_catalog_dir=api_catalog_dir(tmp_path),
+        overrides=RunPreferences(api_catalog_dir=api_catalog_dir(tmp_path)),
         stream_model=False,
-        budget=CodingRunBudget(
+        **CodingRunBudget(
             max_model_requests=5, max_abaqus_calls=0, max_solver_calls=0
-        ),
+        ).as_request_controls(),
     )
     return create_app(
         config,
-        api_key=SecretStr("fixture"),
+        api_keys={DeepSeekGateway.OFFICIAL: SecretStr("fixture")},
         model_factory=factory,
         runner_factory=lambda w, s, **kw: Abaqus2024Runner(
             w, s, process_strategy=NoProcess()
@@ -138,7 +140,8 @@ def test_text_question_finishes_without_files_or_verification_and_restores(tmp_p
         )
         assert launch.schema_version == "coding-run-launch-v10"
         assert launch.capability_definitions
-        assert launch.context_policy_version == "deepseek-1m-tiered-summary-v1"
+        assert launch.context_policy_version == "model-window-tiered-summary-v1"
+        assert launch.context_window == 1_000_000
     other, again = open_request_app(tmp_path)
     with TestClient(other, base_url="http://127.0.0.1") as client:
         login(client)
@@ -180,7 +183,7 @@ def test_text_completion_cannot_hide_file_changes(tmp_path):
 async def test_response_output_is_enabled_only_for_open_request_agent(tmp_path):
     config = ServerConfig(
         root=tmp_path / "host",
-        api_catalog_dir=api_catalog_dir(tmp_path),
+        overrides=RunPreferences(api_catalog_dir=api_catalog_dir(tmp_path)),
     )
     (tmp_path / "workspace").mkdir()
     prepared = prepare_new_run(
@@ -188,9 +191,7 @@ async def test_response_output_is_enabled_only_for_open_request_agent(tmp_path):
         goal="explain",
         workspace=tmp_path / "workspace",
         state_dir=tmp_path / "state",
-        execution=config.execution,
-        runtime=config.runtime,
-        api_catalog_dir=config.api_catalog_dir,
+        settings=resolve_run_config(tmp_path / "workspace", config.overrides),
     )
     observed = []
 

@@ -73,6 +73,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/model-providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Model Providers */
+        get: operations["model_providers_api_v1_model_providers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/model-provider-dependencies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Model Provider Dependencies */
+        get: operations["model_provider_dependencies_api_v1_model_provider_dependencies_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/model-connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Connect Model */
+        post: operations["connect_model_api_v1_model_connections_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/model-logins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Begin Model Login */
+        post: operations["begin_model_login_api_v1_model_logins_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/model-logins/{login_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Model Login Status */
+        get: operations["model_login_status_api_v1_model_logins__login_id__get"];
+        put?: never;
+        post?: never;
+        /** Cancel Model Login */
+        delete: operations["cancel_model_login_api_v1_model_logins__login_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/runs/{run_id}": {
         parameters: {
             query?: never;
@@ -767,17 +853,13 @@ export interface components {
             idempotency_key: string;
             /** Goal */
             goal: string;
-            /**
-             * Knowledge Pack Ids
-             * @default []
-             */
-            knowledge_pack_ids: string[];
             /** Abaqus Permission */
             abaqus_permission?: (components["schemas"]["RuntimeDenied"] | components["schemas"]["RuntimeAllowed"] | components["schemas"]["RuntimeAllowedWithLimit"]) | null;
             /** Solver Permission */
             solver_permission?: (components["schemas"]["RuntimeDenied"] | components["schemas"]["RuntimeAllowed"] | components["schemas"]["RuntimeAllowedWithLimit"]) | null;
             /** Workspace */
             workspace: string;
+            preferences?: components["schemas"]["RunPreferences"];
         };
         /** DeleteRunResponse */
         DeleteRunResponse: {
@@ -989,6 +1071,28 @@ export interface components {
              */
             text: string;
         };
+        /** LoginRequest */
+        LoginRequest: {
+            provider: components["schemas"]["ModelProvider"];
+            /** Client Id */
+            client_id?: string | null;
+        };
+        /** LoginStatus */
+        LoginStatus: {
+            /** Id */
+            id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "waiting" | "completed" | "failed";
+            /** Url */
+            url: string;
+            /** User Code */
+            user_code?: string | null;
+            /** Error */
+            error?: string | null;
+        };
         /** MessageCommand */
         MessageCommand: {
             /**
@@ -1041,6 +1145,36 @@ export interface components {
              * @enum {string}
              */
             status: "pending" | "completed" | "failed" | "waiting_for_user" | "interrupted";
+        };
+        /** ModelConnection */
+        ModelConnection: {
+            provider: components["schemas"]["ModelProvider"];
+            /**
+             * Api Key
+             * Format: password
+             */
+            api_key?: string;
+            /** Model Base Url */
+            model_base_url?: string | null;
+        };
+        /**
+         * ModelProvider
+         * @enum {string}
+         */
+        ModelProvider: "deepseek" | "opencode-zen" | "opencode-go" | "openai" | "openai-chat" | "openai-responses" | "anthropic" | "alibaba" | "google" | "google-cloud" | "azure" | "azure-responses" | "bedrock" | "bedrock-mantle" | "cerebras" | "cohere" | "crusoe" | "fireworks" | "github" | "github-copilot" | "openai-codex" | "groq" | "heroku" | "huggingface" | "litellm" | "mistral" | "moonshotai" | "nebius" | "ollama" | "openrouter" | "ovhcloud" | "sambanova" | "snowflake" | "together" | "typesafe" | "vercel" | "vllm" | "zai" | "gateway/openai" | "gateway/anthropic" | "gateway/google" | "gateway/google-cloud" | "gateway/groq" | "gateway/bedrock";
+        /** ProviderOption */
+        ProviderOption: {
+            id: components["schemas"]["ModelProvider"];
+            /** Label */
+            label: string;
+            /** Models */
+            models: string[];
+            /** Api Key Environment */
+            api_key_environment: string | null;
+            /** Local Auth */
+            local_auth: boolean;
+            /** Login */
+            login?: string | null;
         };
         /** QuestionView */
         QuestionView: {
@@ -1097,6 +1231,38 @@ export interface components {
              */
             unavailable: components["schemas"]["RunIssue"][];
         };
+        /** RunPreferences */
+        RunPreferences: {
+            model_provider?: components["schemas"]["ModelProvider"] | null;
+            /** Model Name */
+            model_name?: string | null;
+            /** Context Window */
+            context_window?: number | null;
+            /** Model Base Url */
+            model_base_url?: string | null;
+            /** Http Retries */
+            http_retries?: number | null;
+            /** Http Timeout Seconds */
+            http_timeout_seconds?: number | null;
+            /** Reasoning Policy */
+            reasoning_policy?: ("provider_default" | "enabled_high") | null;
+            /** Launcher Path */
+            launcher_path?: string | null;
+            /** Skill Library */
+            skill_library?: string | null;
+            /** Api Catalog Dir */
+            api_catalog_dir?: string | null;
+            /** Api Catalog Mode */
+            api_catalog_mode?: ("full" | "full_with_discovery" | "automatic_verified_only" | "automatic_exact_signature") | null;
+            /** Static Preflight Mode */
+            static_preflight_mode?: ("off" | "on") | null;
+            /** Abqpy Static Wheel */
+            abqpy_static_wheel?: string | null;
+            /** Static Preflight Cache Dir */
+            static_preflight_cache_dir?: string | null;
+            /** Knowledge Pack Ids */
+            knowledge_pack_ids?: string[] | null;
+        };
         /** RunSnapshot */
         RunSnapshot: {
             view: components["schemas"]["CodingRunView"];
@@ -1109,6 +1275,8 @@ export interface components {
             created_at: string;
             /** Model */
             model: string;
+            /** Model Base Url */
+            model_base_url?: string | null;
             /** Workspace */
             workspace: string;
             /** Title */
@@ -1584,6 +1752,185 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DomainKnowledgeInventory"];
+                };
+            };
+        };
+    };
+    model_providers_api_v1_model_providers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderOption"][];
+                };
+            };
+        };
+    };
+    model_provider_dependencies_api_v1_model_provider_dependencies_get: {
+        parameters: {
+            query: {
+                provider: components["schemas"]["ModelProvider"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    connect_model_api_v1_model_connections_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelConnection"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    begin_model_login_api_v1_model_logins_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    model_login_status_api_v1_model_logins__login_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                login_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_model_login_api_v1_model_logins__login_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                login_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -49,6 +49,28 @@ Windows 的 Just recipes 需要 PowerShell 7.4+（`pwsh`）；直接运行上述
 持证集成测试需要先显式设置 `ABAQUS_LICENSED_TESTS=1`，再选择 `pytest -m abaqus`；这会使用本机许可证。
 不要把普通离线回归通过当作真实 Abaqus 闭环通过。
 
+
+
+```powershell
+```
+
+另一个终端启动原来的产品命令并加参数：
+
+```powershell
+  --api-catalog-dir D:\abaqus-data\api-catalog --model-provider opencode-go
+```
+
+工作段、runtime、verifier 和评测 Case。SQLite 数据保存在上面设置的目录，重启服务后仍可查看。
+模型凭据与工作区仍按原方式提供，普通终端/Web 进度和 raw logs 保持原用途。
+
+服务未启动或导出失败时会有 SDK 诊断，业务继续；未送达数据没有本地离线队列，之后启动服务不会自动补传。
+
+启用会保存脚本、问题和工具读入的私有文本；已知凭据过滤不等于任意正文匿名化。关闭二进制采集，不额外
+
+首轮评测接线为 `evaluation.plate_tension`、`evaluation.task_baseline_runner`、
+`evaluation.task_baseline_pilot`、`evaluation.simple_modeling_batch`（模块前缀均为 `abaqus_sim_agent`）。
+实现与验证范围见[验证证据](docs/architecture/verification-evidence.md)。
+
 ## 本地 Web 工作台
 
 已接入 FastAPI、React/TypeScript 和 assistant-ui ExternalStore。页面接受任意问题、解释请求、局部步骤或完整任务，支持文字答复、必要澄清、显式继续、
@@ -116,10 +138,39 @@ workspace/execution状态划定本段fresh evidence。显式修改任务合同�
 
 ## 运行 CodingRun
 
-默认网关为 DeepSeek 官方 API，读取 `DEEPSEEK_API_KEY`；`opencode-go` / `opencode-zen` 读取
+提供商列表覆盖 Pydantic AI 原生模型提供商及 OpenCode Go/Zen，暂不接入 xAI。可用 `--list-model-providers` 查看；Web 在“本次模型”里选择，列表不按已安装 SDK 或凭据过滤。缺依赖直接提示包名；API Key 可在页面设置，仅保留于本次宿主进程。OpenAI Codex / GitHub Copilot 可用框架登录流程（后者需自己的 OAuth Client ID），也可按提供商约定使用本机已有凭据。
+
+原生模型使用各自协议，支持候选与手动模型 ID；切换到其他 provider 时应填写对应模型名。`--model-base-url` 可指定自定义接口，窗口未知时用 `--context-window` 补齐。新会话把采用的窗口及连接环境保存到 launch，恢复不受新偏好或元数据更新影响。此接入完成离线工程验证，不代表全部提供商已做真实模型或仿真验收。
+
+未设置偏好时，默认网关为 DeepSeek 官方 API，读取 `DEEPSEEK_API_KEY`；`opencode-go` / `opencode-zen` 读取
 `OPENCODE_API_KEY`，不会隐藏切换 Provider。模型 ID 可由 `--model` 显式指定，默认
 `deepseek-v4-flash`；免费 Zen ID 与付费网关 ID 不能互换。Go adapter 为同一 run/resume 提供稳定、
 经 SHA-256 处理的 session 标识和项目 User-Agent。
+
+CLI/Web 使用同一份配置定义：全局用户配置为 `%LOCALAPPDATA%/abaqus-sim-agent/settings.json`，项目配置为
+所选工作区的 `.abaqus-sim-agent/settings.json`。两者都是可选的 UTF-8 JSON，支持相同字段；例如：
+
+```json
+{
+  "model_provider": "opencode-go",
+  "model_name": "deepseek-v4-flash"
+}
+```
+
+新 CLI 会话逐字段采用：**显式参数 → 项目偏好 → 用户偏好 → 内置默认值**。Web 采用同一规则，
+创建页面的“本次模型”优先于 Web 启动参数；项目指所选工作区，不是服务启动目录。
+公共字段包括模型与 HTTP/推理参数、`launcher_path`、`skill_library`、`api_catalog_dir`/`api_catalog_mode`、
+静态检查模式及 wheel/cache 路径、`knowledge_pack_ids`。文件中的相对路径基于该文件所在目录；CLI 相对路径
+基于启动目录，Web 创建请求的相对路径基于所选工作区。省略字段表示继承，列表整体替换，`[]` 清空知识包选择；
+CLI 可用 `--no-knowledge-packs`，Web 可取消继承后不选任何包。`null`、未知字段和非法组合会报错。
+静态检查 off 时不使用或绑定预配置的 wheel/cache，之后的新会话仍可显式启用。
+
+API Key 属于宿主凭据，任务输入与运行权限由本次调用确定。这些不自动进入全局/项目偏好文件。路径等资源选择在创建会话时验证并生成固定绑定，hash 和
+执行进度由宿主生成，不是用户配置字段。具体规则见[配置逐字段合同](docs/architecture/configuration-reference.md)。
+
+CLI/Web 的临时选择只保存进会话，不回写偏好文件；要改变以后新会话的默认值，显式编辑上述文件。
+恢复读取已保存的会话合同及修订，不重读偏好，也不因缺少凭据自动切换模型。Web 宿主按会话网关使用
+启动时捕获的对应凭据。详细边界见[配置输入与恢复记录](docs/architecture/system-framework.md#配置输入运行合同与恢复记录)。
 
 下面的板拉伸请求要求先询问厚度。使用普通产品 CLI 运行它，仍只获得 `execution_evidence`，
 不是后面的 Gold 物理验收：
@@ -384,18 +435,31 @@ API 意图准备、评测专用语义发现和历史失败反馈各有独立实�
 
 ## 测试与真实任务评测
 
-默认 `pytest` 只运行当前产品主路径与核心合同；检索/证据处理、可选策略等低层组件回归，以及评测基础设施和
-持证 Abaqus 集成测试显式分层，避免日常回归反复执行与本次产品改动无关的内部算法或冻结试验：
+默认 `pytest`／`just test` 运行全部适用的离线工程测试，包括测评器、评分、数据加载和批次管理的代码回归。
+按被测行为维护用例，不再由文件名清单划分默认、component 和 evaluation 集合。需要局部反馈时直接选择文件：
 
 ```console
 uv run --no-sync pytest -q
-uv run --no-sync pytest -q -m component
-uv run --no-sync pytest -q -m evaluation
+uv run --no-sync pytest -q tests/test_web_workbench.py
+uv run --no-sync pytest -q tests/test_task_baseline_service.py
 ```
 
 持证集成测试需要先设置 `ABAQUS_LICENSED_TESTS=1`，再运行 `pytest -m abaqus`；这会使用本机许可证。
-`component` 仍由 CI 和发布检查显式运行；`evaluation` 可独立复核冻结 evaluator、benchmark 与研究回归。
-一次性实验的历史证据由版本化 benchmark/report 与 Git 历史保留，不额外维护一套历史 pytest。
+依赖本机私有 abqpy 源码等资产的用例标记 `local_assets`，可显式选择
+`pytest -m "local_assets and not abaqus and not live_model"`；`live_model` 标记的用例也不进入默认集。
+覆盖默认 `-m` 表达式时，应写全本次需要的资源排除条件。
+CI 和发布检查使用同一默认离线集合。真实 Agent 能力／检索效果测评继续使用各自的显式入口。
+历史报告与 seal 保留原 bytes；仅复述旧批次成绩的断言不再约束日常代码回归。
+调用当前代码验证容差、格式兼容、篡改拒绝和失败处理的历史样本仍可作为工程测试输入。
+
+测试默认设置 `ALLOW_MODEL_REQUESTS=False`，清除继承的 Provider 密钥，并将默认私有知识包位置指向临时目录。
+HTTPX 的真实网络传输只放行本机回环地址。使用 `MockTransport` 验证真实 SDK 协议的测试须显式启用
+`mock_model_requests` fixture；该 fixture 放行模型接口但保留外部 HTTP 拦截。子进程不自动继承 Python
+monkeypatch，相关测试须显式使用临时工作区、测试环境与假模型／固定进程脚本。
+共享的假进程、Web 应用工厂与 HTTP 操作放在 `tests/support/`，新测试从这里复用，避免从其他测试模块
+导入 helper。只用于单个场景的辅助函数留在对应测试文件；公共隔离 fixture 位于 `tests/conftest.py`。
+Web 测试优先覆盖 HTTP 接线、会话持久化和执行生命周期；纯宿主条件直接在宿主测试中验证。
+同一正常流程的前置步骤可并入完整场景，停止、删除、取消等不同副作用仍分别覆盖。
 真实模型行为测试与持证任务另行运行，
 分别记录实际调用和验收结果。
 

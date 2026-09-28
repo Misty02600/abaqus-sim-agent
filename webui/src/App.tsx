@@ -34,6 +34,7 @@ import {
   type WorkspaceOpenFile,
 } from "./WorkspaceExplorer";
 import { DirectoryPicker } from "./DirectoryPicker";
+import { ModelPicker, type ModelSelection } from "./ModelPicker";
 import { ThreadListPrimitive } from "@assistant-ui/react";
 import type { components } from "./api/schema";
 
@@ -108,12 +109,15 @@ export default function App() {
   const [selectedKnowledgePackIds, setSelectedKnowledgePackIds] = useState<
     string[]
   >([]);
+  const [inheritKnowledgePacks, setInheritKnowledgePacks] = useState(true);
   const [abaqusPermission, setAbaqusPermission] =
     useState<PermissionMode>("allow");
   const [abaqusLimit, setAbaqusLimit] = useState(10);
   const [solverPermission, setSolverPermission] =
     useState<PermissionMode>("deny");
   const [solverLimit, setSolverLimit] = useState(3);
+  const [modelSelection, setModelSelection] = useState<ModelSelection>({ provider: "", name: "", baseUrl: "", contextWindow: "" });
+  const { provider: modelProvider, name: modelName } = modelSelection;
   const [newWorkspace, setNewWorkspace] = useState<string | null>(() =>
     sessionStorage.getItem(WORKSPACE_DRAFT_KEY),
   );
@@ -352,31 +356,45 @@ export default function App() {
     setError("");
     try {
       const knowledgePackIds = [...selectedKnowledgePackIds].sort();
+      if (modelProvider && !modelName.trim()) throw new Error("请选择或填写该提供商的模型名称。");
+      const modelPreferences = {
+        ...(modelProvider ? { model_provider: modelProvider } : {}),
+        ...(modelName.trim() ? { model_name: modelName.trim() } : {}),
+        ...(modelSelection.baseUrl.trim() ? { model_base_url: modelSelection.baseUrl.trim() } : {}),
+        ...(modelSelection.contextWindow ? { context_window: Number(modelSelection.contextWindow) } : {}),
+      };
       const key = commandId(
         "new",
         "create",
         JSON.stringify({
           goal,
           knowledgePackIds,
+          inheritKnowledgePacks,
           abaqusPermission,
           abaqusLimit,
           solverPermission,
           solverLimit,
           workspace,
+          modelPreferences,
         }),
       );
       messageId = `web-${key.replaceAll("-", "")}:goal`;
       const next = await request<Snapshot>("/runs", {
         idempotency_key: key,
         goal,
-        knowledge_pack_ids: knowledgePackIds,
         abaqus_permission: permission(abaqusPermission, abaqusLimit),
         solver_permission: permission(solverPermission, solverLimit),
         workspace,
+        preferences: {
+          ...modelPreferences,
+          ...(!inheritKnowledgePacks ? { knowledge_pack_ids: knowledgePackIds } : {}),
+        },
       });
       clearCommand("new", "create");
       saved = true;
       setSelectedKnowledgePackIds([]);
+      setInheritKnowledgePacks(true);
+      setModelSelection({ provider: "", name: "", baseUrl: "", contextWindow: "" });
       navigate(next.view.run_id);
       const startKey = commandId(next.view.run_id, "start");
       const reply = await request<{ error?: string | null }>(
@@ -1008,12 +1026,13 @@ export default function App() {
                     </button>
                   </div>
                 </div>
+                <ModelPicker ready={ready} busy={busy} value={modelSelection} onChange={setModelSelection} />
                 <div className="knowledge-picker">
                   <div className="row">
                     <div>
                       <strong>本机私有知识包</strong>
                       <p className="muted small">
-                        只对新会话生效；未选择时保持关闭。
+                        只对新会话生效；默认继承项目或用户偏好。
                       </p>
                     </div>
                     <button
@@ -1025,6 +1044,11 @@ export default function App() {
                       刷新
                     </button>
                   </div>
+                  <label>
+                    <input type="checkbox" checked={inheritKnowledgePacks} disabled={busy}
+                      onChange={(event) => setInheritKnowledgePacks(event.target.checked)} />
+                    使用默认知识包选择（取消后可自选；不选任何包表示本次关闭）
+                  </label>
                   {knowledgeInventory?.packs.length ? (
                     <div className="knowledge-pack-list">
                       {knowledgeInventory.packs.map((pack) => (
@@ -1034,7 +1058,7 @@ export default function App() {
                             checked={selectedKnowledgePackIds.includes(
                               pack.pack_id,
                             )}
-                            disabled={busy}
+                            disabled={busy || inheritKnowledgePacks}
                             onChange={(event) =>
                               setSelectedKnowledgePackIds((current) =>
                                 event.target.checked
@@ -1198,6 +1222,7 @@ export default function App() {
                       继续上次执行
                     </button>
                   )}
+                  <ModelPicker ready={ready} busy={busy} value={{ ...modelSelection, provider: modelSelection.provider || (snapshot.model.startsWith("gateway/") ? snapshot.model.split("/").slice(0, 2).join("/") : snapshot.model.split("/")[0]), baseUrl: !modelSelection.provider || modelSelection.provider === (snapshot.model.startsWith("gateway/") ? snapshot.model.split("/").slice(0, 2).join("/") : snapshot.model.split("/")[0]) ? snapshot.model_base_url ?? "" : modelSelection.baseUrl }} onChange={setModelSelection} connectionOnly />
                   <Composer
                     cacheKey={draftKey}
                     disabled={busy}

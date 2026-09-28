@@ -4,6 +4,7 @@ import asyncio
 import json
 import mimetypes
 import secrets
+from collections.abc import Mapping
 from contextlib import asynccontextmanager
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -17,7 +18,14 @@ from starlette.background import BackgroundTask
 
 from ..coding.composition import ModelFactory, RunnerFactory
 from ..coding.domain_knowledge import DomainKnowledgeInventory
-from ..coding.model import create_deepseek_chat_model
+from ..coding.model import DeepSeekGateway
+from ..coding.model_connections import create_model as create_deepseek_chat_model
+from ..coding.providers import (
+    ProviderOption,
+    ProviderUnavailable,
+    provider_catalog,
+    require_provider_dependencies,
+)
 from ..coding.run_lock import CodingRunAlreadyLocked
 from ..execution import Abaqus2024Runner
 from .artifacts import snapshot_file
@@ -30,6 +38,7 @@ from .contracts import (
     DeleteRunResponse,
     DirectoryBrowse,
     MessageCommand,
+    ModelConnection,
     RenameCommand,
     RunCommand,
     RunList,
@@ -48,20 +57,25 @@ from .contracts import (
 from .controller import RunController, ServerConfig
 from .directories import browse_directories
 from .events import ViewEvents
+from .model_login import LoginRequest, LoginStatus, ModelLogins
 from .workspace import list_workspace, search_workspace, workspace_preview
 
 
 def create_app(
     config: ServerConfig,
     *,
-    api_key: SecretStr = SecretStr(""),
+    api_keys: Mapping[DeepSeekGateway, SecretStr] | None = None,
     model_factory: ModelFactory = create_deepseek_chat_model,
     runner_factory: RunnerFactory = Abaqus2024Runner,
 ) -> FastAPI:
     controller = RunController(
-        config, api_key, model_factory=model_factory, runner_factory=runner_factory
+        config,
+        api_keys or {},
+        model_factory=model_factory,
+        runner_factory=runner_factory,
     )
     events = ViewEvents()
+    logins = ModelLogins(controller)
     session = secrets.token_urlsafe(32)
     csrf = secrets.token_urlsafe(32)
 
@@ -73,6 +87,7 @@ def create_app(
         try:
             yield
         finally:
+            await logins.close()
             await asyncio.to_thread(controller.close)
 
     app = FastAPI(
@@ -137,6 +152,10 @@ def create_app(
     async def web_error(request: Request, exc: WebError):
         return error(exc.code, exc.message, exc.status)
 
+    @app.exception_handler(ProviderUnavailable)
+    async def unavailable_provider(request: Request, exc: ProviderUnavailable):
+        return error("provider_unavailable", str(exc), 422)
+
     @app.exception_handler(RequestValidationError)
     async def invalid_input(request: Request, exc: RequestValidationError):
         return error("invalid_input", "请求字段、格式或取值不正确", 422)
@@ -172,6 +191,47 @@ def create_app(
     @app.get("/api/v1/knowledge-packs", response_model=DomainKnowledgeInventory)
     def list_knowledge_packs():
         return controller.list_knowledge_packs()
+
+    @app.get("/api/v1/model-providers", response_model=tuple[ProviderOption, ...])
+    def model_providers():
+        return provider_catalog()
+
+    @app.get("/api/v1/model-provider-dependencies")
+    def model_provider_dependencies(provider: DeepSeekGateway):
+        require_provider_dependencies(provider)
+        return {"ready": True}
+
+    @app.post("/api/v1/model-connections")
+    def connect_model(body: ModelConnection):
+        require_provider_dependencies(body.provider)
+        try:
+            controller.configure_model_key(
+                body.provider, body.api_key, body.model_base_url
+            )
+        except ValueError as exc:
+            raise WebError("invalid_connection", str(exc), 422) from exc
+        return {"configured": True}
+
+    @app.post("/api/v1/model-logins", response_model=LoginStatus)
+    async def begin_model_login(body: LoginRequest):
+        try:
+            return await logins.begin(body)
+        except ValueError as exc:
+            raise WebError("login_unavailable", str(exc), 422) from exc
+        except Exception as exc:
+            raise WebError("login_failed", "无法发起登录，请稍后重试。", 502) from exc
+
+    @app.get("/api/v1/model-logins/{login_id}", response_model=LoginStatus)
+    def model_login_status(login_id: str):
+        status = logins.statuses.get(login_id)
+        if status is None:
+            raise WebError("login_not_found", "登录记录不存在。", 404)
+        return status
+
+    @app.delete("/api/v1/model-logins/{login_id}")
+    async def cancel_model_login(login_id: str):
+        await logins.cancel(login_id)
+        return {"cancelled": True}
 
     @app.get("/api/v1/runs/{run_id}", response_model=RunSnapshot)
     def get_run(run_id: str):
