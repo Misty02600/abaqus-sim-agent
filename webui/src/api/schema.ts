@@ -767,18 +767,19 @@ export interface components {
             idempotency_key: string;
             /** Goal */
             goal: string;
-            /**
-             * Knowledge Pack Ids
-             * @default []
-             */
-            knowledge_pack_ids: string[];
             /** Abaqus Permission */
             abaqus_permission?: (components["schemas"]["RuntimeDenied"] | components["schemas"]["RuntimeAllowed"] | components["schemas"]["RuntimeAllowedWithLimit"]) | null;
             /** Solver Permission */
             solver_permission?: (components["schemas"]["RuntimeDenied"] | components["schemas"]["RuntimeAllowed"] | components["schemas"]["RuntimeAllowedWithLimit"]) | null;
             /** Workspace */
             workspace: string;
+            options?: components["schemas"]["RunOptions"];
         };
+        /**
+         * DeepSeekGateway
+         * @enum {string}
+         */
+        DeepSeekGateway: "deepseek" | "opencode-zen" | "opencode-go";
         /** DeleteRunResponse */
         DeleteRunResponse: {
             /** Run Id */
@@ -1096,6 +1097,24 @@ export interface components {
              * @default []
              */
             unavailable: components["schemas"]["RunIssue"][];
+        };
+        /** RunOptions */
+        RunOptions: {
+            model_provider?: components["schemas"]["DeepSeekGateway"] | null;
+            /** Model Name */
+            model_name?: string | null;
+            /** Http Retries */
+            http_retries?: number | null;
+            /** Http Timeout Seconds */
+            http_timeout_seconds?: number | null;
+            /** Reasoning Policy */
+            reasoning_policy?: ("provider_default" | "enabled_high") | null;
+            /** Api Catalog Mode */
+            api_catalog_mode?: ("full" | "full_with_discovery" | "automatic_verified_only" | "automatic_exact_signature") | null;
+            /** Static Preflight Mode */
+            static_preflight_mode?: ("off" | "on") | null;
+            /** Knowledge Pack Ids */
+            knowledge_pack_ids?: string[] | null;
         };
         /** RunSnapshot */
         RunSnapshot: {

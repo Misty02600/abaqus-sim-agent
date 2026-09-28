@@ -14,13 +14,14 @@ from pydantic import SecretStr
 from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models.function import FunctionModel
 
+from abaqus_sim_agent.coding.model import DeepSeekGateway
+from abaqus_sim_agent.coding.options import RunOptions
 from abaqus_sim_agent.coding.run_lock import CodingRunFileLock
 from abaqus_sim_agent.web.app import create_app
 from abaqus_sim_agent.web.controller import ServerConfig
 from tests.support.web import (
     Client,
     answer_body,
-    api_catalog_dir,
     configured_app,
     create,
     create_selected,
@@ -197,10 +198,10 @@ def test_delete_active_vendor_stage_cancels_before_removing_state(
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
+            overrides=RunOptions(),
             stream_model=False,
         ),
-        api_key=SecretStr("fixture"),
+        api_keys={DeepSeekGateway.OFFICIAL: SecretStr("fixture")},
         model_factory=factory,
         runner_factory=lambda *a, **kw: Runner(),
     )
@@ -359,10 +360,10 @@ def test_delete_shell_terminates_parent_and_child_processes(tmp_path, tool_name)
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
+            overrides=RunOptions(),
             stream_model=False,
         ),
-        api_key=SecretStr("fixture"),
+        api_keys={DeepSeekGateway.OFFICIAL: SecretStr("fixture")},
         model_factory=factory,
     )
     with TestClient(app, base_url="http://127.0.0.1") as client:

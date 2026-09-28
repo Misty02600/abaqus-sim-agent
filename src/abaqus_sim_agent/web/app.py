@@ -4,6 +4,7 @@ import asyncio
 import json
 import mimetypes
 import secrets
+from collections.abc import Mapping
 from contextlib import asynccontextmanager
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -17,7 +18,7 @@ from starlette.background import BackgroundTask
 
 from ..coding.composition import ModelFactory, RunnerFactory
 from ..coding.domain_knowledge import DomainKnowledgeInventory
-from ..coding.model import create_deepseek_chat_model
+from ..coding.model import DeepSeekGateway, create_deepseek_chat_model
 from ..coding.run_lock import CodingRunAlreadyLocked
 from ..execution import Abaqus2024Runner
 from .artifacts import snapshot_file
@@ -54,12 +55,15 @@ from .workspace import list_workspace, search_workspace, workspace_preview
 def create_app(
     config: ServerConfig,
     *,
-    api_key: SecretStr = SecretStr(""),
+    api_keys: Mapping[DeepSeekGateway, SecretStr] | None = None,
     model_factory: ModelFactory = create_deepseek_chat_model,
     runner_factory: RunnerFactory = Abaqus2024Runner,
 ) -> FastAPI:
     controller = RunController(
-        config, api_key, model_factory=model_factory, runner_factory=runner_factory
+        config,
+        api_keys or {},
+        model_factory=model_factory,
+        runner_factory=runner_factory,
     )
     events = ViewEvents()
     session = secrets.token_urlsafe(32)

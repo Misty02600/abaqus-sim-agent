@@ -14,12 +14,68 @@ from time import perf_counter, sleep
 from typing import Literal
 from uuid import uuid4
 
+import requests
+from platformdirs import user_cache_path
 from pydantic import BaseModel, ConfigDict, Field
 
 from abaqus_sim_agent.coding.contracts import StaticPreflightBinding
 from abaqus_sim_agent.execution import ProcessStrategy, WindowsProcessStrategy
 
 STATIC_PREFLIGHT_POLICY_VERSION = "abqpy-runtime-feedback-v1"
+STATIC_WHEEL_NAME = "abqpy-2024.10-py3-none-any.whl"
+STATIC_WHEEL_URL = "https://files.pythonhosted.org/packages/01/a2/f9a7335ca1ab9b93e706e361d13d405e4a39b1a133136bfd372a5b99d49d/abqpy-2024.10-py3-none-any.whl"
+STATIC_WHEEL_SHA256 = "bdfe99139281489354c01f00b7ee8b96ee1d281b461441dcfe7fad5fda894504"
+STATIC_WHEEL_SIZE = 1_884_662
+
+
+def static_cache_root() -> Path:
+    return user_cache_path("abaqus-sim-agent", appauthor=False) / "static-preflight"
+
+
+def managed_static_paths() -> tuple[Path, Path]:
+    root = static_cache_root().resolve()
+    return root / STATIC_WHEEL_SHA256 / STATIC_WHEEL_NAME, root / "sources"
+
+
+def ensure_managed_static_wheel() -> Path:
+    """取得固定 PyPI 静态 wheel；仅首次缺失时下载，校验后原子发布到宿主缓存。
+
+    Returns:
+        已核对 SHA-256 的本机 wheel 路径。
+
+    Raises:
+        ValueError: 已有缓存或下载结果与固定大小/hash 不符。
+        OSError: 缓存不可读写。
+        requests.RequestException: 固定来源下载失败或超时。
+
+    Note:
+        只下载静态声明，不安装或执行 wheel；不自动覆盖损坏的已有缓存。
+    """
+    wheel, _ = managed_static_paths()
+    if wheel.is_symlink():
+        raise ValueError("managed abqpy wheel must not be a symlink")
+    if wheel.exists():
+        if not wheel.is_file() or _sha256(wheel) != STATIC_WHEEL_SHA256:
+            raise ValueError(f"managed abqpy wheel checksum mismatch: {wheel}")
+        return wheel
+    wheel.parent.mkdir(parents=True, exist_ok=True)
+    temporary = wheel.with_name(f".{wheel.name}.{uuid4().hex}.tmp")
+    try:
+        with requests.get(STATIC_WHEEL_URL, stream=True, timeout=(10, 60)) as response:
+            response.raise_for_status()
+            received = 0
+            with temporary.open("xb") as output:
+                for chunk in response.iter_content(chunk_size=65536):
+                    received += len(chunk)
+                    if received > STATIC_WHEEL_SIZE:
+                        raise ValueError("managed abqpy wheel exceeds expected size")
+                    output.write(chunk)
+        if received != STATIC_WHEEL_SIZE or _sha256(temporary) != STATIC_WHEEL_SHA256:
+            raise ValueError("downloaded abqpy wheel checksum or size mismatch")
+        temporary.replace(wheel)
+        return wheel
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 class _FrozenModel(BaseModel):
@@ -533,13 +589,21 @@ def prepare_static_preflight_source(
         raise ValueError(f"unknown static preflight mode: {mode}")
     if wheel is None or cache_dir is None:
         raise ValueError(
-            f"{mode} static preflight requires --abqpy-static-wheel and "
-            "--static-preflight-cache-dir"
+            f"{mode} static preflight requires a prepared source and cache"
         )
-    resolved_wheel = wheel.resolve(strict=True)
+    resolved_wheel = wheel.resolve()
     resolved_cache = cache_dir.resolve()
     for label, path in (("abqpy wheel", resolved_wheel), ("cache", resolved_cache)):
         if path == workspace or path.is_relative_to(workspace):
             raise ValueError(f"static preflight {label} must be outside the workspace")
+    if wheel == managed_static_paths()[0]:
+        try:
+            version("basedpyright")
+        except PackageNotFoundError as exc:
+            raise RuntimeError(
+                "Install the static-preflight extra to enable BasedPyright"
+            ) from exc
+        ensure_managed_static_wheel()
+    resolved_wheel = resolved_wheel.resolve(strict=True)
     source = prepare_abqpy_source(resolved_wheel, resolved_cache)
     return source

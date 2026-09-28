@@ -15,6 +15,8 @@ from pydantic_ai.messages import (
 )
 from pydantic_ai.models.function import FunctionModel
 
+from abaqus_sim_agent.coding.model import DeepSeekGateway
+from abaqus_sim_agent.coding.options import RunOptions
 from abaqus_sim_agent.execution import Abaqus2024Runner
 from abaqus_sim_agent.web.app import create_app
 from abaqus_sim_agent.web.contracts import Registration
@@ -22,7 +24,6 @@ from abaqus_sim_agent.web.controller import ServerConfig
 from tests.support.web import (
     Client,
     NoProcess,
-    api_catalog_dir,
     login,
     settled,
 )
@@ -77,7 +78,7 @@ def test_web_lists_and_binds_explicit_private_knowledge_pack(tmp_path: Path) -> 
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
+            overrides=RunOptions(),
             knowledge_packs_root=packs,
         ),
     )
@@ -97,7 +98,7 @@ def test_web_lists_and_binds_explicit_private_knowledge_pack(tmp_path: Path) -> 
             json={
                 "idempotency_key": str(uuid4()),
                 "goal": "Use the private reference.",
-                "knowledge_pack_ids": ["flexible-electronics-fea"],
+                "options": {"knowledge_pack_ids": ["flexible-electronics-fea"]},
                 "workspace": str(workspace),
             },
         )
@@ -155,11 +156,11 @@ def test_selected_pack_is_readable_through_product_agent_tools(tmp_path: Path) -
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
+            overrides=RunOptions(),
             knowledge_packs_root=packs,
             stream_model=False,
         ),
-        api_key=SecretStr("fixture"),
+        api_keys={DeepSeekGateway.OFFICIAL: SecretStr("fixture")},
         model_factory=factory,
         runner_factory=lambda workspace, state, **_kwargs: Abaqus2024Runner(
             workspace, state, process_strategy=NoProcess()
@@ -174,7 +175,7 @@ def test_selected_pack_is_readable_through_product_agent_tools(tmp_path: Path) -
             json={
                 "idempotency_key": str(uuid4()),
                 "goal": "Read the selected reference and answer.",
-                "knowledge_pack_ids": ["flexible-electronics-fea"],
+                "options": {"knowledge_pack_ids": ["flexible-electronics-fea"]},
                 "workspace": str(workspace),
             },
         )

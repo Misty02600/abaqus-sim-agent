@@ -12,6 +12,8 @@ from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import FunctionModel
 
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
+from abaqus_sim_agent.coding.model import DeepSeekGateway
+from abaqus_sim_agent.coding.options import RunOptions
 from abaqus_sim_agent.execution import (
     AbaqusExecutionResult,
     AbaqusInvocation,
@@ -21,7 +23,7 @@ from abaqus_sim_agent.execution import (
 )
 from abaqus_sim_agent.web.app import create_app
 from abaqus_sim_agent.web.controller import ServerConfig
-from tests.support.web import Client, api_catalog_dir
+from tests.support.web import Client
 
 
 def _result(tmp_path: Path, workspace: Path) -> AbaqusExecutionResult:
@@ -195,7 +197,7 @@ def _background_solver_app(tmp_path: Path):
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
+            overrides=RunOptions(),
             stream_model=False,
             **CodingRunBudget(
                 max_model_requests=4,
@@ -203,7 +205,7 @@ def _background_solver_app(tmp_path: Path):
                 max_solver_calls=1,
             ).as_request_controls(),
         ),
-        api_key=SecretStr("fixture-key"),
+        api_keys={DeepSeekGateway.OFFICIAL: SecretStr("fixture-key")},
         model_factory=model_factory,
         runner_factory=runner_factory,
     )

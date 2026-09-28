@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from types import SimpleNamespace
@@ -653,3 +654,31 @@ def test_taskkill_uses_exact_pid_without_a_shell(
 
     assert calls[0][0] == ["taskkill", "/PID", "2468", "/T", "/F"]
     assert "shell" not in calls[0][1]
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows batch command discovery")
+@pytest.mark.asyncio
+async def test_named_abaqus_command_uses_path_without_installation_configuration(
+    tmp_path, monkeypatch
+):
+    binaries = tmp_path / "bin"
+    binaries.mkdir()
+    (binaries / "abq2024.bat").write_text(
+        "@echo off\necho named-command:%1\n", encoding="ascii"
+    )
+    monkeypatch.setenv("PATH", str(binaries) + os.pathsep + os.environ.get("PATH", ""))
+    result = await WindowsProcessStrategy().run(
+        ("abq2024", "fixture"), cwd=tmp_path, timeout_seconds=5
+    )
+    assert result.exit_code == 0
+    assert b"named-command:fixture" in result.stdout
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows batch command discovery")
+@pytest.mark.asyncio
+async def test_missing_named_abaqus_command_fails_explicitly(tmp_path, monkeypatch):
+    monkeypatch.setattr(runner_module.shutil, "which", lambda command: None)
+    with pytest.raises(FileNotFoundError, match="abq2024 is not available"):
+        await WindowsProcessStrategy().run(
+            ("abq2024", "cae"), cwd=tmp_path, timeout_seconds=5
+        )

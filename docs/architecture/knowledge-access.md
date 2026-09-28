@@ -13,9 +13,16 @@
 | 力学 Skill 与只读参考资料 | 显式 Agent 工厂 / 评测入口 | 基础层 `foundation_skill_profile="linear_structural_fea_v1"`；专题层 `structural_topic_skill_profile="structural_mechanics_v1"`；参考脚本仍由独立 `knowledge_resources_dir` 提供，普通 CLI/launch 尚无资料选择和快照绑定 |
 | 本机私有领域知识包 | CLI `--knowledge-pack` / Web 新会话显式选择；默认 off | 从用户级应用数据根发现 strict manifest，launch v10 绑定 state 快照；模型只经两个只读文件工具按需读取 |
 
-新普通 CLI/Web 会话必须绑定工作区外的 Catalog artifact；产品不再提供 `off`。launch v10 保存路径、模式，
-request 保存 schema、card/member hash 和 runtime release。创建和恢复均核对绑定，Catalog 缺失、损坏或变化时
-在模型调用前拒绝。旧冻结报告和 evaluator 中的 `off` 仍是历史实验条件，不是当前产品配置。
+新普通 CLI/Web 会话自动读取随应用安装的 Catalog，不再接收 Catalog 目录配置，产品也不提供 `off`。
+包内 `api_catalog/data` 保留 manifest、methods/members JSONL 的原始 bytes，locator 从安装包位置确定路径，
+不依赖 cwd，也不复制到 AppData。launch v10 记录实际路径与模式，request 保存 schema、card/member hash 和
+runtime release。创建和恢复均核对绑定；缺失、损坏或升级后内容与原会话不同，在模型调用前明确拒绝。
+旧冻结报告和 evaluator 的显式 artifact 路径及 `off` 条件不回填。源码安装位于工程内时，包内资源也可能位于
+workspace 下，因此不再用“必须在 workspace 外”判断 Catalog 可用性；此处不宣称隔离或不可被本机修改。
+
+包内分发沿用提交 `85a57e9` 的资源 bytes：Abaqus 2026 FD02 文档、abqpy 2024.10 静态声明和项目 runtime notes
+继续分别标来源；本次接线不重建卡片、不更新验证结论。公开再分发许可尚未确认，见
+[来源与许可说明](../../src/abaqus_sim_agent/api_catalog/data/THIRD_PARTY_NOTICES.md)。
 
 底层 `create_abaqus_coding_agent()` 只接受 `api_catalog_mode`，不提供旧式 `api_catalog_enabled`
 开关或兼容转换。工厂默认 `off` 供显式评测等调用使用；普通产品装配始终传入 launch 中已启用的模式。
@@ -119,7 +126,8 @@ Runtime note 的 `verified` 只覆盖说明中明确验证的行为。调用未�
 
 [当前 runtime notes](../../benchmarks/api_catalog/abaqus_2024_runtime_notes.jsonl) 是新 Catalog 的构建输入；
 [final15 原始快照](../../benchmarks/api_catalog/abaqus_2024_runtime_notes_final15_20260828.jsonl) 保留旧报告绑定的
-原始 bytes。修订当前说明后须生成新的不可变 Catalog 目录，由新会话显式选择；已有目录及 run 绑定不会自动更新。
+原始 bytes。修订当前说明后须构建并发布新的 Catalog 资源；普通新会话使用所安装版本，评测仍显式选择 artifact。
+已有 run 的绑定不会自动改写，也不承诺替其保存已卸载程序中的旧 Catalog。
 
 ## 相关决定与证据
 

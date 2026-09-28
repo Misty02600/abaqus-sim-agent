@@ -10,7 +10,7 @@
 
 - 先检查当前分支、工作树改动和作用域指令。按当前分支的源码与文档判断现状，不把其他工作树或旧分支的状态当作当前事实。
 - 先读 [架构总览](docs/architecture/overview.md)；涉及架构、状态所有权、权限、兼容或“之前决定过”的问题，先查 [ADR 索引](docs/adr/README.md)及相关已采纳决定，再查实现和测试。
-- 配置设计先查 [配置输入与恢复记录](docs/architecture/system-framework.md#配置输入运行合同与恢复记录)及 [ADR-0045](docs/adr/0045-use-explicit-run-options-without-preference-files.md)：当前目标为程序默认值、本次显式输入与必要会话记录，撤回用户/项目偏好文件；逐字段区分宿主设置、运行输入和恢复状态，不重新扩建自动偏好来源。代码撤回状态以当前文档和实现为准。
+- 配置设计先查 [配置输入与恢复记录](docs/architecture/system-framework.md#配置输入运行合同与恢复记录)及 [ADR-0045](docs/adr/0045-use-explicit-run-options-without-preference-files.md)：当前采用程序默认值、本次显式输入与必要会话记录，已停止读取用户/项目偏好文件；逐字段区分宿主设置、运行输入和恢复状态，不重新扩建自动偏好来源。Catalog 已随包自动定位，模型泛化的剩余范围以当前文档和实现为准。
 - 新增或修改配置时同步 [配置逐字段合同](docs/architecture/configuration-reference.md)，逐项确认来源、缺省、覆盖、校验、持久化与恢复修改规则；不能用分类说明代替字段决定。
 - 普通用户选择能力，程序管理固定内部资源；已确认的 Skill/静态来源路径及重复模式入口收敛见逐字段目标表。不要仅因上游支持扩展就新增本项目没有需求的配置入口，已决定与已实施必须分别说明。
 - 当前路线由 ADR-0008 及后续决定约束：一个 Pydantic AI Harness Coder。旧 LangGraph、多 Agent、DeckDraft 和持久 Job Service 路线已被替代。增加第二套运行时、角色或控制面需要真实需求与新的取舍，不能从旧 ADR 自动恢复。
@@ -43,7 +43,7 @@
 
 ## 知识与评测
 
-- 新普通产品必须绑定 Catalog，默认 `automatic_verified_only` 且不暴露主动查询工具；`full`、`full_with_discovery`、`automatic_exact_signature` 由显式 profile 选择。Concept、diagnostic advisory、bounded document policy、ACI、typed probe 和纯编辑限制仍按显式 profile 启用；旧冻结评测的 `off` 条件不回填。当前入口与组合见 [知识接入](docs/architecture/knowledge-access.md)。
+- 新普通产品自动绑定随应用安装的 Catalog，不要求用户选择目录；默认 `automatic_verified_only` 且不暴露主动查询工具；`full`、`full_with_discovery`、`automatic_exact_signature` 由显式 profile 选择。Concept、diagnostic advisory、bounded document policy、ACI、typed probe 和纯编辑限制仍按显式 profile 启用；旧冻结评测的 `off` 条件不回填。当前入口与组合见 [知识接入](docs/architecture/knowledge-access.md)。
 - `full_with_discovery` 已接入产品：discovery 返回候选名称，必须继续 exact lookup 才有卡片证据；候选、静态声明、runtime note 和实际运行成功不能互相替代。检索不能补造缺失物理输入。
 - 2026 官方文档、2024 abqpy 静态声明与 Abaqus 2024 runtime evidence 分别标来源；不能把文档命中视为版本兼容或任务收益。不自动将 probe、失败修复或单题解法写入全局 Skill、Catalog 或跨 run Memory。
 - 固定 Gold、verified-seed change、API repair、检索评测和开放产品任务分开。变更任务先重新验证 source 合同、验收与 hash，再缓存种子 bytes；共享执行证据不能代替逐 Case oracle。suite 按每个 Case 的 gate 验收，不能用总通过数掩盖失败 Case。

@@ -13,11 +13,12 @@ from pydantic import SecretStr
 from pydantic_ai.messages import ModelResponse, ToolCallPart
 from pydantic_ai.models.function import FunctionModel
 
+from abaqus_sim_agent.coding.model import DeepSeekGateway
+from abaqus_sim_agent.coding.options import RunOptions
 from abaqus_sim_agent.web.app import create_app
 from abaqus_sim_agent.web.controller import ServerConfig
 from tests.support.web import (
     Client,
-    api_catalog_dir,
     create,
     login,
     settled,
@@ -63,10 +64,10 @@ def test_stop_current_task_cancels_foreground_runtime_and_waits_for_cleanup(
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
+            overrides=RunOptions(),
             stream_model=False,
         ),
-        api_key=SecretStr("fixture"),
+        api_keys={DeepSeekGateway.OFFICIAL: SecretStr("fixture")},
         model_factory=model_factory,
         runner_factory=lambda *args, **kwargs: Runner(),
     )

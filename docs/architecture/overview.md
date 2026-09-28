@@ -2,9 +2,9 @@
 
 ## 当前系统
 
-配置目标已由 [ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md) 收敛为程序默认值、
-本次显式输入和必要会话记录。偏好文件读取试作仍未提交，资源路径等目标尚未全部实施，见
-[配置修订方案](configuration-reference.md#已确认的修订方案)。
+配置已采用“程序默认值、本次显式输入、必要会话记录”；偏好读取撤回、内部静态资源准备和固定命令入口已实施，
+Catalog 已作为包内资源接入 CLI/Web，模型泛化仍待独立确认，见
+[ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md)及[逐字段修订方案](configuration-reference.md#已确认的修订方案)。
 
 Abaqus Sim Agent 是本地 Windows Coding Agent：一个 Pydantic AI Harness Coder 在用户工作区编写普通
 Abaqus Python，通过受控工具运行 Abaqus 2024。CLI 和本地 Web 工作台共用宿主应用入口；宿主管理会话、
@@ -111,6 +111,8 @@ Harness 文件存储，同一 state 有 OS 独占锁。文件记录支持本地�
 ## 继续阅读
 
 - [一次 CodingRun](flows/simulation-run.md)：问答、恢复、修订与终态。
+- [配置输入与恢复记录](system-framework.md#配置输入运行合同与恢复记录)：默认值、request/launch、修订与 checkpoint 的所有权。
+- [配置逐字段合同](configuration-reference.md)：每个字段的来源、默认、校验、保存位置和修改边界。
 - [Solver 生命周期](flows/job-lifecycle.md)：外部进程与崩溃边界。
 - [Agent 与权限范围](agent-implementation-scope.md)、[知识接入](knowledge-access.md)。
 - [技术栈与讲解点](technology-stack.md)、[ADR 索引](../adr/README.md)。

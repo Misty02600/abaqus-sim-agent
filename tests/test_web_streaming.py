@@ -10,7 +10,8 @@ from pydantic_ai.messages import ModelResponse, TextPart, ThinkingPart, ToolCall
 from pydantic_ai.models.function import DeltaToolCall, FunctionModel
 
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
-from abaqus_sim_agent.coding.model import DeepSeekGateway, new_run_execution_config
+from abaqus_sim_agent.coding.model import DeepSeekGateway
+from abaqus_sim_agent.coding.options import RunOptions
 from abaqus_sim_agent.coding.response_stream import public_response_text
 from abaqus_sim_agent.execution import Abaqus2024Runner
 from abaqus_sim_agent.web.app import create_app
@@ -18,7 +19,6 @@ from abaqus_sim_agent.web.controller import ServerConfig
 from tests.support.web import (
     Client,
     NoProcess,
-    api_catalog_dir,
     login,
     message_body,
     settled,
@@ -206,6 +206,8 @@ def test_go_http_streaming_adapter_retry_and_transport_close(
     import httpx
     from openai import AsyncOpenAI
 
+    from abaqus_sim_agent.coding.options import RunOptions
+
     gate = Gate()
     closed = threading.Event()
     bodies = []
@@ -278,8 +280,7 @@ def test_go_http_streaming_adapter_retry_and_transport_close(
     monkeypatch.setattr("abaqus_sim_agent.coding.model.AsyncOpenAI", client_factory)
     config = ServerConfig(
         root=tmp_path / "web",
-        api_catalog_dir=api_catalog_dir(tmp_path),
-        execution=new_run_execution_config(
+        overrides=RunOptions(
             model_provider=DeepSeekGateway.OPENCODE_GO,
             model_name="deepseek-v4-flash",
         ),
@@ -289,7 +290,7 @@ def test_go_http_streaming_adapter_retry_and_transport_close(
     )
     app = create_app(
         config,
-        api_key=SecretStr("fixture"),
+        api_keys={DeepSeekGateway.OPENCODE_GO: SecretStr("fixture")},
         runner_factory=lambda w, s, **kw: Abaqus2024Runner(
             w, s, process_strategy=NoProcess()
         ),
@@ -371,12 +372,12 @@ def test_streamed_file_tool_runs_once_and_keeps_host_verification(tmp_path):
     app = create_app(
         ServerConfig(
             root=tmp_path / "web",
-            api_catalog_dir=api_catalog_dir(tmp_path),
+            overrides=RunOptions(),
             **CodingRunBudget(
                 max_model_requests=5, max_abaqus_calls=0, max_solver_calls=0
             ).as_request_controls(),
         ),
-        api_key=SecretStr("fixture"),
+        api_keys={DeepSeekGateway.OFFICIAL: SecretStr("fixture")},
         model_factory=factory,
         runner_factory=lambda w, s, **kw: Abaqus2024Runner(
             w, s, process_strategy=NoProcess()

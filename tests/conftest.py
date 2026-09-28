@@ -8,7 +8,7 @@ import pytest
 import requests.adapters
 from pydantic_ai import models
 
-from abaqus_sim_agent.coding import domain_knowledge
+from abaqus_sim_agent.coding import domain_knowledge, static_preflight
 
 # Collection and ordinary tests must not accidentally use a provider model.
 models.ALLOW_MODEL_REQUESTS = False
@@ -17,6 +17,9 @@ models.ALLOW_MODEL_REQUESTS = False
 @pytest.fixture(autouse=True)
 def offline_environment(monkeypatch, tmp_path):
     monkeypatch.setattr(models, "ALLOW_MODEL_REQUESTS", False)
+    monkeypatch.setattr(
+        static_preflight, "static_cache_root", lambda: tmp_path / "static-cache"
+    )
     for name in tuple(os.environ):
         if name.startswith(("LOGFIRE_", "PHOENIX_", "OTEL_")):
             monkeypatch.delenv(name)
@@ -71,3 +74,19 @@ def offline_environment(monkeypatch, tmp_path):
 def mock_model_requests(offline_environment, monkeypatch):
     """允许 SDK 协议测试使用模型接口，外部 HTTP 拦截仍然生效。"""
     monkeypatch.setattr(models, "ALLOW_MODEL_REQUESTS", True)
+
+
+@pytest.fixture
+def product_catalog_path(tmp_path_factory):
+    from abaqus_sim_agent.api_catalog import ApiCatalog
+
+    path = tmp_path_factory.mktemp("product-catalog") / "catalog"
+    ApiCatalog([], runtime_release="2024").write(path)
+    return path
+
+
+@pytest.fixture(autouse=True)
+def bundled_product_catalog(monkeypatch, product_catalog_path):
+    from abaqus_sim_agent.coding import options
+
+    monkeypatch.setattr(options, "bundled_catalog_path", lambda: product_catalog_path)

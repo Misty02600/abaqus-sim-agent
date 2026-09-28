@@ -4,3 +4,7 @@
 benchmarks/** -text
 tests/fixtures/** -text
 docs/research/evidence/** -text
+
+# Catalog manifests bind the original JSON/JSONL bytes.
+src/abaqus_sim_agent/api_catalog/data/*.json -text whitespace=cr-at-eol
+src/abaqus_sim_agent/api_catalog/data/*.jsonl -text whitespace=cr-at-eol

@@ -9,6 +9,8 @@ from pydantic_ai.models.function import FunctionModel
 
 from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
+from abaqus_sim_agent.coding.model import DeepSeekGateway
+from abaqus_sim_agent.coding.options import RunOptions
 from abaqus_sim_agent.execution import Abaqus2024Runner
 from abaqus_sim_agent.web.app import create_app
 from abaqus_sim_agent.web.controller import ServerConfig
@@ -90,7 +92,7 @@ def configured_app(tmp_path, *, fail=False, block=None, crash_once=None):
 
     config = ServerConfig(
         root=tmp_path / "web",
-        api_catalog_dir=api_catalog_dir(tmp_path),
+        overrides=RunOptions(),
         knowledge_packs_root=tmp_path / "knowledge-packs",
         stream_model=False,
         **CodingRunBudget(
@@ -99,7 +101,7 @@ def configured_app(tmp_path, *, fail=False, block=None, crash_once=None):
     )
     app = create_app(
         config,
-        api_key=SecretStr("fixture-key"),
+        api_keys={DeepSeekGateway.OFFICIAL: SecretStr("fixture-key")},
         model_factory=factory,
         runner_factory=lambda workspace, state, **kw: Abaqus2024Runner(
             workspace, state, process_strategy=NoProcess()

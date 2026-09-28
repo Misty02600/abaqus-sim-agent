@@ -455,10 +455,7 @@ def test_explicit_binding_current_launch_roundtrip(tmp_path):
     active_request = request.model_copy(update={"document_policy": bound(tmp_path)})
     with pytest.raises(ValueError, match="requires concept"):
         create_abaqus_coding_agent(FunctionModel(lambda m, i: ready()), active_request)
-    for flag, value in (
-        ("--document-policy-mode", "off"),
-        ("--document-policy-spec", "changed.json"),
-    ):
+    for flag, value in (("--document-policy-spec", "changed.json"),):
         args = build_parser().parse_args(
             ["--resume", str(request.state_dir), flag, value]
         )
@@ -554,14 +551,8 @@ def test_cli_bounded_profile_persists_launch_and_ignores_edited_spec_on_resume(
                 str(state),
                 "--run-id",
                 "cli-document",
-                "--document-policy-mode",
-                "bounded_v1",
                 "--document-policy-spec",
                 str(spec_path),
-                "--concept-retrieval-mode",
-                "tool",
-                "--api-catalog-dir",
-                str(catalog),
             ]
         )
         == 0

@@ -1979,15 +1979,6 @@
             "minLength": 1,
             "title": "Goal"
           },
-          "knowledge_pack_ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "maxItems": 32,
-            "title": "Knowledge Pack Ids",
-            "default": []
-          },
           "abaqus_permission": {
             "anyOf": [
               {
@@ -2051,6 +2042,9 @@
             "maxLength": 4096,
             "minLength": 1,
             "title": "Workspace"
+          },
+          "options": {
+            "$ref": "#/components/schemas/RunOptions"
           }
         },
         "additionalProperties": false,
@@ -2061,6 +2055,15 @@
           "workspace"
         ],
         "title": "CreateRun"
+      },
+      "DeepSeekGateway": {
+        "type": "string",
+        "enum": [
+          "deepseek",
+          "opencode-zen",
+          "opencode-go"
+        ],
+        "title": "DeepSeekGateway"
       },
       "DeleteRunResponse": {
         "properties": {
@@ -2830,6 +2833,122 @@
           "runs"
         ],
         "title": "RunList"
+      },
+      "RunOptions": {
+        "properties": {
+          "model_provider": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DeepSeekGateway"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^deepseek-"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Name"
+          },
+          "http_retries": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Retries"
+          },
+          "http_timeout_seconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Timeout Seconds"
+          },
+          "reasoning_policy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "provider_default",
+                  "enabled_high"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Policy"
+          },
+          "api_catalog_mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "full",
+                  "full_with_discovery",
+                  "automatic_verified_only",
+                  "automatic_exact_signature"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Catalog Mode"
+          },
+          "static_preflight_mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "off",
+                  "on"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Static Preflight Mode"
+          },
+          "knowledge_pack_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Knowledge Pack Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RunOptions"
       },
       "RunSnapshot": {
         "properties": {

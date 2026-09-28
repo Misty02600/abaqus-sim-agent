@@ -231,8 +231,6 @@ def test_actual_cli_and_baseline_http_configuration_parity_with_sdk_retry(
                 "parity",
                 "--model-provider",
                 "opencode-go",
-                "--api-catalog-dir",
-                str(catalog),
             ]
         )
         == 0

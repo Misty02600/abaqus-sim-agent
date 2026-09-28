@@ -6,7 +6,7 @@ import pytest
 
 from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.application import prepare_new_run
-from abaqus_sim_agent.coding.contracts import CodingRunBudget, RuntimeProfile
+from abaqus_sim_agent.coding.contracts import CodingRunBudget
 from abaqus_sim_agent.coding.domain_knowledge import (
     DOMAIN_KNOWLEDGE_STATE_DIRECTORY,
     discover_domain_knowledge_packs,
@@ -16,8 +16,8 @@ from abaqus_sim_agent.coding.domain_knowledge import (
 )
 from abaqus_sim_agent.coding.model import (
     DeepSeekGateway,
-    new_run_execution_config,
 )
+from abaqus_sim_agent.coding.options import RunOptions, resolve_run_config
 
 
 def _write_pack(
@@ -211,17 +211,18 @@ def test_prepare_new_run_binds_selected_pack_to_launch_v7(tmp_path: Path) -> Non
         goal="Use the selected private reference.",
         workspace=workspace,
         state_dir=state,
-        execution=new_run_execution_config(
-            model_provider=DeepSeekGateway.OFFICIAL,
-            model_name="fixture-model",
+        settings=resolve_run_config(
+            workspace,
+            RunOptions(
+                model_provider=DeepSeekGateway.OFFICIAL,
+                model_name="deepseek-v4-flash",
+                knowledge_pack_ids=("flexible-electronics-fea",),
+            ),
         ),
-        runtime=RuntimeProfile(launcher_path=tmp_path / "never-run.bat"),
-        api_catalog_dir=catalog,
         **CodingRunBudget(
             max_abaqus_calls=0,
             max_solver_calls=0,
         ).as_request_controls(),
-        knowledge_pack_ids=("flexible-electronics-fea",),
         knowledge_packs_root=root,
     )
 

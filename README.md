@@ -66,7 +66,7 @@ uvx --python 3.12 --from arize-phoenix==20.16.0 phoenix serve
 
 ```powershell
 uv run --no-sync abaqus-sim-agent-web --phoenix --root D:\abaqus-web `
-  --api-catalog-dir D:\abaqus-data\api-catalog --model-provider opencode-go
+  --model-provider opencode-go
 ```
 
 打开 [本机 Phoenix](http://127.0.0.1:6006)，进入 `abaqus-sim-agent` 项目，查看消息、工具参数/返回、
@@ -99,7 +99,6 @@ uv run --no-sync abaqus-sim-agent-web --phoenix --root D:\abaqus-web `
 uv sync --locked --all-groups --extra web
 uv run --no-sync python scripts/build_web.py
 uv run --no-sync abaqus-sim-agent-web --root D:\abaqus-web `
-  --api-catalog-dir D:\abaqus-data\api-catalog `
   --model-provider opencode-go
 ```
 
@@ -154,14 +153,28 @@ workspace/execution状态划定本段fresh evidence。显式修改任务合同�
 
 ## 运行 CodingRun
 
-配置已决定收敛为程序默认值、本次 CLI/Web 输入和必要会话记录；偏好文件读取试作未纳入提交，
-资源自动定位等目标尚未全部实施。以下命令描述已提交入口；目标见
-[配置修订方案](docs/architecture/configuration-reference.md#已确认的修订方案)。
+**配置调整状态：** 已取消用户级/项目级偏好文件读取。普通入口使用 `abq2024` 命令、包内 Skill 和程序管理的
+静态资源；Web 管理根默认位于 `%LOCALAPPDATA%/abaqus-sim-agent/web`，可用 `--root` 高级覆盖。
+Catalog 已随应用包安装，CLI/Web 自动定位并直接读取；不需要目录参数或首次启动解压。模型泛化仍待独立方案确认。
+Catalog 的第三方文档内容公开再分发许可仍未确认，见[来源说明](src/abaqus_sim_agent/api_catalog/data/THIRD_PARTY_NOTICES.md)。
 
-默认网关为 DeepSeek 官方 API，读取 `DEEPSEEK_API_KEY`；`opencode-go` / `opencode-zen` 读取
+未显式选择时，当前默认网关为 DeepSeek 官方 API，读取 `DEEPSEEK_API_KEY`；`opencode-go` / `opencode-zen` 读取
 `OPENCODE_API_KEY`，不会隐藏切换 Provider。模型 ID 可由 `--model` 显式指定，默认
 `deepseek-v4-flash`；免费 Zen ID 与付费网关 ID 不能互换。Go adapter 为同一 run/resume 提供稳定、
 经 SHA-256 处理的 session 标识和项目 User-Agent。
+
+CLI/Web 共用本次运行选项：CLI 显式参数覆盖程序默认值；Web 创建请求的 `options` 覆盖当前服务启动选项，
+再使用程序默认值。原用户/项目 settings.json 即使存在或损坏也不读取、不修改、不迁移。CLI 相对路径基于启动
+目录，Web 创建请求相对路径基于所选工作区。字段省略表示未指定，列表整体替换，`[]` 清空本次知识包选择；
+CLI 可用 `--no-knowledge-packs`，Web 可取消沿用服务选择后自选。显式 `null`、未知字段和非法组合会报错。
+
+宿主端口、打开浏览器、遥测开关属于本次进程；权限由本次显式请求决定；任务、白名单及实验 profile 是
+调用输入。实际资源在创建会话时验证并生成固定绑定，hash 和
+执行进度由宿主生成，不是用户配置字段。具体规则见[配置逐字段合同](docs/architecture/configuration-reference.md)。
+
+CLI/Web 的本次选择只保存进相应会话。恢复读取已保存的会话合同及修订，不套用新默认，也不因缺少凭据自动切换模型。
+Web 宿主按会话网关使用
+启动时捕获的对应凭据。详细边界见[配置输入与恢复记录](docs/architecture/system-framework.md#配置输入运行合同与恢复记录)。
 
 下面的板拉伸请求要求先询问厚度。使用普通产品 CLI 运行它，仍只获得 `execution_evidence`，
 不是后面的 Gold 物理验收：
@@ -171,8 +184,7 @@ $env:DEEPSEEK_API_KEY = "<your-key>"
 New-Item -ItemType Directory -Force -Path D:\abaqus-runs\plate-interactive
 uv run abaqus-sim-agent `
   --request-file benchmarks\coding\plate_tension_request.json `
-  --workspace D:\abaqus-runs\plate-interactive `
-  --api-catalog-dir D:\abaqus-data\api-catalog
+  --workspace D:\abaqus-runs\plate-interactive
 ```
 
 也可使用 `--goal "<任务要求>"`，与 `--request-file` 二选一。后者接受 UTF-8 文本或带 `goal` 字段的
@@ -202,7 +214,7 @@ uv run --no-sync abaqus-sim-agent --resume <STATE_DIR> --cancel-question <QUESTI
 state 显式拒绝。旧 Gold 及显式评测 profile 的历史证据保留，不回填新默认。
 这证明问答交接可运行，不保证模型一定识别缺参，也不构成外部Job恢复；见[ADR-0024](docs/adr/0024-host-owned-user-question-waiting.md)。
 
-`--launcher` 可覆盖默认 `D:\SIMULIA\Commands\abq2024.bat`；`--state-dir` 可指定工作区外的证据目录，
+宿主以 `abq2024` 启动 Abaqus，命令需能通过 PATH 找到；`--state-dir` 可指定工作区外的证据目录，
 未指定时使用本机应用数据目录。建议始终显式指定工作区；省略时会使用 CLI 启动目录。
 领域 Skill 默认来自[包内资源](src/abaqus_sim_agent/skills/abaqus-2024-coding/SKILL.md)。
 
@@ -253,16 +265,16 @@ Go的DeepSeek适配沿用Pydantic AI原生profile，将已保存的thinking内�
 2026-09-14已移除历史“不回传”覆盖；thinking enabled/high与HTTP重试配置不受影响。
 旧日志与结果保留，恢复时使用已有历史内容；缺失的推理内容不补造。新评测需重新封存源码版本。
 
-Catalog 是新普通会话的必选依赖；其余能力默认关闭，需要显式配置。实现或离线测试通过不等于已证明真实任务收益。
+Catalog 是随应用包安装的新普通会话必选资源；其余能力默认关闭，需要显式配置。实现或离线测试通过不等于已证明真实任务收益。
 
 | 能力 | 启用方式与边界 |
 |---|---|
-| Exact API Catalog | 新 CLI/Web 必须提供 `--api-catalog-dir <目录>`；默认 `automatic_verified_only`，不暴露主动查询工具，只在符合条件的错误后附 verified note。可显式选择 `automatic_exact_signature`、`full` 或 `full_with_discovery`。 |
+| Exact API Catalog | 随应用包安装并自动定位，无目录配置；默认 `automatic_verified_only`，不暴露主动查询工具，只在符合条件的错误后附 verified note。可显式选择 `automatic_exact_signature`、`full` 或 `full_with_discovery`。 |
 | 官方文档工具 | `--concept-index-dir <索引> --concept-retrieval-mode tool`；`search_abaqus_docs` 按需查询，也允许零查询，普通产品不设调用次数上限。 |
 | Solver diagnostic advisory | `--diagnostic-retrieval-mode advisory --concept-index-dir <含BM25的索引>`；仅为符合条件的Solver诊断附加RRF证据，不替换原runtime状态。 |
 | 静态反馈 | `--static-preflight-mode on` 启用固定 abqpy/BasedPyright 分析；默认 off。诊断随运行结果返回，语法错误始终在 Python runtime 前阻断。 |
 | 工作区文本编码 | 文件工具严格支持 UTF-8/CP936；读取和搜索报告编码，编辑保留原编码，新文件使用 UTF-8。 |
-| 有界文档查证 | `--document-policy-mode bounded_v1 --document-policy-spec <spec.json> --concept-retrieval-mode tool`；同一Coder执行精确引用回评与最多一次补查，使用spec中的独立后端，不同时注册旧文档工具。 |
+| 有界文档查证 | `--document-policy-spec <spec.json>`；从受支持 spec 确定策略和 document tool，同一Coder执行精确引用回评与最多一次补查，使用独立后端，不同时注册旧文档工具。 |
 | 纯引用编辑 | `--edit-scope-file <trusted-scope.json>`；调用方冻结原文/hash和一个Python表达式区间，仅允许引用替换，不暴露Abaqus运行工具。 |
 | 本机私有领域知识包 | `--knowledge-pack <pack_id>` 可重复；只从当前用户应用数据目录发现 strict manifest，创建 run 时快照，恢复不回读源目录。Web 在新会话页显式勾选。 |
 
@@ -305,7 +317,6 @@ uv run --no-sync abaqus-sim-agent --list-knowledge-packs
 uv run --no-sync abaqus-sim-agent `
   --goal "使用柔性电子参考资料完成当前建模请求" `
   --workspace D:\abaqus-runs\flexible-electronics `
-  --api-catalog-dir D:\abaqus-data\api-catalog `
   --knowledge-pack flexible-electronics-fea
 ```
 
@@ -331,15 +342,15 @@ New-Item -ItemType Directory -Force -Path D:\abaqus-runs\plate-static
 uv run abaqus-sim-agent `
   --request-file benchmarks\coding\plate_tension_request.json `
   --workspace D:\abaqus-runs\plate-static `
-  --api-catalog-dir D:\abaqus-data\api-catalog `
   --static-preflight-mode on `
-  --abqpy-static-wheel var\api-catalog\sources\abqpy-2024.10-py3-none-any.whl `
-  --static-preflight-cache-dir D:\abaqus-runs\static-preflight-cache `
   --allowed-cae-script build_model.py `
   --allowed-abaqus-python-script extract_results.py `
   --allowed-solver-input plate_tension.inp
 ```
 
+首次开启静态检查时，程序从 PyPI 官方固定 URL 获取 abqpy 2024.10 wheel，校验大小和 SHA-256 后缓存；已有有效
+缓存时不联网。源码只解包用于分析，不安装或执行。缓存位于 platformdirs 选择的应用缓存目录内的
+`static-preflight/`；下载失败或内容不符明确报错，不伪装为 clean。
 生产脚本检查不执行或导入工作区源码；warning仍交真实runtime，静态检查不替代独立verifier。
 更多边界见[语法检查与静态反馈](docs/adr/0038-unify-runtime-syntax-and-static-feedback.md)与
 [纯编辑合同](docs/adr/0023-constrain-explicit-reference-edits-before-writing.md)。
@@ -365,7 +376,7 @@ uv run python -m abaqus_sim_agent.retrieval search `
   --index-dir var\rag --mode hybrid "plane stress reduced integration quadrilateral"
 ```
 
-构建新的本地Catalog目录，再做精确查询；不要覆盖已封存的目录：
+以下是维护与评测入口；普通 CLI/Web 已使用包内 Catalog，无需执行。构建新的本地 Catalog 后再做精确查询；不要覆盖已封存目录：
 
 ```powershell
 uv run python -m abaqus_sim_agent.api_catalog build `

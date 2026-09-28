@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import os
 import re
+import shutil
 import subprocess
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
@@ -18,6 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from abaqus_sim_agent import telemetry
 
 DEFAULT_ABAQUS_2024_LAUNCHER = Path(r"D:\SIMULIA\Commands\abq2024.bat")
+ABAQUS_2024_COMMAND = "abq2024"
 _JOB_NAME_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,79}$")
 _CREATE_NEW_PROCESS_GROUP = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x200)
 _CREATE_NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
@@ -184,6 +186,13 @@ class WindowsProcessStrategy:
             raise ValueError("timeout_seconds must be greater than zero")
 
         if os.name == "nt":
+            # CreateProcess does not apply PATHEXT to an extensionless batch command.
+            # Locate the fixed command at execution time; this is not a user setting.
+            if command and command[0] == ABAQUS_2024_COMMAND:
+                launcher = shutil.which(ABAQUS_2024_COMMAND)
+                if launcher is None:
+                    raise FileNotFoundError("abq2024 is not available on PATH")
+                command = (launcher, *command[1:])
             creationflags = _CREATE_NEW_PROCESS_GROUP | _CREATE_NO_WINDOW
             process = await asyncio.create_subprocess_exec(
                 *command,

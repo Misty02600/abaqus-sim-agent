@@ -12,13 +12,14 @@ from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.application import prepare_new_run
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
 from abaqus_sim_agent.coding.launch import LaunchManifest
+from abaqus_sim_agent.coding.model import DeepSeekGateway
+from abaqus_sim_agent.coding.options import RunOptions, resolve_run_config
 from abaqus_sim_agent.execution import Abaqus2024Runner
 from abaqus_sim_agent.web.app import create_app
 from abaqus_sim_agent.web.controller import ServerConfig
 from tests.support.web import (
     Client,
     NoProcess,
-    api_catalog_dir,
     login,
     settled,
 )
@@ -77,7 +78,7 @@ def open_request_app(tmp_path, mode="response"):
 
     config = ServerConfig(
         root=tmp_path / "web",
-        api_catalog_dir=api_catalog_dir(tmp_path),
+        overrides=RunOptions(),
         stream_model=False,
         **CodingRunBudget(
             max_model_requests=5, max_abaqus_calls=0, max_solver_calls=0
@@ -85,7 +86,7 @@ def open_request_app(tmp_path, mode="response"):
     )
     return create_app(
         config,
-        api_key=SecretStr("fixture"),
+        api_keys={DeepSeekGateway.OFFICIAL: SecretStr("fixture")},
         model_factory=factory,
         runner_factory=lambda w, s, **kw: Abaqus2024Runner(
             w, s, process_strategy=NoProcess()
@@ -180,7 +181,7 @@ def test_text_completion_cannot_hide_file_changes(tmp_path):
 async def test_response_output_is_enabled_only_for_open_request_agent(tmp_path):
     config = ServerConfig(
         root=tmp_path / "host",
-        api_catalog_dir=api_catalog_dir(tmp_path),
+        overrides=RunOptions(),
     )
     (tmp_path / "workspace").mkdir()
     prepared = prepare_new_run(
@@ -188,9 +189,7 @@ async def test_response_output_is_enabled_only_for_open_request_agent(tmp_path):
         goal="explain",
         workspace=tmp_path / "workspace",
         state_dir=tmp_path / "state",
-        execution=config.execution,
-        runtime=config.runtime,
-        api_catalog_dir=config.api_catalog_dir,
+        settings=resolve_run_config(tmp_path / "workspace", config.overrides),
     )
     observed = []
 

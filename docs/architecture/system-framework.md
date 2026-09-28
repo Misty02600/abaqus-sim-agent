@@ -31,15 +31,110 @@ Web CLI 在服务 started 后默认打开普通 `127.0.0.1` URL。浏览器首�
 
 ## 配置输入、运行合同与恢复记录
 
-配置方案由 [ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md) 收敛为程序默认值、
-本次 CLI/Web 显式输入和必要会话记录。偏好文件读取的试作仍在未提交工作树中，本次没有合入这套读取逻辑。
-移除普通用户资源路径等目标也尚未全部实施，逐字段目标见[配置修订方案](configuration-reference.md#已确认的修订方案)。
+每个字段的具体规则见[配置逐字段合同](configuration-reference.md)；本节说明跨组件的生命周期与所有权。
 
-现有记录按职责区分：`request.json` 保存初始任务、运行权限与资源绑定；`launch.json` 保存模型、策略和资源
-位置；`amendments.json` 保存允许的修改；resume state、history 与执行 journal 保存进度和证据。
-宿主端口、显示与凭据属于当前进程。恢复读取保存的合同与修订，不用新的启动默认值静默替换已绑定条件。
-CLI 当前自行准备 request/launch，Web 经 application 准备，两者进入共享 composition；不能将配置准备
-描述为已经完全统一，也不因存在 JSON 记录就增加用户配置文件。
+**第一阶段已实施：** 已撤回用户/项目偏好读取，改用程序默认值和本次显式输入；内置 Skill、静态 wheel/cache
+由程序管理，runner 以 abq2024 命令启动，文档模式由 spec 推导，Web 管理根提供默认。
+Catalog 已随应用包安装并自动定位，模型泛化仍待独立方案确认。见
+[ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md)与[逐字段状态](configuration-reference.md)。
+
+配置按生命周期区分：进程入口取得本次宿主设置和凭据；新会话把默认值与显式输入解析为运行合同；
+运行中保存修订和进度；恢复重新加载合同及状态。用户通过 CLI/Web 操作，state 中的 JSON 由程序维护。
+`launch.json` 是其中的启动快照，首次执行也会写入，单独持有它不能恢复会话。
+
+| 对象 / 载体 | 保存什么 | 生命周期与所有者 |
+|---|---|---|
+| CLI 参数、Web 创建请求、`ServerConfig` | 本次输入与新会话默认值 | 入口解析；只在新建会话时决定初始运行合同 |
+| 宿主进程设置与凭据 | Web 端口、是否打开浏览器、遥测启用、模型 API key 等 | 每次启动由宿主取得；凭据单独注入，不写入 request/launch |
+| `request.json` | 初始任务、workspace/state、runtime、limits、权限、文件范围和知识证据绑定 | 由装配准备，Service 首次执行时持锁保存，之后作为 immutable base |
+| `launch.json` | 初始模型及 HTTP 参数、工具/知识模式、Skill 与静态源位置、协议与策略绑定 | 由装配准备，Service 首次执行时持锁保存，之后作为 immutable base |
+| `amendments.json` | 允许的配置修订、任务修订及对应证据边界 | 宿主在同一 state 锁下校验候选并提交；按序应用，不覆盖初始合同 |
+| 内存中的有效 request/launch | 初始合同应用全部已提交修订后的结果 | 每次准备执行时重建；不增加另一份可独立修改的有效配置文件 |
+| `resume_state.json`、Harness snapshot/journal 等 | 已运行到哪一步、累计 usage/active wall、待答问题、history、工具执行状态 | Service/Harness 持续维护；恢复时与有效合同和执行证据共同核对 |
+
+`request` 描述任务与执行约束，`launch` 描述如何装配 Agent 和外部资源；它们共同构成原始运行合同。
+资源路径用于找到内容，hash 用于确认内容身份，二者保留不同语义。协议版本和 Skill digest 是宿主记录，
+不因此成为用户可调开关。已有部分绑定在两个载体中重复保存时，应核对一致性，不能各自形成修改入口。
+
+### 新建、修订与恢复的来源规则
+
+- **公共新会话输入**：共用 `RunOptions`、`option_arguments` 和 `options.resolve_run_config`。
+  CLI 显式参数覆盖程序默认；Web 创建请求 `options` 覆盖本次服务 `overrides`，再使用程序默认。省略表示未指定，
+  null/未知字段/错误类型拒绝，列表整体替换，空列表清空。原用户/项目设置文件不读取、不回写、不迁移或删除。
+  CLI 路径相对 cwd，Web 请求路径相对 workspace。Skill 和静态来源由宿主定位/准备，普通用户不指定内部路径。
+- **新建**：使用入口默认值和用户显式输入。Web 创建请求中的 Abaqus/Solver permission 可覆盖该次创建的
+  服务默认权限；`ServerConfig` 的 `limits`、`runtime_policy`、`evaluation_tool_limits` 随后进入 request。
+  服务不接受旧式 `budget` 输入，评测/测试调用方先通过 `CodingRunBudget.as_request_controls()` 转换。
+- **修订**：只接受 typed amendment 允许的字段，校验完整候选后写 ledger。省略字段表示保持原值；显式
+  `null` 不表示删除或恢复默认值，当前 patch 会拒绝它。不限时长使用 duration 的 `unlimited` 模式，
+  不限次数的执行许可使用 permission 的 `allow` 模式，不能混用。
+- **恢复**：`有效配置 = 原始 request/launch + 按序应用的 amendments`。当前 CLI/Web 的新会话默认值不参与
+  这次计算；凭据和进程设置仍由本次宿主提供，并须满足运行合同的网关等装配要求。
+  Web 凭据按 provider 独立捕获并移除继承环境中的密钥；恢复按保存的 provider 选取凭据，缺失则拒绝。
+  修改新会话默认网关不会改变旧会话，也不要求旧会话等于本次服务默认网关。
+  项目 settings.json 自身仍是 workspace 文件；外部修改它可能触发 workspace hash 检查而拒绝恢复。
+  不重读偏好只保证不会重绑配置，不保证任意编辑项目文件后仍可继续。
+- **执行进度**：配置修订不重置 usage、active wall 或执行记录。task revision 通过宿主另建验收基线，
+  普通 continuation 依其独立 evidence baseline 处理；两者都不靠改写基础 JSON 实现。
+
+例如，初始 `launch.static_preflight_mode="off"` 的会话恢复后仍采用 `off`；改变新会话的默认值不影响它。
+若原 runtime policy 拒绝 Solver，用户通过允许的 amendment 改为 allow，原 request 保留 deny，ledger
+记录修改，有效 request 采用 allow，累计执行用量继续保留。
+
+当前可修改范围以实现中的 patch 为准：
+
+| 内容 | 当前会话内的修改方式 |
+|---|---|
+| Abaqus/Solver permission、三个 runtime 阶段 timeout | `RuntimeExecutionPolicyPatch`；Web 当前仅开放 permission，CLI 开放相应权限与超时参数 |
+| model provider、model name、HTTP retries | `CodingRunConfigPatch`；CLI 支持，仍受原推理策略等兼容约束 |
+| goal / 显式任务合同 | task revision；归档旧 outcome 并建立新验收基线 |
+| workspace、launcher、Skill/知识绑定、静态检查模式、HTTP timeout、推理策略、limits | 当前无 operational patch；通过新会话选择，恢复不重绑 |
+| 累计 usage、执行结果、待答状态 | 由宿主按真实进度维护，不能作为配置覆盖 |
+
+Web 创建但尚未首次执行的会话，先在 `registration.json` 保存 prepared request/launch 和 initial snapshot。
+首次执行交给 Service 写 state；已有 `request.json` 后走 state 恢复路径，并核对 Web 登记的初始 request。
+registration 不能覆盖恢复得到的有效合同。创建登记和运行 state 分属两个文件域，不承诺跨文件事务。
+
+恢复还要检查 schema、资源绑定、workspace、修订序号和未决工具副作用；合法配置不等于可以安全继续。
+不支持的开发期 state 显式拒绝，损坏记录不猜测补全；并发和 `needs_reconcile` 规则见下文。上述合同沿用
+[ADR-0020](../adr/0020-resume-coding-runs-with-harness-step-persistence.md)、
+[ADR-0021](../adr/0021-use-amendments-and-task-revisions-for-continuation.md) 与
+[ADR-0030](../adr/0030-drop-pre-release-coding-run-state-compatibility.md)。
+偏好文件的原始决定见 [ADR-0043](../adr/0043-separate-model-preferences-from-session-contracts.md)，其两级文件来源
+已由 [ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md) 撤回并停止读取。模型泛化仍未完成，Catalog 已接入包内分发。
+
+### 实现位置与尚未收敛的边界
+
+公共新会话参数定义、来源合并、缺省选择和静态源准备已共用。CLI 对任务白名单、纯编辑、Concept/diagnostic
+及 bounded document 等显式 profile 仍有自己的输入编排，Web 只创建普通 ask_user 会话，不把这些实验合同伪装为
+已经开放的 Web 配置。CLI 自行构造 request/launch，Web 经 `application` 构造；二者共用 `composition`。
+配置公共入口共用不等于全部产品/实验流程相同，后续演进继续保留 profile 合同差异。
+
+Web 的 Catalog 与静态来源按各个会话的 launch 加载并核对 request binding；不再从服务的单一 Catalog 实例
+恢复所有会话。本次服务的资源选择不会重绑已有会话。
+
+### 字段归属
+
+| 类别 | 字段 / 入口 | 全局与项目文件 | 会话记录 |
+|---|---|---|---|
+| 模型输入 | provider/name、HTTP retry/timeout、reasoning | 不读取，仅本次输入和程序默认 | 保存实际值；允许的修订另记 ledger |
+| 资源输入 | Catalog 模式、静态开关、知识包 ID；Catalog/Skill/静态资源位置由宿主管理 | 不读取 | 保存实际资源选择及生成的版本/hash 绑定 |
+| 宿主进程与显示 | Web root/port/no-open、stream_model、context warning、phoenix | 不进入新会话偏好链；由宿主启动/展示层提供 | 不由旧会话恢复这些设置 |
+| 凭据 | 模型 key；本机 Phoenix 无需 token | 不接收 | 不保存，当前宿主单独注入 |
+| 授权和限制 | Abaqus/Solver permission、runtime timeout、limits | 不由项目文件自动授予或覆盖 | 保存实际合同与累计用量；权限修订走显式命令 |
+| 任务和显式 profile | goal、workspace/state、run ID、回答、白名单、纯编辑/文档 spec、Concept/diagnostic 参数 | 不作为用户默认偏好 | 按任务、启动合同或人机交接语义记录 |
+| 宿主生成值 | schema/protocol、Skill digest、知识 hash、usage、history、effect | 不接收 | 按恢复与证据合同保存 |
+
+CLI 区分未提供与显式指定的静态检查模式：本次输入未指定时采用 off，恢复时显式传入 on/off 均拒绝，
+沿用保存的 launch 值。私有知识包可在新建时选择，内置 Skill 和静态源由程序确定；生成会话绑定后，恢复不重读偏好来替换它们。
+
+后续增加字段时，就近明确其输入来源、合同所有者、是否落盘、能否 amendment，以及恢复时的校验方式。
+只服务当前进程的设置留在宿主；会影响会话行为的配置进入相应运行合同；进度和证据进入状态记录。
+具体实现见 [launch](../../src/abaqus_sim_agent/coding/launch.py)、
+[options](../../src/abaqus_sim_agent/coding/options.py)、
+[amendments](../../src/abaqus_sim_agent/coding/amendments.py)、
+[application](../../src/abaqus_sim_agent/coding/application.py)、
+[resume](../../src/abaqus_sim_agent/coding/resume.py)。
 
 ## 数据放在哪里
 
@@ -57,7 +152,7 @@ CLI 当前自行准备 request/launch，Web 经 application 准备，两者进�
   `api_discoveries.jsonl`、`concept_lookups.jsonl`，以及显式策略的额外 journal。
 - 验收：当前 `outcome.json`、verification 和历史 `outcomes/task-*/`；评测另保存 oracle 和 diff/provenance。
 
-**Web management root** 是启动时显式选择的 ASCII 根目录，保存 `states/`、`registry/`、`cache/` 和
+**Web management root** 默认位于应用数据目录的 web 子目录，也可通过 --root 显式覆盖，必须是 ASCII 根目录，保存 `states/`、`registry/`、`cache/` 和
 `control/`。`registry/<run_id>/thread.json`、invocation、命令回执和 `ToolExecution` 是 Web 管理记录；对应
 `states/<run_id>` 仍由 CodingRun 合同拥有。`workspaces/` 仅为旧托管工作区登记保留，不再创建新目录。两类文件的顺序由恢复协议协调，不是数据库事务。
 
@@ -75,7 +170,7 @@ task revision、workspace/execution baseline 和累计 usage 保持；写入不�
 活动工作段、待消费 Solver、`needs_reconcile`、外部锁或不确定命令状态拒绝修改。有限次数始终表示会话累计
 总上限，调低至不高于已用量会使后续调用自然被现有 runtime gate 拒绝。
 
-Catalog 与文档索引是显式选择的外部知识数据，和 run state 分开；可恢复产品入口核对 request/launch 中的
+Catalog 随程序包安装，显式文档索引仍是外部知识数据，二者与 run state 分开；可恢复产品入口核对 request/launch 中的
 内容绑定。显式工厂的只读参考资料尚无同等 launch 快照保证，见 [知识接入](knowledge-access.md)。
 
 ## 并发、持久化与崩溃边界

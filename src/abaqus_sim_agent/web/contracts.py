@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import re
+import json
 from datetime import datetime
 from typing import Literal
 from uuid import UUID
@@ -16,6 +16,7 @@ from ..coding.contracts import (
 )
 from ..coding.domain_knowledge import DomainKnowledgePackBinding
 from ..coding.launch import LaunchManifest
+from ..coding.options import RunOptions
 from ..coding.read_model import CodingRunView, FileView, MessageView
 from ..coding.workspace import WorkspaceSnapshot
 
@@ -27,10 +28,17 @@ class StrictModel(BaseModel):
 class CreateRun(StrictModel):
     idempotency_key: UUID
     goal: str = Field(min_length=1, max_length=20000)
-    knowledge_pack_ids: tuple[str, ...] = Field(default=(), max_length=32)
     abaqus_permission: RuntimePermission | None = None
     solver_permission: RuntimePermission | None = None
     workspace: str = Field(min_length=1, max_length=4096)
+    options: RunOptions = Field(default_factory=RunOptions)
+
+    @field_validator("options", mode="before")
+    @classmethod
+    def parse_options(cls, value: object) -> object:
+        if isinstance(value, dict):
+            return RunOptions.model_validate_json(json.dumps(value))
+        return value
 
     @field_validator("idempotency_key", mode="before")
     @classmethod
@@ -43,23 +51,6 @@ class CreateRun(StrictModel):
         if not value.strip():
             raise ValueError("任务目标不能为空")
         return value
-
-    @field_validator("knowledge_pack_ids", mode="before")
-    @classmethod
-    def valid_knowledge_pack_ids(cls, values: object) -> tuple[str, ...]:
-        if isinstance(values, list):
-            values = tuple(values)
-        if not isinstance(values, tuple) or not all(
-            isinstance(value, str) for value in values
-        ):
-            raise ValueError("知识包标识必须是字符串列表")
-        if len(values) != len(set(values)):
-            raise ValueError("知识包不能重复选择")
-        if any(
-            re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", value) is None for value in values
-        ):
-            raise ValueError("知识包标识格式不正确")
-        return values
 
 
 class RunCommand(StrictModel):

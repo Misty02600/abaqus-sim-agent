@@ -202,6 +202,8 @@ class RuntimeProfile(_StrictModel):
 
     @model_validator(mode="after")
     def check_launcher_path(self) -> "RuntimeProfile":
+        if self.launcher_path == Path("abq2024"):
+            return self
         if not self.launcher_path.is_absolute():
             raise ValueError("launcher_path must be absolute")
         if self.launcher_path.resolve() != self.launcher_path:

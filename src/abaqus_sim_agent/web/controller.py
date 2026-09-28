@@ -3,9 +3,10 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import logging
+import shutil
 import threading
 import time
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Mapping
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
@@ -16,15 +17,10 @@ from uuid import uuid4
 from pydantic import SecretStr
 
 from .. import telemetry
-from ..api_catalog import ApiCatalog
 from ..coding.amendments import (
     CodingRunConfigPatch,
     RuntimeExecutionPolicyPatch,
     append_operational_amendment,
-)
-from ..coding.api_lookup import (
-    DEFAULT_PRODUCT_API_CATALOG_MODE,
-    ProductApiCatalogMode,
 )
 from ..coding.application import (
     ConversationMessage,
@@ -36,13 +32,11 @@ from ..coding.application import (
 from ..coding.clarification import ScriptedClarificationProvider
 from ..coding.composition import ModelFactory, RunnerFactory, open_coding_run
 from ..coding.contracts import (
-    CodingRunBudget,
     CodingRunControlValues,
     CodingRunLimits,
     CodingRunRequest,
     EvaluationToolLimits,
     RuntimeExecutionPolicy,
-    RuntimeProfile,
 )
 from ..coding.deferred_runtime import (
     DeferredSolverResolution,
@@ -55,11 +49,12 @@ from ..coding.domain_knowledge import (
 )
 from ..coding.execution_verifier import ExecutionEvidenceVerifier
 from ..coding.model import (
-    DEEPSEEK_V4_FLASH,
     DeepSeekGateway,
-    ModelExecutionConfig,
     create_deepseek_chat_model,
-    new_run_execution_config,
+)
+from ..coding.options import (
+    RunOptions,
+    resolve_run_config,
 )
 from ..coding.progress import CodingProgress
 from ..coding.read_model import (
@@ -83,7 +78,6 @@ from ..coding.run_lock import CodingRunAlreadyLocked, CodingRunFileLock
 from ..coding.user_questions import UserAnswerInput, WaitingForUser
 from ..coding.workspace import WorkspaceResolver
 from ..execution import (
-    DEFAULT_ABAQUS_2024_LAUNCHER,
     Abaqus2024Runner,
     AbaqusExecutionResult,
 )
@@ -129,33 +123,17 @@ DELETE_STOP_TIMEOUT_SECONDS = 20.0
 @dataclass(frozen=True)
 class ServerConfig:
     root: Path
-    api_catalog_dir: Path
-    api_catalog_mode: ProductApiCatalogMode = DEFAULT_PRODUCT_API_CATALOG_MODE
     knowledge_packs_root: Path | None = None
     stream_model: bool = True
-    execution: ModelExecutionConfig = field(
-        default_factory=lambda: new_run_execution_config(
-            model_provider=DeepSeekGateway.OFFICIAL,
-            model_name=DEEPSEEK_V4_FLASH,
-            planning_enabled=False,
-        )
-    )
+    overrides: RunOptions = field(default_factory=RunOptions)
     limits: CodingRunLimits = field(default_factory=CodingRunLimits)
     runtime_policy: RuntimeExecutionPolicy = field(
         default_factory=RuntimeExecutionPolicy
     )
     evaluation_tool_limits: EvaluationToolLimits | None = None
-    budget: CodingRunBudget | None = None
-    runtime: RuntimeProfile = field(
-        default_factory=lambda: RuntimeProfile(
-            launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()
-        )
-    )
     context_warning_threshold_tokens: int | None = 900_000
 
     def request_controls(self) -> CodingRunControlValues:
-        if self.budget is not None:
-            return self.budget.as_request_controls()
         return {
             "limits": self.limits,
             "runtime_policy": self.runtime_policy,
@@ -291,13 +269,13 @@ class RunController:
     def __init__(
         self,
         config: ServerConfig,
-        api_key: SecretStr,
+        api_keys: Mapping[DeepSeekGateway, SecretStr],
         *,
         model_factory: ModelFactory = create_deepseek_chat_model,
         runner_factory: RunnerFactory = Abaqus2024Runner,
     ):
-        self.config, self.api_key = config, api_key
-        self.api_catalog = ApiCatalog.open(config.api_catalog_dir.resolve(strict=True))
+        self.config = config
+        self.api_keys = dict(api_keys)
         self.registry = RunRegistry(config.root)
         self.threads = ThreadStore(self.registry)
         self.invocations = InvocationStore(self.registry)
@@ -740,12 +718,11 @@ class RunController:
                 prepared.request,
                 prepared.initial_snapshot,
                 prepared.launch,
-                api_key=self.api_key,
+                api_key=self._model_key(prepared.launch.model_provider),
                 verifier=ExecutionEvidenceVerifier(),
                 clarification_provider=ScriptedClarificationProvider({}),
                 resume=True,
                 expected_amendment_sequence=prepared.amendment_sequence,
-                api_catalog=self.api_catalog,
                 observer=lambda event: self._publish(run_id, prepared, event),
                 stream_model=self.config.stream_model,
                 response_control=self._response_control,
@@ -1116,45 +1093,76 @@ class RunController:
             conflict = self._workspace_conflict(workspace)
             if conflict:
                 raise WebError("workspace_busy", conflict)
-            directory.mkdir()
+            try:
+                settings = resolve_run_config(
+                    workspace,
+                    self.config.overrides,
+                    command.options,
+                )
+            except ValueError as exc:
+                raise WebError("invalid_options", f"会话配置无效：{exc}", 422) from exc
             state = self.registry.state_dir(run_id)
-            state.mkdir()
-            controls = self.config.request_controls()
-            base_runtime_policy = controls["runtime_policy"]
-            runtime_updates = {}
-            if command.abaqus_permission is not None:
-                runtime_updates["abaqus"] = command.abaqus_permission
-            if command.solver_permission is not None:
-                runtime_updates["solver"] = command.solver_permission
-            if runtime_updates:
-                controls["runtime_policy"] = base_runtime_policy.model_copy(
-                    update=runtime_updates
-                )
-            prepared = prepare_new_run(
-                run_id=run_id,
-                goal=command.goal,
-                workspace=workspace,
-                state_dir=state,
-                execution=self.config.execution,
-                runtime=self.config.runtime,
-                api_catalog_dir=self.config.api_catalog_dir,
-                api_catalog_mode=self.config.api_catalog_mode,
-                **controls,
-                knowledge_pack_ids=command.knowledge_pack_ids,
-                knowledge_packs_root=self.config.knowledge_packs_root,
-            )
-            with CodingRunFileLock(state):
-                registration = Registration(
-                    workspace_kind="selected",
-                    request_digest=digest(command),
-                    created_at=datetime.now(UTC),
-                    request=prepared.request,
-                    initial_snapshot=prepared.initial_snapshot,
-                    launch=prepared.launch,
-                )
-                save_model(directory / "registration.json", registration)
-                self.threads.initialize(run_id, created_at=registration.created_at)
+            if state.exists():
+                raise WebError("state_conflict", "创建目标已有未登记状态，不能覆盖")
+            directory.mkdir()
+            try:
+                state.mkdir()
+                with CodingRunFileLock(state):
+                    controls = self.config.request_controls()
+                    base_runtime_policy = controls["runtime_policy"]
+                    runtime_updates = {}
+                    if command.abaqus_permission is not None:
+                        runtime_updates["abaqus"] = command.abaqus_permission
+                    if command.solver_permission is not None:
+                        runtime_updates["solver"] = command.solver_permission
+                    if runtime_updates:
+                        controls["runtime_policy"] = base_runtime_policy.model_copy(
+                            update=runtime_updates
+                        )
+                    prepared = prepare_new_run(
+                        run_id=run_id,
+                        goal=command.goal,
+                        workspace=workspace,
+                        state_dir=state,
+                        settings=settings,
+                        **controls,
+                        knowledge_packs_root=self.config.knowledge_packs_root,
+                    )
+                    registration = Registration(
+                        workspace_kind="selected",
+                        request_digest=digest(command),
+                        created_at=datetime.now(UTC),
+                        request=prepared.request,
+                        initial_snapshot=prepared.initial_snapshot,
+                        launch=prepared.launch,
+                    )
+                    save_model(directory / "registration.json", registration)
+                    self.threads.initialize(run_id, created_at=registration.created_at)
+            except CodingRunAlreadyLocked:
+                self._discard_failed_create(run_id, directory, None)
+                raise
+            except BaseException:
+                self._discard_failed_create(run_id, directory, state)
+                raise
         return self.snapshot(run_id)
+
+    def _discard_failed_create(
+        self, run_id: str, directory: Path, state: Path | None
+    ) -> None:
+        for section, path in (("registry", directory), ("states", state)):
+            if path is None:
+                continue
+            owner = (self.registry.root / section).resolve()
+            if (
+                path.is_symlink()
+                or path.resolve().parent != owner
+                or path.name != run_id
+            ):
+                raise ValueError(
+                    "refusing to clean a creation outside its management root"
+                )
+            if path.exists():
+                shutil.rmtree(path)
 
     def _workspace_conflict(
         self, workspace: Path, run_id: str | None = None
@@ -1199,6 +1207,16 @@ class RunController:
 
     def list_knowledge_packs(self) -> DomainKnowledgeInventory:
         return discover_domain_knowledge_packs(self.config.knowledge_packs_root)
+
+    def _model_key(self, provider: DeepSeekGateway) -> SecretStr:
+        key = self.api_keys.get(provider)
+        if key is None or not key.get_secret_value():
+            raise WebError(
+                "model_not_configured",
+                f"启动服务前请配置 {provider.value} 的模型API凭据",
+                503,
+            )
+        return key
 
     def _prepared(self, registration: Registration) -> PreparedCodingRun:
         if (registration.request.state_dir / "request.json").exists():
@@ -2109,10 +2127,7 @@ class RunController:
                 raise WebError(
                     "state_conflict", "当前状态不允许此操作，或另一个任务正在运行"
                 )
-            if not self.api_key.get_secret_value():
-                raise WebError(
-                    "model_not_configured", "启动服务前请配置模型API凭据", 503
-                )
+            self._model_key(self._prepared(registration).launch.model_provider)
             receipt = CommandReceipt(
                 command_id=command.command_id,
                 digest=request_digest,
@@ -2397,11 +2412,7 @@ class RunController:
                 )
             if action == "start" and prepared.resume:
                 raise WebError("already_started", "已有运行记录不能作为新任务重启")
-            if (
-                prepared.launch.question_protocol != "ask_user_v1"
-                or prepared.launch.model_provider
-                != self.config.execution.model_provider
-            ):
+            if prepared.launch.question_protocol != "ask_user_v1":
                 raise WebError("profile_mismatch", "服务配置与已保存的运行不匹配")
 
             if (
@@ -2499,14 +2510,13 @@ class RunController:
                 prepared.request,
                 prepared.initial_snapshot,
                 prepared.launch,
-                api_key=self.api_key,
+                api_key=self._model_key(prepared.launch.model_provider),
                 verifier=ExecutionEvidenceVerifier(),
                 clarification_provider=ScriptedClarificationProvider({}),
                 resume=prepared.resume,
                 expected_amendment_sequence=prepared.amendment_sequence,
                 continuation_id=continuation_id,
                 continuation_prompt=continuation_prompt,
-                api_catalog=self.api_catalog,
                 observer=lambda event: self._publish(run_id, prepared, event),
                 stream_model=self.config.stream_model,
                 response_control=self._response_control,

@@ -2,7 +2,7 @@ default_install_hook_types: [pre-commit, commit-msg]
 default_language_version:
   python: python3.12
 # These directories contain immutable evidence or local-only research.
-exclude: '^(benchmarks/|tests/fixtures/|docs/research/evidence/|docs/scratch/)'
+exclude: '^(benchmarks/|tests/fixtures/|docs/research/evidence/|docs/scratch/|src/abaqus_sim_agent/api_catalog/data/(manifest\.json|methods\.jsonl|members\.jsonl)$)'
 repos:
   - repo: builtin
     hooks:

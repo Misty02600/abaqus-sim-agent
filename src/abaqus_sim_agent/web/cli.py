@@ -3,15 +3,21 @@ import asyncio
 import webbrowser
 from pathlib import Path
 
-from ..coding.api_lookup import DEFAULT_PRODUCT_API_CATALOG_MODE
+from platformdirs import user_data_path
+
 from ..coding.model import (
-    DEEPSEEK_V4_FLASH,
-    DeepSeekGateway,
-    new_run_execution_config,
-    take_gateway_api_key_from_environment,
+    take_gateway_api_keys_from_environment,
+)
+from ..coding.option_arguments import (
+    add_run_arguments,
+    options_from_args,
 )
 from ..telemetry import add_phoenix_argument, instrument_web, telemetry_session
 from .controller import ServerConfig
+
+
+def default_management_root() -> Path:
+    return user_data_path("abaqus-sim-agent", appauthor=False) / "web"
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -19,34 +25,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--root",
         type=Path,
-        required=True,
-        help="ASCII任务根目录（workspace与state分别建立）",
-    )
-    parser.add_argument(
-        "--api-catalog-dir",
-        type=Path,
-        required=True,
-        help="Abaqus API Catalog目录",
-    )
-    parser.add_argument(
-        "--api-catalog-mode",
-        choices=(
-            "full",
-            "full_with_discovery",
-            "automatic_verified_only",
-            "automatic_exact_signature",
-        ),
-        default=DEFAULT_PRODUCT_API_CATALOG_MODE,
+        default=None,
+        help="高级覆盖：会话管理根目录，默认使用本机应用数据目录",
     )
     parser.add_argument("--port", type=int, default=8765)
-    parser.add_argument(
-        "--model-provider",
-        type=DeepSeekGateway,
-        choices=tuple(DeepSeekGateway),
-        default=DeepSeekGateway.OFFICIAL,
-    )
-    parser.add_argument("--model", default=DEEPSEEK_V4_FLASH)
     parser.add_argument("--no-open", action="store_true")
+    add_run_arguments(parser)
     add_phoenix_argument(parser)
     return parser.parse_args(argv)
 
@@ -68,15 +52,11 @@ def _serve(args: argparse.Namespace) -> None:
     except ImportError as exc:
         raise SystemExit("请安装Web依赖：uv sync --extra web --all-groups") from exc
     config = ServerConfig(
-        root=args.root,
-        api_catalog_dir=args.api_catalog_dir,
-        api_catalog_mode=args.api_catalog_mode,
-        execution=new_run_execution_config(
-            model_provider=args.model_provider, model_name=args.model
-        ),
+        root=args.root if args.root is not None else default_management_root(),
+        overrides=options_from_args(args),
     )
-    key = take_gateway_api_key_from_environment(args.model_provider)
-    app = create_app(config, api_key=key)
+    keys = take_gateway_api_keys_from_environment()
+    app = create_app(config, api_keys=keys)
     url = f"http://127.0.0.1:{args.port}/"
     print(f"本地工作台：{url}")
     server = uvicorn.Server(

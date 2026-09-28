@@ -302,11 +302,21 @@ def take_gateway_api_key_from_environment(
         官方 DeepSeek 与 OpenCode Zen 两个变量都会被删除，避免 Harness Shell 或
         Abaqus vendor subprocess 继承未选中网关的凭据。
     """
+    return take_gateway_api_keys_from_environment(environ)[gateway]
+
+
+def take_gateway_api_keys_from_environment(
+    environ: MutableMapping[str, str] | None = None,
+) -> dict[DeepSeekGateway, SecretStr]:
+    """捕获各网关凭据后移除环境变量，供多会话宿主按保存的网关独立选取。"""
     target = os.environ if environ is None else environ
-    value = target.get(gateway_api_key_env(gateway), "")
+    keys = {
+        gateway: SecretStr(target.get(gateway_api_key_env(gateway), ""))
+        for gateway in DeepSeekGateway
+    }
     for variable_name in _MODEL_API_KEY_ENV_VARS:
         target.pop(variable_name, None)
-    return SecretStr(value)
+    return keys
 
 
 def create_deepseek_chat_model(

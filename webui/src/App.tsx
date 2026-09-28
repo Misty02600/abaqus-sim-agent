@@ -108,12 +108,15 @@ export default function App() {
   const [selectedKnowledgePackIds, setSelectedKnowledgePackIds] = useState<
     string[]
   >([]);
+  const [inheritKnowledgePacks, setInheritKnowledgePacks] = useState(true);
   const [abaqusPermission, setAbaqusPermission] =
     useState<PermissionMode>("allow");
   const [abaqusLimit, setAbaqusLimit] = useState(10);
   const [solverPermission, setSolverPermission] =
     useState<PermissionMode>("deny");
   const [solverLimit, setSolverLimit] = useState(3);
+  const [modelProvider, setModelProvider] = useState("");
+  const [modelName, setModelName] = useState("");
   const [newWorkspace, setNewWorkspace] = useState<string | null>(() =>
     sessionStorage.getItem(WORKSPACE_DRAFT_KEY),
   );
@@ -352,31 +355,43 @@ export default function App() {
     setError("");
     try {
       const knowledgePackIds = [...selectedKnowledgePackIds].sort();
+      const modelPreferences = {
+        ...(modelProvider ? { model_provider: modelProvider } : {}),
+        ...(modelName.trim() ? { model_name: modelName.trim() } : {}),
+      };
       const key = commandId(
         "new",
         "create",
         JSON.stringify({
           goal,
           knowledgePackIds,
+          inheritKnowledgePacks,
           abaqusPermission,
           abaqusLimit,
           solverPermission,
           solverLimit,
           workspace,
+          modelPreferences,
         }),
       );
       messageId = `web-${key.replaceAll("-", "")}:goal`;
       const next = await request<Snapshot>("/runs", {
         idempotency_key: key,
         goal,
-        knowledge_pack_ids: knowledgePackIds,
         abaqus_permission: permission(abaqusPermission, abaqusLimit),
         solver_permission: permission(solverPermission, solverLimit),
         workspace,
+        options: {
+          ...modelPreferences,
+          ...(!inheritKnowledgePacks ? { knowledge_pack_ids: knowledgePackIds } : {}),
+        },
       });
       clearCommand("new", "create");
       saved = true;
       setSelectedKnowledgePackIds([]);
+      setInheritKnowledgePacks(true);
+      setModelProvider("");
+      setModelName("");
       navigate(next.view.run_id);
       const startKey = commandId(next.view.run_id, "start");
       const reply = await request<{ error?: string | null }>(
@@ -1008,12 +1023,31 @@ export default function App() {
                     </button>
                   </div>
                 </div>
+                <details className="knowledge-picker">
+                  <summary>本次模型（可选）</summary>
+                  <p className="muted small">留空使用本次服务的默认值；选择只保存在这个会话。</p>
+                  <div className="row">
+                    <label>
+                      模型网关
+                      <select value={modelProvider} disabled={busy} onChange={(event) => setModelProvider(event.target.value)}>
+                        <option value="">使用默认值</option>
+                        <option value="deepseek">DeepSeek</option>
+                        <option value="opencode-go">OpenCode Go</option>
+                        <option value="opencode-zen">OpenCode Zen</option>
+                      </select>
+                    </label>
+                    <label>
+                      模型名称
+                      <input value={modelName} disabled={busy} onChange={(event) => setModelName(event.target.value)} placeholder="使用默认值" />
+                    </label>
+                  </div>
+                </details>
                 <div className="knowledge-picker">
                   <div className="row">
                     <div>
                       <strong>本机私有知识包</strong>
                       <p className="muted small">
-                        只对新会话生效；未选择时保持关闭。
+                        只对新会话生效；默认沿用本次服务的选择。
                       </p>
                     </div>
                     <button
@@ -1025,6 +1059,11 @@ export default function App() {
                       刷新
                     </button>
                   </div>
+                  <label>
+                    <input type="checkbox" checked={inheritKnowledgePacks} disabled={busy}
+                      onChange={(event) => setInheritKnowledgePacks(event.target.checked)} />
+                    使用本次服务的知识包选择（取消后可自选；不选任何包表示本次关闭）
+                  </label>
                   {knowledgeInventory?.packs.length ? (
                     <div className="knowledge-pack-list">
                       {knowledgeInventory.packs.map((pack) => (
@@ -1034,7 +1073,7 @@ export default function App() {
                             checked={selectedKnowledgePackIds.includes(
                               pack.pack_id,
                             )}
-                            disabled={busy}
+                            disabled={busy || inheritKnowledgePacks}
                             onChange={(event) =>
                               setSelectedKnowledgePackIds((current) =>
                                 event.target.checked
