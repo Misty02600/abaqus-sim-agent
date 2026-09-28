@@ -28,7 +28,11 @@ from .progress import ProgressObserver
 from .response_stream import ModelResponseControl, RunCancellationControl
 from .resume import create_step_store
 from .service import CodingRunService, ProgressSink
-from .static_preflight import AbqpyBasedPyrightPreflight, PreparedAbqpySource
+from .static_preflight import (
+    AbqpyBasedPyrightPreflight,
+    PreparedAbqpySource,
+    prepare_static_preflight_source,
+)
 from .verification_port import CodingRunVerifier
 from .workspace import WorkspaceSnapshot
 
@@ -82,6 +86,19 @@ async def open_coding_run(
         )
     if request.api_catalog != bind_api_catalog(api_catalog):
         raise ValueError("API catalog does not match the persisted request binding")
+    if static_source is None:
+        static_source = prepare_static_preflight_source(
+            mode=launch.static_preflight_mode,
+            wheel=launch.abqpy_static_wheel,
+            cache_dir=launch.static_preflight_cache_dir,
+            workspace=request.workspace,
+        )
+    if (static_source is not None) != (launch.static_preflight_mode == "on"):
+        raise ValueError("static preflight source differs from the launch mode")
+    if request.static_preflight != (static_source.binding() if static_source else None):
+        raise ValueError(
+            "static preflight source does not match the persisted request binding"
+        )
     with materialize_domain_knowledge_bundle(
         request.state_dir, launch.domain_knowledge
     ) as knowledge:

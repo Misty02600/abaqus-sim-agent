@@ -80,8 +80,7 @@ from abaqus_sim_agent.coding.resume import (
     load_effective_run_for_resume,
 )
 from abaqus_sim_agent.coding.static_preflight import (
-    PreparedAbqpySource,
-    prepare_abqpy_source,
+    prepare_static_preflight_source as _prepare_static_preflight_source,
 )
 from abaqus_sim_agent.coding.user_questions import (
     UserAnswerInput,
@@ -947,39 +946,6 @@ def _resolve_concept_retrieval_mode(
         index.read_bm25_manifest()
         index.verify_bm25_corpus()
     return requested
-
-
-def _prepare_static_preflight_source(
-    *,
-    mode: Literal["off", "on"],
-    wheel: Path | None,
-    cache_dir: Path | None,
-    workspace: Path,
-) -> PreparedAbqpySource | None:
-    if mode == "off":
-        if wheel is not None or cache_dir is not None:
-            raise ValueError(
-                "off static preflight must not receive source or cache paths"
-            )
-        return None
-    if mode not in {"on"}:
-        raise ValueError(f"unknown static preflight mode: {mode}")
-    if wheel is None or cache_dir is None:
-        raise ValueError(
-            f"{mode} static preflight requires --abqpy-static-wheel and "
-            "--static-preflight-cache-dir"
-        )
-    resolved_wheel = wheel.resolve(strict=True)
-    resolved_cache = cache_dir.resolve()
-    for label, path in (("abqpy wheel", resolved_wheel), ("cache", resolved_cache)):
-        if path == workspace or path.is_relative_to(workspace):
-            raise ValueError(f"static preflight {label} must be outside the workspace")
-    source = prepare_abqpy_source(resolved_wheel, resolved_cache)
-    print(
-        f"Static preflight: {source.binding().policy_version} "
-        f"(abqpy={source.version}, basedpyright={source.basedpyright_version})"
-    )
-    return source
 
 
 def _runtime_script_policy(

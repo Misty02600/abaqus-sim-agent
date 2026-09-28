@@ -113,6 +113,10 @@ exporter；原始 stdout/stderr、state 和 oracle 继续由原路径保存。�
 
 ## 依赖和装配
 
+静态类型源准备由 `coding.static_preflight.prepare_static_preflight_source` 统一承担。CLI 准备新运行时调用它；
+共享装配根据保存的 launch 准备缺省的静态源，并核对 request 中的模式及内容绑定，供 Web 和恢复入口复用。
+
+
 `coding` 是产品宿主，`web` 是本地传输、Thread 与展示管理层，`execution` 是 vendor 副作用边界，
 `verification` 是可信验收，`api_catalog` 和 `retrieval` 提供知识，`evaluation` 定义外层证据系统。
 这是活动组件图，不额外套统一技术分层；`coding` 不导入 FastAPI 或前端协议。
