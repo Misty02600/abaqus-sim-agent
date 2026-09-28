@@ -2,6 +2,10 @@
 
 ## 当前系统
 
+配置目标已由 [ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md) 收敛为程序默认值、
+本次显式输入和必要会话记录。偏好文件读取试作仍未提交，资源路径等目标尚未全部实施，见
+[配置修订方案](configuration-reference.md#已确认的修订方案)。
+
 Abaqus Sim Agent 是本地 Windows Coding Agent：一个 Pydantic AI Harness Coder 在用户工作区编写普通
 Abaqus Python，通过受控工具运行 Abaqus 2024。CLI 和本地 Web 工作台共用宿主应用入口；宿主管理会话、
 预算、用户问答、执行证据和最终验收。

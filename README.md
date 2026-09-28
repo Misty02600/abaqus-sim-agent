@@ -154,6 +154,10 @@ workspace/execution状态划定本段fresh evidence。显式修改任务合同�
 
 ## 运行 CodingRun
 
+配置已决定收敛为程序默认值、本次 CLI/Web 输入和必要会话记录；偏好文件读取试作未纳入提交，
+资源自动定位等目标尚未全部实施。以下命令描述已提交入口；目标见
+[配置修订方案](docs/architecture/configuration-reference.md#已确认的修订方案)。
+
 默认网关为 DeepSeek 官方 API，读取 `DEEPSEEK_API_KEY`；`opencode-go` / `opencode-zen` 读取
 `OPENCODE_API_KEY`，不会隐藏切换 Provider。模型 ID 可由 `--model` 显式指定，默认
 `deepseek-v4-flash`；免费 Zen ID 与付费网关 ID 不能互换。Go adapter 为同一 run/resume 提供稳定、

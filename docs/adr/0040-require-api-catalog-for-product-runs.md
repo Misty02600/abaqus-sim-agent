@@ -4,6 +4,9 @@
 
 已采纳（2026-09-23）。用户确认取消普通产品的 `off` 选项，由 Codex 实施。
 
+后续：[ADR-0045](0045-use-explicit-run-options-without-preference-files.md) 更新普通用户显式选择 Catalog 目录的方向，
+改为程序管理和定位资源；必选 Catalog 与版本/hash 验证继续有效，具体分发方案仍待确认。以下保留原决定。
+
 ## 背景
 
 旧入口把 Catalog 作为可选能力：未传目录时使用 `off`，传目录时默认 `full`。这同时混合了两个问题：

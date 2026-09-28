@@ -29,6 +29,18 @@ Web CLI 在服务 started 后默认打开普通 `127.0.0.1` URL。浏览器首�
 | outcome 与 verification | Service 聚合宿主 verifier 结果 | 当前 outcome 是投影，历史 revision 结果保留；Agent 不能宣告成功 |
 | 固定 Case 的物理真值 | evaluator / trusted oracle | 不注册为模型工具；只反馈当前 scope 允许的验证失败证据 |
 
+## 配置输入、运行合同与恢复记录
+
+配置方案由 [ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md) 收敛为程序默认值、
+本次 CLI/Web 显式输入和必要会话记录。偏好文件读取的试作仍在未提交工作树中，本次没有合入这套读取逻辑。
+移除普通用户资源路径等目标也尚未全部实施，逐字段目标见[配置修订方案](configuration-reference.md#已确认的修订方案)。
+
+现有记录按职责区分：`request.json` 保存初始任务、运行权限与资源绑定；`launch.json` 保存模型、策略和资源
+位置；`amendments.json` 保存允许的修改；resume state、history 与执行 journal 保存进度和证据。
+宿主端口、显示与凭据属于当前进程。恢复读取保存的合同与修订，不用新的启动默认值静默替换已绑定条件。
+CLI 当前自行准备 request/launch，Web 经 application 准备，两者进入共享 composition；不能将配置准备
+描述为已经完全统一，也不因存在 JSON 记录就增加用户配置文件。
+
 ## 数据放在哪里
 
 **Workspace** 保存模型可见的脚本和 CAE/INP/ODB/JSON 等交付物。交互 CLI 默认使用启动时的绝对工作目录，

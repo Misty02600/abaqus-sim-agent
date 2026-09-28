@@ -11,7 +11,7 @@ effective launch 为准。这里解释实际职责，不维护另一份依赖版
 | Python 3.12 / uv / uv_build | 宿主、依赖、项目内 `.venv`、包构建 | 不等于 Abaqus vendor Python 3.10 |
 | Pydantic | strict 请求、配置、决策、证据和 outcome | 类型校验不能证明物理意图正确 |
 | Pydantic AI 2.47.0 | 模型/provider、原生 tool loop、typed output、deferred tools、usage | 当前只有一个产品 Coder；pydantic-evals 同步锁定 2.47.0，历史批次仍使用各自冻结环境 |
-| Harness 0.33.0 | workspace coding、Shell、Skills、StepPersistence；按配置单独组合 Planning | 产品显式使用 FileSystem 原工具集、run-scoped Shell 和可回读的 ToolOutputLimits；不注册 SubAgents。0.33 的 Windows JSONL 追加与进程树清理仍需版本补丁；换行 hash 使用上游实现 |
+| Harness 0.33.0 | workspace coding、Shell、Skills、StepPersistence；Planning 仅保留历史适配 | 产品用 AbaqusTextFileSystem 保留 UTF-8/CP936 编码和 raw-byte hash，组合 run-scoped Shell 与可回读的 ToolOutputLimits；不注册 SubAgents。0.33 的 Windows JSONL 追加与进程树清理仍需版本补丁 |
 | CodingRunService / asyncio | 问答、累计预算、修订、恢复、verifier 反馈 | 本地文件后端宿主，不是 durable scheduler |
 | FastAPI / Uvicorn / REST + SSE | 本地 Web 命令、只读快照和变更通知 | 只监听回环地址；SSE 不传递运行真值或逐 token 恢复日志 |
 | React / TypeScript / assistant-ui | Thread、消息、工具、产物与验证展示 | ExternalStore 消费宿主投影，不运行 Agent 或拥有产品状态 |

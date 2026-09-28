@@ -4,8 +4,10 @@
 
 已采纳
 
-API Catalog 的工具范围、来源、trace 与默认启用策略继续有效；普通产品的独立调用次数预算由
-[ADR-0031](0031-remove-product-tool-call-count-limits.md) 部分替代。
+API Catalog 的工具范围、来源与 trace 合同继续有效；普通产品的独立调用次数预算由
+[ADR-0031](0031-remove-product-tool-call-count-limits.md) 部分替代，普通产品默认启用策略由
+[ADR-0040](0040-require-api-catalog-for-product-runs.md) 更新为必须绑定 Catalog、默认 `automatic_verified_only`。
+下文保留原决定的背景与当时配置。
 
 ## 日期
 

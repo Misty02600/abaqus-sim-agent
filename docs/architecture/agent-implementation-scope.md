@@ -32,9 +32,12 @@ Coder，不构成多 Agent。Runner、verifier、evaluator 与用户问答组件
 Harness 0.33 的 `Coder` 默认提供六个工具和跨 run 存活的持久 Shell；当前产品通过公开 capability 组合接口
 保留以下合同，具体装配见 [agent.py](../../src/abaqus_sim_agent/coding/agent.py)：
 
-- 文件工具使用 `FileSystem` 的默认纯 Python 工具集与 content hashes，保留 `list_directory`、`search_files`、
-  `file_info` 等入口，不依赖 Coder 新增的 ripgrep 工具。上游 `edit_file` 也接受批量 `replacements`；
-  ACI 在落盘前检查依次替换后的完整候选，包括 CRLF 源文件。纯编辑 profile 仍拒绝批量替换，只允许其原有受限入口。
+- 文件工具使用项目的 `AbaqusTextFileSystem`，复用 Harness 的纯 Python 工具入口与路径边界，保留
+  `list_directory`、`search_files`、`file_info` 等入口，不依赖 Coder 新增的 ripgrep 工具。UTF-8/CP936
+  严格解码、原编码写回与 raw-byte hash 见 [ADR-0039](../adr/0039-preserve-workspace-text-encoding.md)。
+  `edit_file` 支持批量 `replacements`；普通编辑允许半成品，Python 3.10 语法检查在两个 Python runtime
+  执行前进行，见 [ADR-0038](../adr/0038-unify-runtime-syntax-and-static-feedback.md)。纯编辑 profile
+  仍拒绝批量替换，只允许其原有受限入口。
 - Shell 显式选择 `run_command`、`start_command`、`check_command`、`stop_command`；后台命令随 run 退出清理，
   使用原有 launcher guardrail、环境过滤及 Shell 超时策略。持久 `shell` 工具不注册。
 - `Planning` 能力保持可组合，只用于解释或复现冻结历史 profile；当前新产品与新评测均关闭，入口不提供

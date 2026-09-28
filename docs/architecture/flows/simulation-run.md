@@ -8,7 +8,7 @@ LangGraph 节点。
 
 ## 首次执行与用户待答
 
-1. CLI 或 Web 共享应用入口解析 workspace/state、模型、runtime policy、limits 与可选知识绑定，取得同 state 的 OS 独占锁。
+1. CLI 或 Web 准备 workspace/state、模型、runtime policy、limits 与可选知识绑定，进入 Service 执行时取得同 state 的 OS 独占锁。
 2. 保存基础 request/launch 与 initial snapshot，组装 Coder、工具和对应 scope 的 verifier。
 3. Agent 可先读工作区事实；物理输入不足时提出 `ask_user(question)`。问题与其他工具/final 混发，
    宿主在副作用前整轮拒绝，不能只靠顺序执行屏障。
@@ -19,8 +19,9 @@ LangGraph 节点。
 
 `CodingRunService.run_step` 可返回 `WaitingForUser`；旧 `run` 保留 settled-result 契约。
 legacy `needs_input` 继续使用原 `field_id`、answers 与预先澄清条件，不被新协议静默转换。
-新建会话的具体组合选择由 [共享装配](../../../src/abaqus_sim_agent/coding/composition.py)拥有，CLI 和 Web
-只负责各自的传输、输入与展示。
+CLI 当前自行准备 request/launch，Web 经 `application` 准备，二者进入
+[共享装配](../../../src/abaqus_sim_agent/coding/composition.py)。配置准备尚未完全统一；初始合同、修订和
+运行进度的来源规则见 [配置输入与恢复记录](../system-framework.md#配置输入运行合同与恢复记录)。
 
 ## 当前请求范围与文字答复
 

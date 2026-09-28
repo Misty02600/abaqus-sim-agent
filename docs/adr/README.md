@@ -11,12 +11,14 @@
 
 | 决定 | 状态与作用域 |
 |---|---|
+| [0045：本次运行选项与必要会话记录](0045-use-explicit-run-options-without-preference-files.md) | 已采纳、撤回未实施；取消用户/项目偏好文件，部分替代0043及0040的用户目录选择入口；模型与Catalog细节分别调研 |
 | [0044：本机 Phoenix 观测](0044-local-phoenix-observability.md) | 已采纳；官方 SDK 随产品分发，--phoenix 显式发送到独立本机服务；Case 与评分关联，不接管状态/oracle |
+| [0043：模型偏好与会话合同分离](0043-separate-model-preferences-from-session-contracts.md) | 用户/项目偏好文件由0045部分替代；共享输入、会话恢复及凭据分离仍有效 |
 | [0042：显式启用的 Logfire 观测](0042-opt-in-logfire-observability.md) | 已由 [0044](0044-local-phoenix-observability.md) 替代；原云端接口与数据边界决定保留 |
 | [0008：Pydantic AI Harness 单 Coder](0008-pydantic-ai-harness-abaqus-coding-run.md) | 已采纳；替代旧 LangGraph、多角色及首轮控制面路线，后续 scope/恢复/问答按下列决定扩展 |
 | [0017：按活动组件组织产品包](0017-package-by-component-coding-run.md) | 已采纳；组件职责与消费方端口 |
 | [0015：产品 Coder 不暴露通用 Shell](0015-disable-general-shell-for-product-coder.md) | 普通产品决定已由 0032 替代；旧冻结 profile 与原失败依据保留 |
-| [0018：分级 ACI 与已验证 API 合同](0018-enforce-verified-abaqus-aci.md) | 原双模式与编辑/API 阻断由 0034 替代；原证据保留 |
+| [0018：分级 ACI 与已验证 API 合同](0018-enforce-verified-abaqus-aci.md) | 原双模式与编辑/API 阻断由 [0038](0038-unify-runtime-syntax-and-static-feedback.md) 替代；原证据保留 |
 | [0038：执行前语法与非阻断静态反馈](0038-unify-runtime-syntax-and-static-feedback.md) | 已采纳；运行前语法必检，可选静态诊断随执行结果返回 |
 | [0039：保留工作区文本编码](0039-preserve-workspace-text-encoding.md) | 已采纳；UTF-8/CP936 严格解码、原编码写回与 raw-byte hash |
 | [0023：调用方声明的纯编辑范围](0023-constrain-explicit-reference-edits-before-writing.md) | 已采纳为默认关闭的单表达式编辑 profile |
@@ -47,7 +49,7 @@
 | 决定 | 状态与作用域 |
 |---|---|
 | [0005：可追溯地吸收与重构上游](0005-traceable-upstream-reuse.md) | 已采纳；替代 0001，保留独立仓库与许可证/来源义务 |
-| [0009：精确 Abaqus API Catalog](0009-exact-abaqus-api-catalog.md) | 已采纳；来源与证据合同保留，普通产品默认由 0036 更新，调用次数上限由 0031 部分替代 |
+| [0009：精确 Abaqus API Catalog](0009-exact-abaqus-api-catalog.md) | 已采纳；来源与证据合同保留，普通产品默认由 [0040](0040-require-api-catalog-for-product-runs.md) 更新，调用次数上限由 0031 部分替代 |
 | [0040：普通产品必须绑定 API Catalog](0040-require-api-catalog-for-product-runs.md) | 已采纳；更新 0009 的产品默认，移除产品 `off`，默认 automatic verified-only |
 | [0010：显式受预算的官方概念检索](0010-budgeted-official-concept-retrieval.md) | 已采纳；可选证据、不补物理输入，普通产品次数上限由 0031 部分替代 |
 | [0022：独立比较 BM25、Dense、RRF 后再采用](0022-evaluate-bm25-dense-rrf-before-agent-adoption.md) | 已采纳；保留算法对照与采用门槛，不代表 RRF 已替换默认 Concept 路径 |

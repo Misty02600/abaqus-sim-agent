@@ -10,6 +10,9 @@
 
 - 先检查当前分支、工作树改动和作用域指令。按当前分支的源码与文档判断现状，不把其他工作树或旧分支的状态当作当前事实。
 - 先读 [架构总览](docs/architecture/overview.md)；涉及架构、状态所有权、权限、兼容或“之前决定过”的问题，先查 [ADR 索引](docs/adr/README.md)及相关已采纳决定，再查实现和测试。
+- 配置设计先查 [配置输入与恢复记录](docs/architecture/system-framework.md#配置输入运行合同与恢复记录)及 [ADR-0045](docs/adr/0045-use-explicit-run-options-without-preference-files.md)：当前目标为程序默认值、本次显式输入与必要会话记录，撤回用户/项目偏好文件；逐字段区分宿主设置、运行输入和恢复状态，不重新扩建自动偏好来源。代码撤回状态以当前文档和实现为准。
+- 新增或修改配置时同步 [配置逐字段合同](docs/architecture/configuration-reference.md)，逐项确认来源、缺省、覆盖、校验、持久化与恢复修改规则；不能用分类说明代替字段决定。
+- 普通用户选择能力，程序管理固定内部资源；已确认的 Skill/静态来源路径及重复模式入口收敛见逐字段目标表。不要仅因上游支持扩展就新增本项目没有需求的配置入口，已决定与已实施必须分别说明。
 - 当前路线由 ADR-0008 及后续决定约束：一个 Pydantic AI Harness Coder。旧 LangGraph、多 Agent、DeckDraft 和持久 Job Service 路线已被替代。增加第二套运行时、角色或控制面需要真实需求与新的取舍，不能从旧 ADR 自动恢复。
 
 ## 产品与执行边界
