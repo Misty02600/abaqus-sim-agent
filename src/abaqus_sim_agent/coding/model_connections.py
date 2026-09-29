@@ -1,4 +1,4 @@
-"""原生模型装配与宿主内存凭据；不写入用户偏好或 CodingRun 文件。"""
+"""原生模型装配与宿主凭据；不写入用户偏好或 CodingRun 文件。"""
 
 import inspect
 from collections.abc import Mapping
@@ -13,12 +13,14 @@ from .model import (
     ModelExecutionConfig,
     create_deepseek_chat_model,
 )
+from .model_catalog import model_metadata
 from .providers import (
     LOCAL_AUTH_PROVIDERS,
     ModelProvider,
     ProviderUnavailable,
     api_key_environments,
     connection_environment,
+    credential_family,
     require_provider_dependencies,
 )
 
@@ -47,18 +49,15 @@ class ProviderClient:
             await transport.aclose()
 
 
-def resolve_context_window(
-    provider: ModelProvider, model_name: str, override: int | None = None
-) -> int:
+def resolve_context_window(provider: ModelProvider, model_name: str) -> int:
     """解析新会话的窗口；恢复直接读取快照，不调用本函数。
 
     Raises:
         ProviderUnavailable: 所选提供商的 SDK 缺失或不兼容。
-        ValueError: 框架与适配器都无法确定窗口，且没有显式覆盖。
+        ValueError: 框架与适配器都无法确定窗口，此模型尚不能用于新会话。
     """
     require_provider_dependencies(provider)
-    if override is not None:
-        return override
+    metadata = model_metadata(provider, model_name)
     if provider in (
         ModelProvider.OPENCODE_GO,
         ModelProvider.OPENCODE_ZEN,
@@ -72,8 +71,15 @@ def resolve_context_window(
     if provider is ModelProvider.OFFICIAL and model_name == "deepseek-flash":
         return 1_000_000
     value = infer_model_profile(f"{provider.value}:{model_name}").get("context_window")
+    if metadata is not None:
+        # Provider catalogs can describe narrower serving limits than SDK family metadata.
+        return (
+            min(value, metadata.context_window)
+            if value is not None
+            else metadata.context_window
+        )
     if value is None:
-        raise ValueError("无法确定模型的上下文窗口，请填写 context_window。")
+        raise ValueError("此模型的上下文窗口元数据尚未就绪，暂不支持创建会话。")
     return value
 
 
@@ -94,7 +100,7 @@ def create_model(
     Args:
         gateway: 原生提供商或 OpenCode 接入标识。
         api_key: 宿主提供的密钥；本机凭据或账号登录可以为空。
-        execution_config: 保存的有效配置，包括窗口、接口与非凭据环境绑定。
+        execution_config: 保存的有效配置，包括窗口与非凭据环境绑定。
         connection_options: 宿主内存中的原生认证参数，不进入偏好或会话文件。
         http_client: 可选测试/观测传输；返回的客户端负责释放它。
 
@@ -125,6 +131,12 @@ def create_model(
     from pydantic_ai.providers import infer_provider_class
 
     options: dict[str, Any] = dict(connection_options or {})
+    if gateway is ModelProvider.OPENAI_CODEX and not options:
+        from .credential_store import CredentialStore
+
+        source = CredentialStore().codex_source()
+        if source is not None:
+            options["credential_source"] = source
     transports: list[Any] = [http_client] if http_client is not None else []
     key = api_key.get_secret_value()
     if key:
@@ -137,13 +149,6 @@ def create_model(
         )
     if http_client is not None:
         options["http_client"] = http_client
-    base_url = execution_config.model_base_url if execution_config else None
-    if base_url:
-        options[
-            "azure_endpoint"
-            if gateway in (ModelProvider.AZURE, ModelProvider.AZURE_RESPONSES)
-            else "base_url"
-        ] = base_url
     if gateway.startswith("gateway/"):
         from pydantic_ai.providers.gateway import gateway_provider
 
@@ -160,28 +165,6 @@ def create_model(
                         lambda _: original_class.model_profile("deepseek-v4-flash")
                     )
                 },
-            )
-        parameters = inspect.signature(provider_class).parameters
-        if base_url and "base_url" in options and "base_url" not in parameters:
-            if "openai_client" not in parameters:
-                raise ValueError(f"{gateway.value} 不接受自定义 API 地址。")
-            from openai import AsyncOpenAI
-
-            options = {
-                "openai_client": AsyncOpenAI(
-                    api_key=key or "local",
-                    base_url=base_url,
-                    timeout=timeout_seconds,
-                    max_retries=http_retries
-                    if http_retries is not None
-                    else DEFAULT_MODEL_HTTP_RETRIES,
-                    **({"http_client": http_client} if http_client else {}),
-                )
-            }
-            provider_class = type(
-                "EndpointProvider",
-                (provider_class,),
-                {"base_url": property(lambda self: str(self.client.base_url))},
             )
         if gateway in (ModelProvider.GOOGLE, ModelProvider.GOOGLE_CLOUD):
             from google.genai.types import HttpRetryOptions
@@ -209,7 +192,6 @@ def create_model(
                     timeout=timeout_seconds,
                     max_retries=http_retries,
                     httpx_client=http_client,
-                    base_url=base_url,
                 )
             }
         provider = provider_class(**options)
@@ -241,6 +223,16 @@ def provider_key(
 ) -> SecretStr:
     require_provider_dependencies(provider)
     key = keys.get(provider, SecretStr(""))
-    if not key.get_secret_value() and provider not in LOCAL_AUTH_PROVIDERS:
+    if not key.get_secret_value().strip():
+        key = next(
+            (
+                value
+                for candidate, value in keys.items()
+                if credential_family(candidate) == credential_family(provider)
+                and value.get_secret_value().strip()
+            ),
+            SecretStr(""),
+        )
+    if not key.get_secret_value().strip() and provider not in LOCAL_AUTH_PROVIDERS:
         raise ProviderUnavailable(f"请填写 {provider.value} 的 API Key。")
     return key

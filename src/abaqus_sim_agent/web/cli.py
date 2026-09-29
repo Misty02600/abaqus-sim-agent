@@ -30,7 +30,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--no-open", action="store_true")
-    add_run_arguments(parser)
+    add_run_arguments(parser, include_model=False)
     add_phoenix_argument(parser)
     return parser.parse_args(argv)
 

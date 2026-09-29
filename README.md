@@ -65,8 +65,7 @@ uvx --python 3.12 --from arize-phoenix==20.16.0 phoenix serve
 另一个终端启动原来的产品命令并加参数：
 
 ```powershell
-uv run --no-sync abaqus-sim-agent-web --phoenix --root D:\abaqus-web `
-  --model-provider opencode-go
+uv run --no-sync abaqus-sim-agent-web --phoenix --root D:\abaqus-web
 ```
 
 打开 [本机 Phoenix](http://127.0.0.1:6006)，进入 `abaqus-sim-agent` 项目，查看消息、工具参数/返回、
@@ -98,11 +97,10 @@ uv run --no-sync abaqus-sim-agent-web --phoenix --root D:\abaqus-web `
 ```powershell
 uv sync --locked --all-groups --extra web
 uv run --no-sync python scripts/build_web.py
-uv run --no-sync abaqus-sim-agent-web --root D:\abaqus-web `
-  --model-provider opencode-go
+uv run --no-sync abaqus-sim-agent-web --root D:\abaqus-web
 ```
 
-启动前在宿主环境配置 `OPENCODE_API_KEY`；默认官方网关使用 `DEEPSEEK_API_KEY`。服务就绪后默认打开
+启动前可在宿主环境配置 `OPENCODE_API_KEY` 或 `DEEPSEEK_API_KEY` 等相应提供商凭据，也可在右上角“设置 → 模型账号”登录或填写 API Key。服务就绪后默认打开
 普通本机地址 `http://127.0.0.1:8765/`，使用 `--no-open` 可关闭自动打开。页面会无感建立本地浏览器会话，
 不需要复制终端 token。根目录必须是 ASCII 路径，下面分开保存 `states/`、`registry/`、`cache/`、`control/`；
 `workspaces/` 只保留旧托管工作区记录。
@@ -156,17 +154,28 @@ workspace/execution状态划定本段fresh evidence。显式修改任务合同�
 **配置调整状态：** 已取消用户级/项目级偏好文件读取。普通入口使用 `abq2024` 命令、包内 Skill 和程序管理的
 静态资源；Web 管理根默认位于 `%LOCALAPPDATA%/abaqus-sim-agent/web`，可用 `--root` 高级覆盖。
 Catalog 已随应用包安装，CLI/Web 自动定位并直接读取；不需要目录参数或首次启动解压。已接入 Pydantic AI 原生 provider、模型候选列表及模型窗口；OpenCode 的 DeepSeek 适配独立保留。
+模型窗口由框架和适配器自动确定，普通 CLI/Web 不提供窗口或自定义 API 地址输入；未知窗口的模型暂不支持创建会话。
 Catalog 的第三方文档内容公开再分发许可仍未确认，见[来源说明](src/abaqus_sim_agent/api_catalog/data/THIRD_PARTY_NOTICES.md)。
 
-未显式选择时，当前默认网关为 DeepSeek 官方 API，读取 `DEEPSEEK_API_KEY`；`opencode-go` / `opencode-zen` 读取
-`OPENCODE_API_KEY`，不会隐藏切换 Provider。模型 ID 可由 `--model` 显式指定，默认
-`deepseek-v4-flash`；免费 Zen ID 与付费网关 ID 不能互换。Go adapter 为同一 run/resume 提供稳定、
-经 SHA-256 处理的 session 标识和项目 User-Agent。
+新会话初始为“待选择模型”，不自动选择默认模型或列表首项。网页直接搜索并点选已连接来源的模型，提供商仅作为条目标签，
+选定工作区和模型后才能发送消息；CLI 必须提供 --model-provider 与 --model。--list-models 与网页共用候选列表。列表为空时提示添加凭据或刷新目录；网页仅从列表选择，CLI/API 显式型号也必须匹配候选，不开放目录外手填。
+`--list-model-providers` 与页面“设置 → 模型账号”展示可接入提供商；连接就绪不等于远端模型权限已验证。
+恢复会话沿用保存的模型，缺少原凭据时提示补充，不自动切换。OpenCode 的型号和 session header 仍由单独适配处理。
 
-CLI/Web 共用本次运行选项：CLI 显式参数覆盖程序默认值；Web 创建请求的 `options` 覆盖当前服务启动选项，
+网页输入 Key 或完成登录后自动保存，重启后继续使用；CLI/Web 共用本机应用数据目录的 `auth.json`。
+CLI 可用 `uv run abaqus-sim-agent --login openai` 隐藏输入并保存 Key，或 `--login openai-codex` 完成账号登录，
+`--logout PROVIDER` 删除本应用的记录。环境密钥也可使用，但不会自动写入文件。凭据文件是明文，不应提交或分发。
+模型菜单直接获取 models.dev 并自动缓存；每进程首次需要目录时获取，网页可点“刷新可选模型”重新获取。
+联网失败使用有效缓存，首次无缓存则明确提示；不再要求维护者生成目录并发布新版。缓存路径由程序管理，
+没有目录路径或刷新周期配置。SDK 名称表不再补候选；Codex 登录后会出现在已连接提供商中，但模型列表为空，不能选模型开始新会话；已有会话仍按保存记录恢复。
+列表表示公共候选，不保证账号额度和远端权限，见 [ADR-0048](docs/adr/0048-fetch-models-dev-with-local-cache.md)。
+Copilot 可通过 `--login github-copilot` 保存已有 Token；设备登录使用 Pydantic AI 原生接口，需提供自己的 OAuth Client ID（CLI `--oauth-client-id`）。返回的 access token 直接用于调用，不另做交换或自动续期；过期或撤销后重新登录或更新 Token。
+Azure 私有部署、本地服务型号不能由公共目录自动推导。详细边界见 [模型发现与连接](docs/architecture/configuration-reference.md#模型发现与连接)。
+
+CLI/Web 新会话模型必须明确选择；其他运行选项共用来源规则：CLI 显式参数覆盖程序默认值；Web 创建请求的 `options` 覆盖当前服务启动选项，
 再使用程序默认值。原用户/项目 settings.json 即使存在或损坏也不读取、不修改、不迁移。CLI 相对路径基于启动
 目录，Web 创建请求相对路径基于所选工作区。字段省略表示未指定，列表整体替换，`[]` 清空本次知识包选择；
-CLI 可用 `--no-knowledge-packs`，Web 可取消沿用服务选择后自选。显式 `null`、未知字段和非法组合会报错。
+CLI 可用 `--no-knowledge-packs`；网页默认不选知识包，需要时直接勾选本会话要用的包，不继承服务启动选择。显式 `null`、未知字段和非法组合会报错。
 
 宿主端口、打开浏览器、遥测开关属于本次进程；权限由本次显式请求决定；任务、白名单及实验 profile 是
 调用输入。实际资源在创建会话时验证并生成固定绑定，hash 和

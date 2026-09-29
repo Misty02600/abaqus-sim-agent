@@ -9,6 +9,7 @@ source = { editable = "." }
 dependencies = [
     { name = "arize-phoenix-otel" },
     { name = "beautifulsoup4" },
+    { name = "filelock" },
     { name = "lxml" },
     { name = "numpy" },
     { name = "onnxruntime" },
@@ -67,6 +68,7 @@ requires-dist = [
     { name = "basedpyright", marker = "extra == 'static-preflight'", specifier = ">=1.39.0,<2.0.0" },
     { name = "beautifulsoup4", specifier = ">=4.14,<5" },
     { name = "fastapi", marker = "extra == 'web'", specifier = "==0.116.1" },
+    { name = "filelock", specifier = ">=3.20,<4" },
     { name = "lxml", specifier = ">=6.0,<7" },
     { name = "numpy", specifier = ">=2.5,<3" },
     { name = "onnxruntime", specifier = ">=1.29,<2" },

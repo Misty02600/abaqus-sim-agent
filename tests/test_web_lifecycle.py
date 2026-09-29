@@ -26,6 +26,14 @@ import sys, threading
 from pathlib import Path
 import uvicorn
 from tests.support.web import configured_app
+from tests.support.model_catalog import catalog_payload
+from abaqus_sim_agent.coding import credential_store, model_catalog, model_selection
+root = Path(sys.argv[1])
+store = model_catalog.ModelCatalog(root / "models.json")
+model_catalog.catalog_store = lambda: store
+model_catalog.download_catalog = catalog_payload
+model_selection.local_authenticated_providers = lambda: frozenset()
+credential_store.credential_path = lambda: root / "host-auth" / "auth.json"
 block = threading.Event()
 app, calls = configured_app(Path(sys.argv[1]), block=block)
 server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=int(sys.argv[2]), access_log=False, timeout_graceful_shutdown=1))
@@ -52,7 +60,9 @@ server.run()
             env=env,
         )
         try:
-            with httpx.Client(base_url=f"http://127.0.0.1:{port}", timeout=2) as client:
+            with httpx.Client(
+                base_url=f"http://127.0.0.1:{port}", timeout=2, trust_env=False
+            ) as client:
                 for _ in range(100):
                     try:
                         response = client.get("/api/v1/session")
@@ -70,6 +80,10 @@ server.run()
                 created = client.post(
                     "/api/v1/runs",
                     json={
+                        "options": {
+                            "model_provider": "deepseek",
+                            "model_name": "deepseek-v4-flash",
+                        },
                         "idempotency_key": str(uuid4()),
                         "goal": "fixture",
                         "workspace": str(workspace),

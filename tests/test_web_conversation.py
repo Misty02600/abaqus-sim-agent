@@ -149,6 +149,10 @@ def first_message(client, goal="Remember ALPHA"):
     result = client.post(
         "/api/v1/runs",
         json={
+            "options": {
+                "model_provider": "deepseek",
+                "model_name": "deepseek-v4-flash",
+            },
             "idempotency_key": str(key),
             "goal": goal,
             "workspace": str(workspace),

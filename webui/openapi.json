@@ -201,7 +201,71 @@
         }
       }
     },
+    "/api/v1/models": {
+      "get": {
+        "summary": "Models",
+        "operationId": "models_api_v1_models_get",
+        "parameters": [
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Refresh"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AvailableModel"
+                  },
+                  "title": "Response Models Api V1 Models Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/model-connections": {
+      "get": {
+        "summary": "Model Connections",
+        "operationId": "model_connections_api_v1_model_connections_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModelProvider"
+                  },
+                  "type": "array",
+                  "title": "Response Model Connections Api V1 Model Connections Get"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "summary": "Connect Model",
         "operationId": "connect_model_api_v1_model_connections_post",
@@ -215,6 +279,42 @@
           },
           "required": true
         },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/model-connections/{provider}": {
+      "delete": {
+        "summary": "Disconnect Model",
+        "operationId": "disconnect_model_api_v1_model_connections__provider__delete",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ModelProvider"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1583,6 +1683,28 @@
           "fresh"
         ],
         "title": "ArtifactRef"
+      },
+      "AvailableModel": {
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/ModelProvider"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "context_window": {
+            "type": "integer",
+            "title": "Context Window"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "name",
+          "context_window"
+        ],
+        "title": "AvailableModel"
       },
       "ClarificationEvent": {
         "properties": {
@@ -2983,17 +3105,6 @@
             "format": "password",
             "title": "Api Key",
             "writeOnly": true
-          },
-          "model_base_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Model Base Url"
           }
         },
         "additionalProperties": false,
@@ -3262,29 +3373,6 @@
             ],
             "title": "Model Name"
           },
-          "context_window": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 1024.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Context Window"
-          },
-          "model_base_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Model Base Url"
-          },
           "http_retries": {
             "anyOf": [
               {
@@ -3389,17 +3477,6 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
-          },
-          "model_base_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Model Base Url"
           },
           "model": {
             "type": "string",

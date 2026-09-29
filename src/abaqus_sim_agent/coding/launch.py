@@ -67,6 +67,10 @@ class LaunchManifest(BaseModel):
 
     @model_validator(mode="after")
     def valid_version(self):
+        if self.model_base_url is not None:
+            raise ValueError(
+                "自定义 API 地址会话已不再支持，请使用提供商端点新建会话。"
+            )
         if (
             self.context_policy_version == "deepseek-1m-tiered-summary-v1"
             and self.model_provider
@@ -122,7 +126,6 @@ class LaunchManifest(BaseModel):
             planning_enabled=self.planning_enabled,
             interaction_policy=self.interaction_policy,
             context_window=self.context_window,
-            model_base_url=self.model_base_url,
             provider_environment=self.provider_environment,
         )
 
@@ -141,12 +144,6 @@ def apply_launch_amendments(
             and config.context_window is None
         ):
             raise ValueError("修改模型必须同时保存新模型的 context_window。")
-        if (
-            values.get("model_base_url")
-            and config.model_provider is not None
-            and config.model_provider != values["model_provider"]
-        ):
-            raise ValueError("使用自定义接口的会话切换提供商时请新建会话。")
         if (
             values.get("provider_environment") is not None
             and config.model_provider is not None

@@ -2,6 +2,9 @@ from uuid import uuid4
 
 import pytest
 
+from abaqus_sim_agent.coding.model import DeepSeekGateway
+from abaqus_sim_agent.coding.model_selection import AvailableModel
+
 pytest.importorskip("fastapi")
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
@@ -12,7 +15,6 @@ from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.application import prepare_new_run
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
 from abaqus_sim_agent.coding.launch import LaunchManifest
-from abaqus_sim_agent.coding.model import DeepSeekGateway
 from abaqus_sim_agent.coding.options import RunOptions, resolve_run_config
 from abaqus_sim_agent.execution import Abaqus2024Runner
 from abaqus_sim_agent.web.app import create_app
@@ -105,6 +107,10 @@ def new_request(client, goal):
     response = client.post(
         "/api/v1/runs",
         json={
+            "options": {
+                "model_provider": "deepseek",
+                "model_name": "deepseek-v4-flash",
+            },
             "idempotency_key": str(key),
             "goal": goal,
             "workspace": str(workspace),
@@ -190,7 +196,20 @@ async def test_response_output_is_enabled_only_for_open_request_agent(tmp_path):
         goal="explain",
         workspace=tmp_path / "workspace",
         state_dir=tmp_path / "state",
-        settings=resolve_run_config(tmp_path / "workspace", config.overrides),
+        settings=resolve_run_config(
+            tmp_path / "workspace",
+            config.overrides,
+            RunOptions(
+                model_provider=DeepSeekGateway.OFFICIAL, model_name="deepseek-v4-flash"
+            ),
+            models=(
+                AvailableModel(
+                    provider=DeepSeekGateway.OFFICIAL,
+                    name="deepseek-v4-flash",
+                    context_window=1_000_000,
+                ),
+            ),
+        ),
     )
     observed = []
 

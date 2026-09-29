@@ -219,6 +219,8 @@ def test_cli_binds_and_reads_selected_private_knowledge_pack(
         "abaqus_sim_agent.coding.domain_knowledge.domain_knowledge_packs_root",
         lambda: root,
     )
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "fixture")
+    monkeypatch.setenv("OPENCODE_API_KEY", "fixture")
     monkeypatch.setattr(
         "abaqus_sim_agent.coding.cli.take_gateway_api_key_from_environment",
         lambda _provider: "test-key",
@@ -230,6 +232,10 @@ def test_cli_binds_and_reads_selected_private_knowledge_pack(
 
     result = run_cli(
         [
+            "--model-provider",
+            "deepseek",
+            "--model",
+            "deepseek-v4-flash",
             "--goal",
             "Read the selected private reference.",
             "--workspace",
@@ -337,6 +343,8 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
         function = unavailable_model if factory_calls == 1 else recovered_model
         return FunctionModel(function), _Client()
 
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "fixture")
+    monkeypatch.setenv("OPENCODE_API_KEY", "fixture")
     monkeypatch.setattr(
         "abaqus_sim_agent.coding.cli.take_gateway_api_key_from_environment",
         lambda _provider: "test-key",
@@ -348,6 +356,8 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
 
     first_exit = run_cli(
         [
+            "--model",
+            "deepseek-v4-flash",
             "--goal",
             "Create a resumable script",
             "--workspace",
@@ -364,6 +374,13 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
     immutable_request = (state_dir / "request.json").read_bytes()
     immutable_launch = (state_dir / "launch.json").read_bytes()
 
+    rejected = run_cli(
+        ["--resume", str(state_dir), "--model", "not-in-catalog-fixture"]
+    )
+    assert rejected == 1
+    assert (state_dir / "request.json").read_bytes() == immutable_request
+    assert (state_dir / "launch.json").read_bytes() == immutable_launch
+
     resumed_exit = run_cli(
         [
             "--resume",
@@ -373,9 +390,7 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
             "--solver-timeout-seconds",
             "5400",
             "--model",
-            "deepseek-v4-flash" if gateway == "opencode-go" else "amended-model",
-            "--context-window",
-            "1000000" if gateway == "opencode-go" else "128000",
+            "deepseek-v4-flash" if gateway == "opencode-go" else "deepseek-v4-pro",
             "--http-retries",
             "7",
             "--amendment-reason",
@@ -388,7 +403,7 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
     outcome = json.loads((state_dir / "outcome.json").read_text(encoding="utf-8"))
     assert outcome["usage"]["model_requests"] == 3
     assert factory_arguments[1]["model_name"] == (
-        "deepseek-v4-flash" if gateway == "opencode-go" else "amended-model"
+        "deepseek-v4-flash" if gateway == "opencode-go" else "deepseek-v4-pro"
     )
     assert factory_arguments[0]["execution_config"].reasoning_policy == (
         "enabled_high" if gateway == "opencode-go" else "provider_default"
@@ -398,9 +413,7 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
         == factory_arguments[0]["execution_config"].reasoning_policy
     )
     assert factory_arguments[1]["http_retries"] == 7
-    assert factory_arguments[1]["execution_config"].context_window == (
-        1_000_000 if gateway == "opencode-go" else 128_000
-    )
+    assert factory_arguments[1]["execution_config"].context_window == 1_000_000
     assert (state_dir / "request.json").read_bytes() == immutable_request
     assert (state_dir / "launch.json").read_bytes() == immutable_launch
     effective = load_request_for_resume(state_dir)
@@ -423,6 +436,8 @@ def test_cli_resume_reloads_original_task_after_provider_failure(
     }
     duplicate_exit = run_cli(
         [
+            "--model",
+            "deepseek-v4-flash",
             "--goal",
             "A different task must not overwrite the old state",
             "--workspace",
@@ -547,6 +562,8 @@ def test_cli_task_revision_preserves_old_outcome_and_reverifies_fresh_work(
             _Client(),
         )
 
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "fixture")
+    monkeypatch.setenv("OPENCODE_API_KEY", "fixture")
     monkeypatch.setattr(
         "abaqus_sim_agent.coding.cli.take_gateway_api_key_from_environment",
         lambda _provider: "test-key",
@@ -559,6 +576,10 @@ def test_cli_task_revision_preserves_old_outcome_and_reverifies_fresh_work(
     assert (
         run_cli(
             [
+                "--model-provider",
+                "deepseek",
+                "--model",
+                "deepseek-v4-flash",
                 "--goal",
                 "Create the initial artifact",
                 "--workspace",
@@ -688,6 +709,10 @@ def test_cli_resolves_startup_cwd_before_model_configuration(
 
     exit_code = run_cli(
         [
+            "--model-provider",
+            "deepseek",
+            "--model",
+            "deepseek-v4-flash",
             "--goal",
             "test",
             "--state-dir",
@@ -700,7 +725,7 @@ def test_cli_resolves_startup_cwd_before_model_configuration(
     output = capsys.readouterr().out
     assert exit_code == 1
     assert f"Workspace: {workspace.resolve()}" in output
-    assert "DEEPSEEK_API_KEY" in output
+    assert "没有匹配的可选模型" in output
 
 
 def test_cli_explicit_workspace_overrides_startup_cwd(
@@ -718,6 +743,10 @@ def test_cli_explicit_workspace_overrides_startup_cwd(
 
     exit_code = run_cli(
         [
+            "--model-provider",
+            "deepseek",
+            "--model",
+            "deepseek-v4-flash",
             "--goal",
             "test",
             "--workspace",
@@ -748,6 +777,8 @@ def test_cli_opencode_gateway_reads_only_opencode_key(
 
     exit_code = run_cli(
         [
+            "--model",
+            "deepseek-v4-flash",
             "--goal",
             "test",
             "--workspace",
@@ -763,7 +794,7 @@ def test_cli_opencode_gateway_reads_only_opencode_key(
 
     output = capsys.readouterr().out
     assert exit_code == 1
-    assert "OPENCODE_API_KEY must not be empty" in output
+    assert "没有匹配的可选模型" in output
 
 
 def test_cli_loads_catalog_without_workspace_location_restrictions(

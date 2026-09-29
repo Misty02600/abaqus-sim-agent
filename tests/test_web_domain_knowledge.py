@@ -81,6 +81,7 @@ def test_web_lists_and_binds_explicit_private_knowledge_pack(tmp_path: Path) -> 
             overrides=RunOptions(),
             knowledge_packs_root=packs,
         ),
+        api_keys={DeepSeekGateway.OFFICIAL: SecretStr("fixture")},
     )
 
     with TestClient(app, base_url="http://127.0.0.1") as client:
@@ -98,7 +99,11 @@ def test_web_lists_and_binds_explicit_private_knowledge_pack(tmp_path: Path) -> 
             json={
                 "idempotency_key": str(uuid4()),
                 "goal": "Use the private reference.",
-                "options": {"knowledge_pack_ids": ["flexible-electronics-fea"]},
+                "options": {
+                    "model_provider": "deepseek",
+                    "model_name": "deepseek-v4-flash",
+                    "knowledge_pack_ids": ["flexible-electronics-fea"],
+                },
                 "workspace": str(workspace),
             },
         )
@@ -175,7 +180,11 @@ def test_selected_pack_is_readable_through_product_agent_tools(tmp_path: Path) -
             json={
                 "idempotency_key": str(uuid4()),
                 "goal": "Read the selected reference and answer.",
-                "options": {"knowledge_pack_ids": ["flexible-electronics-fea"]},
+                "options": {
+                    "model_provider": "deepseek",
+                    "model_name": "deepseek-v4-flash",
+                    "knowledge_pack_ids": ["flexible-electronics-fea"],
+                },
                 "workspace": str(workspace),
             },
         )

@@ -98,7 +98,7 @@ def streaming_app(tmp_path, flow, *, before_header=False):
     return app
 
 
-def launch(client):
+def launch(client, *, provider="deepseek"):
     key = uuid4()
     workspace = (
         client.app.state.controller.registry.root.parent
@@ -109,6 +109,10 @@ def launch(client):
     response = client.post(
         "/api/v1/runs",
         json={
+            "options": {
+                "model_provider": provider,
+                "model_name": "deepseek-v4-flash",
+            },
             "idempotency_key": str(key),
             "goal": "请解释，不生成文件。",
             "workspace": str(workspace),

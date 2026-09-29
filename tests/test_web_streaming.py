@@ -282,10 +282,7 @@ def test_go_http_streaming_adapter_retry_and_transport_close(
     )
     config = ServerConfig(
         root=tmp_path / "web",
-        overrides=RunOptions(
-            model_provider=DeepSeekGateway.OPENCODE_GO,
-            model_name="deepseek-v4-flash",
-        ),
+        overrides=RunOptions(),
         **CodingRunBudget(
             max_model_requests=8, max_abaqus_calls=0, max_solver_calls=0
         ).as_request_controls(),
@@ -300,7 +297,7 @@ def test_go_http_streaming_adapter_retry_and_transport_close(
     try:
         with TestClient(app, base_url="http://127.0.0.1") as client:
             login(client)
-            rid = launch(client)
+            rid = launch(client, provider="opencode-go")
             active = poll(
                 client,
                 rid,

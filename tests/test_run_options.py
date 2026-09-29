@@ -24,7 +24,12 @@ from abaqus_sim_agent.coding.options import (
 
 def test_explicit_precedence_preserves_zero_and_empty_selection():
     result = merge_run_options(
-        RunOptions(http_retries=4, knowledge_pack_ids=("sample",)),
+        RunOptions(
+            model_provider=DeepSeekGateway.OFFICIAL,
+            model_name="deepseek-v4-flash",
+            http_retries=4,
+            knowledge_pack_ids=("sample",),
+        ),
         RunOptions(http_retries=0, knowledge_pack_ids=()),
     )
     assert result.http_retries == 0
@@ -38,6 +43,8 @@ def test_explicit_precedence_preserves_zero_and_empty_selection():
         {"model_name": None},
         {"http_retries": "4"},
         {"api_key": "not-an-option"},
+        {"context_window": 128_000},
+        {"model_base_url": "https://custom.invalid/v1"},
         {"api_catalog_dir": "D:/catalog"},
         {"launcher_path": "D:/vendor.bat"},
         {"skill_library": "D:/skills"},
@@ -72,18 +79,18 @@ def test_cli_ignores_old_preference_files_and_does_not_modify_them(
         str(tmp_path / "state"),
     ]
     assert run_cli(args) == 1
-    assert "DEEPSEEK_API_KEY" in capsys.readouterr().out
+    assert "请先选择模型" in capsys.readouterr().out
     assert run_cli([*args, "--model-provider", "opencode-go"]) == 1
-    assert "OPENCODE_API_KEY must not be empty" in capsys.readouterr().out
+    assert "请先选择模型" in capsys.readouterr().out
     assert {p: p.read_bytes() for p in before} == before
 
 
-def test_cli_and_web_share_run_arguments(tmp_path):
+def test_cli_and_web_share_run_arguments(tmp_path, monkeypatch):
     from abaqus_sim_agent.web.cli import parse_args
 
+    monkeypatch.setenv("OPENCODE_API_KEY", "fixture")
+
     args = [
-        "--model-provider",
-        "opencode-go",
         "--http-retries",
         "0",
         "--api-catalog-mode",
@@ -91,8 +98,25 @@ def test_cli_and_web_share_run_arguments(tmp_path):
         "--knowledge-pack",
         "custom-fea",
     ]
-    cli = options_from_args(build_parser().parse_args(["--goal", "test", *args]))
-    web = options_from_args(parse_args(args))
+    cli = options_from_args(
+        build_parser().parse_args(
+            [
+                "--goal",
+                "test",
+                "--model-provider",
+                "opencode-go",
+                "--model",
+                "deepseek-v4-flash",
+                *args,
+            ]
+        )
+    )
+    web = merge_run_options(
+        options_from_args(parse_args(args)),
+        RunOptions(
+            model_provider=DeepSeekGateway.OPENCODE_GO, model_name="deepseek-v4-flash"
+        ),
+    )
     assert cli == web
     settings = resolve_run_config(tmp_path, cli)
     assert settings == resolve_run_config(tmp_path, web)
@@ -104,6 +128,8 @@ def test_cli_and_web_share_run_arguments(tmp_path):
     "flag",
     [
         "--launcher",
+        "--context-window",
+        "--model-base-url",
         "--api-catalog-dir",
         "--skills-dir",
         "--abqpy-static-wheel",
@@ -112,8 +138,12 @@ def test_cli_and_web_share_run_arguments(tmp_path):
     ],
 )
 def test_removed_cli_flags_are_not_silently_accepted(flag):
+    from abaqus_sim_agent.web.cli import parse_args
+
     with pytest.raises(SystemExit):
         build_parser().parse_args(["--goal", "test", flag, "obsolete"])
+    with pytest.raises(SystemExit):
+        parse_args([flag, "obsolete"])
 
 
 @pytest.mark.parametrize("mode", ["off", "on"])

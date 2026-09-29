@@ -13,12 +13,17 @@ from ..skills import skill_library_path
 from .api_lookup import DEFAULT_PRODUCT_API_CATALOG_MODE, ProductApiCatalogMode
 from .contracts import RuntimeProfile
 from .model import (
-    DEEPSEEK_V4_FLASH,
     DEFAULT_MODEL_HTTP_RETRIES,
     DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS,
     DeepSeekGateway,
     ModelExecutionConfig,
     new_run_execution_config,
+)
+from .model_selection import (
+    AvailableModel,
+    available_models,
+    require_model_selection,
+    select_model,
 )
 from .static_preflight import managed_static_paths
 
@@ -28,8 +33,6 @@ class RunOptions(BaseModel):
 
     model_provider: DeepSeekGateway | None = None
     model_name: str | None = Field(default=None, min_length=1)
-    context_window: int | None = Field(default=None, ge=1024)
-    model_base_url: str | None = None
     http_retries: int | None = Field(default=None, ge=0)
     http_timeout_seconds: float | None = Field(default=None, gt=0, allow_inf_nan=False)
     reasoning_policy: Literal["provider_default", "enabled_high"] | None = None
@@ -88,21 +91,14 @@ def model_execution(options: RunOptions) -> ModelExecutionConfig:
     from .model_connections import resolve_context_window
     from .providers import SDK_DEFAULT_RETRY_PROVIDERS, connection_environment
 
-    provider = effective.model_provider or DeepSeekGateway.OFFICIAL
+    provider = effective.model_provider
     name = effective.model_name
-    if not name:
-        if provider not in (
-            DeepSeekGateway.OFFICIAL,
-            DeepSeekGateway.OPENCODE_GO,
-            DeepSeekGateway.OPENCODE_ZEN,
-        ):
-            raise ValueError("请选择或填写该提供商的模型名称。")
-        name = DEEPSEEK_V4_FLASH
+    if provider is None or name is None:
+        raise ValueError("请先从可用列表确定提供商与模型名称。")
     return new_run_execution_config(
         model_provider=provider,
         model_name=name,
-        context_window=resolve_context_window(provider, name, effective.context_window),
-        model_base_url=effective.model_base_url,
+        context_window=resolve_context_window(provider, name),
         provider_environment=connection_environment(provider),
         http_retries=(
             effective.http_retries
@@ -120,12 +116,17 @@ def model_execution(options: RunOptions) -> ModelExecutionConfig:
     )
 
 
-def resolve_run_config(workspace: Path, *overrides: RunOptions) -> ResolvedRunOptions:
+def resolve_run_config(
+    workspace: Path,
+    *overrides: RunOptions,
+    models: tuple[AvailableModel, ...] | None = None,
+) -> ResolvedRunOptions:
     """补齐并验证新会话的公共配置，供 CLI/Web 使用同一组实际值。
 
     Args:
         workspace: 已选择的工作区，用于校验程序管理的缓存不会落入工程目录。
         overrides: 本次显式覆盖，从低到高排列。
+        models: 宿主当前可用模型；省略时从环境和本机认证来源筛选。
 
     Returns:
         供装配生成 request/launch 的配置。静态检查关闭时不绑定闲置来源路径；
@@ -135,6 +136,17 @@ def resolve_run_config(workspace: Path, *overrides: RunOptions) -> ResolvedRunOp
         ValueError: 本次输入非法、托管缓存落在工作区内，或模型策略不兼容。
     """
     options = merge_run_options(*overrides)
+    require_model_selection(options.model_provider, options.model_name)
+    if models is None:
+        models = available_models()
+    selected = select_model(
+        models,
+        options.model_provider,
+        options.model_name,
+    )
+    options = options.model_copy(
+        update={"model_provider": selected.provider, "model_name": selected.name}
+    )
     mode = options.static_preflight_mode or "off"
     wheel, cache = managed_static_paths() if mode == "on" else (None, None)
     if cache is not None and cache.is_relative_to(workspace.resolve()):

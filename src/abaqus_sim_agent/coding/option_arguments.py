@@ -6,15 +6,16 @@ from .model import DeepSeekGateway
 from .options import RunOptions
 
 
-def add_run_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
-        "--model-provider", type=DeepSeekGateway, choices=tuple(DeepSeekGateway)
-    )
-    parser.add_argument("--model", help="本次模型名称；未指定时使用程序默认值")
-    parser.add_argument(
-        "--context-window", type=int, help="仅在窗口未知或自定义部署时指定"
-    )
-    parser.add_argument("--model-base-url", help="自定义模型 API 地址")
+def add_run_arguments(
+    parser: argparse.ArgumentParser, *, include_model: bool = True
+) -> None:
+    if include_model:
+        parser.add_argument(
+            "--model-provider", type=DeepSeekGateway, choices=tuple(DeepSeekGateway)
+        )
+        parser.add_argument(
+            "--model", help="新会话必须明确选择 --list-models 列表中的型号"
+        )
     parser.add_argument("--http-retries", type=int)
     parser.add_argument("--http-timeout-seconds", type=float)
     parser.add_argument(
@@ -47,8 +48,6 @@ def options_from_args(args: argparse.Namespace) -> RunOptions:
         for name, argument in {
             "model_provider": "model_provider",
             "model_name": "model",
-            "context_window": "context_window",
-            "model_base_url": "model_base_url",
             "http_retries": "http_retries",
             "http_timeout_seconds": "http_timeout_seconds",
             "reasoning_policy": "reasoning_policy",
@@ -56,7 +55,7 @@ def options_from_args(args: argparse.Namespace) -> RunOptions:
             "static_preflight_mode": "static_preflight_mode",
             "knowledge_pack_ids": "knowledge_pack",
         }.items()
-        if getattr(args, argument) is not None
+        if getattr(args, argument, None) is not None
     }
     if "knowledge_pack_ids" in values:
         values["knowledge_pack_ids"] = tuple(values["knowledge_pack_ids"])

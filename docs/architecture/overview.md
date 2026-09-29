@@ -4,7 +4,8 @@
 
 配置已采用“程序默认值、本次显式输入、必要会话记录”；偏好读取撤回、内部静态资源准备和固定命令入口已实施，
 Catalog 已作为包内资源接入 CLI/Web，原生 provider 与动态模型窗口已接入，见
-[ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md)及[逐字段修订方案](configuration-reference.md#已确认的修订方案)。
+[ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md)、
+[模型接入与选用 ADR-0046](../adr/0046-use-native-providers-and-available-model-selection.md)及[逐字段修订方案](configuration-reference.md#已确认的修订方案)。
 
 Abaqus Sim Agent 是本地 Windows Coding Agent：一个 Pydantic AI Harness Coder 在用户工作区编写普通
 Abaqus Python，通过受控工具运行 Abaqus 2024。CLI 和本地 Web 工作台共用宿主应用入口；宿主管理会话、
@@ -47,7 +48,7 @@ Web 主线仍未执行。外部 Job 对账、数据库控制面、多进程 Coor
 | 可选文档、ACI、probe、纯编辑策略 | 按显式 profile 增加证据或约束 | 默认关闭；冻结评测保留原合同，开发期旧产品 state 不迁移；接线不代表收益 | [Agent 范围](agent-implementation-scope.md) |
 | 固定 evaluator | 公开力学、verified-seed change、API repair 和检索对照 | 逐 Case 合同与 gate；不等于任意 CAE capability envelope | [验证证据](verification-evidence.md) |
 
-普通 CLI/Web 的提供商选择来自无凭据、无 SDK 导入的目录，覆盖框架原生模型提供商及 OpenCode Go/Zen，暂不接入 xAI。选择时才检查依赖；CLI 支持环境凭据与隐藏输入，Web 可设置仅进程内保存的 API Key，并通过框架执行 OpenAI Codex / GitHub Copilot 登录。原生模型装配、会话窗口与认证边界见 [模型配置与兼容](technology-stack.md#模型配置与兼容)。SDK 接线与离线协议测试不等于真实提供商或任务效果已经验证。
+普通 CLI/Web 的连接入口使用完整提供商目录，模型选择器使用凭据、SDK和模型元数据筛选后的稳定列表，覆盖框架原生模型提供商及 OpenCode Go/Zen，暂不接入 xAI。新会话初始待选择，用户必须明确选择提供商和模型后才能发送；明确型号也须匹配可选列表，不开放目录外输入；恢复不重新选择，见 [ADR-0049](../adr/0049-select-product-models-only-from-available-catalog.md)。CLI/Web 共用程序管理的本机 auth.json，支持保存、更新和删除凭据；Codex 刷新由 SDK 回调保存。模型目录直接获取 models.dev 并缓存，目录更新不依赖应用发布；无有效缓存时下载失败明确报错。移除 SDK 名称表补候选与 Pi 提取，Codex 登录后提供商可见、模型列表为空，不能选模型创建会话；已有会话保留原合同。目录和凭据边界分别见 [ADR-0048](../adr/0048-fetch-models-dev-with-local-cache.md)、[ADR-0047](../adr/0047-persist-host-credentials-and-bundle-model-catalog.md)，原生装配见 [模型配置与兼容](technology-stack.md#模型配置与兼容)。SDK 接线与离线协议测试不等于真实提供商或任务效果已经验证。
 
 ## 组件与状态所有权
 

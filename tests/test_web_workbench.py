@@ -27,7 +27,14 @@ def test_create_requires_a_selected_workspace(tmp_path) -> None:
         login(client)
         response = client.post(
             "/api/v1/runs",
-            json={"idempotency_key": str(uuid4()), "goal": "Create a run"},
+            json={
+                "options": {
+                    "model_provider": "deepseek",
+                    "model_name": "deepseek-v4-flash",
+                },
+                "idempotency_key": str(uuid4()),
+                "goal": "Create a run",
+            },
         )
 
     assert response.status_code == 422
@@ -45,6 +52,10 @@ def test_create_run_persists_explicit_runtime_permissions(tmp_path) -> None:
         response = client.post(
             "/api/v1/runs",
             json={
+                "options": {
+                    "model_provider": "deepseek",
+                    "model_name": "deepseek-v4-flash",
+                },
                 "idempotency_key": str(uuid4()),
                 "goal": "Create a configured run",
                 "abaqus_permission": {"mode": "allow"},
@@ -77,6 +88,10 @@ def test_commands_questions_and_read_only_state(tmp_path):
             client.post(
                 "/api/v1/runs",
                 json={
+                    "options": {
+                        "model_provider": "deepseek",
+                        "model_name": "deepseek-v4-flash",
+                    },
                     "idempotency_key": str(key),
                     "goal": "another",
                     "workspace": str(workspace),
@@ -192,6 +207,10 @@ def test_boundaries_and_corrupt_ledger(tmp_path):
             client.post(
                 "/api/v1/runs",
                 json={
+                    "options": {
+                        "model_provider": "deepseek",
+                        "model_name": "deepseek-v4-flash",
+                    },
                     "idempotency_key": str(uuid4()),
                     "goal": "x",
                     "workspace": "C:/existing-project",
@@ -210,6 +229,10 @@ def test_boundaries_and_corrupt_ledger(tmp_path):
             client.post(
                 "/api/v1/runs",
                 json={
+                    "options": {
+                        "model_provider": "deepseek",
+                        "model_name": "deepseek-v4-flash",
+                    },
                     "idempotency_key": str(uuid4()),
                     "goal": "x",
                     "workspace": "C:/existing-project",

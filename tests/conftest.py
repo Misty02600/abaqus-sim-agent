@@ -8,7 +8,14 @@ import pytest
 import requests.adapters
 from pydantic_ai import models
 
-from abaqus_sim_agent.coding import domain_knowledge, static_preflight
+from abaqus_sim_agent.coding import (
+    credential_store,
+    domain_knowledge,
+    model_catalog,
+    model_selection,
+    static_preflight,
+)
+from abaqus_sim_agent.coding.providers import API_KEY_ENVIRONMENTS
 
 # Collection and ordinary tests must not accidentally use a provider model.
 models.ALLOW_MODEL_REQUESTS = False
@@ -16,19 +23,27 @@ models.ALLOW_MODEL_REQUESTS = False
 
 @pytest.fixture(autouse=True)
 def offline_environment(monkeypatch, tmp_path):
+    from tests.support.model_catalog import catalog_payload
+
+    store = model_catalog.ModelCatalog(tmp_path / "model-cache.json")
+    monkeypatch.setattr(model_catalog, "catalog_store", lambda: store)
+    monkeypatch.setattr(model_catalog, "download_catalog", catalog_payload)
+    monkeypatch.setattr(
+        credential_store,
+        "credential_path",
+        lambda: tmp_path / "host-auth" / "auth.json",
+    )
     monkeypatch.setattr(models, "ALLOW_MODEL_REQUESTS", False)
+    monkeypatch.setattr(
+        model_selection, "local_authenticated_providers", lambda: frozenset()
+    )
     monkeypatch.setattr(
         static_preflight, "static_cache_root", lambda: tmp_path / "static-cache"
     )
     for name in tuple(os.environ):
         if name.startswith(("LOGFIRE_", "PHOENIX_", "OTEL_")):
             monkeypatch.delenv(name)
-    for name in (
-        "DEEPSEEK_API_KEY",
-        "OPENCODE_API_KEY",
-        "OPENAI_API_KEY",
-        "ANTHROPIC_API_KEY",
-    ):
+    for name in {name for names in API_KEY_ENVIRONMENTS.values() for name in names}:
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setattr(
         domain_knowledge,

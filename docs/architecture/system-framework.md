@@ -36,7 +36,8 @@ Web CLI 在服务 started 后默认打开普通 `127.0.0.1` URL。浏览器首�
 **第一阶段已实施：** 已撤回用户/项目偏好读取，改用程序默认值和本次显式输入；内置 Skill、静态 wheel/cache
 由程序管理，runner 以 abq2024 命令启动，文档模式由 spec 推导，Web 管理根提供默认。
 Catalog 已随应用包安装并自动定位，原生 provider 与动态模型窗口已接入。见
-[ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md)与[逐字段状态](configuration-reference.md)。
+[ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md)、
+[ADR-0046](../adr/0046-use-native-providers-and-available-model-selection.md)与[逐字段状态](configuration-reference.md)。
 
 配置按生命周期区分：进程入口取得本次宿主设置和凭据；新会话把默认值与显式输入解析为运行合同；
 运行中保存修订和进度；恢复重新加载合同及状态。用户通过 CLI/Web 操作，state 中的 JSON 由程序维护。
@@ -44,8 +45,10 @@ Catalog 已随应用包安装并自动定位，原生 provider 与动态模型�
 
 | 对象 / 载体 | 保存什么 | 生命周期与所有者 |
 |---|---|---|
-| CLI 参数、Web 创建请求、`ServerConfig` | 本次输入与新会话默认值 | 入口解析；只在新建会话时决定初始运行合同 |
+| CLI 参数、Web 创建请求、`ServerConfig` | 本次输入与非模型选项默认值 | 新会话模型必须由 CLI/创建请求明确指定；ServerConfig 不持有模型默认值；其余选项由入口合并 |
 | 宿主进程设置与凭据 | Web 端口、是否打开浏览器、遥测启用、模型 API key 等 | 每次启动由宿主取得；凭据单独注入，不写入 request/launch |
+| 用户应用数据目录 `auth.json` | 本应用交互保存的 API Key / OAuth 凭据 | CLI/Web 共用，更新/删除与令牌刷新写回；独立于会话，无路径配置，环境密钥不自动落盘，见 [ADR-0047](../adr/0047-persist-host-credentials-and-bundle-model-catalog.md) |
+| 用户缓存目录 `models/models.dev.json` | 最近一次有效的公开模型目录，不含凭据 | 程序首次需要及显式刷新时下载、校验并原子替换；失败使用缓存，旧会话不重新选择或推导窗口，见 [ADR-0048](../adr/0048-fetch-models-dev-with-local-cache.md) |
 | `request.json` | 初始任务、workspace/state、runtime、limits、权限、文件范围和知识证据绑定 | 由装配准备，Service 首次执行时持锁保存，之后作为 immutable base |
 | `launch.json` | 初始模型及 HTTP 参数、工具/知识模式、Skill 与静态源位置、协议与策略绑定 | 由装配准备，Service 首次执行时持锁保存，之后作为 immutable base |
 | `amendments.json` | 允许的配置修订、任务修订及对应证据边界 | 宿主在同一 state 锁下校验候选并提交；按序应用，不覆盖初始合同 |
@@ -105,7 +108,7 @@ registration 不能覆盖恢复得到的有效合同。创建登记和运行 sta
 
 ### 实现位置与尚未收敛的边界
 
-公共新会话参数定义、来源合并、缺省选择和静态源准备已共用。CLI 对任务白名单、纯编辑、Concept/diagnostic
+公共新会话参数定义、来源合并、可用模型筛选/稳定首项选择和静态源准备已共用。模型选择只决定新会话，恢复不因凭据或列表变化自动切换。CLI 对任务白名单、纯编辑、Concept/diagnostic
 及 bounded document 等显式 profile 仍有自己的输入编排，Web 只创建普通 ask_user 会话，不把这些实验合同伪装为
 已经开放的 Web 配置。CLI 自行构造 request/launch，Web 经 `application` 构造；二者共用 `composition`。
 配置公共入口共用不等于全部产品/实验流程相同，后续演进继续保留 profile 合同差异。

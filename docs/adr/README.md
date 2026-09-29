@@ -11,6 +11,10 @@
 
 | 决定 | 状态与作用域 |
 |---|---|
+| [0049：普通产品只从可选目录选择模型](0049-select-product-models-only-from-available-catalog.md) | 已采纳；新会话必须显式选择，取消默认/首项自动选择与目录外输入；既有会话恢复不重新筛选 |
+| [0048：直接获取 models.dev 与本机缓存](0048-fetch-models-dev-with-local-cache.md) | 已采纳；目录不再生成打包，移除 Pi 提取与 SDK 名称表兜底；部分替代0047，凭据与原生模型调用保持原合同 |
+| [0047：宿主凭据与包内模型目录](0047-persist-host-credentials-and-bundle-model-catalog.md) | CLI/Web 共用本地凭据；目录分发部分由0048替代；部分替代0046的进程内保存决定 |
+| [0046：原生模型接入与会话模型选择](0046-use-native-providers-and-available-model-selection.md) | 已采纳；CLI/Web 共用认证与元数据筛选，本次选择或可用首项决定新会话；凭据归宿主，恢复不自动换模型 |
 | [0045：本次运行选项与必要会话记录](0045-use-explicit-run-options-without-preference-files.md) | 偏好读取撤回、内部资源入口收敛和 Catalog 包内分发已接线；模型扩展已按本次运行选项整合，不恢复偏好文件 |
 | [0044：本机 Phoenix 观测](0044-local-phoenix-observability.md) | 已采纳；官方 SDK 随产品分发，--phoenix 显式发送到独立本机服务；Case 与评分关联，不接管状态/oracle |
 | [0043：模型偏好与会话合同分离](0043-separate-model-preferences-from-session-contracts.md) | 用户/项目偏好文件由0045部分替代；共享输入、会话恢复及凭据分离仍有效 |

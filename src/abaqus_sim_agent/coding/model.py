@@ -5,7 +5,6 @@ from collections.abc import MutableMapping
 from contextlib import asynccontextmanager
 from importlib.metadata import version
 from typing import TYPE_CHECKING, Any, Literal, cast
-from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, model_validator
 from pydantic_ai.models import Model
@@ -48,7 +47,6 @@ class ModelExecutionConfig(BaseModel):
     context_window: int | None = Field(
         default=None, ge=1024, exclude_if=lambda v: v is None
     )
-    model_base_url: str | None = Field(default=None, exclude_if=lambda v: v is None)
     provider_environment: dict[str, str] | None = Field(
         default=None, exclude_if=lambda v: v is None
     )
@@ -79,30 +77,6 @@ class ModelExecutionConfig(BaseModel):
             )
         if not self.model_name.strip() or self.model_name != self.model_name.strip():
             raise ValueError("model_name must be nonblank and normalized")
-        if self.model_base_url is not None:
-            if (
-                not self.model_base_url
-                or self.model_base_url != self.model_base_url.strip()
-            ):
-                raise ValueError("model_base_url 必须是非空且无首尾空白的地址。")
-            if self.model_provider in (
-                DeepSeekGateway.OPENCODE_GO,
-                DeepSeekGateway.OPENCODE_ZEN,
-                DeepSeekGateway.OPENAI_CODEX,
-            ):
-                raise ValueError("此提供商使用固定接口地址，不接受 model_base_url。")
-            parsed = urlsplit(self.model_base_url)
-            if (
-                parsed.scheme not in {"http", "https"}
-                or not parsed.hostname
-                or parsed.username
-                or parsed.password
-                or parsed.query
-                or parsed.fragment
-            ):
-                raise ValueError(
-                    "model_base_url 必须是无凭据、查询参数或 fragment 的 HTTP(S) 地址。"
-                )
         if self.reasoning_policy == "enabled_high" and (
             self.model_provider is not DeepSeekGateway.OPENCODE_GO
             or self.model_name != DEEPSEEK_V4_FLASH
@@ -176,7 +150,6 @@ def new_run_execution_config(
     reasoning_policy: Literal["provider_default", "enabled_high"] | None = None,
     planning_enabled: bool = False,
     context_window: int | None = None,
-    model_base_url: str | None = None,
     provider_environment: dict[str, str] | None = None,
 ) -> ModelExecutionConfig:
     from .providers import SDK_DEFAULT_RETRY_PROVIDERS
@@ -198,7 +171,6 @@ def new_run_execution_config(
         planning_enabled=planning_enabled,
         interaction_policy="workspace_facts_first",
         context_window=context_window,
-        model_base_url=model_base_url,
         provider_environment=provider_environment,
     )
 
@@ -272,7 +244,19 @@ def take_gateway_api_keys_from_environment(
 ) -> dict[DeepSeekGateway, SecretStr]:
     """捕获各网关凭据后移除环境变量，供多会话宿主按保存的网关独立选取。"""
     target = os.environ if environ is None else environ
-    keys = {
+    keys = read_gateway_api_keys_from_environment(target)
+    for variable_name in {
+        name for gateway in DeepSeekGateway for name in api_key_environments(gateway)
+    }:
+        target.pop(variable_name, None)
+    return keys
+
+
+def read_gateway_api_keys_from_environment(
+    environ: MutableMapping[str, str] | None = None,
+) -> dict[DeepSeekGateway, SecretStr]:
+    target = os.environ if environ is None else environ
+    return {
         gateway: SecretStr(
             next(
                 (
@@ -285,11 +269,6 @@ def take_gateway_api_keys_from_environment(
         )
         for gateway in DeepSeekGateway
     }
-    for variable_name in {
-        name for gateway in DeepSeekGateway for name in api_key_environments(gateway)
-    }:
-        target.pop(variable_name, None)
-    return keys
 
 
 def create_deepseek_chat_model(**kwargs):

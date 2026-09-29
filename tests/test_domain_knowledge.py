@@ -200,7 +200,10 @@ def test_manifest_rejects_unsafe_or_unsupported_resources(
         )
 
 
-def test_prepare_new_run_binds_selected_pack_to_launch_v7(tmp_path: Path) -> None:
+def test_prepare_new_run_binds_selected_pack_to_launch_v7(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "fixture")
     root = tmp_path / "packs"
     _write_pack(root)
     catalog = tmp_path / "api-catalog"

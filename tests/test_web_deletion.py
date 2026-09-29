@@ -64,6 +64,10 @@ def test_delete_registered_preserves_workspace_and_cannot_resurrect(tmp_path):
             client.post(
                 "/api/v1/runs",
                 json={
+                    "options": {
+                        "model_provider": "deepseek",
+                        "model_name": "deepseek-v4-flash",
+                    },
                     "idempotency_key": str(key),
                     "goal": "new",
                     "workspace": str(folder),

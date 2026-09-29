@@ -24,7 +24,11 @@ def create(client, workspace, **options):
             "idempotency_key": str(uuid4()),
             "goal": "Ask for thickness",
             "workspace": str(workspace),
-            "options": options,
+            "options": {
+                "model_provider": "deepseek",
+                "model_name": "deepseek-v4-flash",
+                **options,
+            },
         },
     )
 
@@ -60,9 +64,7 @@ def test_web_resume_keeps_saved_model_and_resources(tmp_path, monkeypatch):
     ctl.api_keys[DeepSeekGateway.OPENCODE_GO] = SecretStr("go-key")
     ctl.config = replace(
         ctl.config,
-        overrides=ctl.config.overrides.model_copy(
-            update={"model_provider": DeepSeekGateway.OPENCODE_GO, "http_retries": 4}
-        ),
+        overrides=ctl.config.overrides.model_copy(update={"http_retries": 4}),
     )
     workspace = tmp_path / "workspace"
     old = workspace / ".abaqus-sim-agent/settings.json"
@@ -70,7 +72,13 @@ def test_web_resume_keeps_saved_model_and_resources(tmp_path, monkeypatch):
     old.write_text("invalid JSON", encoding="utf-8")
     with TestClient(app, base_url="http://127.0.0.1") as client:
         login(client)
-        result = create(client, workspace, http_retries=0)
+        result = create(
+            client,
+            workspace,
+            model_provider="opencode-go",
+            model_name="deepseek-v4-flash",
+            http_retries=0,
+        )
         assert result.status_code == 201, result.text
         rid = result.json()["view"]["run_id"]
         start(client, rid)
@@ -83,9 +91,7 @@ def test_web_resume_keeps_saved_model_and_resources(tmp_path, monkeypatch):
     ctl.api_keys = {DeepSeekGateway.OPENCODE_GO: SecretStr("new-go-key")}
     ctl.config = replace(
         ctl.config,
-        overrides=RunOptions(
-            model_provider=DeepSeekGateway.OFFICIAL,
-        ),
+        overrides=RunOptions(),
     )
     monkeypatch.setattr(
         options, "bundled_catalog_path", lambda: tmp_path / "missing-new-default"
@@ -122,7 +128,12 @@ def test_failed_creation_can_retry_the_same_request(
     rid = "web-" + key.hex
     workspace = tmp_path / "workspace"
     workspace.mkdir()
-    payload = {"idempotency_key": str(key), "goal": "test", "workspace": str(workspace)}
+    payload = {
+        "options": {"model_provider": "deepseek", "model_name": "deepseek-v4-flash"},
+        "idempotency_key": str(key),
+        "goal": "test",
+        "workspace": str(workspace),
+    }
     with TestClient(app, base_url="http://127.0.0.1") as client:
         login(client)
         assert client.post("/api/v1/runs", json=payload).status_code == 409

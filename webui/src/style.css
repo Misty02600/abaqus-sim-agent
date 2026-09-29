@@ -1404,25 +1404,147 @@ pre {
   font-size: 11px;
   color: var(--text-dim);
 }
-.general-settings {
+.model-picker {
+  flex-shrink: 0;
+  margin: 5px 0 0;
+  min-width: 0;
+}
+.model-picker-trigger {
+  max-width: 100%;
+  padding: 4px 7px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  gap: 5px;
+}
+.model-picker-trigger span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.model-picker-trigger svg {
+  flex-shrink: 0;
+}
+.model-picker-panel[popover] {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  width: min(360px, calc(100vw - 24px));
+  padding: 12px 14px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-panel);
+  color: var(--text);
+  box-shadow: 0 12px 36px #0008;
+  font-size: 13px;
+}
+.model-picker-panel .model-picker-heading {
+  margin-bottom: 8px;
+}
+.model-picker-heading button {
+  font-size: 18px;
+  padding: 0 5px;
+}
+.model-picker-panel label {
+  display: grid;
+  gap: 5px;
+  margin: 9px 0;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.model-picker-panel select,
+.model-picker-panel input {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.model-picker-panel .row {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.model-picker-panel .row label {
+  flex: 1 1 180px;
+}
+.model-picker-panel p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+.model-picker-list {
+  margin: 8px 0;
+  max-height: min(280px, 34dvh);
+  overflow: auto;
+}
+.model-picker-list:empty {
+  display: none;
+}
+.model-picker-list .model-choice {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  padding: 8px 9px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.model-picker-list .model-choice.is-highlighted {
+  background: var(--bg-hover);
+}
+.model-choice-label {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.model-choice-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.model-choice-label small {
+  color: var(--text-dim);
+  font-size: 11px;
+}
+.model-choice-check {
+  width: 14px;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.model-picker-empty-provider {
+  padding: 7px 9px;
+}
+.general-settings,
+.model-account-settings {
   display: grid;
   gap: 16px;
 }
-.general-settings h3 {
+.general-settings h3,
+.model-account-settings h3,
+.model-account-settings p {
   margin: 0;
 }
-.general-settings h3 {
+.general-settings h3,
+.model-account-settings h3 {
   margin-bottom: 6px;
   font-size: 15px;
 }
-.general-settings label {
+.general-settings label,
+.model-account-settings label {
   display: grid;
   gap: 7px;
   min-width: 0;
   color: var(--text-muted);
   font-size: 13px;
 }
-.general-settings select {
+.general-settings select,
+.model-account-settings input,
+.model-account-settings select {
   width: 100%;
   min-width: 0;
   font: inherit;
@@ -1431,6 +1553,13 @@ pre {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 7px;
+}
+.model-account-settings .row {
+  flex-wrap: wrap;
+  align-items: end;
+}
+.model-account-settings .row label {
+  flex: 1 1 180px;
 }
 .status-primary,
 .status-secondary {
@@ -1838,6 +1967,10 @@ dd {
   }
 }
 
+.general-settings[hidden],
+.model-account-settings[hidden] {
+  display: none;
+}
 .settings-tabs {
   display: flex;
   gap: 6px;

@@ -4,7 +4,9 @@ from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.api_catalog.bundled import bundled_catalog_path
 from abaqus_sim_agent.coding.api_lookup import bind_api_catalog
 from abaqus_sim_agent.coding.application import prepare_new_run
-from abaqus_sim_agent.coding.options import resolve_run_config
+from abaqus_sim_agent.coding.model import DeepSeekGateway
+from abaqus_sim_agent.coding.model_selection import AvailableModel
+from abaqus_sim_agent.coding.options import RunOptions, resolve_run_config
 
 
 @pytest.fixture
@@ -38,7 +40,19 @@ def test_product_defaults_bind_bundled_catalog_without_path_configuration(
         goal="test",
         workspace=tmp_path / "workspace",
         state_dir=tmp_path / "state",
-        settings=resolve_run_config(tmp_path / "workspace"),
+        settings=resolve_run_config(
+            tmp_path / "workspace",
+            RunOptions(
+                model_provider=DeepSeekGateway.OFFICIAL, model_name="deepseek-v4-flash"
+            ),
+            models=(
+                AvailableModel(
+                    provider=DeepSeekGateway.OFFICIAL,
+                    name="deepseek-v4-flash",
+                    context_window=1_000_000,
+                ),
+            ),
+        ),
     )
 
     assert prepared.launch.api_catalog_dir == bundled_catalog_path()

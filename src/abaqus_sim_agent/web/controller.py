@@ -53,12 +53,23 @@ from ..coding.model import (
 )
 from ..coding.model_connections import create_model as create_deepseek_chat_model
 from ..coding.model_connections import provider_key
+from ..coding.model_selection import (
+    AvailableModel,
+    available_models,
+    configured_providers,
+    require_model_selection,
+)
 from ..coding.options import (
     RunOptions,
+    merge_run_options,
     resolve_run_config,
 )
 from ..coding.progress import CodingProgress
-from ..coding.providers import LOCAL_AUTH_PROVIDERS, require_provider_dependencies
+from ..coding.providers import (
+    LOCAL_AUTH_PROVIDERS,
+    ModelProvider,
+    require_provider_dependencies,
+)
 from ..coding.read_model import (
     CodingRunView,
     project_checkpoint,
@@ -134,6 +145,13 @@ class ServerConfig:
     )
     evaluation_tool_limits: EvaluationToolLimits | None = None
     context_warning_threshold_tokens: int | None = 900_000
+
+    def __post_init__(self):
+        if (
+            self.overrides.model_provider is not None
+            or self.overrides.model_name is not None
+        ):
+            raise ValueError("Web 服务不设置默认模型，请在创建会话时明确选择。")
 
     def request_controls(self) -> CodingRunControlValues:
         return {
@@ -278,7 +296,9 @@ class RunController:
     ):
         self.config = config
         self.api_keys = dict(api_keys)
-        self.endpoint_keys: dict[tuple[DeepSeekGateway, str], SecretStr] = {}
+        from ..coding.credential_store import CredentialStore
+
+        self.credential_store = CredentialStore()
         self.registry = RunRegistry(config.root)
         self.threads = ThreadStore(self.registry)
         self.invocations = InvocationStore(self.registry)
@@ -292,15 +312,7 @@ class RunController:
         self._delete_errors: dict[str, str] = {}
         self._run_controls: dict[str, RunCancellationControl] = {}
         self._cancelled_for_delete: set[str] = set()
-        self.model_credentials: dict[DeepSeekGateway, object] = {}
-
-        def connected_factory(**kwargs):
-            source = self.model_credentials.get(kwargs["gateway"])
-            if source is not None:
-                kwargs["connection_options"] = {"credential_source": source}
-            return model_factory(**kwargs)
-
-        self.model_factory, self.runner_factory = connected_factory, runner_factory
+        self.model_factory, self.runner_factory = model_factory, runner_factory
         self._mutex = threading.RLock()
         self._active: str | None = None
         self._future: Future[None] | None = None
@@ -729,9 +741,7 @@ class RunController:
                 prepared.request,
                 prepared.initial_snapshot,
                 prepared.launch,
-                api_key=self._model_key(
-                    prepared.launch.model_provider, prepared.launch.model_base_url
-                ),
+                api_key=self._model_key(prepared.launch.model_provider),
                 verifier=ExecutionEvidenceVerifier(),
                 clarification_provider=ScriptedClarificationProvider({}),
                 resume=True,
@@ -1107,10 +1117,14 @@ class RunController:
             if conflict:
                 raise WebError("workspace_busy", conflict)
             try:
+                require_model_selection(
+                    command.options.model_provider, command.options.model_name
+                )
+                inputs = merge_run_options(self.config.overrides, command.options)
                 settings = resolve_run_config(
                     workspace,
-                    self.config.overrides,
-                    command.options,
+                    inputs,
+                    models=self.available_models(),
                 )
             except ValueError as exc:
                 raise WebError("invalid_options", f"会话配置无效：{exc}", 422) from exc
@@ -1221,16 +1235,19 @@ class RunController:
     def list_knowledge_packs(self) -> DomainKnowledgeInventory:
         return discover_domain_knowledge_packs(self.config.knowledge_packs_root)
 
-    def _model_key(
-        self, provider: DeepSeekGateway, base_url: str | None = None
-    ) -> SecretStr:
+    def available_models(self) -> tuple[AvailableModel, ...]:
+        with self._mutex:
+            keys = dict(self.api_keys)
+        return available_models(keys)
+
+    def configured_providers(self) -> frozenset[ModelProvider]:
+        with self._mutex:
+            keys = dict(self.api_keys)
+        return configured_providers(keys)
+
+    def _model_key(self, provider: DeepSeekGateway) -> SecretStr:
         try:
-            if base_url:
-                endpoint = (provider, base_url.rstrip("/"))
-                if endpoint not in self.endpoint_keys:
-                    raise ValueError(f"请先为此自定义 API 地址设置凭据：{base_url}")
-                return provider_key(provider, {provider: self.endpoint_keys[endpoint]})
-            return provider_key(provider, self.api_keys)
+            return provider_key(provider, self.credential_store.api_keys(self.api_keys))
         except ValueError as exc:
             raise WebError(
                 "model_not_configured",
@@ -1238,19 +1255,8 @@ class RunController:
                 503,
             ) from exc
 
-    def configure_model_key(
-        self, provider: DeepSeekGateway, key: SecretStr, base_url: str | None = None
-    ) -> None:
+    def configure_model_key(self, provider: DeepSeekGateway, key: SecretStr) -> None:
         require_provider_dependencies(provider)
-        from ..coding.model import ModelExecutionConfig
-        from ..coding.providers import SDK_DEFAULT_RETRY_PROVIDERS
-
-        ModelExecutionConfig(
-            model_provider=provider,
-            model_name="connection-check",
-            model_base_url=base_url,
-            http_retries=None if provider in SDK_DEFAULT_RETRY_PROVIDERS else 4,
-        )
         if provider is DeepSeekGateway.OPENAI_CODEX and key.get_secret_value():
             raise WebError(
                 "account_login_required", "此提供商使用账号登录，不接受 API Key。", 422
@@ -1258,10 +1264,7 @@ class RunController:
         if not key.get_secret_value().strip() and provider not in LOCAL_AUTH_PROVIDERS:
             raise WebError("missing_api_key", "请填写 API Key。", 422)
         with self._mutex:
-            if base_url:
-                self.endpoint_keys[(provider, base_url.rstrip("/"))] = key
-            else:
-                self.api_keys[provider] = key
+            self.credential_store.save_key(provider, key)
 
     def _prepared(self, registration: Registration) -> PreparedCodingRun:
         if (registration.request.state_dir / "request.json").exists():
@@ -1547,7 +1550,6 @@ class RunController:
                 version="",
                 created_at=registration.created_at,
                 model=f"{launch.model_provider.value}/{launch.model_name}",
-                model_base_url=launch.model_base_url,
                 workspace=str(registration.request.workspace),
                 title=display.title,
                 title_version=display.version,
@@ -2176,9 +2178,7 @@ class RunController:
                     "state_conflict", "当前状态不允许此操作，或另一个任务正在运行"
                 )
             connection_launch = self._prepared(registration).launch
-            self._model_key(
-                connection_launch.model_provider, connection_launch.model_base_url
-            )
+            self._model_key(connection_launch.model_provider)
             receipt = CommandReceipt(
                 command_id=command.command_id,
                 digest=request_digest,
@@ -2561,9 +2561,7 @@ class RunController:
                 prepared.request,
                 prepared.initial_snapshot,
                 prepared.launch,
-                api_key=self._model_key(
-                    prepared.launch.model_provider, prepared.launch.model_base_url
-                ),
+                api_key=self._model_key(prepared.launch.model_provider),
                 verifier=ExecutionEvidenceVerifier(),
                 clarification_provider=ScriptedClarificationProvider({}),
                 resume=prepared.resume,

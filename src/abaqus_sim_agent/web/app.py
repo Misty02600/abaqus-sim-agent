@@ -16,10 +16,14 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import SecretStr
 from starlette.background import BackgroundTask
 
+from ..coding import model_catalog
 from ..coding.composition import ModelFactory, RunnerFactory
+from ..coding.credential_store import CredentialStoreError
 from ..coding.domain_knowledge import DomainKnowledgeInventory
 from ..coding.model import DeepSeekGateway
+from ..coding.model_catalog import ModelCatalogUnavailable
 from ..coding.model_connections import create_model as create_deepseek_chat_model
+from ..coding.model_selection import AvailableModel
 from ..coding.providers import (
     ProviderOption,
     ProviderUnavailable,
@@ -156,6 +160,14 @@ def create_app(
     async def unavailable_provider(request: Request, exc: ProviderUnavailable):
         return error("provider_unavailable", str(exc), 422)
 
+    @app.exception_handler(CredentialStoreError)
+    async def credential_store_error(request: Request, exc: CredentialStoreError):
+        return error("credential_store_unavailable", str(exc), 503)
+
+    @app.exception_handler(ModelCatalogUnavailable)
+    async def model_catalog_error(request: Request, exc: ModelCatalogUnavailable):
+        return error("model_catalog_unavailable", str(exc), 503)
+
     @app.exception_handler(RequestValidationError)
     async def invalid_input(request: Request, exc: RequestValidationError):
         return error("invalid_input", "请求字段、格式或取值不正确", 422)
@@ -194,23 +206,42 @@ def create_app(
 
     @app.get("/api/v1/model-providers", response_model=tuple[ProviderOption, ...])
     def model_providers():
-        return provider_catalog()
+        return provider_catalog(include_models=False)
 
     @app.get("/api/v1/model-provider-dependencies")
     def model_provider_dependencies(provider: DeepSeekGateway):
         require_provider_dependencies(provider)
         return {"ready": True}
 
+    @app.get("/api/v1/models", response_model=tuple[AvailableModel, ...])
+    def models(refresh: bool = False):
+        if refresh:
+            model_catalog.catalog_store().get(refresh=True)
+        return controller.available_models()
+
     @app.post("/api/v1/model-connections")
     def connect_model(body: ModelConnection):
         require_provider_dependencies(body.provider)
         try:
-            controller.configure_model_key(
-                body.provider, body.api_key, body.model_base_url
-            )
+            controller.configure_model_key(body.provider, body.api_key)
+        except CredentialStoreError:
+            raise
         except ValueError as exc:
             raise WebError("invalid_connection", str(exc), 422) from exc
         return {"configured": True}
+
+    @app.get("/api/v1/model-connections", response_model=tuple[DeepSeekGateway, ...])
+    def model_connections():
+        return tuple(
+            sorted(
+                controller.configured_providers(), key=lambda provider: provider.value
+            )
+        )
+
+    @app.delete("/api/v1/model-connections/{provider:path}")
+    def disconnect_model(provider: DeepSeekGateway):
+        controller.credential_store.remove(provider)
+        return {"removed": True}
 
     @app.post("/api/v1/model-logins", response_model=LoginStatus)
     async def begin_model_login(body: LoginRequest):

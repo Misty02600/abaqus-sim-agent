@@ -50,7 +50,7 @@ def test_model_selection_rejects_missing_sdk_before_credentials(monkeypatch):
         )
 
 
-def test_model_selection_preserves_native_window_and_explicit_unknown_window():
+def test_model_selection_uses_native_window_and_rejects_unknown_metadata():
     native = model_execution(
         RunOptions(
             model_provider=ModelProvider.ANTHROPIC, model_name="claude-sonnet-4-5"
@@ -60,20 +60,23 @@ def test_model_selection_preserves_native_window_and_explicit_unknown_window():
     unknown = RunOptions(
         model_provider=ModelProvider.OPENAI, model_name="my-deployment"
     )
-    with pytest.raises(ValueError, match="context_window"):
+    with pytest.raises(ValueError, match="窗口元数据尚未就绪"):
         model_execution(unknown)
-    configured = model_execution(unknown.model_copy(update={"context_window": 128_000}))
-    assert configured.context_window == 128_000
     with pytest.raises(ValueError, match="模型名称"):
         model_execution(RunOptions(model_provider=ModelProvider.ANTHROPIC))
 
 
-def test_native_retry_defaults_are_explicit_and_cannot_silently_ignore_overrides():
+def test_native_retry_defaults_are_explicit_and_cannot_silently_ignore_overrides(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        "abaqus_sim_agent.coding.model_connections.infer_model_profile",
+        lambda _: {"context_window": 32_000},
+    )
     configuration = model_execution(
         RunOptions(
             model_provider=ModelProvider.MISTRAL,
             model_name="custom",
-            context_window=32_000,
         )
     )
     assert configuration.http_retries is None
@@ -82,7 +85,6 @@ def test_native_retry_defaults_are_explicit_and_cannot_silently_ignore_overrides
             RunOptions(
                 model_provider=ModelProvider.MISTRAL,
                 model_name="custom",
-                context_window=32_000,
                 http_retries=2,
             )
         )
@@ -284,9 +286,6 @@ async def test_native_factory_uses_native_protocol_and_releases_transport(
         RunOptions(
             model_provider=provider,
             model_name=model_name,
-            model_base_url="https://model.invalid"
-            if provider is ModelProvider.ANTHROPIC
-            else "https://model.invalid/v1",
         )
     )
     model, client = create_model(

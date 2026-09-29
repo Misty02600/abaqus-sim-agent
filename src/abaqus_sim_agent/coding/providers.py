@@ -6,7 +6,6 @@ from importlib.util import find_spec
 from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict
-from pydantic_ai.models import known_model_names
 
 
 class ModelProvider(StrEnum):
@@ -231,8 +230,9 @@ class ProviderOption(BaseModel):
     login: str | None = None
 
 
-def provider_catalog() -> tuple[ProviderOption, ...]:
-    names = known_model_names()
+def provider_catalog(*, include_models: bool = True) -> tuple[ProviderOption, ...]:
+    from .model_catalog import provider_models
+
     labels = {
         "deepseek": "DeepSeek",
         "opencode-go": "OpenCode Go",
@@ -246,10 +246,21 @@ def provider_catalog() -> tuple[ProviderOption, ...]:
     }
     result = []
     for provider in ModelProvider:
-        prefix = provider.value + ":"
-        models = tuple(n[len(prefix) :] for n in names if n.startswith(prefix))
-        if provider in (ModelProvider.OPENCODE_GO, ModelProvider.OPENCODE_ZEN):
+        models: tuple[str, ...] = ()
+        if include_models and provider in (
+            ModelProvider.OPENCODE_GO,
+            ModelProvider.OPENCODE_ZEN,
+        ):
             models = ("deepseek-v4-flash", "deepseek-v4-pro", "deepseek-v4.1-flash")
+        metadata = provider_models(provider) if include_models else None
+        if metadata is not None:
+            models = tuple(
+                sorted(
+                    name
+                    for name, entry in metadata.items()
+                    if entry.tools and entry.text and not entry.deprecated
+                )
+            )
         environments = api_key_environments(provider)
         result.append(
             ProviderOption(

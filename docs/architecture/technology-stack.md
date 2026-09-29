@@ -27,8 +27,13 @@ effective launch 为准。这里解释实际职责，不维护另一份依赖版
 
 ## 模型配置与兼容
 
+正式决定见 [ADR-0046：原生模型接入与会话模型选择](../adr/0046-use-native-providers-and-available-model-selection.md)。
+
 普通模型工厂复用 Pydantic AI 内置 provider；OpenCode 使用单独的 DeepSeek 适配，不限制其他 provider。
-模型候选目录与 SDK/凭据就绪检查分开；窗口来自框架 profile 或显式覆盖，保存后恢复不重新推导。当前目标 Go/V4-Flash 新 run 使用
+模型候选目录与 SDK/凭据就绪检查分开；目录直接获取 models.dev 并自动缓存，下载失败使用有效缓存，
+SDK 仍拥有协议适配。移除 Pi 提取与 SDK 名称表补候选，见 [ADR-0048](../adr/0048-fetch-models-dev-with-local-cache.md)。
+窗口使用目录和 SDK profile 已知值中的较小值，保留局部 provider 适配；普通用户不填写窗口或通用 API 地址，保存后恢复不重新推导。
+凭据由 CLI/Web 共用的 auth.json 管理，Codex 刷新交给 SDK 存储回调，见 [ADR-0047](../adr/0047-persist-host-credentials-and-bundle-model-catalog.md)。当前目标 Go/V4-Flash 新 run 使用
 typed `ModelExecutionConfig` 保存 thinking enabled/high、Planning 开关、HTTP 重试与超时等有效设置；普通产品
 默认关闭 Planning，冻结 profile 保留原设置。当前 launch 按保存的有效配置恢复；不兼容的开发期 state
 显式拒绝，不迁移。历史批次复现使用其冻结源码和依赖，不能套新默认后声称复现旧请求。

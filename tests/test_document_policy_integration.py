@@ -500,6 +500,7 @@ def test_cli_bounded_profile_persists_launch_and_ignores_edited_spec_on_resume(
         "compose_document_backend",
         lambda *a, **k: (port, validator),
     )
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "fixture")
     monkeypatch.setattr(
         cli, "take_gateway_api_key_from_environment", lambda p: "fake-not-sent"
     )
@@ -543,6 +544,10 @@ def test_cli_bounded_profile_persists_launch_and_ignores_edited_spec_on_resume(
     assert (
         cli.run_cli(
             [
+                "--model-provider",
+                "deepseek",
+                "--model",
+                "deepseek-v4-flash",
                 "--goal",
                 "Create a deterministic document receipt",
                 "--workspace",

@@ -127,6 +127,10 @@ def create(client, *, key=None):
     response = client.post(
         "/api/v1/runs",
         json={
+            "options": {
+                "model_provider": "deepseek",
+                "model_name": "deepseek-v4-flash",
+            },
             "idempotency_key": str(key),
             "goal": "Write out.txt after asking for thickness",
             "workspace": str(workspace),
@@ -179,6 +183,10 @@ def create_selected(client, workspace, *, key=None):
     return client.post(
         "/api/v1/runs",
         json={
+            "options": {
+                "model_provider": "deepseek",
+                "model_name": "deepseek-v4-flash",
+            },
             "idempotency_key": str(key or uuid4()),
             "goal": "Write out.txt after asking for thickness",
             "workspace": str(workspace),

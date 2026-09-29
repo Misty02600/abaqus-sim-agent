@@ -88,7 +88,22 @@ def test_cli_rejects_remote_or_invalid_endpoint_before_workspace_changes(
 ):
     monkeypatch.setenv("PHOENIX_COLLECTOR_ENDPOINT", endpoint)
     workspace = tmp_path / "must-not-exist"
-    assert run_cli(["--phoenix", "--workspace", str(workspace), "--goal", "test"]) == 1
+    assert (
+        run_cli(
+            [
+                "--model-provider",
+                "deepseek",
+                "--model",
+                "deepseek-v4-flash",
+                "--phoenix",
+                "--workspace",
+                str(workspace),
+                "--goal",
+                "test",
+            ]
+        )
+        == 1
+    )
     assert not workspace.exists()
 
 

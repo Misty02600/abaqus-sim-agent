@@ -1,108 +1,148 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import { request, errorText } from "./api/client";
 
-type Provider = { id: string; label: string; models: string[]; api_key_environment: string | null; local_auth: boolean; login: string | null };
-type Login = { id: string; state: string; url: string; user_code?: string | null; error?: string | null };
-export type ModelSelection = { provider: string; name: string; baseUrl: string; contextWindow: string };
+type Provider = { id: string; label: string; api_key_environment: string | null; local_auth: boolean; login: string | null };
+type AvailableModel = { provider: string; name: string; context_window: number };
+export type ModelSelection = { provider: string; name: string };
 
-export function ModelPicker({ ready, busy, value, onChange, connectionOnly = false }: {
-  ready: boolean; busy: boolean; value: ModelSelection; onChange: (value: ModelSelection) => void; connectionOnly?: boolean;
+export function ModelPicker({ ready, busy, value, onChange, onValidityChange, refreshKey = 0, onOpenSettings }: {
+  ready: boolean; busy: boolean; value: ModelSelection; onChange: (value: ModelSelection) => void; onValidityChange?: (valid: boolean) => void; refreshKey?: number; onOpenSettings: () => void;
 }) {
+  const panelId = useId();
+  const trigger = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const search = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [position, setPosition] = useState<CSSProperties>({});
   const [providers, setProviders] = useState<Provider[]>([]);
-  const [dependenciesReady, setDependenciesReady] = useState(false);
-  const [key, setKey] = useState("");
-  const [clientId, setClientId] = useState("");
+  const [models, setModels] = useState<AvailableModel[]>([]);
+  const [configured, setConfigured] = useState<string[]>([]);
   const [message, setMessage] = useState("");
-  const [connecting, setConnecting] = useState(false);
-  const [login, setLogin] = useState<Login | null>(null);
-  const selected = providers.find(p => p.id === value.provider);
+  const [refreshing, setRefreshing] = useState(false);
+  const selectionAvailable = !!value.provider && !!value.name && configured.includes(value.provider) && models.some(m => m.provider === value.provider && m.name === value.name);
+  const providerLabel = (id: string) => providers.find(p => p.id === id)?.label ?? id;
+  const filteredModels = useMemo(() => {
+    const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    return models.filter(m => {
+      const label = providers.find(p => p.id === m.provider)?.label ?? m.provider;
+      const text = `${m.name} ${m.provider} ${label}`.toLowerCase();
+      return terms.every(term => text.includes(term));
+    });
+  }, [models, providers, query]);
+  const emptyProviders = providers.filter(p => configured.includes(p.id)
+    && !models.some(m => m.provider === p.id)
+    && `${p.id} ${p.label}`.toLowerCase().includes(query.trim().toLowerCase()));
+  useEffect(() => {
+    if (panel.current?.matches(":popover-open")) {
+      document.getElementById(`${panelId}-model-${activeIndex}`)?.scrollIntoView({ block: "nearest" });
+    }
+  }, [activeIndex, filteredModels, panelId]);
+  function chooseModel(model: AvailableModel) {
+    onChange({ provider: model.provider, name: model.name });
+    closePanel();
+  }
+  function positionPanel() {
+    const rect = trigger.current?.getBoundingClientRect();
+    if (!rect) return;
+    const above = rect.top - 12;
+    const below = window.innerHeight - rect.bottom - 12;
+    const openAbove = above > below;
+    const width = Math.min(360, window.innerWidth - 24);
+    setPosition({
+      left: Math.max(12, Math.min(rect.left, window.innerWidth - width - 12)),
+      ...(openAbove ? { bottom: window.innerHeight - rect.top + 8 } : { top: rect.bottom + 8 }),
+      maxHeight: Math.max(120, (openAbove ? above : below) - 8),
+    });
+  }
+  function closePanel() {
+    panel.current?.hidePopover();
+    trigger.current?.focus();
+  }
+  useEffect(() => {
+    onValidityChange?.(selectionAvailable);
+  }, [selectionAvailable, onValidityChange]);
+  const refreshModels = useCallback(async (fetchLatest = false) => {
+    const connected = await request<string[]>("/model-connections");
+    setConfigured(connected);
+    const available = await request<AvailableModel[]>(fetchLatest ? "/models?refresh=true" : "/models");
+    setModels(available);
+    return available;
+  }, []);
 
   useEffect(() => {
     if (!ready) return;
     let cancelled = false;
-    request<Provider[]>("/model-providers").then(items => { if (!cancelled) setProviders(items); })
+    Promise.all([request<Provider[]>("/model-providers"), request<string[]>("/model-connections")])
+      .then(([items, connected]) => { if (!cancelled) { setProviders(items); setConfigured(connected); } })
+      .catch(e => { if (!cancelled) setMessage(errorText(e)); });
+    request<AvailableModel[]>("/models")
+      .then(available => { if (!cancelled) setModels(available); })
       .catch(e => { if (!cancelled) setMessage(errorText(e)); });
     return () => { cancelled = true; };
-  }, [ready]);
+  }, [ready, refreshKey]);
 
-  useEffect(() => {
-    setDependenciesReady(false); setKey(""); setMessage(""); setLogin(null);
-    if (!ready || !value.provider) return;
-    let cancelled = false;
-    request(`/model-provider-dependencies?provider=${encodeURIComponent(value.provider)}`)
-      .then(() => { if (!cancelled) setDependenciesReady(true); })
-      .catch(e => { if (!cancelled) setMessage(errorText(e)); });
-    return () => { cancelled = true; };
-  }, [ready, value.provider]);
-
-  useEffect(() => {
-    if (!login || login.state !== "waiting") return;
-    let cancelled = false;
-    const timer = window.setInterval(() => {
-      request<Login>(`/model-logins/${login.id}`).then(next => {
-        if (cancelled) return;
-        setLogin(next);
-        if (next.state === "completed") setMessage("登录完成；凭据仅保留在本次服务进程。");
-        if (next.state === "failed") setMessage(next.error || "登录失败。");
-      }).catch(e => { if (!cancelled) setMessage(errorText(e)); });
-    }, 1500);
-    return () => { cancelled = true; window.clearInterval(timer); };
-  }, [login]);
-
-  async function connect(local = false) {
-    setConnecting(true);
+  async function refreshCatalog() {
+    setRefreshing(true);
     try {
-      await request("/model-connections", { provider: value.provider, api_key: local ? "" : key, model_base_url: value.baseUrl.trim() || null });
-      setKey(""); setMessage("凭据已设置，仅保留在本次服务进程；尚未验证远端模型。");
+      await refreshModels(true);
+      setMessage("模型列表已重新载入。");
     } catch (e) { setMessage(errorText(e)); }
-    finally { setConnecting(false); }
+    finally { setRefreshing(false); }
   }
 
-  async function beginLogin() {
-    setConnecting(true);
-    try {
-      const next = await request<Login>("/model-logins", {
-        provider: value.provider, ...(clientId ? { client_id: clientId } : {}),
-      });
-      setLogin(next); setMessage("请打开登录链接完成授权。");
-    } catch (e) { setMessage(errorText(e)); }
-    finally { setConnecting(false); }
-  }
-
-  return <details className="knowledge-picker">
-    <summary>{connectionOnly ? "模型凭据" : "本次模型（可选）"}</summary>
-    <p className="muted small">{connectionOnly ? "为本机服务设置凭据；当前会话继续使用已保存的模型。" : "留空使用本次服务启动选项或程序默认值；本次模型选择只保存在这个会话。"}</p>
-    {connectionOnly && value.baseUrl && <p className="muted small">API 地址：{value.baseUrl}</p>}
-    <div className="row">
-      <label>模型提供商
-        <select value={value.provider} disabled={busy || connecting} onChange={e => onChange({ provider: e.target.value, name: "", baseUrl: "", contextWindow: "" })}>
-          <option value="">使用服务默认值</option>
-          {providers.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-        </select>
-      </label>
-      {!connectionOnly && <label>模型名称
-        <input value={value.name} disabled={busy} list="provider-model-candidates" onChange={e => onChange({ ...value, name: e.target.value })} placeholder="选择或输入模型 ID" />
-        <datalist id="provider-model-candidates">{selected?.models.map(name => <option key={name} value={name} />)}</datalist>
-      </label>}
+  return <div className="model-picker">
+    <button type="button" ref={trigger} className="model-picker-trigger"
+      disabled={!ready || busy} popoverTarget={panelId} aria-haspopup="dialog"
+      title={value.name ? `${value.provider}/${value.name}` : "选择本次对话使用的模型"}
+      onClick={positionPanel}>
+      <span>{value.name || "选择模型"}</span>
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+    </button>
+    <div ref={panel} id={panelId} popover="auto" role="dialog"
+      aria-label="选择模型" className="model-picker-panel" style={position}
+      onToggle={event => {
+        if (event.newState === "open") {
+          setQuery(""); setActiveIndex(0);
+          search.current?.focus();
+        }
+      }}>
+    <div className="row model-picker-heading">
+      <strong>选择模型</strong>
+      <button type="button" className="subtle" aria-label="关闭模型选择" onClick={closePanel}>×</button>
     </div>
-    {selected && dependenciesReady && <>
-      {selected.api_key_environment && <div className="row">
-        <label>API Key<input type="password" value={key} autoComplete="off" disabled={busy || connecting} onChange={e => setKey(e.target.value)} placeholder={`或在启动服务前设置 ${selected.api_key_environment}`} /></label>
-        <button type="button" disabled={busy || connecting || !key.trim()} onClick={() => void connect()}>设置 API Key</button>
-      </div>}
-      {selected.local_auth && <><p className="muted small">可使用本机已有凭据或登录状态；本地模型服务可按其配置无需密钥。</p>{value.baseUrl && <button type="button" disabled={busy || connecting} onClick={() => void connect(true)}>为此地址使用本机凭据</button>}</>}
-      {selected.login && !value.baseUrl && <div className="row">
-        {selected.login === "github-copilot" && <label>GitHub OAuth Client ID<input value={clientId} onChange={e => setClientId(e.target.value)} /></label>}
-        <button type="button" disabled={busy || connecting || login?.state === "waiting"} onClick={() => void beginLogin()}>登录账号</button>
-      </div>}
-      {login?.state === "waiting" && <p><a href={login.url} target="_blank" rel="noreferrer">打开登录页面</a>{login.user_code && <> · 授权码：<code>{login.user_code}</code></>}
-        <button type="button" onClick={() => { void request(`/model-logins/${login.id}`, {}, "DELETE").then(() => setLogin(null)).catch(e => setMessage(errorText(e))); }}>取消登录</button>
-      </p>}
-      {!connectionOnly && <details><summary>自定义接口与窗口</summary>
-        {!value.provider.startsWith("opencode-") && value.provider !== "openai-codex" && <label>API 地址<input value={value.baseUrl} disabled={busy} onChange={e => onChange({ ...value, baseUrl: e.target.value })} placeholder="留空使用提供商默认地址" /></label>}
-        <label>上下文窗口<input type="number" min={1024} value={value.contextWindow} disabled={busy} onChange={e => onChange({ ...value, contextWindow: e.target.value })} placeholder="仅在无法自动识别或自定义部署时填写" /></label>
-      </details>}
-    </>}
+      <input ref={search} type="search" role="combobox" aria-label="搜索已有模型"
+        aria-autocomplete="list" aria-expanded="true" aria-controls={`${panelId}-models`}
+        aria-activedescendant={filteredModels[activeIndex] ? `${panelId}-model-${activeIndex}` : undefined}
+        placeholder="搜索模型或提供商…" value={query} disabled={!ready || busy}
+        onChange={event => { setQuery(event.target.value); setActiveIndex(0); }}
+        onKeyDown={event => {
+          if (event.nativeEvent.isComposing) return;
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            setActiveIndex(i => Math.max(0, Math.min(filteredModels.length - 1, i + (event.key === "ArrowDown" ? 1 : -1))));
+          } else if (event.key === "Enter") {
+            event.preventDefault();
+            if (filteredModels[activeIndex]) chooseModel(filteredModels[activeIndex]);
+          }
+        }} />
+      <div id={`${panelId}-models`} role="listbox" aria-label="可选模型" className="model-picker-list">
+        {filteredModels.map((model, index) => <button type="button" role="option"
+          id={`${panelId}-model-${index}`} key={`${model.provider}/${model.name}`}
+          className={`model-choice ${index === activeIndex ? "is-highlighted" : ""}`}
+          aria-selected={model.provider === value.provider && model.name === value.name}
+          disabled={busy} title={`${model.name} · ${providerLabel(model.provider)}`}
+          onPointerMove={() => setActiveIndex(index)} onClick={() => chooseModel(model)}>
+          <span className="model-choice-label"><span className="model-choice-name">{model.name}</span><small>{providerLabel(model.provider)}</small></span>
+          <span className="model-choice-check" aria-hidden="true">{model.provider === value.provider && model.name === value.name ? "✓" : ""}</span>
+        </button>)}
+      </div>
+      {!filteredModels.length && !emptyProviders.length && <p className="muted small">{configured.length ? "没有匹配的可选模型。" : "请在设置中登录或填写 API Key。"}</p>}
+      {emptyProviders.map(p => <p className="model-picker-empty-provider muted small" key={p.id}>{p.label} · 暂无可选模型</p>)}
+      {value.name && !selectionAvailable && <p className="muted small">原选择已不可用，请重新选择。</p>}
+      <button type="button" className="subtle" disabled={busy || refreshing} onClick={() => void refreshCatalog()}>{refreshing ? "正在刷新…" : "刷新模型"}</button>
+    <button type="button" className="subtle" onClick={() => { closePanel(); onOpenSettings(); }}>登录 / 设置 API Key</button>
     {message && <p role="status" className="muted small">{message}</p>}
-  </details>;
+    </div>
+  </div>;
 }

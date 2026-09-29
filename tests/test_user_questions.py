@@ -128,6 +128,8 @@ def test_cli_catalog_questions_resume_preserves_schema_binding_and_lookup_usage(
         "abaqus_sim_agent.coding.cli.create_deepseek_chat_model",
         lambda **kwargs: (FunctionModel(reply), Client()),
     )
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "fixture")
+    monkeypatch.setenv("OPENCODE_API_KEY", "fixture")
     monkeypatch.setattr(
         "abaqus_sim_agent.coding.cli.take_gateway_api_key_from_environment",
         lambda *args: SecretStr("fixture"),
@@ -136,6 +138,10 @@ def test_cli_catalog_questions_resume_preserves_schema_binding_and_lookup_usage(
     assert (
         run_cli(
             [
+                "--model-provider",
+                "deepseek",
+                "--model",
+                "deepseek-v4-flash",
                 "--goal",
                 "Write out.txt after asking",
                 "--workspace",
@@ -611,6 +617,8 @@ def test_cli_default_asks_outside_event_loop_and_run_lock(tmp_path, monkeypatch)
         "abaqus_sim_agent.coding.cli.create_deepseek_chat_model",
         lambda **kwargs: (FunctionModel(reply), Client()),
     )
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "fixture")
+    monkeypatch.setenv("OPENCODE_API_KEY", "fixture")
     monkeypatch.setattr(
         "abaqus_sim_agent.coding.cli.take_gateway_api_key_from_environment",
         lambda *args: SecretStr("fixture"),
@@ -629,6 +637,10 @@ def test_cli_default_asks_outside_event_loop_and_run_lock(tmp_path, monkeypatch)
     assert (
         run_cli(
             [
+                "--model-provider",
+                "deepseek",
+                "--model",
+                "deepseek-v4-flash",
                 "--goal",
                 "Write out.txt after asking",
                 "--workspace",
@@ -842,6 +854,8 @@ async def test_cli_answer_file_continues_without_console(tmp_path, monkeypatch):
         "abaqus_sim_agent.coding.cli.create_deepseek_chat_model",
         lambda **kwargs: (FunctionModel(reply), Client()),
     )
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "fixture")
+    monkeypatch.setenv("OPENCODE_API_KEY", "fixture")
     monkeypatch.setattr(
         "abaqus_sim_agent.coding.cli.take_gateway_api_key_from_environment",
         lambda *args: SecretStr("fixture"),

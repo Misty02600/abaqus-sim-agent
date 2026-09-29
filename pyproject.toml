@@ -12,6 +12,7 @@ authors = [
 dependencies = [
   "arize-phoenix-otel==0.17.1",
   "beautifulsoup4>=4.14,<5",
+  "filelock>=3.20,<4",
   "lxml>=6.0,<7",
   "numpy>=2.5,<3",
   "onnxruntime>=1.29,<2",

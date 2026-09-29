@@ -439,6 +439,8 @@ def test_cli_loads_and_persists_scope_before_real_file_tools(
         async def close(self) -> None:
             pass
 
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "fixture")
+    monkeypatch.setenv("OPENCODE_API_KEY", "fixture")
     monkeypatch.setattr(
         "abaqus_sim_agent.coding.cli.take_gateway_api_key_from_environment",
         lambda _provider: "test-key",
@@ -451,6 +453,10 @@ def test_cli_loads_and_persists_scope_before_real_file_tools(
     ApiCatalog([], runtime_release="2024").write(catalog)
     code = run_cli(
         [
+            "--model-provider",
+            "deepseek",
+            "--model",
+            "deepseek-v4-flash",
             "--goal",
             "Replace only the authorized reference",
             "--workspace",

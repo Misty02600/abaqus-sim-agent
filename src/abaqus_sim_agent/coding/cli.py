@@ -52,6 +52,7 @@ from abaqus_sim_agent.coding.contracts import (
     RuntimeExecutionPolicy,
     RuntimeScriptPolicy,
 )
+from abaqus_sim_agent.coding.credential_store import CredentialStore
 from abaqus_sim_agent.coding.deferred_runtime import WaitingForToolExecution
 from abaqus_sim_agent.coding.diagnostic_retrieval import DiagnosticRetrievalMode
 from abaqus_sim_agent.coding.document_policy_binding import (
@@ -67,16 +68,23 @@ from abaqus_sim_agent.coding.execution_verifier import ExecutionEvidenceVerifier
 from abaqus_sim_agent.coding.launch import LaunchManifest as _LaunchManifest
 from abaqus_sim_agent.coding.launch import apply_launch_amendments
 from abaqus_sim_agent.coding.model import (
+    read_gateway_api_keys_from_environment,
     take_gateway_api_key_from_environment,
 )
 from abaqus_sim_agent.coding.model_connections import (
     create_model as create_deepseek_chat_model,
+)
+from abaqus_sim_agent.coding.model_selection import (
+    available_models,
+    require_model_selection,
+    select_model,
 )
 from abaqus_sim_agent.coding.option_arguments import (
     add_run_arguments,
     options_from_args,
 )
 from abaqus_sim_agent.coding.options import resolve_run_config
+from abaqus_sim_agent.coding.providers import ModelProvider as DeepSeekGateway
 from abaqus_sim_agent.coding.resume import (
     load_effective_run_for_resume,
 )
@@ -105,8 +113,29 @@ def build_parser() -> argparse.ArgumentParser:
         description="Run one Abaqus 2024 coding task in the selected workspace.",
     )
     parser.add_argument("--goal", help="Natural-language coding goal")
+    authentication = parser.add_mutually_exclusive_group()
+    authentication.add_argument(
+        "--login",
+        type=DeepSeekGateway,
+        choices=list(DeepSeekGateway),
+        help="登录或保存 API Key，供 CLI/Web 共用",
+    )
+    authentication.add_argument(
+        "--logout",
+        type=DeepSeekGateway,
+        choices=list(DeepSeekGateway),
+        help="删除本应用保存的提供商凭据",
+    )
     parser.add_argument(
-        "--list-model-providers", action="store_true", help="列出提供商与候选模型"
+        "--oauth-client-id", help="仅用于 GitHub Copilot 设备登录的 OAuth 应用 ID"
+    )
+    parser.add_argument(
+        "--list-models",
+        action="store_true",
+        help="列出凭据与模型元数据已就绪的可选模型",
+    )
+    parser.add_argument(
+        "--list-model-providers", action="store_true", help="列出提供商与认证方式"
     )
     parser.add_argument(
         "--answer-file", type=Path, help="UTF-8 question_id/answer JSON for --resume"
@@ -252,13 +281,82 @@ def run_cli(argv: list[str] | None = None) -> int:
         return 1
 
 
+def _authenticate_cli(args: argparse.Namespace) -> int:
+    from .credential_store import CredentialStoreError
+    from .model_login import LoginUnavailable, start_login
+    from .providers import LOCAL_AUTH_PROVIDERS, require_provider_dependencies
+
+    store = CredentialStore()
+    if args.logout is not None:
+        store.remove(args.logout)
+        print("已删除本应用保存的凭据；环境变量和其他应用登录不受影响。")
+        return 0
+    provider = args.login
+    require_provider_dependencies(provider)
+    if provider is DeepSeekGateway.OPENAI_CODEX or (
+        provider is DeepSeekGateway.GITHUB_COPILOT and args.oauth_client_id
+    ):
+
+        async def login() -> None:
+            challenge = await start_login(
+                provider, store, client_id=args.oauth_client_id
+            )
+            print(f"请打开登录页面：{challenge.url}")
+            if challenge.user_code:
+                print(f"授权码：{challenge.user_code}")
+            async with asyncio.timeout(600):
+                await challenge.complete()
+
+        try:
+            asyncio.run(login())
+        except KeyboardInterrupt:
+            print("登录已取消。")
+            return 1
+        except (CredentialStoreError, LoginUnavailable) as exc:
+            print(f"error: {exc}")
+            return 1
+        except Exception:
+            # SDK errors may contain tokens or remote response bodies.
+            print("登录或凭据保存未完成，请检查网络、文件权限及登录信息后重试。")
+            return 1
+    elif provider in LOCAL_AUTH_PROVIDERS:
+        raise ValueError("请使用该提供商的本机认证工具，或通过环境变量提供凭据。")
+    else:
+        try:
+            key = SecretStr(getpass.getpass(f"{provider.value} API Key: "))
+        except (EOFError, KeyboardInterrupt, OSError):
+            print("凭据输入已取消，未保存。")
+            return 1
+        store.save_key(provider, key)
+    print("凭据已保存，CLI/Web 可共用；使用 --list-models 查看候选模型。")
+    return 0
+
+
 def _run_cli_session(args: argparse.Namespace) -> int:
+    if args.oauth_client_id and args.login is not DeepSeekGateway.GITHUB_COPILOT:
+        raise ValueError("--oauth-client-id 只用于 --login github-copilot")
+    if args.login is not None or args.logout is not None:
+        if args.goal or args.resume or args.request_file:
+            raise ValueError("登录/退出命令不能同时执行任务。")
+        return _authenticate_cli(args)
+    if args.list_models:
+        print(
+            json.dumps(
+                [m.model_dump(mode="json") for m in available_models()],
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return 0
     if args.list_model_providers:
         from .providers import provider_catalog
 
         print(
             json.dumps(
-                [p.model_dump(mode="json") for p in provider_catalog()],
+                [
+                    p.model_dump(mode="json")
+                    for p in provider_catalog(include_models=False)
+                ],
                 ensure_ascii=False,
                 indent=2,
             )
@@ -357,13 +455,6 @@ def _run_cli_once(
                 _load_launch_manifest(request.state_dir),
                 effective.ledger,
             )
-            if (
-                args.model_base_url is not None
-                and args.model_base_url != launch.model_base_url
-            ):
-                raise ValueError(
-                    "恢复不能修改 model_base_url；仅可提供与会话相同的地址。"
-                )
             resolved = WorkspaceResolver().resolve_interactive(
                 run_id=request.run_id,
                 workspace=request.workspace,
@@ -402,7 +493,30 @@ def _run_cli_once(
                 state_dir=args.state_dir,
             )
             initial_snapshot = resolved.initial_snapshot
-            settings = resolve_run_config(resolved.workspace, options_from_args(args))
+            print(f"Workspace: {resolved.workspace}")
+            print(f"State: {resolved.state_dir}")
+            require_model_selection(args.model_provider, args.model)
+            keys = CredentialStore().api_keys(read_gateway_api_keys_from_environment())
+            if retained_api_key is not None and args.model_provider is not None:
+                keys[args.model_provider] = retained_api_key
+            if (
+                args.model_provider is not None
+                and not keys[args.model_provider].get_secret_value()
+                and sys.stdin.isatty()
+            ):
+                from .providers import LOCAL_AUTH_PROVIDERS
+
+                if args.model_provider not in LOCAL_AUTH_PROVIDERS:
+                    retained_api_key = SecretStr(
+                        getpass.getpass(f"{args.model_provider.value} API Key: ")
+                    )
+                    CredentialStore().save_key(args.model_provider, retained_api_key)
+                    keys[args.model_provider] = retained_api_key
+            settings = resolve_run_config(
+                resolved.workspace,
+                options_from_args(args),
+                models=available_models(keys),
+            )
             execution = settings.execution
             model_provider = execution.model_provider
             model_name = execution.model_name
@@ -437,8 +551,9 @@ def _run_cli_once(
             document_binding = None
             domain_knowledge = None
 
-        print(f"Workspace: {resolved.workspace}")
-        print(f"State: {resolved.state_dir}")
+        if resuming:
+            print(f"Workspace: {resolved.workspace}")
+            print(f"State: {resolved.state_dir}")
 
         api_catalog = _load_api_catalog(api_catalog_dir)
         assert api_catalog_dir is not None
@@ -594,21 +709,10 @@ def _run_cli_once(
         )
         if not skill_library.is_dir():
             raise FileNotFoundError(f"skill library does not exist: {skill_library}")
-        api_key = retained_api_key or take_gateway_api_key_from_environment(
-            model_provider
-        )
-        if (
-            launch.model_base_url
-            and args.model_base_url is None
-            and retained_api_key is None
-        ):
-            if not sys.stdin.isatty():
-                raise ValueError(
-                    "自定义接口需要显式传入 --model-base-url 确认地址后才能使用环境凭据。"
-                )
-            api_key = SecretStr(
-                getpass.getpass(f"API Key for {launch.model_base_url}: ")
-            )
+        environment_key = take_gateway_api_key_from_environment(model_provider)
+        api_key = retained_api_key or CredentialStore().api_keys(
+            {model_provider: environment_key}
+        ).get(model_provider, SecretStr(""))
         from .providers import LOCAL_AUTH_PROVIDERS, require_provider_dependencies
 
         require_provider_dependencies(model_provider)
@@ -618,6 +722,7 @@ def _run_cli_once(
             and sys.stdin.isatty()
         ):
             api_key = SecretStr(getpass.getpass(f"{model_provider.value} API Key: "))
+            CredentialStore().save_key(model_provider, api_key)
         verifier = _product_verifier()
         print(
             f"Model: {model_provider.value}/{model_name} "
@@ -718,14 +823,15 @@ def _append_requested_amendments(
             _load_launch_manifest(state_dir), effective.ledger
         )
         if launch.context_window is not None:
-            from .model_connections import resolve_context_window
-
             values = {name: getattr(config, name) for name in config.model_fields_set}
-            values["context_window"] = resolve_context_window(
-                config.model_provider or launch.model_provider,
-                config.model_name or launch.model_name,
-                config.context_window,
-            )
+            provider = config.model_provider or launch.model_provider
+            name = config.model_name or launch.model_name
+            if (provider, name) != (launch.model_provider, launch.model_name):
+                values["context_window"] = select_model(
+                    available_models(), provider, name
+                ).context_window
+            else:
+                values["context_window"] = launch.context_window
             if (
                 config.model_provider is not None
                 and config.model_provider != launch.model_provider
@@ -771,8 +877,6 @@ def _config_patch_from_args(
         values["model_name"] = args.model
     if args.http_retries is not None:
         values["http_retries"] = args.http_retries
-    if args.context_window is not None:
-        values["context_window"] = args.context_window
     if not values:
         return None
     return CodingRunConfigPatch.model_validate(values)

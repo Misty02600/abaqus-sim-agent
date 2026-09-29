@@ -7,6 +7,9 @@
 后续：用户/项目偏好文件及其来源覆盖规则已由 [ADR-0045](0045-use-explicit-run-options-without-preference-files.md)
 部分替代；共享输入、会话与凭据边界继续有效。以下保留当时的背景、决定与取舍。
 
+后续 [ADR-0046](0046-use-native-providers-and-available-model-selection.md) 在上述来源边界内独立明确原生模型接入、
+可用列表与新会话选择规则，继续保留会话恢复及凭据分离原则。
+
 提交范围说明（2026-09-28）：偏好文件读取的试作仍在未提交工作树中，本次只保存决定，不将该试作合入 main。
 
 ## 背景

@@ -262,6 +262,10 @@ def test_background_solver_completion_returns_in_same_invocation(
             created = client.post(
                 "/api/v1/runs",
                 json={
+                    "options": {
+                        "model_provider": "deepseek",
+                        "model_name": "deepseek-v4-flash",
+                    },
                     "idempotency_key": str(uuid4()),
                     "goal": "Run the existing demo Solver job and report its result.",
                     "workspace": str(workspace),
@@ -334,6 +338,10 @@ def test_background_solver_cancel_returns_failure_to_wait_call(
             created = client.post(
                 "/api/v1/runs",
                 json={
+                    "options": {
+                        "model_provider": "deepseek",
+                        "model_name": "deepseek-v4-flash",
+                    },
                     "idempotency_key": str(uuid4()),
                     "goal": "Run the existing demo Solver job and report its result.",
                     "workspace": str(workspace),

@@ -107,7 +107,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Models */
+        get: operations["models_api_v1_models_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/model-connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Model Connections */
+        get: operations["model_connections_api_v1_model_connections_get"];
+        put?: never;
+        /** Connect Model */
+        post: operations["connect_model_api_v1_model_connections_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/model-connections/{provider}": {
         parameters: {
             query?: never;
             header?: never;
@@ -116,9 +151,9 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Connect Model */
-        post: operations["connect_model_api_v1_model_connections_post"];
-        delete?: never;
+        post?: never;
+        /** Disconnect Model */
+        delete: operations["disconnect_model_api_v1_model_connections__provider__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -573,6 +608,14 @@ export interface components {
             kind: components["schemas"]["ArtifactKind"];
             /** Fresh */
             fresh: boolean;
+        };
+        /** AvailableModel */
+        AvailableModel: {
+            provider: components["schemas"]["ModelProvider"];
+            /** Name */
+            name: string;
+            /** Context Window */
+            context_window: number;
         };
         /** ClarificationEvent */
         ClarificationEvent: {
@@ -1154,8 +1197,6 @@ export interface components {
              * Format: password
              */
             api_key?: string;
-            /** Model Base Url */
-            model_base_url?: string | null;
         };
         /**
          * ModelProvider
@@ -1236,10 +1277,6 @@ export interface components {
             model_provider?: components["schemas"]["ModelProvider"] | null;
             /** Model Name */
             model_name?: string | null;
-            /** Context Window */
-            context_window?: number | null;
-            /** Model Base Url */
-            model_base_url?: string | null;
             /** Http Retries */
             http_retries?: number | null;
             /** Http Timeout Seconds */
@@ -1263,8 +1300,6 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
-            /** Model Base Url */
-            model_base_url?: string | null;
             /** Model */
             model: string;
             /** Workspace */
@@ -1797,6 +1832,57 @@ export interface operations {
             };
         };
     };
+    models_api_v1_models_get: {
+        parameters: {
+            query?: {
+                refresh?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailableModel"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    model_connections_api_v1_model_connections_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelProvider"][];
+                };
+            };
+        };
+    };
     connect_model_api_v1_model_connections_post: {
         parameters: {
             query?: never;
@@ -1809,6 +1895,37 @@ export interface operations {
                 "application/json": components["schemas"]["ModelConnection"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disconnect_model_api_v1_model_connections__provider__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: components["schemas"]["ModelProvider"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

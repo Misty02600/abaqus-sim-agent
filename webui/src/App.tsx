@@ -35,7 +35,7 @@ import {
 } from "./WorkspaceExplorer";
 import { DirectoryPicker } from "./DirectoryPicker";
 import { ModelPicker, type ModelSelection } from "./ModelPicker";
-import { SettingsPanel } from "./SettingsPanel";
+import { SettingsPanel, type SettingsSection } from "./SettingsPanel";
 import { ThreadListPrimitive } from "@assistant-ui/react";
 import type { components } from "./api/schema";
 
@@ -71,8 +71,8 @@ function selectedId() {
   const match = location.pathname.match(/^\/runs\/(web-[0-9a-f]{32})$/);
   return match?.[1] ?? null;
 }
+
 export default function App() {
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [unavailable, setUnavailable] = useState<
       components["schemas"]["RunIssue"][]
     >([]),
@@ -111,14 +111,20 @@ export default function App() {
   const [selectedKnowledgePackIds, setSelectedKnowledgePackIds] = useState<
     string[]
   >([]);
-  const [inheritKnowledgePacks, setInheritKnowledgePacks] = useState(true);
   const [abaqusPermission, setAbaqusPermission] =
     useState<PermissionMode>("allow");
   const [abaqusLimit, setAbaqusLimit] = useState(10);
   const [solverPermission, setSolverPermission] =
     useState<PermissionMode>("deny");
   const [solverLimit, setSolverLimit] = useState(3);
-  const [modelSelection, setModelSelection] = useState<ModelSelection>({ provider: "", name: "", baseUrl: "", contextWindow: "" });
+  const [modelSelection, setModelSelection] = useState<ModelSelection>({ provider: "", name: "" });
+  const [modelSelectionValid, setModelSelectionValid] = useState(false);
+  const [modelAccountsOpen, setModelAccountsOpen] = useState(false);
+  const [settingsSection, setSettingsSection] = useState<SettingsSection>("general");
+  const [modelAccountsRevision, setModelAccountsRevision] = useState(0);
+  const openModelAccounts = useCallback(() => { setSettingsSection("models"); setModelAccountsOpen(true); }, []);
+  const openGeneralSettings = useCallback(() => { setSettingsSection("general"); setModelAccountsOpen(true); }, []);
+  const modelAccountsChanged = useCallback(() => setModelAccountsRevision(value => value + 1), []);
   const { provider: modelProvider, name: modelName } = modelSelection;
   const [newWorkspace, setNewWorkspace] = useState<string | null>(() =>
     sessionStorage.getItem(WORKSPACE_DRAFT_KEY),
@@ -278,7 +284,13 @@ export default function App() {
   useEffect(() => {
     const pop = () => {
       setError("");
-      setId(selectedId());
+      const next = selectedId();
+      if (next === null) {
+        setModelSelection({ provider: "", name: "" });
+        setModelSelectionValid(false);
+        setSelectedKnowledgePackIds([]);
+      }
+      setId(next);
     };
     addEventListener("popstate", pop);
     return () => removeEventListener("popstate", pop);
@@ -295,7 +307,12 @@ export default function App() {
     return () => window.clearInterval(timer);
   }, [ready, list]);
   function navigate(next: string | null) {
-    if (next === null) setQuery("");
+    if (next === null) {
+      setQuery("");
+      setModelSelection({ provider: "", name: "" });
+      setModelSelectionValid(false);
+      setSelectedKnowledgePackIds([]);
+    }
     if (!window.matchMedia("(min-width: 900px)").matches) setSidebarOpen(false);
     if (next === id) return;
     // Clear on navigation, not snapshot arrival: loading the new run must not
@@ -358,12 +375,10 @@ export default function App() {
     setError("");
     try {
       const knowledgePackIds = [...selectedKnowledgePackIds].sort();
-      if (modelProvider && !modelName.trim()) throw new Error("请选择或填写该提供商的模型名称。");
+      if (!modelSelectionValid || !modelProvider || !modelName) throw new Error("请先选择可用模型，再发送消息。");
       const modelOptions = {
-        ...(modelProvider ? { model_provider: modelProvider } : {}),
-        ...(modelName.trim() ? { model_name: modelName.trim() } : {}),
-        ...(modelSelection.baseUrl.trim() ? { model_base_url: modelSelection.baseUrl.trim() } : {}),
-        ...(modelSelection.contextWindow ? { context_window: Number(modelSelection.contextWindow) } : {}),
+        model_provider: modelProvider,
+        model_name: modelName,
       };
 
       const key = commandId(
@@ -372,7 +387,6 @@ export default function App() {
         JSON.stringify({
           goal,
           knowledgePackIds,
-          inheritKnowledgePacks,
           abaqusPermission,
           abaqusLimit,
           solverPermission,
@@ -390,14 +404,13 @@ export default function App() {
         workspace,
         options: {
           ...modelOptions,
-          ...(!inheritKnowledgePacks ? { knowledge_pack_ids: knowledgePackIds } : {}),
+          knowledge_pack_ids: knowledgePackIds,
         },
       });
       clearCommand("new", "create");
       saved = true;
       setSelectedKnowledgePackIds([]);
-      setInheritKnowledgePacks(true);
-      setModelSelection({ provider: "", name: "", baseUrl: "", contextWindow: "" });
+      setModelSelection({ provider: "", name: "" });
       navigate(next.view.run_id);
       const startKey = commandId(next.view.run_id, "start");
       const reply = await request<{ error?: string | null }>(
@@ -790,7 +803,7 @@ export default function App() {
       snapshot={snapshot}
       runs={visibleRuns}
       busy={busy}
-      canCreateRun={!!newWorkspace}
+      canCreateRun={!!newWorkspace && modelSelectionValid}
       draftKey={draftKey}
       onSend={id ? send : create}
       onNavigate={navigate}
@@ -997,7 +1010,7 @@ export default function App() {
               <Icon name="info" />
               <span>详情</span>
             </button>
-            <button className="toolbar-action" aria-label="打开设置" title="设置" onClick={() => setSettingsOpen(true)}>
+            <button className="toolbar-action" aria-label="打开设置" title="设置" onClick={openGeneralSettings}>
               <Icon name="settings" /><span>设置</span>
             </button>
           </header>
@@ -1033,13 +1046,12 @@ export default function App() {
                     </button>
                   </div>
                 </div>
-                <ModelPicker ready={ready} busy={busy} value={modelSelection} onChange={setModelSelection} />
                 <div className="knowledge-picker">
                   <div className="row">
                     <div>
                       <strong>本机私有知识包</strong>
                       <p className="muted small">
-                        只对新会话生效；默认沿用本次服务的选择。
+                        可选的参考资料；默认不启用，只对本次会话生效。
                       </p>
                     </div>
                     <button
@@ -1051,11 +1063,6 @@ export default function App() {
                       刷新
                     </button>
                   </div>
-                  <label>
-                    <input type="checkbox" checked={inheritKnowledgePacks} disabled={busy}
-                      onChange={(event) => setInheritKnowledgePacks(event.target.checked)} />
-                    使用本次服务的知识包选择（取消后可自选；不选任何包表示本次关闭）
-                  </label>
                   {knowledgeInventory?.packs.length ? (
                     <div className="knowledge-pack-list">
                       {knowledgeInventory.packs.map((pack) => (
@@ -1065,7 +1072,7 @@ export default function App() {
                             checked={selectedKnowledgePackIds.includes(
                               pack.pack_id,
                             )}
-                            disabled={busy || inheritKnowledgePacks}
+                            disabled={busy}
                             onChange={(event) =>
                               setSelectedKnowledgePackIds((current) =>
                                 event.target.checked
@@ -1163,10 +1170,11 @@ export default function App() {
                   disabled={busy}
                   hint={
                     newWorkspace
-                      ? undefined
+                      ? (modelSelectionValid ? undefined : "请先选择模型，选定后才能发送消息。")
                       : "请先选择工作区文件夹，选择后才能发送并创建会话。"
                   }
                 />
+                <ModelPicker ready={ready} busy={busy} value={modelSelection} onChange={setModelSelection} onValidityChange={setModelSelectionValid} refreshKey={modelAccountsRevision} onOpenSettings={openModelAccounts} />
               </section>
             ) : !snapshot ? (
               <p className="empty">{readError || "正在读取任务…"}</p>
@@ -1229,7 +1237,6 @@ export default function App() {
                       继续上次执行
                     </button>
                   )}
-                  <ModelPicker ready={ready} busy={busy} value={{ ...modelSelection, provider: modelSelection.provider || (snapshot.model.startsWith("gateway/") ? snapshot.model.split("/").slice(0, 2).join("/") : snapshot.model.split("/")[0]), baseUrl: !modelSelection.provider || modelSelection.provider === (snapshot.model.startsWith("gateway/") ? snapshot.model.split("/").slice(0, 2).join("/") : snapshot.model.split("/")[0]) ? snapshot.model_base_url ?? "" : modelSelection.baseUrl }} onChange={setModelSelection} connectionOnly />
                   <Composer
                     cacheKey={draftKey}
                     disabled={busy}
@@ -1328,7 +1335,7 @@ export default function App() {
         )}
       </div>
     </WorkbenchRuntime>
-    <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+    <SettingsPanel open={modelAccountsOpen} ready={ready} busy={busy} section={settingsSection} onSectionChange={setSettingsSection} onClose={() => setModelAccountsOpen(false)} onChanged={modelAccountsChanged} />
     </>
   );
 }
