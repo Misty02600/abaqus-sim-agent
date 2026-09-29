@@ -2,8 +2,8 @@
   color-scheme: dark;
   font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
   font-size: 14px;
-  color: #e8e8e8;
-  background: #1a1a1a;
+  color: var(--text);
+  background: var(--bg);
   font-synthesis: none;
   --bg: #1a1a1a;
   --bg-panel: #242424;
@@ -25,7 +25,57 @@
   --surface: var(--bg-panel);
   --raised: var(--bg-hover);
   --muted: var(--text-muted);
+  --badge-text: #a9aca9;
+  --badge-bg: #242724;
+  --success-text: #b9cfba;
+  --success-muted: #939b94;
+  --success-color: #879c89;
+  --warning-text: #d6c393;
+  --warning-color: #d2a478;
+  --warning-bg: #302c20;
+  --warning-border: #a49b76;
+  --danger-text: #e8bbae;
+  --danger-bg: #342824;
+  --danger-border: #ad7868;
+  --danger-solid: #ef4444;
+  --code-bg: #111;
+  --code-border: #303030;
+  --code-text: #d8d9c6;
 }
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f7f7f8;
+  --bg-panel: #fff;
+  --bg-hover: #eeeef1;
+  --bg-selected: #e1e7ef;
+  --border: #d0d3d8;
+  --text: #24272c;
+  --text-muted: #565d68;
+  --text-dim: #676f7b;
+  --accent: #285d9a;
+  --accent-hover: #1f4b7e;
+  --user-bg: #eef2f6;
+  --assistant-bg: #f7f7f8;
+  --tool-bg: #f1f3f5;
+  --bg-subtle: rgba(0, 0, 0, 0.035);
+  --badge-text: #536253;
+  --badge-bg: #edf2ed;
+  --success-text: #365f3b;
+  --success-muted: #476049;
+  --success-color: #4d8354;
+  --warning-text: #805c17;
+  --warning-color: #8b5624;
+  --warning-bg: #fff6df;
+  --warning-border: #bc9346;
+  --danger-text: #9c3e2c;
+  --danger-bg: #fff0ed;
+  --danger-border: #c68b7d;
+  --danger-solid: #b42318;
+  --code-bg: #f0f2f5;
+  --code-border: #d3d7dd;
+  --code-text: #344251;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -367,7 +417,7 @@ p {
   gap: 7px;
   min-height: 50px;
   padding: 6px 8px;
-  border-left: 2px solid #ef4444;
+  border-left: 2px solid var(--danger-solid);
   background: rgba(239, 68, 68, 0.06);
 }
 .thread-delete-confirmation-copy {
@@ -392,7 +442,7 @@ p {
   white-space: nowrap;
 }
 .thread-delete-confirmation-copy .thread-delete-error {
-  color: #ef8b82;
+  color: var(--danger-text);
 }
 .thread-delete-confirmation-actions,
 .unavailable-run-actions {
@@ -413,7 +463,7 @@ p {
 .thread-delete-confirmation-actions button.danger,
 .unavailable-run-actions button:first-child {
   border-color: transparent;
-  background: #ef4444;
+  background: var(--danger-solid);
   color: #fff;
 }
 .thread-delete-confirmation-actions button:hover:not(:disabled),
@@ -684,7 +734,7 @@ body.sidebar-resizing {
   min-width: 0;
 }
 .connection {
-  color: #939b94;
+  color: var(--success-muted);
   font-size: 11px;
   margin-left: auto;
   white-space: nowrap;
@@ -697,13 +747,13 @@ body.sidebar-resizing {
   height: 5px;
   margin: 0 6px 2px 0;
   border-radius: 50%;
-  background: #879c89;
+  background: var(--success-color);
 }
 .connection.disconnected {
-  color: #d2a478;
+  color: var(--warning-color);
 }
 .connection.disconnected::before {
-  background: #d2a478;
+  background: var(--warning-color);
 }
 .toolbar-action {
   height: 32px;
@@ -967,21 +1017,21 @@ main {
   font-size: 11px;
   border-radius: 4px;
   padding: 3px 6px;
-  color: #a9aca9;
-  background: #242724;
+  color: var(--badge-text);
+  background: var(--badge-bg);
 }
 .badge.completed {
-  color: #b9cfba;
+  color: var(--success-text);
 }
 .badge.failed,
 .badge.needs_reconcile,
 .badge.unavailable {
-  background: #342824;
-  color: #e0b0a1;
+  background: var(--danger-bg);
+  color: var(--danger-text);
 }
 .badge.waiting_for_user {
-  background: #302c20;
-  color: #d6c393;
+  background: var(--warning-bg);
+  color: var(--warning-text);
 }
 .phase-status {
   font-size: 11px;
@@ -1049,8 +1099,8 @@ main {
 pre {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  background: #111;
-  border: 1px solid #303030;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
   border-radius: 7px;
   padding: 12px;
   font-size: 12px;
@@ -1058,7 +1108,7 @@ pre {
   overflow: auto;
 }
 .markdown code {
-  color: #d8d9c6;
+  color: var(--code-text);
 }
 .markdown table {
   border-collapse: collapse;
@@ -1074,7 +1124,7 @@ pre {
   margin-left: 0;
   padding-left: 14px;
   color: var(--muted);
-  border-left: 2px solid #505750;
+  border-left: 2px solid var(--border);
 }
 .reply-actions {
   display: flex;
@@ -1112,7 +1162,7 @@ pre {
   margin: 8px 0;
 }
 .tool-card.tool-failed {
-  border-color: #735047;
+  border-color: var(--danger-border);
 }
 .tool-heading {
   display: flex;
@@ -1153,11 +1203,11 @@ pre {
   font-size: 11px;
 }
 .tool-facts .warning {
-  color: #d6c393;
+  color: var(--warning-text);
 }
 .tool-error {
   margin: 7px 0 0 21px;
-  color: #e8bbae;
+  color: var(--danger-text);
   line-height: 1.5;
 }
 .tool-changes {
@@ -1354,6 +1404,34 @@ pre {
   font-size: 11px;
   color: var(--text-dim);
 }
+.general-settings {
+  display: grid;
+  gap: 16px;
+}
+.general-settings h3 {
+  margin: 0;
+}
+.general-settings h3 {
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+.general-settings label {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.general-settings select {
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  padding: 9px 10px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+}
 .status-primary,
 .status-secondary {
   display: flex;
@@ -1372,13 +1450,13 @@ pre {
   height: 5px;
   margin: 0 5px 1px 0;
   border-radius: 50%;
-  background: #8aa68d;
+  background: var(--success-color);
 }
 .status-connection.disconnected {
-  color: #d2a478;
+  color: var(--warning-color);
 }
 .status-connection.disconnected::before {
-  background: #d2a478;
+  background: var(--warning-color);
 }
 .available-actions {
   color: var(--text-muted);
@@ -1390,20 +1468,20 @@ pre {
 .status-tool-action {
   margin-left: auto;
   padding: 2px 7px;
-  border-color: #765858;
+  border-color: var(--danger-border);
   background: transparent;
-  color: #d9b0b0;
+  color: var(--danger-text);
   font-size: 11px;
 }
 .status-tool-action:hover:not(:disabled) {
-  background: #3a2828;
+  background: var(--danger-bg);
 }
 .status-secondary {
   flex-wrap: wrap;
   gap: 6px 10px;
 }
 .context-usage.warning {
-  color: #d2a478;
+  color: var(--warning-color);
 }
 .model-info {
   padding: 0;
@@ -1418,8 +1496,8 @@ pre {
 .question-context {
   max-height: 135px;
   overflow: auto;
-  border-left: 2px solid #a49b76;
-  background: #29271f;
+  border-left: 2px solid var(--warning-border);
+  background: var(--warning-bg);
   border-radius: 4px;
   padding: 10px 12px;
   margin-bottom: 10px;
@@ -1434,7 +1512,7 @@ pre {
   padding: 10px;
   border-radius: 7px;
   margin: 6px 0 10px;
-  background: #222;
+  background: var(--tool-bg);
 }
 .rename-form label {
   display: block;
@@ -1446,8 +1524,8 @@ pre {
   width: 100%;
   padding: 8px;
   color: var(--text);
-  background: #191919;
-  border: 1px solid #494949;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 5px;
 }
 .rename-form .row {
@@ -1461,9 +1539,9 @@ pre {
   flex-shrink: 0;
 }
 .error {
-  background: #32231f;
-  color: #e8bbae;
-  border-left: 2px solid #ad7868;
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border-left: 2px solid var(--danger-border);
   padding: 9px 12px;
   overflow-wrap: anywhere;
   font-size: 12px;
@@ -1500,10 +1578,10 @@ pre {
   line-height: 1.5;
 }
 .run-summary.warning {
-  border-color: #665d40;
+  border-color: var(--warning-border);
 }
 .run-summary.danger {
-  border-color: #735047;
+  border-color: var(--danger-border);
 }
 .run-summary.neutral:has(+ .rename-form) {
   margin-bottom: 4px;
@@ -1514,7 +1592,7 @@ pre {
   border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 }
 .verification-summary.danger {
-  color: #e8bbae;
+  color: var(--danger-text);
 }
 .empty {
   padding: 8px 12px;
@@ -1686,7 +1764,7 @@ dd {
   margin: 0;
 }
 .pass {
-  color: #b7cdb8;
+  color: var(--success-text);
 }
 .welcome {
   display: flex;
@@ -1758,4 +1836,21 @@ dd {
   .runtime-policy-editor > label {
     grid-template-columns: 1fr;
   }
+}
+
+.settings-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 22px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-tabs button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+}
+.settings-tabs button[aria-current="page"] {
+  background: var(--bg-selected);
+  color: var(--text);
 }

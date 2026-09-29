@@ -10,6 +10,7 @@ export function Icon({
     | "refresh"
     | "plus"
     | "trash"
+    | "settings"
     | "chevron";
 }) {
   const paths = {
@@ -22,6 +23,7 @@ export function Icon({
     plus: "M12 5v14 M5 12h14",
     trash: "M4 6h16 M9 6V3h6v3 M6 6l1 15h10l1-15 M10 10v7 M14 10v7",
     chevron: "M6 9l6 6 6-6",
+    settings: "M4 6h4m4 0h8M8 3v6M4 12h10m4 0h2M14 9v6M4 18h4m4 0h8M8 15v6",
   };
   return (
     <svg

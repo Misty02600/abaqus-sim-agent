@@ -380,6 +380,7 @@ question_protocol、response_enabled 已在前表逐项定义。实现：[agent.
 | 键 / 值 | 所有者与默认 | 生命周期 |
 |---|---|---|
 | `abaqus-sidebar-width` | localStorage，默认280px，限制220–520px | 浏览器显示偏好，可跨刷新；不随会话恢复 |
+| `abaqus-appearance` | localStorage，light/dark/system，默认 system；非法或不可读时按 system | “设置 → 常规 → 外观”即时切换浅色/深色/跟随系统；system 随系统变化，跨刷新保留；不写入会话、用户或项目配置文件 |
 | `abaqus-new-workspace` | sessionStorage，无默认路径 | 当前标签页的新会话目录草稿；创建时仍由宿主验证 |
 | `abaqus-draft:<cacheKey>` | sessionStorage，空文本 | 未发送的输入草稿，不能冒充已保存 Thread 消息 |
 | `abaqus-command:<runId>:<action>` | sessionStorage，含操作 ID 与 payload | 浏览器重试辅助；宿主回执才拥有幂等真值 |

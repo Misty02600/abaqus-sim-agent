@@ -35,6 +35,7 @@ import {
 } from "./WorkspaceExplorer";
 import { DirectoryPicker } from "./DirectoryPicker";
 import { ModelPicker, type ModelSelection } from "./ModelPicker";
+import { SettingsPanel } from "./SettingsPanel";
 import { ThreadListPrimitive } from "@assistant-ui/react";
 import type { components } from "./api/schema";
 
@@ -71,6 +72,7 @@ function selectedId() {
   return match?.[1] ?? null;
 }
 export default function App() {
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [unavailable, setUnavailable] = useState<
       components["schemas"]["RunIssue"][]
     >([]),
@@ -781,6 +783,7 @@ export default function App() {
     ? `${id}:${view?.question?.pending ? view.question.question_id : "message"}`
     : "new";
   return (
+    <>
     <WorkbenchRuntime
       key={draftKey}
       id={id}
@@ -993,6 +996,9 @@ export default function App() {
             >
               <Icon name="info" />
               <span>详情</span>
+            </button>
+            <button className="toolbar-action" aria-label="打开设置" title="设置" onClick={() => setSettingsOpen(true)}>
+              <Icon name="settings" /><span>设置</span>
             </button>
           </header>
           <main className={!id ? "new-task-main" : undefined}>
@@ -1322,5 +1328,7 @@ export default function App() {
         )}
       </div>
     </WorkbenchRuntime>
+    <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+    </>
   );
 }
