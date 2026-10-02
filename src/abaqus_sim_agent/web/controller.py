@@ -94,6 +94,7 @@ from ..execution import (
     Abaqus2024Runner,
     AbaqusExecutionResult,
 )
+from ..execution.abaqus2024 import SolverCpus, SolverMemory
 from .contracts import (
     AgentInvocation,
     AnswerCommand,
@@ -211,6 +212,8 @@ class _ToolExecutionRunner(DeferredSolverRunner):
         *,
         input_file: Path | str | None = None,
         timeout_seconds: float | None = None,
+        cpus: SolverCpus | None = None,
+        memory: SolverMemory | None = None,
     ) -> AbaqusExecutionResult:
         effective_input = str(
             input_file if input_file is not None else f"{job_name}.inp"
@@ -222,6 +225,8 @@ class _ToolExecutionRunner(DeferredSolverRunner):
             job_name=job_name,
             input_file=effective_input,
             timeout_seconds=timeout_seconds,
+            cpus=cpus,
+            memory=memory,
         )
 
     def submit_solver_job(
@@ -230,6 +235,8 @@ class _ToolExecutionRunner(DeferredSolverRunner):
         *,
         input_file: Path | str,
         timeout_seconds: float | None = None,
+        cpus: SolverCpus | None = None,
+        memory: SolverMemory | None = None,
     ) -> str:
         execution, _ = self._controller._start_solver_execution(
             self._run_id,
@@ -240,6 +247,8 @@ class _ToolExecutionRunner(DeferredSolverRunner):
             job_name=job_name,
             input_file=str(input_file),
             timeout_seconds=timeout_seconds,
+            cpus=cpus,
+            memory=memory,
         )
         return execution.execution_id
 
@@ -444,6 +453,8 @@ class RunController:
         job_name: str,
         input_file: str,
         timeout_seconds: float | None,
+        cpus: SolverCpus | None = None,
+        memory: SolverMemory | None = None,
     ) -> AbaqusExecutionResult:
         _, future = self._start_solver_execution(
             run_id,
@@ -453,6 +464,8 @@ class RunController:
             job_name=job_name,
             input_file=input_file,
             timeout_seconds=timeout_seconds,
+            cpus=cpus,
+            memory=memory,
         )
         return await asyncio.wrap_future(future)
 
@@ -483,6 +496,8 @@ class RunController:
         job_name: str,
         input_file: str,
         timeout_seconds: float | None,
+        cpus: SolverCpus | None = None,
+        memory: SolverMemory | None = None,
     ) -> tuple[ToolExecution, Future[AbaqusExecutionResult]]:
         normalized_input = input_file.replace("\\", "/")
         with self._mutex:
@@ -505,6 +520,8 @@ class RunController:
                     existing.job_name != job_name
                     or existing.input_file != normalized_input
                     or existing.timeout_seconds != timeout_seconds
+                    or existing.cpus != cpus
+                    or existing.memory != memory
                 ):
                     raise WebError(
                         "tool_execution_conflict",
@@ -550,6 +567,8 @@ class RunController:
             job_name=job_name,
             input_file=normalized_input,
             timeout_seconds=timeout_seconds,
+            cpus=cpus,
+            memory=memory,
             created_at=now,
             updated_at=now,
         )
@@ -890,6 +909,8 @@ class RunController:
                 execution.job_name,
                 input_file=execution.input_file,
                 timeout_seconds=execution.timeout_seconds,
+                cpus=execution.cpus,
+                memory=execution.memory,
             )
         except asyncio.CancelledError:
             finished = datetime.now(UTC)

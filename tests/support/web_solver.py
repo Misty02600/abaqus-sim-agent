@@ -56,6 +56,7 @@ class _DeferredSuccessfulSolver:
         self.release = release
         self.started = threading.Event()
         self.calls = 0
+        self.options: dict = {}
         self.process_started = None
 
     def set_solver_process_started_callback(self, callback) -> None:
@@ -63,6 +64,7 @@ class _DeferredSuccessfulSolver:
 
     async def run_solver_job(self, *args, **kwargs) -> AbaqusExecutionResult:
         self.calls += 1
+        self.options = kwargs
         self.started.set()
         if self.process_started is not None:
             self.process_started(4343)
@@ -87,7 +89,7 @@ class _DeferredSuccessfulSolver:
         )
 
 
-def _background_solver_app(tmp_path: Path):
+def _background_solver_app(tmp_path: Path, *, solver_resources: dict | None = None):
     release = threading.Event()
     runners: list[_DeferredSuccessfulSolver] = []
     model_calls: list[list] = []
@@ -115,6 +117,7 @@ def _background_solver_app(tmp_path: Path):
                                     "action": "submit",
                                     "job_name": "demo",
                                     "input_file": "demo.inp",
+                                    **(solver_resources or {}),
                                 }
                             },
                             tool_call_id=solver_call_id,

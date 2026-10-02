@@ -253,7 +253,7 @@ def test_background_solver_completion_returns_in_same_invocation(
     tmp_path: Path,
 ) -> None:
     app, release, runners, model_calls, _solver_call_id = _background_solver_app(
-        tmp_path
+        tmp_path, solver_resources={"cpus": 3, "memory": "25%"}
     )
     try:
         with TestClient(app, base_url="http://127.0.0.1") as client:
@@ -299,6 +299,10 @@ def test_background_solver_completion_returns_in_same_invocation(
             assert waiting is not None
             assert waiting["tool_execution"]["status"] == "running"
             assert waiting["can_continue"] is False
+            assert waiting["tool_execution"]["cpus"] == 3
+            assert waiting["tool_execution"]["memory"] == "25%"
+            assert runners[0].options["cpus"] == 3
+            assert runners[0].options["memory"] == "25%"
 
             [invocation_before] = app.state.controller.invocations.list(run_id)
             [execution_before] = app.state.controller.tool_executions.list(run_id)
@@ -318,6 +322,8 @@ def test_background_solver_completion_returns_in_same_invocation(
             assert invocation_after.status == "completed"
             assert invocation_after.resume_count == 0
             assert execution_after.status == "completed"
+            assert execution_after.cpus == 3
+            assert execution_after.memory == "25%"
             assert execution_after.tool_call_id is None
             assert sum(runner.calls for runner in runners) == 1
             assert len(model_calls) == 3

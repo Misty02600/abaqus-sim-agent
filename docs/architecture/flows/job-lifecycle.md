@@ -30,6 +30,11 @@ input=<workspace-relative.inp>
 interactive
 ```
 
+模型可在一步式工具或submit中指定可选`cpus`和`memory`，例如`cpus=4`、`memory=2 gb`；
+省略或null时不附加对应命令参数，沿用Abaqus环境设置及默认值。参数先经共用校验；
+显式值进入工具effect标识、最终execution command和Web后台执行记录。wait不修改已提交参数。
+字段约定见[逐次Solver参数](../configuration-reference.md#当前实现逐次solver工具参数)。
+
 runner 使用参数序列而不是拼接用户 shell 字符串；`cwd` 固定为 canonical workspace。
 
 这里描述的是经宿主 Solver 工具的路径。CAE runtime 前会拒绝 AST 中直接出现的 `.submit(...)` 和

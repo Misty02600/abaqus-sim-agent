@@ -1158,8 +1158,10 @@ def test_open_product_shell_blocks_versioned_abaqus_launcher(tmp_path: Path) -> 
     assert "Abaqus launchers are not available" in str(returns[0].content)
 
 
+@pytest.mark.parametrize("resources", [{}, {"cpus": 4, "memory": "512 mb"}])
 def test_open_product_solver_submit_allows_other_work_before_wait(
     tmp_path: Path,
+    resources,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     request = _request(tmp_path)
@@ -1175,8 +1177,12 @@ def test_open_product_solver_submit_allows_other_work_before_wait(
         *,
         input_file: Path | str,
         timeout_seconds: float,
+        cpus: int | None = None,
+        memory: str | None = None,
     ) -> str:
         del runner, timeout_seconds
+        assert cpus == resources.get("cpus")
+        assert memory == resources.get("memory")
         calls.append(f"submit:{job_name}:{input_file}")
         return execution_id
 
@@ -1220,6 +1226,7 @@ def test_open_product_solver_submit_allows_other_work_before_wait(
                                 "action": "submit",
                                 "job_name": "demo",
                                 "input_file": "demo.inp",
+                                **resources,
                             }
                         },
                         tool_call_id="solver-submit",
@@ -2476,3 +2483,84 @@ def test_analysis_cache_and_usage_survive_restore(tmp_path: Path) -> None:
     assert resumed.static_preflight_calls == 1
     assert resumed.syntax_gate is not None
     assert resumed.syntax_gate.runtime_checks == 2
+
+
+@pytest.mark.parametrize("probe_mode", ["off", "typed"])
+def test_solver_resource_tool_validation_precedes_execution(tmp_path, probe_mode):
+    from pydantic_ai import Agent
+
+    from abaqus_sim_agent.coding.runtime_tools import register_runtime_tools
+
+    request = _request(tmp_path)
+    (request.workspace / "demo.inp").write_text("*HEADING\n", encoding="ascii")
+    commands = []
+    calls = 0
+
+    class Process:
+        async def run(self, command, *, cwd, timeout_seconds):
+            commands.append(tuple(command))
+            return ProcessOutput(exit_code=0, stdout=b"", stderr=b"")
+
+    def respond(messages, info):
+        nonlocal calls
+        calls += 1
+        if calls <= 2:
+            definition = next(
+                t for t in info.function_tools if t.name == "run_solver_job"
+            )
+            assert {"cpus", "memory"} <= definition.parameters_json_schema[
+                "properties"
+            ].keys()
+            assert "cpus" not in definition.parameters_json_schema["required"]
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "run_solver_job",
+                        {
+                            "job_name": "demo",
+                            "input_file": "demo.inp",
+                            "cpus": 0 if calls == 1 else 4,
+                            "memory": "50%",
+                        },
+                    )
+                ]
+            )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    info.output_tools[0].name,
+                    {
+                        "status": "failed",
+                        "failure_stage": "fixture",
+                        "summary": "Resource arguments inspected.",
+                    },
+                )
+            ]
+        )
+
+    agent = Agent(
+        FunctionModel(respond),
+        deps_type=CodingAgentDependencies,
+        output_type=FailedDecision,
+    )
+    register_runtime_tools(
+        agent,
+        probe_protocol_mode=probe_mode,
+        probe_target_scripts=None,
+        api_catalog_mode="off",
+        diagnostic_retrieval_mode="off",
+    )
+    dependencies = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(
+            request.workspace,
+            request.state_dir,
+            process_strategy=Process(),
+        ),
+    )
+    agent.run_sync("Run the input with explicit resources.", deps=dependencies)
+    assert calls == 3
+    assert dependencies.solver_calls == 1
+    assert len(commands) == 1
+    assert commands[0][-2:] == ("cpus=4", "memory=50%")
+    assert dependencies.executions[0].command == commands[0]

@@ -1493,6 +1493,10 @@ export interface components {
             job_name: string;
             /** Input File */
             input_file: string;
+            /** Cpus */
+            cpus?: number | null;
+            /** Memory */
+            memory?: string | null;
             /** Timeout Seconds */
             timeout_seconds?: number | null;
             /**

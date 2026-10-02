@@ -27,6 +27,7 @@ from ..coding.options import RunOptions
 from ..coding.providers import ModelProvider
 from ..coding.read_model import CodingRunView, FileView, MessageView
 from ..coding.workspace import WorkspaceSnapshot
+from ..execution.abaqus2024 import SolverCpus, SolverMemory
 
 
 class StrictModel(BaseModel):
@@ -261,6 +262,8 @@ class ToolExecution(StrictModel):
     tool_call_id: str | None = None
     job_name: str = Field(min_length=1, max_length=80)
     input_file: str = Field(min_length=1)
+    cpus: SolverCpus | None = None
+    memory: SolverMemory | None = None
     timeout_seconds: float | None = Field(default=None, gt=0)
     created_at: datetime
     updated_at: datetime

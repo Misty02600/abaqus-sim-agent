@@ -682,3 +682,80 @@ async def test_missing_named_abaqus_command_fails_explicitly(tmp_path, monkeypat
         await WindowsProcessStrategy().run(
             ("abq2024", "cae"), cwd=tmp_path, timeout_seconds=5
         )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("background", [False, True])
+@pytest.mark.parametrize("mechanics", [False, True])
+@pytest.mark.parametrize(
+    ("options", "expected"),
+    [
+        ({}, ()),
+        ({"cpus": 4}, ("cpus=4",)),
+        ({"memory": "50%"}, ("memory=50%",)),
+        ({"cpus": 2, "memory": "1.5 GB"}, ("cpus=2", "memory=1.5 gb")),
+    ],
+)
+async def test_solver_resources_reach_command_and_saved_evidence(
+    tmp_path, background, mechanics, options, expected
+):
+    from abaqus_sim_agent.evaluation.public_mechanics_runner import (
+        PublicMechanicsRunner,
+    )
+
+    strategy = FakeProcessStrategy(ProcessOutput(exit_code=0, stdout=b"", stderr=b""))
+    runner, workspace, state = make_runner(tmp_path, strategy)
+    if mechanics:
+        runner = PublicMechanicsRunner(
+            workspace, state, launcher=runner.launcher, process_strategy=strategy
+        )
+    (workspace / "plate.inp").write_text("*HEADING\n", encoding="ascii")
+    if background:
+        execution_id = runner.submit_solver_job(
+            "plate", input_file="plate.inp", **options
+        )
+        result = await runner.wait_solver_job(execution_id)
+    else:
+        result = await runner.run_solver_job("plate", input_file="plate.inp", **options)
+    assert result.command == (
+        str(runner.launcher),
+        "job=plate",
+        "input=plate.inp",
+        "interactive",
+        *expected,
+    )
+    assert strategy.calls[0][0] == result.command
+    assert all(argument in result.model_dump_json() for argument in expected)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("background", [False, True])
+@pytest.mark.parametrize(
+    "options",
+    [
+        {"cpus": 0},
+        {"cpus": -1},
+        {"cpus": True},
+        {"cpus": 1.5},
+        {"cpus": "2"},
+        {"memory": "0 gb"},
+        {"memory": "101%"},
+        {"memory": "2 gb & echo bad"},
+        {"memory": "NaN gb"},
+        {"memory": 512},
+    ],
+)
+async def test_invalid_solver_resources_do_not_start_process(
+    tmp_path, background, options
+):
+    strategy = FakeProcessStrategy(ProcessOutput(exit_code=0, stdout=b"", stderr=b""))
+    runner, workspace, _ = make_runner(tmp_path, strategy)
+    (workspace / "plate.inp").write_text("*HEADING\n", encoding="ascii")
+    if background:
+        with pytest.raises(ValueError, match="validation error"):
+            runner.submit_solver_job("plate", input_file="plate.inp", **options)
+    else:
+        with pytest.raises(ValueError, match="validation error"):
+            await runner.run_solver_job("plate", input_file="plate.inp", **options)
+    assert not strategy.calls
+    assert not runner._solver_tasks

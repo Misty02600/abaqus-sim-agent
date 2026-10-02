@@ -4006,6 +4006,33 @@
             "minLength": 1,
             "title": "Input File"
           },
+          "cpus": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0,
+                "description": "Processor count; omit to use Abaqus settings."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cpus"
+          },
+          "memory": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32,
+                "minLength": 1,
+                "description": "Memory limit, e.g. '2 gb', '512 mb', or '50%'; omit to use Abaqus settings."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memory"
+          },
           "timeout_seconds": {
             "anyOf": [
               {

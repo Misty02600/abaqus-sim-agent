@@ -11,10 +11,10 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 from time import perf_counter
-from typing import Literal, Protocol
+from typing import Annotated, Literal, Protocol
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, TypeAdapter
 
 from abaqus_sim_agent import telemetry
 
@@ -40,6 +40,49 @@ _ABAQUS_POSITIVE_WARNING_SUMMARY = re.compile(
     r"^\s*[1-9]\d*\s+WARNING\s+MESSAGES?\b",
     re.IGNORECASE,
 )
+
+
+def _validate_solver_memory(value: str) -> str:
+    match = re.fullmatch(
+        r"([0-9]+(?:\.[0-9]+)?) *(%|mb|gb)", value.strip(), re.IGNORECASE
+    )
+    if match is None:
+        raise ValueError(
+            "memory must be a positive size such as '2 gb', '512 mb', or '50%'"
+        )
+    amount, unit = match.groups()
+    unit = unit.lower()
+    if float(amount) <= 0 or (unit == "%" and float(amount) > 100):
+        raise ValueError("memory must be positive and percentages must not exceed 100")
+    return amount + ("%" if unit == "%" else " " + unit)
+
+
+SolverCpus = Annotated[
+    int,
+    Field(
+        strict=True, gt=0, description="Processor count; omit to use Abaqus settings."
+    ),
+]
+SolverMemory = Annotated[
+    str,
+    Field(
+        strict=True,
+        min_length=1,
+        max_length=32,
+        description="Memory limit, e.g. '2 gb', '512 mb', or '50%'; omit to use Abaqus settings.",
+    ),
+    AfterValidator(_validate_solver_memory),
+]
+_SOLVER_RESOURCES = TypeAdapter(tuple[SolverCpus | None, SolverMemory | None])
+
+
+def solver_resource_arguments(
+    cpus: SolverCpus | None, memory: SolverMemory | None
+) -> list[str]:
+    cpus, memory = _SOLVER_RESOURCES.validate_python((cpus, memory))
+    return ([f"cpus={cpus}"] if cpus is not None else []) + (
+        [f"memory={memory}"] if memory is not None else []
+    )
 
 
 class AbaqusInvocation(StrEnum):
@@ -314,7 +357,10 @@ class Abaqus2024Runner:
         *,
         input_file: Path | str | None = None,
         timeout_seconds: float | None = None,
+        cpus: SolverCpus | None = None,
+        memory: SolverMemory | None = None,
     ) -> AbaqusExecutionResult:
+        resource_args = solver_resource_arguments(cpus, memory)
         if not _JOB_NAME_PATTERN.fullmatch(job_name):
             raise ValueError(
                 "job_name must start with an ASCII letter and contain only "
@@ -331,6 +377,7 @@ class Abaqus2024Runner:
             f"job={job_name}",
             f"input={relative_input}",
             "interactive",
+            *resource_args,
         ]
         return await self._run(
             AbaqusInvocation.SOLVER_JOB,
@@ -346,7 +393,10 @@ class Abaqus2024Runner:
         *,
         input_file: Path | str,
         timeout_seconds: float | None = None,
+        cpus: SolverCpus | None = None,
+        memory: SolverMemory | None = None,
     ) -> str:
+        solver_resource_arguments(cpus, memory)
         execution_id = uuid4().hex
         with telemetry.execution_context(execution_id=execution_id):
             self._solver_tasks[execution_id] = asyncio.create_task(
@@ -354,6 +404,8 @@ class Abaqus2024Runner:
                     job_name,
                     input_file=input_file,
                     timeout_seconds=timeout_seconds,
+                    cpus=cpus,
+                    memory=memory,
                 )
             )
         return execution_id

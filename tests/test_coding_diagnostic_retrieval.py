@@ -428,6 +428,8 @@ def test_advisory_is_visible_in_same_solver_tool_return(
         *,
         input_file: str | None = None,
         timeout_seconds: float = 300.0,
+        cpus: int | None = None,
+        memory: str | None = None,
     ) -> AbaqusExecutionResult:
         del job_name, input_file, timeout_seconds
         return _result(request)

@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from abaqus_sim_agent.execution import Abaqus2024Runner, AbaqusExecutionResult
+from abaqus_sim_agent.execution.abaqus2024 import SolverCpus, SolverMemory
 
 
 def execution_key(result: AbaqusExecutionResult) -> str:
@@ -55,12 +56,22 @@ class PublicMechanicsRunner(Abaqus2024Runner):
         return self._record(result, before, names)
 
     async def run_solver_job(
-        self, job_name, *, input_file=None, timeout_seconds=1800.0
+        self,
+        job_name,
+        *,
+        input_file=None,
+        timeout_seconds=1800.0,
+        cpus: SolverCpus | None = None,
+        memory: SolverMemory | None = None,
     ):
         names = (job_name + ".odb",)
         before = output_state(self.workspace, names)
         result = await super().run_solver_job(
-            job_name, input_file=input_file, timeout_seconds=timeout_seconds
+            job_name,
+            input_file=input_file,
+            timeout_seconds=timeout_seconds,
+            cpus=cpus,
+            memory=memory,
         )
         return self._record(result, before, names)
 

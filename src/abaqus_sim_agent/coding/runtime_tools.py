@@ -40,6 +40,9 @@ from abaqus_sim_agent.coding.static_preflight import (
 from abaqus_sim_agent.execution.abaqus2024 import (
     AbaqusExecutionResult,
     AbaqusInvocation,
+    SolverCpus,
+    SolverMemory,
+    solver_resource_arguments,
 )
 
 __all__ = ["SolverJobRequest", "finalize_runtime_result", "register_runtime_tools"]
@@ -53,6 +56,8 @@ class SubmitSolverJobRequest(_StrictModel):
     action: Literal["submit"] = "submit"
     job_name: str = Field(min_length=1, max_length=80)
     input_file: str = Field(min_length=1)
+    cpus: SolverCpus | None = None
+    memory: SolverMemory | None = None
 
 
 class WaitSolverJobRequest(_StrictModel):
@@ -152,6 +157,8 @@ def register_runtime_tools[AgentOutputT](
             ctx: RunContext[CodingAgentDependencies],
             job_name: str,
             input_file: str,
+            cpus: SolverCpus | None = None,
+            memory: SolverMemory | None = None,
             probe_result: ProbeResultInput | None = None,
         ) -> dict[str, object]:
             """Run Abaqus/Standard after typed probe obligations are resolved."""
@@ -160,11 +167,15 @@ def register_runtime_tools[AgentOutputT](
                 "solver_job",
                 input_file,
                 job_name=job_name,
+                cpus=cpus,
+                memory=memory,
             )
             return await _run_solver_tool(
                 ctx,
                 job_name,
                 input_file,
+                cpus=cpus,
+                memory=memory,
                 probe_protocol_enabled=True,
                 probe_result=probe_result,
                 probe_target_scripts=probe_target_scripts,
@@ -234,11 +245,15 @@ def register_runtime_tools[AgentOutputT](
                         "solver_job",
                         request.input_file,
                         job_name=request.job_name,
+                        cpus=request.cpus,
+                        memory=request.memory,
                     )
                     return await _submit_solver_tool(
                         ctx.deps,
                         request.job_name,
                         request.input_file,
+                        cpus=request.cpus,
+                        memory=request.memory,
                     )
                 return await _wait_solver_tool(
                     ctx.deps,
@@ -254,6 +269,8 @@ def register_runtime_tools[AgentOutputT](
                 ctx: RunContext[CodingAgentDependencies],
                 job_name: str,
                 input_file: str,
+                cpus: SolverCpus | None = None,
+                memory: SolverMemory | None = None,
             ) -> dict[str, object]:
                 """Run one Abaqus/Standard 2024 job from a workspace INP."""
                 await _annotate_runtime_tool(
@@ -261,11 +278,15 @@ def register_runtime_tools[AgentOutputT](
                     "solver_job",
                     input_file,
                     job_name=job_name,
+                    cpus=cpus,
+                    memory=memory,
                 )
                 return await _run_solver_tool(
                     ctx,
                     job_name,
                     input_file,
+                    cpus=cpus,
+                    memory=memory,
                     probe_protocol_enabled=False,
                     probe_result=None,
                     probe_target_scripts=None,
@@ -280,6 +301,8 @@ async def _annotate_runtime_tool(
     raw_path: str,
     *,
     job_name: str | None = None,
+    cpus: SolverCpus | None = None,
+    memory: SolverMemory | None = None,
 ) -> None:
     """在外部副作用开始前写入可对账的 Harness tool-effect 元数据。"""
     store = ctx.deps.step_store
@@ -306,6 +329,8 @@ async def _annotate_runtime_tool(
         normalized,
         digest,
     ]
+    resource_args = solver_resource_arguments(cpus, memory)
+    identity_parts.extend(resource_args)
     await annotate_tool_effect(
         store,
         ctx,
@@ -313,6 +338,7 @@ async def _annotate_runtime_tool(
         effect_summary=(
             f"{invocation} path={normalized}"
             + (f" job={job_name}" if job_name is not None else "")
+            + (" " + " ".join(resource_args) if resource_args else "")
         ),
     )
 
@@ -519,6 +545,8 @@ async def _run_solver_tool(
     job_name: str,
     input_file: str,
     *,
+    cpus: SolverCpus | None = None,
+    memory: SolverMemory | None = None,
     probe_protocol_enabled: bool,
     probe_result: ProbeResultInput | None,
     probe_target_scripts: tuple[str, ...] | None,
@@ -570,6 +598,8 @@ async def _run_solver_tool(
             dependencies.runner.run_solver_job(
                 job_name,
                 input_file=input_file,
+                cpus=cpus,
+                memory=memory,
                 timeout_seconds=dependencies.request.runtime_policy.timeout_seconds(
                     "solver"
                 ),
@@ -586,6 +616,9 @@ async def _submit_solver_tool(
     dependencies: CodingAgentDependencies,
     job_name: str,
     input_file: str,
+    *,
+    cpus: SolverCpus | None = None,
+    memory: SolverMemory | None = None,
 ) -> dict[str, object]:
     if permission_denied := dependencies.runtime_permission_denial(solver=True):
         raise RuntimeBudgetExceeded(permission_denied)
@@ -615,6 +648,8 @@ async def _submit_solver_tool(
         execution_id = dependencies.runner.submit_solver_job(
             job_name,
             input_file=input_file,
+            cpus=cpus,
+            memory=memory,
             timeout_seconds=dependencies.request.runtime_policy.timeout_seconds(
                 "solver"
             ),
