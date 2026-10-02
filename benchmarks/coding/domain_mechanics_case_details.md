@@ -3,7 +3,7 @@
 先看[简短案例清单](domain_mechanics_inventory.md)；本页供需要核对具体合同、证据和运行入口时查阅。
 
 当前案例为20个公开力学仿真任务，按物理能力分组。旧Gold已删除；输入变体不增加本套件的题数或权重。
-选题已确认5题入选（均布梁、圆轴扭转、厚壁圆筒、孔板、三向实体梁VM184）、4题历史（均匀杆、分段杆、均匀平面应力板、端载梁），NAFEMS LE1–LE10共10题暂留评分，LE11待单独处理；目前评分选择规模为15题。VM184三个工况全部合格才记整题通过。入选不等于当前配置已经验收通过。下文保留全部20题合同与既有证据，v25运行器已接入15题默认选择和显式评分范围。
+选题已确认5题入选（均布梁、圆轴扭转、厚壁圆筒、孔板、三向实体梁VM184）、4题历史（均匀杆、分段杆、均匀平面应力板、端载梁），NAFEMS LE1–LE10共10题暂留评分，LE11待单独处理；目前评分选择规模为15题。VM184三个工况全部合格才记整题通过。入选不等于当前配置已经验收通过。下文保留全部20题合同与既有证据，v26运行器已接入15题默认选择和显式评分范围。
 源码定义见[public_mechanics_cases.py](../../src/abaqus_sim_agent/evaluation/public_mechanics_cases.py)，
 验收见[run verifier](../../src/abaqus_sim_agent/verification/public_mechanics_run.py)、
 [INP checker](../../src/abaqus_sim_agent/verification/public_mechanics_input.py)和
@@ -135,12 +135,12 @@ NAFEMS各题单位均为m–N–Pa（LE11另含°C），除LE3外E=210GPa、ν=.
 
 | 入口 | 当前配置/可用性 | 历史边界 |
 |---|---|---|
-| `public_mechanics_suite` | v25；`prepare/preflight/doctor/run/continue/resume/pause/report/launch`；`--case`可指定多个不同Case，不选则15题；历史/未入选Case只作非计分诊断。必传新ASCII `--root` 与 `--catalog`；默认Foundation on、API full、Planning off、docs off、legacy_decision；每题80模型/30 Abaqus/10 Solver/5400秒，澄清0，lookup/preflight计数不限；HTTP300秒+4次retry；任务/runtime并发各1（可选2） | `prepare`复制源码/Skill/Catalog，可选knowledge；seal绑定依赖与launcher。`preflight`是假模型，`doctor`会真实访问Provider。旧批次必须用其worker/snapshot与匹配依赖，当前report拒绝覆盖旧version |
+| `public_mechanics_suite` | v26；`prepare/preflight/doctor/run/continue/resume/pause/report/launch`；`--case`可指定多个不同Case，不选则15题；历史/未入选Case只作非计分诊断。必传新ASCII `--root` 与 `--catalog`；默认Foundation on、API full、Planning off、docs off、legacy_decision；每题80模型/30 Abaqus/10 Solver/5400秒，澄清0，lookup/preflight计数不限；HTTP300秒+4次retry；任务/runtime并发各1（可选2） | `prepare`复制源码/Skill/Catalog，可选knowledge；seal绑定依赖与launcher。`preflight`是假模型，`doctor`会真实访问Provider。旧批次必须用其worker/snapshot与匹配依赖，当前report拒绝覆盖旧version |
 | `foundation_public_mechanics_benchmark` | 更早的力学行为/回答题集装配与评分 | 与当前20题仿真suite不同，不能因同名Case把行为分数计入仿真完成 |
 
 公开 v1及多项v6–v22历史配置通常为40/18/6/2700秒、API8、Planning on，HTTP又分60/retry10、600/retry0、180/retry1等。
 v5事后恢复还修改limits/timeout；完整值按冻结manifest与amendment分别读，不能仅以目录v号推断当前执行条件。
-v25 metadata、15题选择及原生结果规则已完成离线接线验证，尚未运行新的真实模型/持证批次。元数据schema、批次冻结和报告语义见[Coding入口](README.md)。
+当前v26将真实Case执行接入原生Dataset；沿用15题选择和判分规则，尚未运行新的真实模型/持证批次。元数据schema、批次冻结和报告语义见[Coding入口](README.md)。
 
 旧state不能交给当前CLI猜测升级；依赖、旧Planning适配、prompt/Skill、case/oracle和运行资源一起决定可复现性。
 [LE10续跑记录](le10_continuation60_20260922.md)已记载Harness/Pydantic AI升级导致93个绑定文件不符，恢复匹配runtime后才继续。

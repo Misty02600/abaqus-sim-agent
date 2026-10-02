@@ -43,8 +43,10 @@
 [合同与证据详表](../../benchmarks/coding/domain_mechanics_case_details.md)分列逐题判据、参考资格、正式Agent结果与事后修正，以及当前入口漂移和本机资源依赖。
 这里的端到端表示领域任务Eval的运行范围，不另立一类成绩，也不与参考脚本/假模型工程测试混计。
 
-当前领域仿真保留20个Case定义，新批次默认选15题评分；显式选择历史题只作非计分诊断。v25按批次冻结类型化metadata与评分名单，报告读取冻结快照；
-Pydantic Evals的单题/整批规则只投影已存证据，自动通过与完整需求待审分开，见[结果报告约定](../../benchmarks/coding/result_reporting.md)。
+当前领域仿真保留20个Case定义，新批次默认选15题评分；显式选择历史题只作非计分诊断。v26按批次冻结类型化metadata与评分名单，报告读取冻结快照；
+原生Dataset调用现有单题Service，单题/整批规则对返回证据评分；CaseLifecycle投影逐题进度，完整报告在调用结束时保存，report独立只读重建。自动通过与完整需求待审分开，见[结果报告约定](../../benchmarks/coding/result_reporting.md)。
+公开力学的`--phoenix`在真实attempt外围建立追踪，报告通过带摘要的观测记录关联已有span并复制评分；
+按原生报告duration_scope区分实际执行与只读投影耗时，也不由Phoenix决定验收。恢复新建attempt追踪，开关每次显式指定。
 接线和离线校验不代表15题已完成真实Agent验收。旧Gold独立运行入口已退出；冻结报告与输入保留。输入变体的交互结果单独报告，不增加仿真题权重。
 模型变更的共享seed/provenance继续使用，但plate suite没有同一配置下的全套通过记录。
 

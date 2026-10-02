@@ -9,8 +9,8 @@ from importlib.metadata import version
 from pathlib import Path, PurePosixPath
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from pydantic_ai import ModelMessagesTypeAdapter
-from pydantic_ai.messages import ModelResponse, ToolCallPart
+from pydantic_evals import Case, Dataset
+from pydantic_evals.reporting import EvaluationReportAdapter, ScalarResult
 
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.clarification import ScriptedClarificationProvider
@@ -30,6 +30,17 @@ from abaqus_sim_agent.coding.model import (
 )
 from abaqus_sim_agent.coding.service import CodingRunService
 from abaqus_sim_agent.coding.workspace import WorkspaceResolver
+from abaqus_sim_agent.evaluation.skill_observation import (
+    loaded_skill_body_bytes,
+    read_skill_evidence,
+    score_skill_route,
+    skill_content_hashes,
+    write_new_json,
+)
+from abaqus_sim_agent.evaluation.skill_routing_evals import (
+    SkillRouteEvaluator,
+    SkillRoutingSummary,
+)
 from abaqus_sim_agent.execution import DEFAULT_ABAQUS_2024_LAUNCHER, Abaqus2024Runner
 from abaqus_sim_agent.skills import skill_library_path
 
@@ -40,7 +51,7 @@ DEFAULT_CASES = (
 DEFAULT_SEAL = (
     REPO_ROOT / "benchmarks/coding/structural_topic_skill_routing_cases_v1.seal.json"
 )
-EVALUATOR_VERSION = "structural-mechanics-topic-skill-routing-v1"
+EVALUATOR_VERSION = "structural-mechanics-topic-skill-routing-v2-native-evals"
 STRUCTURAL_TOPIC_PROFILE = "structural_mechanics_v1"
 CAPABILITY_IDS = (
     "abaqus-2024-coding",
@@ -66,13 +77,6 @@ record that fact without inventing a value and submit needs_input. Otherwise
 inspect the requested artifact and submit ready_for_verification. This experiment
 measures capability loading behavior, not simulation correctness.
 """.strip()
-
-
-def _required_int(item: dict[str, object], key: str) -> int:
-    value = item[key]
-    if not isinstance(value, (str, int, float)):
-        raise TypeError(f"{key} must be numeric")
-    return int(value)
 
 
 class StructuralTopicSkillRoutingCase(BaseModel):
@@ -115,12 +119,6 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _write_new(path: Path, value: object) -> None:
-    with path.open("x", encoding="utf-8", newline="\n") as stream:
-        json.dump(value, stream, ensure_ascii=False, indent=2)
-        stream.write("\n")
-
-
 def load_cases(
     path: Path = DEFAULT_CASES,
     seal_path: Path = DEFAULT_SEAL,
@@ -147,89 +145,23 @@ def load_cases(
     return cases
 
 
-def _tool_calls(state: Path) -> list[dict[str, object]]:
-    history = state / "history.json"
-    if not history.is_file():
-        return []
-    messages = ModelMessagesTypeAdapter.validate_json(history.read_bytes())
-    calls: list[dict[str, object]] = []
-    for message in messages:
-        if not isinstance(message, ModelResponse):
-            continue
-        calls.extend(
-            {
-                "tool": part.tool_name,
-                "arguments": part.args_as_dict(),
-                "tool_call_id": part.tool_call_id,
-            }
-            for part in message.parts
-            if isinstance(part, ToolCallPart)
-        )
-    return calls
-
-
-def _loaded_skill_body_bytes(loaded: set[str]) -> int:
-    root = skill_library_path()
-    return sum(
-        (root / capability_id / "SKILL.md").stat().st_size
-        for capability_id in loaded
-        if capability_id in CAPABILITY_IDS
-        and (root / capability_id / "SKILL.md").is_file()
-    )
-
-
 def observe_case(
     root: Path, case: StructuralTopicSkillRoutingCase
 ) -> dict[str, object]:
-    state = root / case.case_id / "state"
-    workspace = state.parent / "workspace"
-    calls = _tool_calls(state)
-    load_calls = [call for call in calls if call["tool"] == "load_capability"]
-    load_ids = [
-        str(call["arguments"].get("id"))
-        for call in load_calls
-        if isinstance(call["arguments"], dict) and call["arguments"].get("id")
-    ]
-    loaded = set(load_ids)
-    required = set(case.required_loads)
-    allowed = set(case.allowed_loads)
-    forbidden = set(case.forbidden_loads)
-    required_recall = (
-        len(loaded & required) / len(required) if required else float(not loaded)
-    )
-    analysis_path = workspace / "analysis.json"
-    analysis: object = None
-    if analysis_path.is_file():
-        try:
-            analysis = json.loads(analysis_path.read_text(encoding="utf-8"))
-        except (UnicodeError, ValueError):
-            analysis = {"invalid_json": True}
-    outcome_path = state / "outcome.json"
-    outcome = (
-        json.loads(outcome_path.read_text(encoding="utf-8"))
-        if outcome_path.is_file()
-        else None
-    )
+    evidence = read_skill_evidence(root / case.case_id)
     return {
-        "case_id": case.case_id,
-        "load_sequence": load_ids,
-        "unique_loaded": sorted(loaded),
-        "required_loads": list(case.required_loads),
-        "allowed_loads": list(case.allowed_loads),
-        "forbidden_loads": list(case.forbidden_loads),
-        "required_load_recall": required_recall,
-        "forbidden_load_count": len(loaded & forbidden),
-        "unexpected_loads": sorted(loaded - allowed),
-        "load_call_count": len(load_calls),
-        "duplicate_load_call_count": len(load_ids) - len(loaded),
-        "loaded_skill_body_bytes": _loaded_skill_body_bytes(loaded),
-        "exact_route_pass": required <= loaded and loaded <= allowed,
-        "runtime_requested": any(
-            call["tool"] in {"run_cae_script", "run_solver_job", "run_abaqus_python"}
-            for call in calls
+        **evidence.observation_fields(case.case_id),
+        **score_skill_route(
+            evidence.load_ids,
+            required_loads=case.required_loads,
+            allowed_loads=case.allowed_loads,
+            forbidden_loads=case.forbidden_loads,
         ),
-        "analysis": analysis,
-        "outcome": outcome,
+        "loaded_skill_body_bytes": loaded_skill_body_bytes(
+            evidence.load_ids,
+            skill_root=skill_library_path(),
+            capability_ids=CAPABILITY_IDS,
+        ),
         "expected_behavior": case.expected_behavior,
         "review_criteria": list(case.review_criteria),
         "review_status": "pending_manual_review",
@@ -237,11 +169,7 @@ def observe_case(
 
 
 def _skill_bindings() -> dict[str, str]:
-    root = skill_library_path()
-    return {
-        capability_id: _sha256(root / capability_id / "SKILL.md")
-        for capability_id in CAPABILITY_IDS
-    }
+    return skill_content_hashes(skill_library_path(), CAPABILITY_IDS)
 
 
 async def run_evaluation(
@@ -271,6 +199,8 @@ async def run_evaluation(
     )
     implementation_paths = [
         Path(__file__),
+        Path(__file__).with_name("skill_observation.py"),
+        Path(__file__).with_name("skill_routing_evals.py"),
         REPO_ROOT / "src/abaqus_sim_agent/coding/agent.py",
     ]
     implementation_hashes = {
@@ -279,37 +209,61 @@ async def run_evaluation(
     }
     skill_hashes = _skill_bindings()
     root.mkdir(parents=True, exist_ok=False)
-    _write_new(root / "cases.json", [case.model_dump(mode="json") for case in cases])
-    _write_new(
-        root / "manifest.json",
-        {
-            "evaluator_version": EVALUATOR_VERSION,
-            "created_at": datetime.now(UTC).isoformat(),
-            "case_source": cases_path.relative_to(REPO_ROOT).as_posix(),
-            "case_source_sha256": _sha256(cases_path),
-            "seal_sha256": _sha256(seal_path),
-            "implementation_sha256": implementation_hashes,
-            "skill_sha256": skill_hashes,
-            "foundation_skill_profile": "off",
-            "structural_topic_skill_profile": STRUCTURAL_TOPIC_PROFILE,
-            "model": {
-                "gateway": gateway.value,
-                "name": model_name,
-                "http_retries": http_retries,
-            },
-            "budget": budget.model_dump(mode="json"),
-            "task_instructions": TASK_INSTRUCTIONS,
-            "planning_enabled": False,
-            "api_catalog_mode": "off",
-            "concept_retrieval_mode": "off",
-            "diagnostic_retrieval_mode": "off",
-            "repeats": 1,
-            "dataset_role": "development_structural_topic_skill_routing_smoke",
-            "pydantic_ai_version": version("pydantic-ai-slim"),
-        },
+    write_new_json(
+        root / "cases.json", [case.model_dump(mode="json") for case in cases]
     )
-    observations: list[dict[str, object]] = []
-    for case in cases:
+    manifest = {
+        "evaluator_version": EVALUATOR_VERSION,
+        "created_at": datetime.now(UTC).isoformat(),
+        "case_source": cases_path.relative_to(REPO_ROOT).as_posix(),
+        "case_source_sha256": _sha256(cases_path),
+        "seal_sha256": _sha256(seal_path),
+        "implementation_sha256": implementation_hashes,
+        "skill_sha256": skill_hashes,
+        "foundation_skill_profile": "off",
+        "structural_topic_skill_profile": STRUCTURAL_TOPIC_PROFILE,
+        "model": {
+            "gateway": gateway.value,
+            "name": model_name,
+            "http_retries": http_retries,
+        },
+        "budget": budget.model_dump(mode="json"),
+        "task_instructions": TASK_INSTRUCTIONS,
+        "planning_enabled": False,
+        "api_catalog_mode": "off",
+        "concept_retrieval_mode": "off",
+        "diagnostic_retrieval_mode": "off",
+        "repeats": 1,
+        "dataset_role": "development_structural_topic_skill_routing_smoke",
+        "pydantic_ai_version": version("pydantic-ai-slim"),
+        "pydantic_evals_version": version("pydantic-evals"),
+    }
+    write_new_json(root / "manifest.json", manifest)
+    fatal_errors: list[Exception] = []
+    batch_task = asyncio.current_task()
+    cancel_requested = False
+
+    async def run_case(case: StructuralTopicSkillRoutingCase) -> dict[str, object]:
+        nonlocal cancel_requested
+        if cancel_requested:
+            raise asyncio.CancelledError()
+        if fatal_errors:
+            raise RuntimeError(
+                "Case not started after an earlier preparation/observation failure"
+            )
+        try:
+            return await execute_case(case)
+        except asyncio.CancelledError:
+            cancel_requested = True
+            # Evals 2.51 can collect a cancelled child as None; propagate cancellation to the batch owner.
+            if batch_task is not None and not batch_task.cancelling():
+                batch_task.cancel()
+            raise
+        except Exception as exc:
+            fatal_errors.append(exc)
+            raise
+
+    async def execute_case(case: StructuralTopicSkillRoutingCase) -> dict[str, object]:
         workspace = root / case.case_id / "workspace"
         state = root / case.case_id / "state"
         workspace.mkdir(parents=True)
@@ -337,46 +291,89 @@ async def run_evaluation(
             if gateway is DeepSeekGateway.OPENCODE_GO
             else None,
         )
-        dependencies = CodingAgentDependencies(
-            request=request,
-            runner=Abaqus2024Runner(workspace, state),
-        )
-        service = CodingRunService(
-            agent=create_abaqus_coding_agent(
-                model,
-                request,
-                skill_library=skill_library_path(),
-                planning_enabled=False,
-                task_instructions=TASK_INSTRUCTIONS,
-                foundation_skill_profile="off",
-                structural_topic_skill_profile=STRUCTURAL_TOPIC_PROFILE,
-            ),
-            request=request,
-            dependencies=dependencies,
-            clarification_provider=ScriptedClarificationProvider({}),
-            verifier=ExecutionEvidenceVerifier(),
-            initial_snapshot=initial,
-        )
-        error: str | None = None
         try:
-            await service.run()
-        except Exception as exc:
-            error = type(exc).__name__
+            dependencies = CodingAgentDependencies(
+                request=request,
+                runner=Abaqus2024Runner(workspace, state),
+            )
+            service = CodingRunService(
+                agent=create_abaqus_coding_agent(
+                    model,
+                    request,
+                    skill_library=skill_library_path(),
+                    planning_enabled=False,
+                    task_instructions=TASK_INSTRUCTIONS,
+                    foundation_skill_profile="off",
+                    structural_topic_skill_profile=STRUCTURAL_TOPIC_PROFILE,
+                ),
+                request=request,
+                dependencies=dependencies,
+                clarification_provider=ScriptedClarificationProvider({}),
+                verifier=ExecutionEvidenceVerifier(),
+                initial_snapshot=initial,
+            )
+            error: str | None = None
+            try:
+                await service.run()
+            except Exception as exc:
+                error = type(exc).__name__
         finally:
             await client.close()
         observation = observe_case(root, case)
         observation["infrastructure_error_type"] = error
         observation["actual_abaqus_calls"] = dependencies.abaqus_calls
         observation["actual_solver_calls"] = dependencies.solver_calls
-        _write_new(
+        write_new_json(
             state / "structural_topic_skill_routing_observation.json", observation
         )
-        observations.append(observation)
         print(
             f"{case.case_id}: loads={observation['load_sequence']}; "
             f"exact={observation['exact_route_pass']}",
             flush=True,
         )
+        return observation
+
+    dataset = Dataset[StructuralTopicSkillRoutingCase, dict[str, object], None](
+        name=EVALUATOR_VERSION,
+        cases=[Case(name=case.case_id, inputs=case) for case in cases],
+        evaluators=[SkillRouteEvaluator[StructuralTopicSkillRoutingCase]()],
+        report_evaluators=[SkillRoutingSummary[StructuralTopicSkillRoutingCase]()],
+    )
+    native = await dataset.evaluate(
+        run_case,
+        name=root.name,
+        metadata={
+            **manifest,
+            "manifest_sha256": _sha256(root / "manifest.json"),
+            "environment_verified_after_run": False,
+        },
+        max_concurrency=1,
+        repeat=1,
+        retry_task=None,
+        retry_evaluators=None,
+        progress=False,
+    )
+    if (
+        fatal_errors
+        or native.failures
+        or native.report_evaluator_failures
+        or any(case.evaluator_failures for case in native.cases)
+    ):
+        write_new_json(
+            root / "pydantic-evals-report.json",
+            json.loads(EvaluationReportAdapter.dump_json(native)),
+        )
+        if fatal_errors:
+            raise fatal_errors[0]
+        raise RuntimeError(
+            "Skill routing evaluation failed; per-case evidence was retained"
+        )
+    observations = [case.output for case in native.cases]
+    summary = {
+        item.title: item.value
+        for item in native.analyses
+        if isinstance(item, ScalarResult)
+    }
     if implementation_hashes != {
         path.relative_to(REPO_ROOT).as_posix(): _sha256(path)
         for path in implementation_paths
@@ -391,31 +388,23 @@ async def run_evaluation(
     load_cases(cases_path, seal_path)
     report = {
         "manifest_sha256": _sha256(root / "manifest.json"),
-        "exact_route_passes": sum(
-            bool(item["exact_route_pass"]) for item in observations
-        ),
-        "case_count": len(observations),
-        "forbidden_loads_total": sum(
-            _required_int(item, "forbidden_load_count") for item in observations
-        ),
-        "load_calls_total": sum(
-            _required_int(item, "load_call_count") for item in observations
-        ),
-        "duplicate_load_calls_total": sum(
-            _required_int(item, "duplicate_load_call_count") for item in observations
-        ),
-        "loaded_skill_body_bytes_total": sum(
-            _required_int(item, "loaded_skill_body_bytes") for item in observations
-        ),
-        "runtime_requested_cases": sum(
-            bool(item["runtime_requested"]) for item in observations
-        ),
+        "exact_route_passes": summary["exact_route_passes"],
+        "case_count": summary["case_count"],
+        "forbidden_loads_total": summary["forbidden_loads_total"],
+        "load_calls_total": summary["load_calls_total"],
+        "duplicate_load_calls_total": summary["duplicate_load_calls_total"],
+        "loaded_skill_body_bytes_total": summary["loaded_skill_body_bytes_total"],
+        "runtime_requested_cases": summary["runtime_requested_cases"],
         "cases": observations,
         "review_status": "pending_manual_review",
         "environment_verified_after_run": True,
     }
-    _write_new(root / "report.json", report)
-    _write_new(
+    assert native.experiment_metadata is not None
+    native.experiment_metadata["environment_verified_after_run"] = True
+    with (root / "pydantic-evals-report.json").open("xb") as stream:
+        stream.write(EvaluationReportAdapter.dump_json(native, indent=2))
+    write_new_json(root / "report.json", report)
+    write_new_json(
         root / "completion.json",
         {
             "manifest_sha256": _sha256(root / "manifest.json"),

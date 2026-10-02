@@ -176,7 +176,7 @@ model provider、model name、HTTP retries。二者省略表示不改，显式 n
 |---|---|---|
 | Web `port` / `--port` | 8765，整数参数；宿主绑定 `127.0.0.1` | 不进会话；当前由 server/socket 检查绑定可用性，不宣称 CLI 已预检整个端口范围 |
 | Web `no_open` / `--no-open` | False，服务 started 后打开普通本机 URL | 不进会话；每次启动独立选择 |
-| `phoenix` / `--phoenix` | False，必须显式启用 | 不从项目偏好自动开启；运行证据可记录观测元数据，但恢复不据此启用导出 |
+| `phoenix` / `--phoenix` | False，必须显式启用；公开力学支持run/continue/resume/report/launch | 不从项目偏好自动开启，不进冻结任务配置；launch传给worker，恢复不据旧记录启用；记录和评分关联见[力学报告](../../benchmarks/coding/result_reporting.md#phoenix追踪与评分) |
 | `DEEPSEEK_API_KEY` | 无；当前进程环境 | 官方网关凭据，捕获后剥离继承环境；不写入偏好或 request/launch |
 | `OPENCODE_API_KEY` | 无；当前进程环境 | Go/Zen 凭据；Web 按会话 provider 选取，缺失拒绝，不回退到别的模型 |
 | `PHOENIX_COLLECTOR_ENDPOINT` | `http://127.0.0.1:6006`；当前进程环境 | 只接受无鉴权本机 HTTP 地址，可指定端口；`--phoenix` 启用时校验，不进会话配置 |

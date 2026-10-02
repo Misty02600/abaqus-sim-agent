@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, TypeAdapter
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
 from abaqus_sim_agent.evaluation.case_metadata import CaseMetadata, SourceRef
 
-PUBLIC_MECHANICS_PROTOCOL = "public-mechanics-e2e-v25-native-result-grading"
+PUBLIC_MECHANICS_PROTOCOL = "public-mechanics-e2e-v26-native-case-execution"
 
 # 物理Case身份决定评分范围；标签和载荷工况不增加权重。
 BASIC_LINEAR_CASE_IDS = (

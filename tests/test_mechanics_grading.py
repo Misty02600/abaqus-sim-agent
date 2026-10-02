@@ -341,3 +341,53 @@ def test_report_evaluator_failure_is_visible_without_a_fake_zero_summary(
     text = (tmp_path / "report.md").read_text(encoding="utf-8")
     assert "整批评分器异常" in text
     assert "0/0" not in text
+
+
+@pytest.mark.parametrize(
+    "defect",
+    ["missing_case", "metadata", "evidence", "bindings", "verification", "usage"],
+)
+def test_execution_report_mismatch_cannot_overwrite_current_report(tmp_path, defect):
+    name = BASIC_LINEAR_CASE_IDS[0]
+    freeze(tmp_path, [name])
+    completed(tmp_path, name)
+    case = get_case(name)
+    manifest = read_json(tmp_path / "manifest.json")
+    observation = observe_saved_case(
+        tmp_path,
+        case,
+        summarize_case(tmp_path, name),
+        manifest,
+        bindings_unchanged=True,
+    )
+    native = asyncio.run(
+        evaluate_saved_results((case,), {name: observation}, BASIC_LINEAR_CASE_IDS, {})
+    )
+    if defect == "missing_case":
+        native.cases.clear()
+    elif defect == "metadata":
+        native.cases[0].metadata = case.metadata.model_copy(
+            update={"description": "different task"}
+        )
+    elif defect == "evidence":
+        path = tmp_path / name / "state/outcome.json"
+        path.write_bytes(path.read_bytes() + b"\n")
+    elif defect == "verification":
+        path = tmp_path / name / "state/events.jsonl"
+        event = json.loads(path.read_bytes())
+        event["data"]["feedback"] = "changed execution evidence"
+        path.write_text(json.dumps(event) + "\n", encoding="utf-8")
+    elif defect == "usage":
+        path = tmp_path / name / "state/resume_state.json"
+        saved = read_json(path) or {}
+        saved["usage"] = {"requests": 999}
+        save_json(path, saved)
+    original = b"existing-report"
+    (tmp_path / "report.json").write_bytes(original)
+    with pytest.raises(ValueError, match="native execution report"):
+        asyncio.run(
+            build_report_async(
+                tmp_path, bindings_unchanged=defect != "bindings", native_report=native
+            )
+        )
+    assert (tmp_path / "report.json").read_bytes() == original

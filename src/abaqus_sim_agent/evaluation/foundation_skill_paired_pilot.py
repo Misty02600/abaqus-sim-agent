@@ -59,11 +59,11 @@ from abaqus_sim_agent.evaluation.foundation_skill_behavior import (
 )
 from abaqus_sim_agent.evaluation.foundation_skill_behavior import (
     TASK_INSTRUCTIONS,
-    _required_int,
 )
 from abaqus_sim_agent.evaluation.foundation_skill_behavior import (
     load_rubrics as load_diagnostic_rubrics,
 )
+from abaqus_sim_agent.evaluation.skill_observation import required_int
 from abaqus_sim_agent.evaluation.skill_routing_behavior import (
     CAPABILITY_IDS,
 )
@@ -323,6 +323,7 @@ async def run_pilot(
     )
     implementation_paths = [
         Path(__file__),
+        Path(__file__).with_name("skill_observation.py"),
         REPO_ROOT / "src/abaqus_sim_agent/coding/agent.py",
     ]
     implementation_hashes = {
@@ -469,7 +470,7 @@ async def run_pilot(
         "trial_count": len(observations),
         "pending_behavior_reviews": len(observations),
         "loaded_skill_body_bytes_total": sum(
-            _required_int(item, "loaded_skill_body_bytes") for item in observations
+            required_int(item, "loaded_skill_body_bytes") for item in observations
         ),
         "trials": observations,
         "review_status": "pending_host_semantic_review",

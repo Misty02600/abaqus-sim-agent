@@ -110,8 +110,18 @@ class PhoenixCaseLifecycle[InputsT, OutputT, MetadataT](
                     self._identity.__exit__(None, None, None)
 
 
-async def publish_evaluation_feedback(report: EvaluationReport[Any, Any, Any]) -> None:
-    """向本机 Phoenix 复制已有评分；无后端或发送失败不改本地 report/gate。"""
+async def publish_evaluation_feedback(
+    report: EvaluationReport[Any, Any, Any],
+    *,
+    expected_annotations: dict[str, dict[str, tuple[str, ...]]] | None = None,
+) -> None:
+    """向本机 Phoenix 复制已有评分；无后端或发送失败不改本地 report/gate。
+
+    Args:
+        report: 已完成本地判分的原生报告。
+        expected_annotations: 可选的逐 Case、逐种类受管字段；缺失值上传 unknown，
+            覆盖先前评分副本，避免审查撤回后遗留旧的通过断言。不会修改 report。
+    """
     endpoint = telemetry.collector_endpoint()
     if endpoint is None:
         return
@@ -129,15 +139,21 @@ async def publish_evaluation_feedback(report: EvaluationReport[Any, Any, Any]) -
                 ("score", case.scores),
                 ("label", case.labels),
             ):
-                for name, score in scores.items():
-                    value = score.value
+                expected = (expected_annotations or {}).get(case.name, {}).get(kind, ())
+                for name in sorted(set(scores) | set(expected)):
+                    score = scores.get(name)
                     result: AnnotationResult = {}
-                    if isinstance(value, (int, float)):
-                        result["score"] = float(value)
-                    if isinstance(value, (bool, str)):
-                        result["label"] = telemetry.redact_text(str(value))
-                    if score.reason is not None:
-                        result["explanation"] = telemetry.redact_text(score.reason)
+                    if score is None:
+                        result["label"] = "unknown"
+                        result["explanation"] = "No value in the current local report."
+                    else:
+                        value = score.value
+                        if isinstance(value, (int, float)):
+                            result["score"] = float(value)
+                        if isinstance(value, (bool, str)):
+                            result["label"] = telemetry.redact_text(str(value))
+                        if score.reason is not None:
+                            result["explanation"] = telemetry.redact_text(score.reason)
                     annotations.append(
                         {
                             "span_id": case.span_id,

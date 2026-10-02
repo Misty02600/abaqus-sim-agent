@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 from copy import deepcopy
 
 import pytest
@@ -168,6 +170,20 @@ def test_cli_prepare_freezes_the_default_scoring_set_and_metadata(
     assert report["scoring"]["case_count"] == 15
     assert report["scoring"]["classification_counts"] == {"not_started": 15}
 
+    # A freshly frozen worker must load the extracted CLI from its own snapshot.
+    completed = subprocess.run(
+        [sys.executable, "-I", str(root / "worker.py"), "--help"],
+        cwd=tmp_path,
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert b"--phoenix" in completed.stdout
+    assert (
+        root / "snapshot/src/abaqus_sim_agent/evaluation/public_mechanics_cli.py"
+    ).is_file()
+
 
 def test_prepare_keeps_explicit_historical_case_available_without_score(
     tmp_path, monkeypatch
@@ -286,7 +302,16 @@ def test_frozen_case_loading_rejects_invalid_contracts(tmp_path, defect):
         load_frozen_cases(tmp_path, names)
 
 
-def test_direct_report_builder_refuses_old_protocol_without_migration(tmp_path):
+@pytest.mark.parametrize(
+    "protocol",
+    [
+        "public-mechanics-e2e-v23-no-planning-request80-relaxed-limits",
+        "public-mechanics-e2e-v25-native-result-grading",
+    ],
+)
+def test_direct_report_builder_refuses_old_protocol_without_migration(
+    tmp_path, protocol
+):
     save_json(
         tmp_path / "manifest.json",
         {"version": "public-mechanics-e2e-v23-no-planning-request80-relaxed-limits"},

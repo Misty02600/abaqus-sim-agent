@@ -8,9 +8,6 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Literal
 
-from pydantic_ai import ModelMessagesTypeAdapter
-from pydantic_ai.messages import ModelResponse, ToolCallPart
-
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.clarification import ScriptedClarificationProvider
 from abaqus_sim_agent.coding.contracts import (
@@ -30,6 +27,13 @@ from abaqus_sim_agent.coding.model import (
 from abaqus_sim_agent.coding.service import CodingRunService
 from abaqus_sim_agent.coding.workspace import WorkspaceResolver
 from abaqus_sim_agent.evaluation.behavior_measurement import CaseRubric, file_digest
+from abaqus_sim_agent.evaluation.skill_observation import (
+    loaded_skill_body_bytes,
+    read_skill_evidence,
+    required_int,
+    skill_content_hashes,
+    write_new_json,
+)
 from abaqus_sim_agent.evaluation.skill_routing_behavior import (
     CAPABILITY_IDS,
     DEFAULT_CASES,
@@ -61,40 +65,6 @@ and submit ready_for_verification.
 """.strip()
 
 
-def _write_new(path: Path, value: object) -> None:
-    with path.open("x", encoding="utf-8", newline="\n") as stream:
-        json.dump(value, stream, ensure_ascii=False, indent=2)
-        stream.write("\n")
-
-
-def _required_int(item: dict[str, object], key: str) -> int:
-    value = item[key]
-    if not isinstance(value, (str, int, float)):
-        raise TypeError(f"{key} must be numeric")
-    return int(value)
-
-
-def _tool_calls(state: Path) -> list[dict[str, object]]:
-    history = state / "history.json"
-    if not history.is_file():
-        return []
-    messages = ModelMessagesTypeAdapter.validate_json(history.read_bytes())
-    calls: list[dict[str, object]] = []
-    for message in messages:
-        if not isinstance(message, ModelResponse):
-            continue
-        calls.extend(
-            {
-                "tool": part.tool_name,
-                "arguments": part.args_as_dict(),
-                "tool_call_id": part.tool_call_id,
-            }
-            for part in message.parts
-            if isinstance(part, ToolCallPart)
-        )
-    return calls
-
-
 def load_rubrics(path: Path = DEFAULT_RUBRIC) -> dict[str, CaseRubric]:
     payload = json.loads(path.read_bytes())
     if payload.get("schema_version") != "foundation-skill-behavior-rubric-v1":
@@ -110,64 +80,22 @@ def load_rubrics(path: Path = DEFAULT_RUBRIC) -> dict[str, CaseRubric]:
     return rubrics
 
 
-def _loaded_skill_body_bytes(load_ids: list[str]) -> int:
-    root = skill_library_path()
-    total = 0
-    for capability_id in dict.fromkeys(load_ids):
-        if capability_id not in CAPABILITY_IDS:
-            continue
-        path = root / capability_id / "SKILL.md"
-        if path.is_file():
-            total += path.stat().st_size
-    return total
-
-
 def observe_case(root: Path, case: SkillRoutingCase) -> dict[str, object]:
-    state = root / case.case_id / "state"
-    workspace = state.parent / "workspace"
-    calls = _tool_calls(state)
-    load_calls = [call for call in calls if call["tool"] == "load_capability"]
-    load_ids = [
-        str(call["arguments"].get("id"))
-        for call in load_calls
-        if isinstance(call["arguments"], dict) and call["arguments"].get("id")
-    ]
-    loaded = set(load_ids)
-    analysis_path = workspace / "analysis.json"
-    analysis: object = None
-    if analysis_path.is_file():
-        try:
-            analysis = json.loads(analysis_path.read_text(encoding="utf-8"))
-        except (UnicodeError, ValueError):
-            analysis = {"invalid_json": True}
-    outcome_path = state / "outcome.json"
-    outcome = (
-        json.loads(outcome_path.read_text(encoding="utf-8"))
-        if outcome_path.is_file()
-        else None
-    )
-    forbidden = set(case.forbidden_loads)
+    evidence = read_skill_evidence(root / case.case_id)
     return {
-        "case_id": case.case_id,
-        "load_sequence": load_ids,
-        "unique_loaded": sorted(loaded),
-        "forbidden_load_count": len(loaded & forbidden),
-        "unexpected_loads": sorted(loaded & forbidden),
-        "load_call_count": len(load_calls),
-        "duplicate_load_call_count": len(load_ids) - len(loaded),
-        "loaded_skill_body_bytes": _loaded_skill_body_bytes(load_ids),
-        "runtime_requested": any(
-            call["tool"] in {"run_cae_script", "run_solver_job", "run_abaqus_python"}
-            for call in calls
+        **evidence.observation_fields(case.case_id),
+        "forbidden_load_count": len(set(evidence.load_ids) & set(case.forbidden_loads)),
+        "unexpected_loads": sorted(set(evidence.load_ids) & set(case.forbidden_loads)),
+        "loaded_skill_body_bytes": loaded_skill_body_bytes(
+            evidence.load_ids,
+            skill_root=skill_library_path(),
+            capability_ids=CAPABILITY_IDS,
         ),
-        "analysis": analysis,
-        "outcome": outcome,
         "behavior_review_status": "pending_host_semantic_review",
     }
 
 
 def _skill_hashes(profile: Profile) -> dict[str, str]:
-    root = skill_library_path()
     ids = ["abaqus-2024-coding"]
     if profile == "foundation":
         ids.extend(
@@ -175,9 +103,7 @@ def _skill_hashes(profile: Profile) -> dict[str, str]:
             for capability in CAPABILITY_IDS
             if capability != "abaqus-2024-coding"
         )
-    return {
-        capability: file_digest(root / capability / "SKILL.md") for capability in ids
-    }
+    return skill_content_hashes(skill_library_path(), ids)
 
 
 async def run_evaluation(
@@ -210,6 +136,7 @@ async def run_evaluation(
     )
     implementation_paths = [
         Path(__file__),
+        Path(__file__).with_name("skill_observation.py"),
         REPO_ROOT / "src/abaqus_sim_agent/coding/agent.py",
     ]
     implementation_hashes = {
@@ -218,8 +145,10 @@ async def run_evaluation(
     }
     skill_hashes = _skill_hashes(profile)
     root.mkdir(parents=True, exist_ok=False)
-    _write_new(root / "cases.json", [case.model_dump(mode="json") for case in cases])
-    _write_new(
+    write_new_json(
+        root / "cases.json", [case.model_dump(mode="json") for case in cases]
+    )
+    write_new_json(
         root / "rubrics.json",
         [rubrics[case.case_id].model_dump(mode="json") for case in cases],
     )
@@ -253,7 +182,7 @@ async def run_evaluation(
         "pydantic_ai_version": version("pydantic-ai-slim"),
         "dataset_role": "development_foundation_skill_behavior",
     }
-    _write_new(root / "manifest.json", manifest)
+    write_new_json(root / "manifest.json", manifest)
 
     observations: list[dict[str, object]] = []
     for case in cases:
@@ -317,7 +246,7 @@ async def run_evaluation(
         observation["infrastructure_error_type"] = error
         observation["actual_abaqus_calls"] = dependencies.abaqus_calls
         observation["actual_solver_calls"] = dependencies.solver_calls
-        _write_new(state / "foundation_behavior_observation.json", observation)
+        write_new_json(state / "foundation_behavior_observation.json", observation)
         observations.append(observation)
         print(
             f"{case.case_id}: loads={observation['load_sequence']}; review=pending",
@@ -346,20 +275,20 @@ async def run_evaluation(
         "case_count": len(observations),
         "pending_behavior_reviews": len(observations),
         "forbidden_loads_total": sum(
-            _required_int(item, "forbidden_load_count") for item in observations
+            required_int(item, "forbidden_load_count") for item in observations
         ),
         "load_calls_total": sum(
-            _required_int(item, "load_call_count") for item in observations
+            required_int(item, "load_call_count") for item in observations
         ),
         "loaded_skill_body_bytes_total": sum(
-            _required_int(item, "loaded_skill_body_bytes") for item in observations
+            required_int(item, "loaded_skill_body_bytes") for item in observations
         ),
         "cases": observations,
         "behavior_review_status": "pending_host_semantic_review",
         "environment_verified_after_run": True,
     }
-    _write_new(root / "report.json", report)
-    _write_new(
+    write_new_json(root / "report.json", report)
+    write_new_json(
         root / "completion.json",
         {
             "manifest_sha256": file_digest(root / "manifest.json"),

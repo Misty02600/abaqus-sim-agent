@@ -18,7 +18,12 @@ from pydantic_evals.evaluators import (
     ReportEvaluator,
     ReportEvaluatorContext,
 )
-from pydantic_evals.reporting import EvaluationReport, ScalarResult, TableResult
+from pydantic_evals.reporting import (
+    EvaluationReport,
+    ReportCase,
+    ScalarResult,
+    TableResult,
+)
 
 from abaqus_sim_agent.coding.contracts import CodingRunOutcome
 from abaqus_sim_agent.evaluation.case_metadata import CaseMetadata
@@ -312,6 +317,18 @@ class TaskPassed(Evaluator[str, MechanicsObservation, CaseMetadata]):
         return output
 
 
+def native_task_verdict(
+    case: ReportCase[str, MechanicsObservation, CaseMetadata] | None,
+) -> str:
+    if (
+        case is not None
+        and not case.evaluator_failures
+        and "task_status" in case.labels
+    ):
+        return case.labels["task_status"].value
+    return "grading_error"
+
+
 @dataclass
 class SuiteSummary(ReportEvaluator[str, MechanicsObservation, CaseMetadata]):
     planned_case_ids: tuple[str, ...]
@@ -339,13 +356,7 @@ class SuiteSummary(ReportEvaluator[str, MechanicsObservation, CaseMetadata]):
         rows = []
         for name in self.planned_case_ids:
             case = by_name.get(name)
-            status = "grading_error"
-            if (
-                case is not None
-                and not case.evaluator_failures
-                and "task_status" in case.labels
-            ):
-                status = case.labels["task_status"].value
+            status = native_task_verdict(case)
             if status not in counts:
                 status = "grading_error"
             counts[status] += 1
@@ -397,21 +408,15 @@ class SuiteSummary(ReportEvaluator[str, MechanicsObservation, CaseMetadata]):
         ]
 
 
-async def evaluate_saved_results(
+def build_mechanics_dataset(
     cases: tuple[MechanicsCase, ...],
-    observations: dict[str, MechanicsObservation],
     scoring_case_ids: tuple[str, ...],
-    experiment_metadata: dict,
-) -> EvaluationReport[str, MechanicsObservation, CaseMetadata]:
-    """通过原生Evaluator接口汇总已存结果；task时间只表示投影耗时。
-
-    Note:
-        Agent真实耗时由metrics保留。调用只返回已读取的Observation，不进入任何外部runtime；
-        禁用task/evaluator重试，每个物理Case仅投影一次。
-    """
+    *,
+    name: str,
+) -> Dataset[str, MechanicsObservation, CaseMetadata]:
     planned = tuple(case.case_id for case in cases if case.case_id in scoring_case_ids)
-    dataset = Dataset[str, MechanicsObservation, CaseMetadata](
-        name="basic-linear-saved-results",
+    return Dataset[str, MechanicsObservation, CaseMetadata](
+        name=name,
         cases=[
             Case(name=c.case_id, inputs=c.case_id, metadata=c.metadata) for c in cases
         ],
@@ -419,15 +424,40 @@ async def evaluate_saved_results(
         report_evaluators=[SuiteSummary(planned)],
     )
 
+
+def record_observation(
+    result: MechanicsObservation, *, included_in_score: bool, duration_scope: str
+) -> MechanicsObservation:
+    for key, value in result.metrics.items():
+        increment_eval_metric(key, value)
+    set_eval_attribute("evidence_path", result.evidence_path)
+    set_eval_attribute("evidence_sha256", result.evidence_sha256)
+    set_eval_attribute("included_in_score", included_in_score)
+    set_eval_attribute("duration_scope", duration_scope)
+    return result
+
+
+async def evaluate_saved_results(
+    cases: tuple[MechanicsCase, ...],
+    observations: dict[str, MechanicsObservation],
+    scoring_case_ids: tuple[str, ...],
+    experiment_metadata: dict,
+) -> EvaluationReport[str, MechanicsObservation, CaseMetadata]:
+    """通过同一组原生评分器汇总已存结果；不进入Agent、oracle或Solver。
+
+    Note:
+        此处task时间只是投影耗时。逐题Agent实际活动时间由保存的metrics提供。
+    """
+    dataset = build_mechanics_dataset(
+        cases, scoring_case_ids, name="basic-linear-saved-results"
+    )
+
     def project(case_id: str) -> MechanicsObservation:
-        result = observations[case_id]
-        for key, value in result.metrics.items():
-            increment_eval_metric(key, value)
-        set_eval_attribute("evidence_path", result.evidence_path)
-        set_eval_attribute("evidence_sha256", result.evidence_sha256)
-        set_eval_attribute("included_in_score", case_id in planned)
-        set_eval_attribute("duration_scope", "saved_result_projection_only")
-        return result
+        return record_observation(
+            observations[case_id],
+            included_in_score=case_id in scoring_case_ids,
+            duration_scope="saved_result_projection_only",
+        )
 
     return await dataset.evaluate(
         project,

@@ -1,0 +1,97 @@
+{
+  "kind": "offline_fixtures_real_local_phoenix",
+  "first": {
+    "spans": 6,
+    "traces": 3,
+    "annotations": 40,
+    "task_pass": [
+      [
+        "unknown",
+        null
+      ],
+      [
+        "unknown",
+        null
+      ],
+      [
+        "unknown",
+        null
+      ]
+    ]
+  },
+  "reviewed": {
+    "spans": 6,
+    "traces": 3,
+    "annotations": 40,
+    "task_pass": [
+      [
+        "unknown",
+        null
+      ],
+      [
+        "unknown",
+        null
+      ],
+      [
+        "True",
+        1.0
+      ]
+    ]
+  },
+  "repeated": {
+    "spans": 6,
+    "traces": 3,
+    "annotations": 40,
+    "task_pass": [
+      [
+        "unknown",
+        null
+      ],
+      [
+        "unknown",
+        null
+      ],
+      [
+        "True",
+        1.0
+      ]
+    ]
+  },
+  "withdrawn": {
+    "spans": 6,
+    "traces": 3,
+    "annotations": 40,
+    "task_pass": [
+      [
+        "unknown",
+        null
+      ],
+      [
+        "unknown",
+        null
+      ],
+      [
+        "unknown",
+        null
+      ]
+    ]
+  },
+  "api_span_count": 6,
+  "date": "2026-09-29",
+  "source_head": "23728e529ccdede436cc4fc1f03d0cc04b7538d6",
+  "dirty_worktree": true,
+  "scope": "Actual public_mechanics_suite._run_case and report bridge; Service/model/runtime replaced by offline fixtures; real local Phoenix 20.16.0 and SDK/client.",
+  "source_sha256": {
+    "src/abaqus_sim_agent/evaluation/mechanics_telemetry.py": "e214c788dfa9ddf46d584058ae1798fdabe0400811bb00648176b941239290a5",
+    "src/abaqus_sim_agent/evaluation/public_mechanics_suite.py": "352cf342c1ceb82ae6c362c31f5ca46ef15a67cc2cc4eb746e4784b76515f86d",
+    "src/abaqus_sim_agent/evaluation/public_mechanics_control.py": "1d3783824feba2cca80954c7bfc048ec5366e13fce900748da2dacf02c00195f",
+    "src/abaqus_sim_agent/evaluation/telemetry.py": "53c03bc754ecce776c67ccf1bd89ba416e101adab186aac815115878d2484003",
+    "tests/test_mechanics_telemetry.py": "209112e7394856897dca021b018adf83ac94931f13323b299e8bb51719e8a399"
+  },
+  "limitations": [
+    "No live model or licensed Abaqus execution",
+    "No browser interaction or service restart test in this run",
+    "No reliable telemetry retry queue"
+  ],
+  "post_validation_changes": "LF newline normalization only in mechanics_telemetry.py and public_mechanics_suite.py; source_sha256 records the bytes used in the local backend probe."
+}

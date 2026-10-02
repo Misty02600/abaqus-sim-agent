@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from collections import Counter
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from time import perf_counter
@@ -12,17 +13,27 @@ from typing import Any
 from uuid import uuid4
 
 import httpx
-from pydantic_evals.reporting import EvaluationReportAdapter, ScalarResult
+from pydantic_evals.reporting import (
+    EvaluationReport,
+    EvaluationReportAdapter,
+    ScalarResult,
+)
 
 from abaqus_sim_agent.coding.persistence import write_text_atomic
+from abaqus_sim_agent.evaluation.case_metadata import CaseMetadata
 from abaqus_sim_agent.evaluation.mechanics_grading import (
+    MechanicsObservation,
     evaluate_saved_results,
+    native_task_verdict,
     observe_saved_case,
 )
+from abaqus_sim_agent.evaluation.mechanics_telemetry import associate_report_traces
 from abaqus_sim_agent.evaluation.public_mechanics_cases import (
     PUBLIC_MECHANICS_PROTOCOL,
+    MechanicsCase,
     load_frozen_cases,
 )
+from abaqus_sim_agent.evaluation.telemetry import publish_evaluation_feedback
 
 
 def save_json(path: Path, value):
@@ -201,11 +212,96 @@ def summarize_case(root: Path, name: str):
     }
 
 
+def _case_row(
+    root: Path,
+    case: MechanicsCase,
+    manifest: dict,
+    *,
+    evaluation_errors: list[dict] | None = None,
+) -> dict:
+    try:
+        row = summarize_case(root, case.case_id)
+    except (ValueError, KeyError, TypeError, OSError) as exc:
+        row = {
+            "case_id": case.case_id,
+            "classification": "invalid_evidence",
+            "evidence_error_type": type(exc).__name__,
+            "received_usage": None,
+            "http": {"attempts": None, "failed": None, "unknown": None},
+            "abaqus_calls": None,
+            "solver_calls": None,
+        }
+    errors = (
+        _evaluation_errors(root) if evaluation_errors is None else evaluation_errors
+    )
+    if (
+        row["classification"] in {"not_started", "interrupted_unknown"}
+        and row.get("persisted_status") is None
+        and row.get("outcome") is None
+        and any(e["case_id"] == case.case_id and e["stage"] == "task" for e in errors)
+    ):
+        row["classification"] = "setup_error"
+    row["metadata"] = case.metadata.model_dump(mode="json")
+    row["included_in_score"] = case.case_id in manifest["scoring_case_ids"]
+    return row
+
+
+def read_case_observation(
+    root: Path, case: MechanicsCase, manifest: dict
+) -> MechanicsObservation:
+    return observe_saved_case(
+        root, case, _case_row(root, case, manifest), manifest, bindings_unchanged=True
+    )
+
+
+def _execution_binding(observation: MechanicsObservation) -> tuple:
+    # Reviews can change after a Case finishes; execution evidence and observed usage must not.
+    return (
+        observation.case_id,
+        observation.status,
+        observation.metrics,
+        observation.evidence_path,
+        {
+            key: value
+            for key, value in observation.evidence_sha256.items()
+            if key != "requirements_review_sha256"
+        },
+    )
+
+
+def _evaluation_errors(root: Path) -> list[dict]:
+    path = root / "control/events.jsonl"
+    if not path.exists():
+        return []
+    events = [
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    return [event for event in events if event["event"] == "case_evaluation_error"]
+
+
 def build_report(root: Path, *, bindings_unchanged: bool):
     return asyncio.run(build_report_async(root, bindings_unchanged=bindings_unchanged))
 
 
-async def build_report_async(root: Path, *, bindings_unchanged: bool):
+async def build_report_async(
+    root: Path,
+    *,
+    bindings_unchanged: bool,
+    native_report: EvaluationReport[str, MechanicsObservation, CaseMetadata]
+    | None = None,
+):
+    """保存原生评分的派生视图，或在没有执行报告时只读重建。
+
+    Args:
+        root: 已冻结批次目录。
+        bindings_unchanged: 调用方对本次批次绑定的核查结论。
+        native_report: 当前Dataset执行产生的完整报告；提供时保留其评分失败，不重新评分。
+
+    Raises:
+        ValueError: 协议/绑定不符，或执行报告不再对应当前保存的证据。
+    """
     manifest = read_json(root / "manifest.json")
     if manifest.get("version") != PUBLIC_MECHANICS_PROTOCOL:
         raise ValueError("historical reports require their original worker")
@@ -218,25 +314,11 @@ async def build_report_async(root: Path, *, bindings_unchanged: bool):
         or len(set(scoring_ids)) != len(scoring_ids)
     ):
         raise ValueError("invalid frozen scoring_case_ids")
-    rows = []
-    for case in cases:
-        name = case.case_id
-        try:
-            rows.append(summarize_case(root, name))
-        except (ValueError, KeyError, TypeError, OSError) as exc:
-            rows.append(
-                {
-                    "case_id": name,
-                    "classification": "invalid_evidence",
-                    "evidence_error_type": type(exc).__name__,
-                    "received_usage": None,
-                    "http": {"attempts": None, "failed": None, "unknown": None},
-                    "abaqus_calls": None,
-                    "solver_calls": None,
-                }
-            )
-        rows[-1]["metadata"] = case.metadata.model_dump(mode="json")
-        rows[-1]["included_in_score"] = name in scoring_ids
+    evaluation_errors = _evaluation_errors(root)
+    rows = [
+        _case_row(root, case, manifest, evaluation_errors=evaluation_errors)
+        for case in cases
+    ]
     scored = [row for row in rows if row["included_in_score"]]
     observations = {
         case.case_id: observe_saved_case(
@@ -244,21 +326,49 @@ async def build_report_async(root: Path, *, bindings_unchanged: bool):
         )
         for case, row in zip(cases, rows, strict=True)
     }
-    native = await evaluate_saved_results(
-        cases,
-        observations,
-        tuple(scoring_ids),
-        {
-            "protocol": manifest["version"],
-            "root": str(root),
-            "scoring_case_ids": scoring_ids,
-        },
-    )
-    verdicts = {
-        case.name: case.labels["task_status"].value
-        for case in native.cases
-        if not case.evaluator_failures and "task_status" in case.labels
-    }
+    review_updates_pending: list[str] = []
+    if native_report is None:
+        native = await evaluate_saved_results(
+            cases,
+            observations,
+            tuple(scoring_ids),
+            {
+                "protocol": manifest["version"],
+                "root": str(root),
+                "scoring_case_ids": scoring_ids,
+            },
+        )
+    else:
+        names = [c.name for c in native_report.cases] + [
+            c.name for c in native_report.failures
+        ]
+        expected = {c.case_id: c for c in cases}
+        if (
+            not bindings_unchanged
+            or len(names) != len(expected)
+            or set(names) != set(expected)
+        ):
+            raise ValueError(
+                "native execution report does not match frozen cases/bindings"
+            )
+        if any(
+            item.inputs != item.name or item.metadata != expected[item.name].metadata
+            for item in [*native_report.cases, *native_report.failures]
+        ) or any(
+            _execution_binding(item.output)
+            != _execution_binding(observations[item.name])
+            for item in native_report.cases
+        ):
+            raise ValueError("native execution report no longer matches saved evidence")
+        review_updates_pending = [
+            item.name
+            for item in native_report.cases
+            if item.output.evidence_sha256.get("requirements_review_sha256")
+            != observations[item.name].evidence_sha256.get("requirements_review_sha256")
+        ]
+        native = native_report
+    associate_report_traces(root, manifest.get("batch_id", ""), native)
+    verdicts = {case.name: native_task_verdict(case) for case in native.cases}
     for row in rows:
         row["task_verdict"] = verdicts.get(row["case_id"], "grading_error")
     summary = {
@@ -268,7 +378,12 @@ async def build_report_async(root: Path, *, bindings_unchanged: bool):
     }
     summary_valid = not native.report_evaluator_failures
     report = {
-        "schema_version": "public-mechanics-report-v7",
+        "schema_version": "public-mechanics-report-v8",
+        "review_updates_pending": review_updates_pending,
+        "evaluation_errors": evaluation_errors,
+        "native_result_kind": "case_execution"
+        if native_report is not None
+        else "saved_result_projection",
         "scoring": {
             "case_ids": [row["case_id"] for row in scored],
             "reference_case_ids": scoring_ids,
@@ -329,6 +444,16 @@ async def build_report_async(root: Path, *, bindings_unchanged: bool):
         "",
         summary_line,
         "",
+        *(
+            [
+                "审查记录已有更新："
+                + ", ".join(review_updates_pending)
+                + "。当前保留Case完成时的评分快照；运行report读取最新审查。",
+                "",
+            ]
+            if review_updates_pending
+            else []
+        ),
         "| 案例 | 计分 | 运行状态 | 任务判定 | 收到响应 | HTTP尝试/失败/未知 | Abaqus/Solver |",
         "|---|---|---|---|---:|---|---|",
     ]
@@ -339,6 +464,24 @@ async def build_report_async(root: Path, *, bindings_unchanged: bool):
             f"| {row['case_id']} | {'是' if row['included_in_score'] else '否'} | {row['classification']} | {row['task_verdict']} | {u.get('requests', 'unknown')} | "
             f"{h['attempts']}/{h['failed']}/{h['unknown']} | {row['abaqus_calls']}/{row['solver_calls']} |"
         )
+    if evaluation_errors:
+        lines.extend(
+            [
+                "",
+                "## 已记录的评测异常",
+                "",
+                "来自批次事件日志；历史错误保留，本次重建判定不表示原错误从未发生。",
+                "",
+                "| 案例 | 阶段 | 本次调用 | 错误 |",
+                "|---|---|---|---|",
+            ]
+        )
+        for error in evaluation_errors:
+            detail = "; ".join(item["message"] for item in error["errors"])
+            lines.append(
+                f"| {_table_text(error['case_id'])} | {error['stage']} | "
+                f"{error['evaluation_invocation_id']} | {_table_text(detail)} |"
+            )
     lines.extend(
         [
             "",
@@ -368,6 +511,29 @@ async def build_report_async(root: Path, *, bindings_unchanged: bool):
         ]
     )
     write_text_atomic(root / "report.md", "\n".join(lines) + "\n")
+    # A later review must be explicitly re-read before its old grade is sent to Phoenix again.
+    feedback = replace(
+        native,
+        cases=[
+            case for case in native.cases if case.name not in review_updates_pending
+        ],
+    )
+    await publish_evaluation_feedback(
+        feedback,
+        expected_annotations={
+            case.case_id: {
+                "assertion": (
+                    "task_pass",
+                    "execution_ok",
+                    "requirements_ok",
+                    "physics_ok",
+                    "automatic_pass",
+                ),
+                "score": tuple(f"relative_error.{key}" for key in case.metrics),
+            }
+            for case in cases
+        },
+    )
     return report
 
 

@@ -1,6 +1,5 @@
 """公开材料力学端到端评测；独立 Case 工作区和宿主 oracle。"""
 
-import argparse
 import asyncio
 import json
 import os
@@ -14,7 +13,9 @@ from typing import Literal
 from uuid import uuid4
 
 import httpx
+from pydantic_evals.reporting import EvaluationReportAdapter
 
+from abaqus_sim_agent import telemetry
 from abaqus_sim_agent.api_catalog import ApiCatalog
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.clarification import ScriptedClarificationProvider
@@ -39,6 +40,12 @@ from abaqus_sim_agent.coding.run_lock import CodingRunFileLock
 from abaqus_sim_agent.coding.service import CodingRunService
 from abaqus_sim_agent.coding.workspace import WorkspaceResolver
 from abaqus_sim_agent.evaluation.behavior_measurement import file_digest
+from abaqus_sim_agent.evaluation.mechanics_grading import (
+    build_mechanics_dataset,
+    record_observation,
+)
+from abaqus_sim_agent.evaluation.mechanics_progress import progress_lifecycle
+from abaqus_sim_agent.evaluation.mechanics_telemetry import trace_attempt
 from abaqus_sim_agent.evaluation.public_mechanics_cases import (
     BASIC_LINEAR_CASE_IDS,
     PUBLIC_MECHANICS_PROTOCOL,
@@ -51,6 +58,7 @@ from abaqus_sim_agent.evaluation.public_mechanics_control import (
     append_event,
     build_report,
     build_report_async,
+    read_case_observation,
     read_json,
     run_until_pause,
     save_json,
@@ -581,91 +589,105 @@ async def _run_case(root, name, *, resume, key, catalog, runtime_gate=None):
         "error_type": None,
     }
     save_json(attempt_path, attempt)
-    runner = PublicMechanicsRunner(
-        w,
-        s,
-        process_strategy=(
-            SerialRuntime(runtime_gate, WindowsProcessStrategy())
-            if runtime_gate is not None
-            else None
-        ),
-    )
-    client = None
-    http_client = None
-    try:
-        req = _request(root, name, catalog)
-        http_client = httpx.AsyncClient(
-            transport=ObservedTransport(s / "transport.jsonl")
-        )
-        model, client = create_deepseek_chat_model(
-            gateway=config.model_provider,
-            model_name=config.model_name,
-            api_key=key,
-            timeout_seconds=config.http_timeout_seconds,
-            http_retries=config.http_retries,
-            execution_config=config,
-            conversation_id=req.run_id,
-            http_client=http_client,
-        )
-        deps = CodingAgentDependencies(request=req, runner=runner, api_catalog=catalog)
-        agent = create_abaqus_coding_agent(
-            model,
-            req,
-            skill_library=skill_library_path(),
-            api_catalog_mode=manifest["catalog_mode"],
-            execution_config=config,
-            foundation_skill_profile="linear_structural_fea_v1"
-            if manifest["foundation"]
-            else "off",
-            knowledge_resources_dir=(
-                root / manifest["knowledge_resources"]["path"]
-                if manifest.get("knowledge_resources")
+    with trace_attempt(
+        root, name, manifest["batch_id"], attempt_path, attempt, get_case(name).goal()
+    ):
+        runner = PublicMechanicsRunner(
+            w,
+            s,
+            process_strategy=(
+                SerialRuntime(runtime_gate, WindowsProcessStrategy())
+                if runtime_gate is not None
                 else None
             ),
-            task_instructions="Complete the actual simulation and artifacts under the stated physical contract. Do not submit jobs inside the CAE script. Use API discovery, exact lookup, or optional reference material only when they resolve a real implementation uncertainty. No physical input is missing. Preserve the declared model/units/QoI and use the independent verifier feedback for in-scope repair.",
         )
-        service = CodingRunService(
-            agent=agent,
-            request=req,
-            dependencies=deps,
-            clarification_provider=ScriptedClarificationProvider({}),
-            verifier=PublicMechanicsRunVerifier(
-                get_case(name), policy=manifest["verification_policy"]
-            ),
-            resume=resume,
-            initial_snapshot=load_initial_snapshot(s)
-            if resume
-            else WorkspaceResolver(captured_cwd=w).snapshot(w),
-        )
-        await run_until_pause(service, root / "pause.json")
-    except Exception as exc:
-        attempt["error_type"] = type(exc).__name__
-        # Deliberately exclude arbitrary exception strings/headers that may contain credentials.
-        attempt["cause_type"] = type(exc.__cause__).__name__ if exc.__cause__ else None
-    except asyncio.CancelledError:
-        attempt["error_type"] = "CancelledError"
-        raise
-    finally:
-        if client is not None:
-            try:
-                await client.close()
-            except Exception as exc:
-                attempt["client_close_error_type"] = type(exc).__name__
-        if http_client is not None:
-            try:
-                await http_client.aclose()
-            except Exception as exc:
-                attempt["transport_close_error_type"] = type(exc).__name__
-        attempt["resume_state_snapshot"] = read_json(s / "resume_state.json")
-        attempt["outcome_snapshot"] = read_json(s / "outcome.json")
-        process_strategy = getattr(runner, "_process_strategy", None)
-        if runtime_gate is not None and isinstance(process_strategy, SerialRuntime):
-            attempt["runtime_queue_wait_seconds"] = process_strategy.wait_seconds
-        attempt["finished_at"] = datetime.now(UTC).isoformat()
-        save_json(attempt_path, attempt)
+        client = None
+        http_client = None
+        try:
+            req = _request(root, name, catalog)
+            telemetry.set_attributes(**{"session.id": req.run_id, "run_id": req.run_id})
+            http_client = httpx.AsyncClient(
+                transport=ObservedTransport(s / "transport.jsonl")
+            )
+            model, client = create_deepseek_chat_model(
+                gateway=config.model_provider,
+                model_name=config.model_name,
+                api_key=key,
+                timeout_seconds=config.http_timeout_seconds,
+                http_retries=config.http_retries,
+                execution_config=config,
+                conversation_id=req.run_id,
+                http_client=http_client,
+            )
+            deps = CodingAgentDependencies(
+                request=req, runner=runner, api_catalog=catalog
+            )
+            agent = create_abaqus_coding_agent(
+                model,
+                req,
+                skill_library=skill_library_path(),
+                api_catalog_mode=manifest["catalog_mode"],
+                execution_config=config,
+                foundation_skill_profile="linear_structural_fea_v1"
+                if manifest["foundation"]
+                else "off",
+                knowledge_resources_dir=(
+                    root / manifest["knowledge_resources"]["path"]
+                    if manifest.get("knowledge_resources")
+                    else None
+                ),
+                task_instructions="Complete the actual simulation and artifacts under the stated physical contract. Do not submit jobs inside the CAE script. Use API discovery, exact lookup, or optional reference material only when they resolve a real implementation uncertainty. No physical input is missing. Preserve the declared model/units/QoI and use the independent verifier feedback for in-scope repair.",
+            )
+            service = CodingRunService(
+                agent=agent,
+                request=req,
+                dependencies=deps,
+                clarification_provider=ScriptedClarificationProvider({}),
+                verifier=PublicMechanicsRunVerifier(
+                    get_case(name), policy=manifest["verification_policy"]
+                ),
+                resume=resume,
+                initial_snapshot=load_initial_snapshot(s)
+                if resume
+                else WorkspaceResolver(captured_cwd=w).snapshot(w),
+            )
+            await run_until_pause(service, root / "pause.json")
+        except Exception as exc:
+            attempt["error_type"] = type(exc).__name__
+            # Deliberately exclude arbitrary exception strings/headers that may contain credentials.
+            attempt["cause_type"] = (
+                type(exc.__cause__).__name__ if exc.__cause__ else None
+            )
+        except asyncio.CancelledError:
+            attempt["error_type"] = "CancelledError"
+            raise
+        finally:
+            if client is not None:
+                try:
+                    await client.close()
+                except Exception as exc:
+                    attempt["client_close_error_type"] = type(exc).__name__
+            if http_client is not None:
+                try:
+                    await http_client.aclose()
+                except Exception as exc:
+                    attempt["transport_close_error_type"] = type(exc).__name__
+            attempt["resume_state_snapshot"] = read_json(s / "resume_state.json")
+            attempt["outcome_snapshot"] = read_json(s / "outcome.json")
+            process_strategy = getattr(runner, "_process_strategy", None)
+            if runtime_gate is not None and isinstance(process_strategy, SerialRuntime):
+                attempt["runtime_queue_wait_seconds"] = process_strategy.wait_seconds
+            attempt["finished_at"] = datetime.now(UTC).isoformat()
+            save_json(attempt_path, attempt)
 
 
 async def run(root: Path, action="run", case_ids=None):
+    """由原生Dataset调度Case，恢复与副作用仍交给现有单题Service。
+
+    Note:
+        单题取消会取消整个本次调用并等待在途任务收尾；完成的Case不重新执行。
+        正常结束保留原生评分失败；取消或绑定变化时只读重建全题集报告。
+    """
     _checked_preflight(root)
     with CodingRunFileLock(root / "control"):
         manifest = read_json(root / "manifest.json")
@@ -697,66 +719,132 @@ async def run(root: Path, action="run", case_ids=None):
             cases=names,
             pid=os.getpid(),
         )
+        cases = load_frozen_cases(root, manifest["case_ids"])
+        by_id = {case.case_id: case for case in cases}
+        selected = set(names)
+        scoring_ids = tuple(manifest["scoring_case_ids"])
+        invocation_id = uuid4().hex
+        native = None
+        stopped = False
+        batch_task = asyncio.current_task()
+
+        def stop_batch():
+            nonlocal stopped
+            stopped = True
+            save_json(
+                root / "health.json",
+                {
+                    "passed": False,
+                    "at": datetime.now(UTC).isoformat(),
+                    "seal_sha256": file_digest(root / "seal.json"),
+                    "reason": "batch_interrupted",
+                },
+            )
+
+        async def execute_or_observe(case_id: str):
+            execute = (
+                case_id in selected
+                and not stopped
+                and not (root / "pause.json").exists()
+            )
+            if execute:
+                try:
+                    verify_binding(root)
+                    print("START " + case_id, flush=True)
+                    await _run_case(
+                        root,
+                        case_id,
+                        resume=action == "resume",
+                        key=key,
+                        catalog=catalog,
+                        runtime_gate=runtime_gate,
+                    )
+                except asyncio.CancelledError:
+                    stop_batch()
+                    # Propagate child cancellation to the owner: Evals 2.51 must not treat a cancelled child as a result.
+                    if batch_task is not None and not batch_task.cancelling():
+                        batch_task.cancel()
+                    raise
+                except Exception as exc:
+                    stop_batch()
+                    # Keep exceptions outside the Service boundary visible without leaking arbitrary details.
+                    raise RuntimeError(
+                        f"Case execution failed: {type(exc).__name__}"
+                    ) from None
+            try:
+                observation = read_case_observation(root, by_id[case_id], manifest)
+            except Exception as exc:
+                stop_batch()
+                raise RuntimeError(
+                    f"Case evidence failed: {type(exc).__name__}"
+                ) from None
+            if execute:
+                print("END " + case_id + " " + observation.status, flush=True)
+                if observation.status not in {"completed", "task_failed"}:
+                    stop_batch()
+            return record_observation(
+                observation,
+                included_in_score=case_id in scoring_ids,
+                duration_scope="case_execution_and_observation"
+                if execute
+                else "saved_result_projection_only",
+            )
+
         try:
-            await build_report_async(root, bindings_unchanged=True)
-            for offset in range(0, len(names), task_concurrency):
-                if (root / "pause.json").exists():
-                    break
-                verify_binding(root)
-                wave = names[offset : offset + task_concurrency]
-                for name in wave:
-                    print("START " + name, flush=True)
-                await asyncio.gather(
-                    *(
-                        _run_case(
-                            root,
-                            name,
-                            resume=action == "resume",
-                            key=key,
-                            catalog=catalog,
-                            runtime_gate=runtime_gate,
-                        )
-                        for name in wave
-                    )
-                )
-                report = await build_report_async(root, bindings_unchanged=True)
-                rows = [
-                    next(r for r in report["trials"] if r["case_id"] == name)
-                    for name in wave
-                ]
-                for row in rows:
-                    print(
-                        "END " + row["case_id"] + " " + row["classification"],
-                        flush=True,
-                    )
-                if any(
-                    row["classification"] not in {"completed", "task_failed"}
-                    for row in rows
-                ):
-                    save_json(
-                        root / "health.json",
-                        {
-                            "passed": False,
-                            "at": datetime.now(UTC).isoformat(),
-                            "seal_sha256": file_digest(root / "seal.json"),
-                            "reason": "batch_interrupted",
-                        },
-                    )
-                    # Open the circuit: do not burn another case while the provider/host is unhealthy.
-                    break
+            dataset = build_mechanics_dataset(
+                cases, scoring_ids, name="basic-linear-case-execution"
+            )
+            native = await dataset.evaluate(
+                execute_or_observe,
+                name=f"{manifest['batch_id']}-{action}-{invocation_id}",
+                max_concurrency=task_concurrency,
+                progress=False,
+                retry_task=None,
+                retry_evaluators=None,
+                repeat=1,
+                lifecycle=progress_lifecycle(
+                    root,
+                    tuple(by_id),
+                    tuple(names),
+                    invocation_id=invocation_id,
+                    action=action,
+                ),
+                metadata={
+                    "protocol": manifest["version"],
+                    "root": str(root),
+                    "action": action,
+                    "selected_case_ids": names,
+                    "scoring_case_ids": list(scoring_ids),
+                    "invocation_id": invocation_id,
+                },
+            )
+            # Preserve this invocation's original task/evaluator failures even if later report rebuilding changes views.
+            save_json(
+                root / "control" / f"evaluation-{invocation_id}.json",
+                json.loads(EvaluationReportAdapter.dump_json(native)),
+            )
         finally:
             unchanged = False
             try:
-                verify_binding(root)
-                unchanged = True
+                try:
+                    verify_binding(root)
+                    unchanged = True
+                finally:
+                    await build_report_async(
+                        root,
+                        bindings_unchanged=unchanged,
+                        native_report=native if unchanged else None,
+                    )
             finally:
-                await build_report_async(root, bindings_unchanged=unchanged)
                 append_event(
-                    root / "control/events.jsonl", "batch_stopped", action=action
+                    root / "control/events.jsonl",
+                    "batch_stopped",
+                    action=action,
+                    evaluation_invocation_id=invocation_id,
                 )
 
 
-def launch(root, action, cases):
+def launch(root, action, cases, *, phoenix=False):
     _checked_preflight(root)
     with CodingRunFileLock(root / "control"):
         selected_cases(root, action, cases)
@@ -772,6 +860,8 @@ def launch(root, action, cases):
             "--root",
             str(root),
         ]
+        if phoenix:
+            command.append("--phoenix")
         for name in cases or []:
             command.extend(["--case", name])
     flags = (
@@ -808,107 +898,30 @@ def launch(root, action, cases):
     print(json.dumps({"pid": process.pid, "logs": str(logs)}), flush=True)
 
 
+def report(root: Path):
+    if read_json(root / "manifest.json")["version"] != VERSION:
+        raise ValueError("historical reports must not be overwritten by this worker")
+    with CodingRunFileLock(root / "control"):
+        unchanged = False
+        try:
+            verify_binding(root)
+            unchanged = True
+        finally:
+            build_report(root, bindings_unchanged=unchanged)
+
+
+def pause(root: Path):
+    verify_binding(root)
+    save_json(
+        root / "pause.json",
+        {"at": datetime.now(UTC).isoformat(), "reason": "operator_requested_pause"},
+    )
+
+
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "mode",
-        choices=(
-            "prepare",
-            "preflight",
-            "doctor",
-            "run",
-            "continue",
-            "resume",
-            "pause",
-            "report",
-            "launch",
-        ),
-    )
-    parser.add_argument("--root", type=Path, required=True)
-    parser.add_argument("--catalog", type=Path)
-    parser.add_argument(
-        "--case",
-        action="append",
-        dest="cases",
-        help="prepare默认选择15个评分Case；可显式选择其他Case作非计分诊断",
-    )
-    parser.add_argument("--control", action="store_true")
-    parser.add_argument(
-        "--api-catalog-mode",
-        choices=("full", "full_with_discovery"),
-        default="full",
-    )
-    parser.add_argument("--knowledge-resources", type=Path)
-    parser.add_argument("--max-task-concurrency", type=int, choices=(1, 2), default=1)
-    parser.add_argument(
-        "--max-runtime-concurrency", type=int, choices=(1, 2), default=1
-    )
-    parser.add_argument("--http-timeout-seconds", type=float)
-    parser.add_argument("--http-retries", type=int)
-    parser.add_argument(
-        "--action", choices=("run", "continue", "resume"), default="run"
-    )
-    args = parser.parse_args()
-    root = args.root.resolve()
-    if args.mode != "prepare" and (
-        args.http_timeout_seconds is not None
-        or args.http_retries is not None
-        or args.control
-        or args.api_catalog_mode != "full"
-        or args.knowledge_resources is not None
-        or args.max_task_concurrency != 1
-        or args.max_runtime_concurrency != 1
-    ):
-        parser.error(
-            "execution configuration is frozen; these options are prepare-only"
-        )
-    if args.mode == "prepare":
-        if args.catalog is None:
-            parser.error("prepare requires --catalog")
-        prepare(
-            root,
-            args.catalog.resolve(),
-            args.cases,
-            not args.control,
-            api_catalog_mode=args.api_catalog_mode,
-            knowledge_resources=args.knowledge_resources.resolve()
-            if args.knowledge_resources is not None
-            else None,
-            max_task_concurrency=args.max_task_concurrency,
-            max_runtime_concurrency=args.max_runtime_concurrency,
-            http_timeout_seconds=args.http_timeout_seconds
-            if args.http_timeout_seconds is not None
-            else 300.0,
-            http_retries=args.http_retries if args.http_retries is not None else 4,
-        )
-    elif args.mode == "preflight":
-        asyncio.run(preflight(root))
-    elif args.mode == "doctor":
-        result = asyncio.run(doctor(root))
-        if not result["passed"]:
-            raise SystemExit(2)
-    elif args.mode == "report":
-        if read_json(root / "manifest.json")["version"] != VERSION:
-            raise ValueError(
-                "historical reports must not be overwritten by this worker"
-            )
-        with CodingRunFileLock(root / "control"):
-            unchanged = False
-            try:
-                verify_binding(root)
-                unchanged = True
-            finally:
-                build_report(root, bindings_unchanged=unchanged)
-    elif args.mode == "pause":
-        verify_binding(root)
-        save_json(
-            root / "pause.json",
-            {"at": datetime.now(UTC).isoformat(), "reason": "operator_requested_pause"},
-        )
-    elif args.mode == "launch":
-        launch(root, args.action, args.cases)
-    else:
-        asyncio.run(run(root, args.mode, args.cases))
+    from abaqus_sim_agent.evaluation.public_mechanics_cli import main as cli_main
+
+    cli_main()
 
 
 if __name__ == "__main__":

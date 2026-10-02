@@ -80,11 +80,13 @@ uv run --no-sync abaqus-sim-agent-web --phoenix --root D:\abaqus-web
 启用会保存脚本、问题和工具读入的私有文本；已知凭据过滤不等于任意正文匿名化。关闭二进制采集，不额外
 复制整个 ODB/CAE 或 raw log 文件。工作台删除会话不会删除 Phoenix 已保存的副本；通过 Phoenix 单独管理。
 
-首轮评测接线为 `evaluation.plate_tension`、`evaluation.task_baseline_runner`、
+当前评测接线为 `evaluation.public_mechanics_suite`、`evaluation.task_baseline_runner`、
 `evaluation.task_baseline_pilot`、`evaluation.simple_modeling_batch`（模块前缀均为 `abaqus_sim_agent`）。
 评测组另含 Phoenix client：逐 Case 建立 Trace，将现有 assertion/score/label 复制为对应 span 的评分。
 原 Case、oracle、gate 和本地报告继续负责验收；没有迁移为 Phoenix Dataset/Experiment，也不回填旧报告。
-实现与验证范围见[验证证据](docs/architecture/verification-evidence.md)。
+公开力学套件在实际运行时记录每次 attempt，报告重建将评分关联到已有追踪；命令与关联边界见
+[力学结果报告](benchmarks/coding/result_reporting.md#phoenix追踪与评分)。
+实现与验证范围见[验证证据](docs/architecture/verification-evidence.md)。各类测评的固定代码入口见[测评与证据入口](benchmarks/README.md)。
 
 ## 本地 Web 工作台
 

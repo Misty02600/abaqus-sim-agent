@@ -458,3 +458,49 @@ def test_cli_invalid_input_never_calls_backend(tmp_path, monkeypatch):
         baseline.io.read(args["output"] / "completion.json")["stage"]
         == "input_validation"
     )
+
+
+@pytest.mark.asyncio
+async def test_retrieval_module_is_a_native_task_without_agent_service(
+    tmp_path, monkeypatch
+):
+    from pydantic_evals import Case, Dataset
+    from pydantic_evals.evaluators import Evaluator
+
+    from abaqus_sim_agent.coding.service import CodingRunService
+
+    def no_agent(*args, **kwargs):
+        pytest.fail("pure retrieval evaluation must not instantiate CodingRunService")
+
+    monkeypatch.setattr(CodingRunService, "__init__", no_agent)
+    paths, backend, ranker, key = make(tmp_path, monkeypatch)
+    service = baseline.RagEvidenceBaseline(*paths)
+    case = baseline.BaselineCase(
+        id="retrieval-only",
+        request={"kind": "question", "question": "Explain the initial term"},
+        expected_status="found",
+    )
+
+    class CheckStatus(Evaluator):
+        def evaluate(self, ctx):
+            return baseline.score_case(
+                case, ctx.output, service.units, service.child_to_parent
+            )["guard_pass"]
+
+    report = await Dataset(
+        name="retrieval-adapter-fixture",
+        cases=[Case(name=case.id, inputs=case.request)],
+        evaluators=[CheckStatus()],
+    ).evaluate(
+        service.search,
+        max_concurrency=1,
+        repeat=1,
+        retry_task=None,
+        retry_evaluators=None,
+        progress=False,
+    )
+    assert not report.failures
+    assert report.cases[0].assertions["CheckStatus"].value is True
+    assert any(e["id"] == key for e in report.cases[0].output["evidence"])
+    assert ranker.inputs
+    assert [call[0] for call in backend.calls][:2] == ["dense", "lexical"]
