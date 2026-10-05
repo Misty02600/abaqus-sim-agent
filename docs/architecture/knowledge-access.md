@@ -31,6 +31,19 @@ workspace 下，因此不再用“必须在 workspace 外”判断 Catalog 可�
 discovery 就视为同一产品接口。早期 [API 方案实验](../../benchmarks/api_catalog/api_discovery_loop_v1_20260915.md)
 没有经过 CodingRunService；后续提交 `74fa6e3` 才加入下面的产品目录工具和恢复接线。
 
+## API卡片返回中的多种官方定义
+
+整卡查询直接按Catalog已有的官方记录组织说明。只有一条官方记录时沿用原来的顶层摘要和参数字段；
+有多条时，顶层提示查看`official_variants`，不再把第一条记录的摘要、必选/可选参数及返回值作为整张卡片的唯一说明。
+每条variant同时提供原文摘要、自己的参数名称与解释、返回说明、record_id和来源链接，不猜测或合并这些定义的含义。
+
+相同的页级说明只返回一次，但内容、来源、源文件摘要或告警不同的说明仍分别保留；保留项的record_id引用首次记录，
+所有官方定义仍列在variants中。卡片数据不重建，旧批次快照和原始记录不回填。参数精确查询与原始docstring读取沿用现有入口。
+
+该规则适用于通用整卡返回，不是Region专用补丁；离线核查覆盖当前5224张方法卡，其中39张包含多条官方定义。
+Region的完整返回因增加逐定义参数解释，从约13222字符变为15038字符，仍可能需要read_tool_result；
+当前验证的是信息组织与来源保留，尚未通过真实模型对照证明减少误用。
+
 ## 产品 API discovery
 
 CLI/Web 参数 `--api-catalog-mode full_with_discovery` 同时注册 discovery 和 exact lookup。默认

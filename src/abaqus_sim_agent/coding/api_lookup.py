@@ -670,6 +670,8 @@ def _api_card_payload(
         relevant_parameters=relevant_parameters,
     )
     official = card.official_records[0] if card.official_records else None
+    multiple_variants = len(card.official_records) > 1
+    descriptions = _official_context(card, "object_description")
     return {
         "card_id": card.card_id,
         "canonical_name": card.canonical_name,
@@ -681,12 +683,14 @@ def _api_card_payload(
         "abqpy_sources": [
             record.source.model_dump(mode="json") for record in card.abqpy_records
         ],
-        "summary": official.summary if official is not None else "",
-        **(
-            {"object_descriptions": _official_context(card, "object_description")}
-            if _official_context(card, "object_description")
-            else {}
+        "summary": (
+            "Multiple official definitions are available. Read each official_variants entry's description and arguments before choosing a form."
+            if multiple_variants
+            else official.summary
+            if official is not None
+            else ""
         ),
+        **({"object_descriptions": descriptions} if descriptions else {}),
         **(
             {
                 "abqpy_documentation": _abqpy_documentation(card),
@@ -695,27 +699,33 @@ def _api_card_payload(
             if any(record.documentation is not None for record in card.abqpy_records)
             else {}
         ),
-        "required_arguments": (
-            [parameter.name for parameter in official.required_parameters]
-            if official is not None
-            else []
-        ),
-        "optional_arguments": (
-            [parameter.name for parameter in official.optional_parameters]
-            if official is not None
-            else []
-        ),
-        "return_description": (
-            official.return_description if official is not None else ""
-        ),
-        "required_argument_details": [
+        **(
             {
-                "name": parameter.name,
-                "description": parameter.description,
+                "required_arguments": (
+                    [parameter.name for parameter in official.required_parameters]
+                    if official is not None
+                    else []
+                ),
+                "optional_arguments": (
+                    [parameter.name for parameter in official.optional_parameters]
+                    if official is not None
+                    else []
+                ),
+                "return_description": (
+                    official.return_description if official is not None else ""
+                ),
+                "required_argument_details": [
+                    {
+                        "name": parameter.name,
+                        "description": parameter.description,
+                    }
+                    for record in card.official_records
+                    for parameter in record.required_parameters
+                ],
             }
-            for record in card.official_records
-            for parameter in record.required_parameters
-        ],
+            if not multiple_variants
+            else {}
+        ),
         "official_variants": [
             {
                 "canonical_name": record.canonical_name,
@@ -726,6 +736,29 @@ def _api_card_payload(
                     parameter.name for parameter in record.optional_parameters
                 ],
                 "source_url": record.source.source_url,
+                **(
+                    {
+                        "record_id": record.record_id,
+                        "summary": record.summary,
+                        "required_argument_details": [
+                            {
+                                "name": parameter.name,
+                                "description": parameter.description,
+                            }
+                            for parameter in record.required_parameters
+                        ],
+                        "optional_argument_details": [
+                            {
+                                "name": parameter.name,
+                                "description": parameter.description,
+                            }
+                            for parameter in record.optional_parameters
+                        ],
+                        "return_description": record.return_description,
+                    }
+                    if multiple_variants
+                    else {}
+                ),
             }
             for record in card.official_records
         ],
@@ -740,15 +773,24 @@ def _api_card_payload(
 
 
 def _official_context(card: ApiMethodCard, kind: str) -> list[dict[str, object]]:
-    return [
-        {
-            "record_id": record.record_id,
-            **context.model_dump(mode="json", exclude={"raw_xhtml"}),
-        }
-        for record in card.official_records
-        for context in record.context or ()
-        if context.kind == kind
-    ]
+    items: list[dict[str, object]] = []
+    seen: set[str] = set()
+    for record in card.official_records:
+        for context in record.context or ():
+            if context.kind != kind:
+                continue
+            # Deduplicate the delivered text only when its source, hash and warnings also match.
+            key = context.model_dump_json(exclude={"raw_xhtml"})
+            if key in seen:
+                continue
+            seen.add(key)
+            items.append(
+                {
+                    "record_id": record.record_id,
+                    **context.model_dump(mode="json", exclude={"raw_xhtml"}),
+                }
+            )
+    return items
 
 
 def _abqpy_documentation(

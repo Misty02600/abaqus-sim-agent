@@ -2,8 +2,10 @@ import hashlib
 import json
 import shutil
 from pathlib import Path
+from typing import Any, cast
 
 import lxml.etree as etree
+import pytest
 
 from abaqus_sim_agent.api_catalog import AbaqusScriptingReferenceLoader, ApiCatalog
 from abaqus_sim_agent.api_catalog.cli import main
@@ -150,3 +152,159 @@ def test_cli_can_explicitly_build_v2(tmp_path, capsys):
         == 0
     )
     assert json.loads(capsys.readouterr().out)["projection"] == PROJECTION_V2
+
+
+@pytest.mark.parametrize("query", ["Region", "Assembly.Surface"])
+def test_bundled_multiple_definitions_expose_each_description_and_arguments(query):
+    from abaqus_sim_agent.api_catalog.bundled import bundled_catalog_path
+
+    catalog = ApiCatalog.open(bundled_catalog_path())
+    lookup = catalog.lookup(query)
+    card = lookup.cards[0]
+    before = card.model_dump_json()
+    payload = cast(dict[str, Any], _api_lookup_payload(lookup, error_excerpt=None))[
+        "cards"
+    ][0]
+    assert len(card.official_records) > 1
+    assert "official_variants" in payload["summary"]
+    for name in (
+        "required_arguments",
+        "optional_arguments",
+        "required_argument_details",
+        "return_description",
+    ):
+        assert name not in payload
+    for variant, record in zip(
+        payload["official_variants"], card.official_records, strict=True
+    ):
+        assert variant["record_id"] == record.record_id
+        assert variant["summary"] == record.summary
+        assert variant["source_url"] == record.source.source_url
+        assert variant["return_description"] == record.return_description
+        for required in (True, False):
+            key = "required" if required else "optional"
+            parameters = (
+                record.required_parameters if required else record.optional_parameters
+            )
+            assert variant[key + "_argument_details"] == [
+                {"name": p.name, "description": p.description} for p in parameters
+            ]
+    assert len(payload["object_descriptions"]) == 1
+    if query == "Region":
+        set_form, surface_form = payload["official_variants"]
+        assert "set-like" in set_form["summary"]
+        assert "faces" in set_form["optional_arguments"]
+        assert "side1Faces" not in set_form["optional_arguments"]
+        assert "surface-like" in surface_form["summary"]
+        assert "side1Faces" in surface_form["optional_arguments"]
+        assert "faces" not in surface_form["optional_arguments"]
+        assert "side1Faces=f[12:14]" in surface_form["summary"]
+    assert card.model_dump_json() == before
+
+
+def test_deduplication_keeps_distinct_sources_text_and_warnings(tmp_path):
+    catalog, records, _ = source_catalog(tmp_path)
+    record = next(r for r in records if r.callable_name == "Elastic")
+    assert record.context is not None
+    context = record.context[0]
+    contexts = [
+        context,
+        context.model_copy(update={"raw_xhtml": "<p>Equivalent rendered text</p>"}),
+        context.model_copy(update={"source_sha256": "1" * 64}),
+        context.model_copy(
+            update={"source": context.source.model_copy(update={"release": "2025"})}
+        ),
+        context.model_copy(
+            update={"text": context.text + " An additional limitation."}
+        ),
+        context.model_copy(update={"text_warnings": ("Fixture warning",)}),
+    ]
+    variants = tuple(
+        record.model_copy(update={"record_id": f"variant-{i}", "context": (value,)})
+        for i, value in enumerate(contexts)
+    )
+    card = (
+        catalog.lookup("Material.Elastic")
+        .cards[0]
+        .model_copy(update={"official_records": variants})
+    )
+    candidate = ApiCatalog([card], runtime_release="2024")
+    descriptions = cast(
+        dict[str, Any],
+        _api_lookup_payload(candidate.lookup("Material.Elastic"), error_excerpt=None),
+    )["cards"][0]["object_descriptions"]
+    assert len(descriptions) == 5
+    assert descriptions[0]["record_id"] == "variant-0"
+    assert any(d["source_sha256"] == "1" * 64 for d in descriptions)
+    assert any(d["source"]["release"] == "2025" for d in descriptions)
+    assert any(d["text"].endswith("An additional limitation.") for d in descriptions)
+    assert any(d["text_warnings"] == ["Fixture warning"] for d in descriptions)
+
+
+@pytest.mark.parametrize("official_present", [True, False])
+def test_single_or_absent_official_definition_retains_flat_format(
+    tmp_path, official_present
+):
+    catalog, records, _ = source_catalog(tmp_path)
+    record = next(r for r in records if r.callable_name == "Elastic")
+    card = (
+        catalog.lookup("Material.Elastic")
+        .cards[0]
+        .model_copy(update={"official_records": (record,) if official_present else ()})
+    )
+    candidate = ApiCatalog([card], runtime_release="2024")
+    payload = cast(
+        dict[str, Any],
+        _api_lookup_payload(candidate.lookup("Material.Elastic"), error_excerpt=None),
+    )["cards"][0]
+    assert payload["summary"] == (record.summary if official_present else "")
+    assert payload["required_arguments"] == (
+        [p.name for p in record.required_parameters] if official_present else []
+    )
+    assert payload["optional_arguments"] == (
+        [p.name for p in record.optional_parameters] if official_present else []
+    )
+    assert payload["return_description"] == (
+        record.return_description if official_present else ""
+    )
+    assert len(payload["official_variants"]) == int(official_present)
+
+
+def test_variant_required_parameters_are_not_flattened(tmp_path):
+    catalog, records, _ = source_catalog(tmp_path)
+    record = next(r for r in records if r.callable_name == "Elastic")
+    variants = tuple(
+        record.model_copy(
+            update={
+                "record_id": name,
+                "summary": f"Construct from a {name}.",
+                "required_parameters": (
+                    ApiParameter(
+                        name=name, required=True, description=f"The input {name}."
+                    ),
+                ),
+                "optional_parameters": (),
+            }
+        )
+        for name in ("part", "model")
+    )
+    card = (
+        catalog.lookup("Material.Elastic")
+        .cards[0]
+        .model_copy(update={"official_records": variants})
+    )
+    payload = cast(
+        dict[str, Any],
+        _api_lookup_payload(
+            ApiCatalog([card], runtime_release="2024").lookup("Material.Elastic"),
+            error_excerpt=None,
+        ),
+    )["cards"][0]
+    first, second = payload["official_variants"]
+    assert first["required_argument_details"] == [
+        {"name": "part", "description": "The input part."}
+    ]
+    assert second["required_argument_details"] == [
+        {"name": "model", "description": "The input model."}
+    ]
+    assert "required_argument_details" not in payload
