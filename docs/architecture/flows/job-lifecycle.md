@@ -7,6 +7,13 @@ Job 名、预留权限/预算并启动后台 Abaqus/Standard，立即返回 exec
 timeout，保存日志、完整 execution journal 和 artifact delta，并把证据交给 Coder 与宿主 verifier。冻结
 profile 的一步式 Solver 工具仍按其批次合同运行。
 
+当前同步 Solver 工具与后台 submit 都先复用 runner 的启动前校验，再累计 Solver 与 Abaqus 总调用次数。
+Job 名、资源参数、timeout 或输入文件（存在性、工作区归属、文件类型及后缀）不合法时，返回校验错误，
+不创建后台任务，也不消耗这两项执行额度；工具调用和模型请求仍正常记录。校验通过后的进程创建失败、
+许可证或求解错误继续计入次数，不依赖日志分类退还额度。启动前校验后文件被外部改动的竞争情况也不退还。
+后台返回 submitted 仅表示已创建后台执行任务，不保证 Abaqus 已成功启动。冻结历史 worker 不回填此规则。
+
+
 ```mermaid
 stateDiagram-v2
     [*] --> VALIDATING

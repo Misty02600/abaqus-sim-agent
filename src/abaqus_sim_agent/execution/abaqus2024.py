@@ -366,6 +366,29 @@ class Abaqus2024Runner:
             input_artifacts=(relative_script,),
         )
 
+    def validate_solver_job(
+        self,
+        job_name: str,
+        *,
+        input_file: Path | str | None = None,
+        timeout_seconds: float | None = None,
+        cpus: SolverCpus | None = None,
+        memory: SolverMemory | None = None,
+    ) -> Path:
+        """校验启动前参数并返回输入文件路径；不创建任务或启动进程。"""
+        solver_resource_arguments(cpus, memory)
+        if not _JOB_NAME_PATTERN.fullmatch(job_name):
+            raise ValueError(
+                "job_name must start with an ASCII letter and contain only "
+                "ASCII letters, digits, underscores, or hyphens (max 80 chars)"
+            )
+        if timeout_seconds is not None and timeout_seconds <= 0:
+            raise ValueError("timeout_seconds must be greater than zero")
+        return self._resolve_input_file(
+            input_file if input_file is not None else f"{job_name}.inp",
+            suffix=".inp",
+        )
+
     async def run_solver_job(
         self,
         job_name: str,
@@ -375,17 +398,14 @@ class Abaqus2024Runner:
         cpus: SolverCpus | None = None,
         memory: SolverMemory | None = None,
     ) -> AbaqusExecutionResult:
-        resource_args = solver_resource_arguments(cpus, memory)
-        if not _JOB_NAME_PATTERN.fullmatch(job_name):
-            raise ValueError(
-                "job_name must start with an ASCII letter and contain only "
-                "ASCII letters, digits, underscores, or hyphens (max 80 chars)"
-            )
-
-        input_path = self._resolve_input_file(
-            input_file if input_file is not None else f"{job_name}.inp",
-            suffix=".inp",
+        input_path = self.validate_solver_job(
+            job_name,
+            input_file=input_file,
+            timeout_seconds=timeout_seconds,
+            cpus=cpus,
+            memory=memory,
         )
+        resource_args = solver_resource_arguments(cpus, memory)
         relative_input = input_path.relative_to(self.workspace).as_posix()
         command = [
             str(self.launcher),
@@ -411,7 +431,13 @@ class Abaqus2024Runner:
         cpus: SolverCpus | None = None,
         memory: SolverMemory | None = None,
     ) -> str:
-        solver_resource_arguments(cpus, memory)
+        self.validate_solver_job(
+            job_name,
+            input_file=input_file,
+            timeout_seconds=timeout_seconds,
+            cpus=cpus,
+            memory=memory,
+        )
         execution_id = uuid4().hex
         with telemetry.execution_context(execution_id=execution_id):
             self._solver_tasks[execution_id] = asyncio.create_task(

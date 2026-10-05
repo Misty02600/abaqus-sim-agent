@@ -540,6 +540,33 @@ async def _run_abaqus_python_tool(
         return payload
 
 
+def _solver_validation_error(
+    dependencies: CodingAgentDependencies,
+    job_name: str,
+    input_file: str,
+    *,
+    cpus: SolverCpus | None,
+    memory: SolverMemory | None,
+) -> dict[str, object] | None:
+    try:
+        dependencies.runner.validate_solver_job(
+            job_name,
+            input_file=input_file,
+            cpus=cpus,
+            memory=memory,
+            timeout_seconds=dependencies.request.runtime_policy.timeout_seconds(
+                "solver"
+            ),
+        )
+    except (OSError, ValueError) as exc:
+        return {
+            "succeeded": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+    return None
+
+
 async def _run_solver_tool(
     ctx: RunContext[CodingAgentDependencies],
     job_name: str,
@@ -581,6 +608,13 @@ async def _run_solver_tool(
                 return blocked
         else:
             recorded = None
+        validation_error = _solver_validation_error(
+            dependencies, job_name, input_file, cpus=cpus, memory=memory
+        )
+        if validation_error is not None:
+            if recorded is not None:
+                validation_error["recorded_probe_result"] = recorded["probe"]
+            return validation_error
         exhausted = dependencies.reserve_runtime_call(solver=True)
         if exhausted:
             raise RuntimeBudgetExceeded(exhausted)
@@ -632,6 +666,11 @@ async def _submit_solver_tool(
         dependencies, kind="solver_input", path=input_file
     ):
         return document_denied
+    validation_error = _solver_validation_error(
+        dependencies, job_name, input_file, cpus=cpus, memory=memory
+    )
+    if validation_error is not None:
+        return validation_error
     exhausted = dependencies.reserve_runtime_call(solver=True)
     if exhausted:
         raise RuntimeBudgetExceeded(exhausted)

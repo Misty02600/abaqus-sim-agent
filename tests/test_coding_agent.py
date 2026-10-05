@@ -2564,3 +2564,139 @@ def test_solver_resource_tool_validation_precedes_execution(tmp_path, probe_mode
     assert len(commands) == 1
     assert commands[0][-2:] == ("cpus=4", "memory=50%")
     assert dependencies.executions[0].command == commands[0]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("background", [False, True])
+@pytest.mark.parametrize(
+    ("job_name", "input_file"),
+    [
+        ("bad name", "demo.inp"),
+        ("demo", "missing.inp"),
+        ("demo", "wrong.txt"),
+        ("demo", "../outside.inp"),
+        ("demo", "directory.inp"),
+    ],
+)
+async def test_solver_prevalidation_failure_preserves_runtime_budget(
+    tmp_path, background, job_name, input_file
+):
+    from pydantic_ai import RunContext
+    from pydantic_ai.models.test import TestModel
+    from pydantic_ai.usage import RunUsage
+
+    from abaqus_sim_agent.coding.runtime_tools import (
+        _run_solver_tool,
+        _submit_solver_tool,
+        _wait_solver_tool,
+    )
+
+    request = _request(tmp_path)
+    for name in ("demo.inp", "wrong.txt"):
+        (request.workspace / name).write_text("*HEADING\n", encoding="ascii")
+    (tmp_path / "outside.inp").write_text("*HEADING\n", encoding="ascii")
+    (request.workspace / "directory.inp").mkdir()
+    commands = []
+
+    class Process:
+        async def run(self, command, *, cwd, timeout_seconds):
+            commands.append(tuple(command))
+            return ProcessOutput(exit_code=0, stdout=b"", stderr=b"")
+
+    runner = Abaqus2024Runner(
+        request.workspace, request.state_dir, process_strategy=Process()
+    )
+    deps = CodingAgentDependencies(request=request, runner=runner)
+    # Existing usage must survive both a rejected call and the following valid call.
+    deps.abaqus_calls = 2
+    deps.solver_calls = 1
+    ctx = RunContext(deps=deps, model=TestModel(), usage=RunUsage())
+
+    async def call(job, inp):
+        if background:
+            return await _submit_solver_tool(deps, job, inp)
+        return await _run_solver_tool(
+            ctx,
+            job,
+            inp,
+            probe_protocol_enabled=False,
+            probe_result=None,
+            probe_target_scripts=None,
+            api_catalog_mode="off",
+            diagnostic_retrieval_mode="off",
+        )
+
+    rejected = await call(job_name, input_file)
+    assert rejected["succeeded"] is False
+    assert rejected["error_type"] in {"ValueError", "FileNotFoundError"}
+    assert (deps.abaqus_calls, deps.solver_calls) == (2, 1)
+    assert not commands
+    assert not runner._solver_tasks
+    assert not deps.pending_solver_executions
+    assert not deps.executions
+
+    accepted = await call("demo", "demo.inp")
+    if background:
+        accepted = await _wait_solver_tool(
+            deps,
+            str(accepted["execution_id"]),
+            api_catalog_mode="off",
+            diagnostic_retrieval_mode="off",
+        )
+    assert accepted["succeeded"] is True
+    assert (deps.abaqus_calls, deps.solver_calls) == (3, 2)
+    assert len(commands) == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("background", [False, True])
+@pytest.mark.parametrize("process_error", [False, True])
+async def test_solver_failure_after_prevalidation_still_consumes_budget(
+    tmp_path, background, process_error
+):
+    from pydantic_ai import RunContext
+    from pydantic_ai.models.test import TestModel
+    from pydantic_ai.usage import RunUsage
+
+    from abaqus_sim_agent.coding.runtime_tools import (
+        _run_solver_tool,
+        _submit_solver_tool,
+        _wait_solver_tool,
+    )
+
+    request = _request(tmp_path)
+    (request.workspace / "demo.inp").write_text("*HEADING\n", encoding="ascii")
+
+    class Process:
+        async def run(self, command, *, cwd, timeout_seconds):
+            if process_error:
+                raise OSError("process creation failed")
+            return ProcessOutput(exit_code=1, stdout=b"", stderr=b"solver failed")
+
+    deps = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(
+            request.workspace, request.state_dir, process_strategy=Process()
+        ),
+    )
+    if background:
+        submitted = await _submit_solver_tool(deps, "demo", "demo.inp")
+        result = await _wait_solver_tool(
+            deps,
+            str(submitted["execution_id"]),
+            api_catalog_mode="off",
+            diagnostic_retrieval_mode="off",
+        )
+    else:
+        result = await _run_solver_tool(
+            RunContext(deps=deps, model=TestModel(), usage=RunUsage()),
+            "demo",
+            "demo.inp",
+            probe_protocol_enabled=False,
+            probe_result=None,
+            probe_target_scripts=None,
+            api_catalog_mode="off",
+            diagnostic_retrieval_mode="off",
+        )
+    assert result["succeeded"] is False
+    assert (deps.abaqus_calls, deps.solver_calls) == (1, 1)

@@ -15,6 +15,7 @@ from abaqus_sim_agent.coding.contracts import CodingRunBudget
 from abaqus_sim_agent.coding.model import DeepSeekGateway
 from abaqus_sim_agent.coding.options import RunOptions
 from abaqus_sim_agent.execution import (
+    Abaqus2024Runner,
     AbaqusExecutionResult,
     AbaqusInvocation,
     ArtifactChange,
@@ -47,10 +48,11 @@ def _result(tmp_path: Path, workspace: Path) -> AbaqusExecutionResult:
     )
 
 
-class _DeferredSuccessfulSolver:
+class _DeferredSuccessfulSolver(Abaqus2024Runner):
     def __init__(
         self, tmp_path: Path, workspace: Path, release: threading.Event
     ) -> None:
+        super().__init__(workspace, tmp_path / "solver-state")
         self.tmp_path = tmp_path
         self.workspace = workspace
         self.release = release
@@ -193,6 +195,9 @@ def _background_solver_app(tmp_path: Path, *, solver_resources: dict | None = No
         return FunctionModel(model), Client()
 
     def runner_factory(workspace, state, **kwargs):
+        input_file = workspace / "demo.inp"
+        if not input_file.exists():
+            input_file.write_text("*HEADING\nfixture\n", encoding="ascii")
         runner = _DeferredSuccessfulSolver(tmp_path, workspace, release)
         runners.append(runner)
         return runner

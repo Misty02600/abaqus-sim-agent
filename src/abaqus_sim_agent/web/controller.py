@@ -206,6 +206,9 @@ class _ToolExecutionRunner(DeferredSolverRunner):
                         )
             raise
 
+    def validate_solver_job(self, *args, **kwargs) -> Path:
+        return self._base.validate_solver_job(*args, **kwargs)
+
     async def run_solver_job(
         self,
         job_name: str,

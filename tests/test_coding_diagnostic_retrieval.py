@@ -419,6 +419,7 @@ def test_advisory_is_visible_in_same_solver_tool_return(
 ) -> None:
     index = _index((tmp_path / "index").resolve())
     request = _request(tmp_path, index)
+    (request.workspace / "plate.inp").write_text("*HEADING\n", encoding="ascii")
     observed: list[ModelMessage] = []
     calls = 0
 
