@@ -834,6 +834,7 @@ def _tool_payload(result: AbaqusExecutionResult) -> dict[str, object]:
         "process_succeeded": result.succeeded,
         "abaqus_error_detected": abaqus_error_detected,
         "python_traceback_detected": python_traceback_detected,
+        "python_fatal_error_detected": result.python_fatal_error_detected,
         "stage_succeeded": stage_succeeded,
         "invocation": result.invocation.value,
         "exit_code": result.exit_code,
@@ -847,6 +848,12 @@ def _tool_payload(result: AbaqusExecutionResult) -> dict[str, object]:
             change.model_dump(mode="json") for change in result.artifact_changes
         ],
     }
+    if result.python_fatal_error_detected:
+        payload["error_type"] = "PythonFatalError"
+        payload["error"] = (
+            "The Abaqus Python interpreter reported a fatal error. "
+            "Inspect stderr for the failing call; a zero launcher exit code does not mean the script completed."
+        )
     if result.invocation is AbaqusInvocation.SOLVER_JOB:
         payload["diagnostics"] = [
             diagnostic.model_dump(mode="json") for diagnostic in result.diagnostics

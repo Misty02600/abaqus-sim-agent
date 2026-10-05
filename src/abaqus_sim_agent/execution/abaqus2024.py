@@ -25,6 +25,9 @@ ABAQUS_2024_COMMAND = "abq2024"
 _JOB_NAME_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,79}$")
 _CREATE_NEW_PROCESS_GROUP = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x200)
 _CREATE_NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
+_PYTHON_FATAL_ERROR_MARKER = re.compile(
+    r"^(?:Windows fatal exception:|Fatal Python error:)", re.MULTILINE
+)
 _ABAQUS_ERROR_MARKER = re.compile(r"^\s*\*{3}\s*ERROR\b", re.IGNORECASE)
 _ABAQUS_WARNING_MARKER = re.compile(r"^\s*\*{3}\s*WARNING\b", re.IGNORECASE)
 _ABAQUS_TERMINATION_MARKER = re.compile(
@@ -144,6 +147,14 @@ class AbaqusExecutionResult(_FrozenModel):
         return not self.timed_out and self.exit_code == 0
 
     @property
+    def python_fatal_error_detected(self) -> bool:
+        return self.invocation in {
+            AbaqusInvocation.CAE_NOGUI,
+            AbaqusInvocation.ABAQUS_PYTHON,
+            AbaqusInvocation.TRUSTED_ABAQUS_PYTHON,
+        } and bool(_PYTHON_FATAL_ERROR_MARKER.search(self.stderr))
+
+    @property
     def stage_succeeded(self) -> bool:
         abaqus_error_detected = "Abaqus Error:" in self.stdout
         python_traceback_detected = (
@@ -158,6 +169,7 @@ class AbaqusExecutionResult(_FrozenModel):
             self.succeeded
             and not abaqus_error_detected
             and not python_traceback_detected
+            and not self.python_fatal_error_detected
             and not diagnostic_error_detected
         )
 
@@ -230,6 +242,9 @@ class WindowsProcessStrategy:
         if timeout_seconds is not None and timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be greater than zero")
 
+        environment = subprocess_environment()
+        # The launcher can return zero after its Python child crashes; retain the fault in stderr.
+        environment["PYTHONFAULTHANDLER"] = "1"
         if os.name == "nt":
             # CreateProcess does not apply PATHEXT to an extensionless batch command.
             # Locate the fixed command at execution time; this is not a user setting.
@@ -241,7 +256,7 @@ class WindowsProcessStrategy:
             creationflags = _CREATE_NEW_PROCESS_GROUP | _CREATE_NO_WINDOW
             process = await asyncio.create_subprocess_exec(
                 *command,
-                env=subprocess_environment(),
+                env=environment,
                 cwd=cwd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
@@ -250,7 +265,7 @@ class WindowsProcessStrategy:
         else:
             process = await asyncio.create_subprocess_exec(
                 *command,
-                env=subprocess_environment(),
+                env=environment,
                 cwd=cwd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,

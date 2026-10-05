@@ -559,7 +559,14 @@ async def test_windows_strategy_reports_spawned_process_id_before_waiting(
         def kill(self) -> None:
             self.returncode = 1
 
-    async def fake_spawn(*_command: str, **_kwargs: object) -> ImmediateProcess:
+    monkeypatch.setenv("PYTHONFAULTHANDLER", "0")
+    monkeypatch.setenv("OPENCODE_API_KEY", "fixture-secret")
+
+    async def fake_spawn(*_command: str, **kwargs: object) -> ImmediateProcess:
+        environment = kwargs["env"]
+        assert isinstance(environment, dict)
+        assert environment["PYTHONFAULTHANDLER"] == "1"
+        assert "OPENCODE_API_KEY" not in environment
         return ImmediateProcess()
 
     monkeypatch.setattr(runner_module, "os", SimpleNamespace(name="nt"))
@@ -577,6 +584,7 @@ async def test_windows_strategy_reports_spawned_process_id_before_waiting(
         process_started=observed_pids.append,
     )
 
+    assert os.environ["PYTHONFAULTHANDLER"] == "0"
     assert observed_pids == [24680]
     assert result.exit_code == 0
 
@@ -759,3 +767,73 @@ async def test_invalid_solver_resources_do_not_start_process(
             await runner.run_solver_job("plate", input_file="plate.inp", **options)
     assert not strategy.calls
     assert not runner._solver_tasks
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "invocation",
+    [
+        AbaqusInvocation.CAE_NOGUI,
+        AbaqusInvocation.ABAQUS_PYTHON,
+        AbaqusInvocation.TRUSTED_ABAQUS_PYTHON,
+    ],
+)
+@pytest.mark.parametrize(
+    "header",
+    [
+        "Windows fatal exception: access violation",
+        "Fatal Python error: Segmentation fault",
+    ],
+)
+async def test_native_python_fault_with_zero_exit_is_visible_to_model(
+    tmp_path, invocation, header
+):
+    from abaqus_sim_agent.coding.runtime_tools import _tool_payload
+
+    stderr = (
+        header
+        + '\nCurrent thread 0x00001234:\n  File "extract.py", line 7 in <module>\n'
+    ).encode()
+    strategy = FakeProcessStrategy(
+        ProcessOutput(exit_code=0, stdout=b"", stderr=stderr)
+    )
+    runner, workspace, _ = make_runner(tmp_path, strategy)
+    (workspace / "extract.py").write_text("pass\n", encoding="ascii")
+    result = await runner.run_abaqus_python("extract.py")
+    result = result.model_copy(update={"invocation": invocation})
+    assert result.exit_code == 0
+    assert result.succeeded
+    assert result.python_fatal_error_detected
+    assert not result.stage_succeeded
+    assert result.stderr_raw_path.read_bytes() == stderr
+    payload = _tool_payload(result)
+    assert payload["process_succeeded"] is True
+    assert payload["succeeded"] is False
+    assert payload["stage_succeeded"] is False
+    assert payload["python_fatal_error_detected"] is True
+    assert payload["error_type"] == "PythonFatalError"
+    stderr_tail = payload["stderr_tail"]
+    assert isinstance(stderr_tail, str)
+    assert "extract.py" in stderr_tail
+    assert payload["exit_code"] == 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "stderr",
+    [
+        b"",
+        b"ordinary diagnostic warning\n",
+        b"Example: Windows fatal exception: access violation\n",
+        b'  print("Fatal Python error: example text")\n',
+    ],
+)
+async def test_normal_python_output_is_not_a_fatal_error(tmp_path, stderr):
+    strategy = FakeProcessStrategy(
+        ProcessOutput(exit_code=0, stdout=b"finished", stderr=stderr)
+    )
+    runner, workspace, _ = make_runner(tmp_path, strategy)
+    (workspace / "extract.py").write_text("pass\n", encoding="ascii")
+    result = await runner.run_abaqus_python("extract.py")
+    assert result.stage_succeeded
+    assert not result.python_fatal_error_detected
