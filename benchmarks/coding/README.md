@@ -9,7 +9,8 @@
 - [合同与证据详表](domain_mechanics_case_details.md)：物理判据、逐题证据、当前预算和资源条件。
 - 当前入口：`python -m abaqus_sim_agent.evaluation.public_mechanics_suite --help`。
 
-新批次使用 `public-mechanics-e2e-v27-bounded-feedback`，`prepare`默认选已确认的15题：均布梁、圆轴、厚壁圆筒、孔板、VM184及NAFEMS LE1–LE10。
+新批次使用 `public-mechanics-e2e-v28-submitted-results`，`prepare`默认选已确认的15题：均布梁、圆轴、厚壁圆筒、孔板、VM184及NAFEMS LE1–LE10。
+数值评分比较模型提交值与隐藏参考值，不再运行独立ODB读取或强制JSON与另一套读数一致；实际三阶段执行与交付证据保留。
 题设不提供参考答案；首次提交固定留证，最多两轮反馈、三次提交，首次与最终自动评分分别报告。
 新批次拒绝未经答案内容审查的外部参考附件，累计预算与恢复沿用同一CodingRun；详见[结果报告约定](result_reporting.md)。
 全部20题仍保留定义；`--case`可指定子集或历史/未入选题。历史及LE11可以产生诊断记录，但不增加评分分母。
@@ -18,8 +19,8 @@
 
 真实Case由原生Dataset组织，task调用现有Service并返回验收证据；`TaskPassed(Evaluator)`与`SuiteSummary(ReportEvaluator)`产生结果。
 运行中由原生CaseLifecycle更新progress.json/progress.md，完整报告在调用结束时生成。
-独立report只读重建，不重跑业务；执行档案保留该次评分错误，缺失需求审查时保留待审，
-不把自动oracle通过扩大为完整任务通过。规则、原生报告、审查记录及重建方式见[结果报告约定](result_reporting.md)。
+独立report只读重建，不重跑业务；执行档案保留该次评分错误，不读取reviews文件或要求逐项人工确认。
+通过范围为执行、交付及提交数值，不扩大为全部建模细节已核实。规则、原生报告、审查记录及重建方式见[结果报告约定](result_reporting.md)。
 新worker的`run/continue/resume/report/launch --phoenix`可显式记录真实attempt并上传已算评分，默认关闭；
 报告重建不产生新的仿真追踪，详见[Phoenix接线](result_reporting.md#phoenix追踪与评分)。
 
@@ -43,7 +44,7 @@
 不从今天的Case注册表回填说明；元数据损坏或旧协议均拒绝覆盖报告。旧批次使用原worker，不自动迁移或补填字段。
 
 端到端描述运行范围；按物理Case计数，输入变体不增加领域仿真题权重。旧plate/bar/B31 Gold的独立入口和专属测试已退出；冻结报告、请求和参考脚本保留，用于解释历史，不作为当前成绩。
-参考脚本、假模型工程测试、真实Agent正式结果、事后恢复分开报告；results-first自动通过不替代完整规格审查。
+参考脚本、假模型工程测试、真实Agent正式结果、事后恢复分开报告；v28自动通过表示实际执行与提交数值指标通过，不表示独立核实完整模型。
 
 ## 修改、修复与行为
 

@@ -54,7 +54,7 @@ def root_fixture(tmp_path, names=None):
             "knowledge_resources": None,
             "max_task_concurrency": 1,
             "max_runtime_concurrency": 1,
-            "verification_policy": "results_first_v1",
+            "verification_policy": "submitted_results_v1",
             "max_explicit_resumes": 3,
             "execution_config": config.model_dump(mode="json"),
             "budgets": {

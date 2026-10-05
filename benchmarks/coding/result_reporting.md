@@ -1,23 +1,23 @@
 # 基础线性评测结果与自定义规则
 
-新批次协议为`public-mechanics-e2e-v27-bounded-feedback`。当前Pydantic Evals 2.51.0组织真实Case执行、单题评分和整批汇总；
+新批次协议为`public-mechanics-e2e-v28-submitted-results`。当前Pydantic Evals 2.51.0组织真实Case执行、单题评分和整批汇总；
 现有CodingRunService、外部执行、物理verifier和恢复策略继续拥有原始运行事实。
 
 ## 首次提交与有限反馈
 
 模型题设保留完整物理输入、交付物、取值位置/分量/单位、壳表面、平均或外推方式，以及自主网格收敛检查要求。
-参考答案、相对答案的偏差和官方样例结果只留在评测侧。v27不再附加外部整包参考目录：入口拒绝
+参考答案、相对答案的偏差和官方样例结果只留在评测侧。v28不再附加外部整包参考目录：入口拒绝
 `--knowledge-resources`，避免把未经答案内容审查的文件传给模型；内置领域Skill及API Catalog继续使用。
 公开题仍可能被模型从训练或其他资料获知，此合同不保证答案绝对未知。
 
 每次有效`ready_for_verification`完成声明先在`state/submissions/001`等独立目录保存
-`submission.json`（声明、累计用量、文件摘要）和`workspace/`字节副本，再运行现有独立ODB与执行证据验收。
+`submission.json`（声明、累计用量、文件摘要）和`workspace/`字节副本，再验证实际建模、求解、提取与交付物的执行证据，并比较提交值与隐藏参考值及容差。
 缺失交付也计一次提交。`result.json`保存完整内部评分，评分异常另留`error.json`；后续修复不覆盖前次目录。
 反馈只生成受控的失败指标或交付检查名称，原诊断文本不进入模型消息。宿主将实际写入history的反馈记为
 `verification_feedback`事件；报告据此统计反馈轮数。
 
 首次失败后最多两轮反馈，最多三次提交；通过、第三次失败、累计预算耗尽或模型明确失败时停止。
-评分器异常或独立读取器运行失败归为`evaluation_error`，不邀请模型修复，也不记成答案错误。
+评分器异常归为`evaluation_error`，不邀请模型修复，也不记成答案错误。
 提交前自调试不计反馈次数，所有阶段共用200次模型请求、80次Abaqus调用（含至多10次Solver）和5400秒活动时间。
 这些均沿用同一CodingRun的累计预算。普通产品没有开启提交留证回调和有限反馈控制，验收行为不变。
 
@@ -28,10 +28,33 @@
 原生报告和派生报告分别保存`first_submission_status`、`final_submission_status`、`submission_count`、
 `feedback_rounds`和逐提交累计`submission_usage`。状态为`passed`、`failed`、`not_submitted`或
 `evaluation_error`；未评分的中断提交属于测评未完成/错误，不计答案失败。原生断言
-`first_submission_pass`与`final_submission_pass`记录自动评分，完整`task_pass`仍需独立需求审查。
+`first_submission_pass`与`final_submission_pass`记录自动评分，`task_pass`只合并实际执行/交付与提交数值检查，不设置人工需求审查门槛。
 每项通过率以计划中的物理Case为分母，每题只占一个权重；修复轮次、评分错误和未交付不增加题目数。
 首次通过则最终同为通过；从未声明完成明确显示未交付。预算耗尽后不额外验收以制造一次首次提交。
 新合同只进入新批次，既有v26 worker、workspace、state、报告及80/30预算均保持原值。
+
+## v28数值评分与通过范围
+
+`verification_policy=submitted_results_v1`只比较本次`results.json`中有限、非布尔的数值与隐藏参考值及容差。
+验收记录用`reported`保存实际评分值；原生报告的相对误差也来自这些提交值。缺项、字符串、布尔、NaN或无穷大均为提交失败。
+新入口不再运行另一套ODB提取程序，不比较JSON与独立读数，不要求单实例、精确取值节点或指定的提取API。
+已无其他活动消费者的公开力学独立读取器、有界INP检查及重复数值比较逻辑撤除；旧冻结worker保留其自身副本。
+
+执行层继续核对非空交付声明、fresh文件、Python 3.10语法、最后一次已用runtime阶段、当前CAE/INP/ODB/JSON的执行顺序和hash来源、
+Solver完成状态，以及CAE不生成Solver产物。该层复用产品`ExecutionEvidenceVerifier`和既有逐阶段provenance，不创建另一套作业或评分框架。
+题设继续明确几何、材料、载荷、约束和目标取值，模型自主完成；测评不解析INP核实这些建模细节，也不转交为逐项人工确认。仅凭执行记录和提交数值不能排除硬编码或提取错误。
+旧自动geometry/material/EVOL identity检查也随读取器撤除，不把这些能力继续算作新自动评分。新协议使用`numeric_ok`表示提交值的数值判定，不表示独立复测ODB或核实全部物理建模。
+
+孔板和实体悬臂继续要求粗细两套INP/ODB和两次Solver执行。顶层指标来自细网格；`coarse_metrics`对象分别保存粗网格的
+`hole_max_s11`或`tip_u1_x/tip_u2_y/tip_u3_z`。提取脚本须从各自ODB取值，宿主按提交的同名指标检查相对细网格变化不超过1%；
+未交粗网格数值不能仅凭第二个文件名通过。模型须说明两套取值方法一致，几何与物理条件不变。
+
+15题逐项保留位置、分量、单位和物理面：LE1/LE10保留D点全局S22，LE2/7/8/9保留物理外表面及相应方向，LE4/5保留壳中面，
+LE6保留板中心下表面面内最大主应力，并从同一位置的应力张量计算；厚壁圆筒保留r-z面积加权平均；孔板保留孔壁S11最大值，
+实体梁保留自由端面各工况方向位移最大值，梁/轴保留由截面合力恢复名义应力。允许合理插值、外推及坐标转换，不能改成附近峰值或Mises。
+壳表面需按实际法向和截面积分映射，不强制SPOS、固定Gauss点数或一套外推算法。逐题合同见[案例详表](domain_mechanics_case_details.md)。
+
+v27的首次留证、最多两轮反馈、累计预算和未完成检查点拒绝恢复规则全部沿用；新数值合同只用于v28新批次，v26/v27历史成绩不回填。
 
 ## 结果文件
 
@@ -53,15 +76,13 @@ TaskPassed和SuiteSummary直接对这次结果评分。完成后报告接收原�
 框架`report.failures`表示task适配/证据投影异常；Service已保存的Provider中断仍来自`run_status/failure_kind`。
 
 每次Dataset正常返回时，完整原生结果同时保存在`control/evaluation-<invocation_id>.json`，保留该次评分错误及恢复范围。
-它是不可复用的结果档案，不是恢复状态机。根目录报告是当前派生视图，显式report可在补充需求审查后更新；
+它是不可复用的结果档案，不是恢复状态机。根目录报告是当前派生视图，显式report可读取已有运行记录重新生成；
 不得拿后来的重建结果覆盖原执行档案来隐藏当时的评分失败。
 
-## 审查更新与异常留存
+## 异常留存
 
-正常run结束时保留每个Case完成时的原生评分快照；后补、撤回或修改需求审查不再被当成执行证据损坏。
-`review_updates_pending`列出审查记录已有变化的Case，并在Markdown中提示显式运行report刷新。
-这些Case的旧分数不会在本次收尾再次上传Phoenix；显式report读取最新审查后再上传。outcome、验收事件、用量、
-Case身份和冻结输入的校验继续保留，真正执行证据漂移仍拒绝覆盖报告。
+正常run结束时保存每个Case完成时的原生评分快照。v28不读取reviews文件，不产生pending_review或requirements_ok，不要求逐项人工确认INP解析规则。
+已有审查文件保留原字节，但不影响本批计分或Phoenix反馈。
 
 任务适配或单题评分异常通过CaseLifecycle立即追加到已有`control/events.jsonl`的`case_evaluation_error`事件，
 保留Case、调用ID、阶段及错误摘要，不保存完整框架检查点。根目录报告的`evaluation_errors`及“已记录的评测异常”
@@ -104,51 +125,28 @@ teardown直接使用原生ReportCase/ReportCaseFailure及已有判定更新`prog
 [TaskPassed](../../src/abaqus_sim_agent/evaluation/mechanics_grading.py)实现`Evaluator`：
 
 - `execution_ok`来自已有verifier的执行/交付阶段结果；缺少验收记录时未知。
-- `physics_ok`是已有自动oracle接受结果与冻结数值目标的检查，不宣称覆盖全部建模语义。
-- `requirements_ok`来自下述绑定证据的需求审查；自动结果通过或advisories为空不能替代它。
-- 只有原run为completed、三个检查均通过、已有自动验收通过且仍在正式合同内，才产生`task_pass=True`。
-- 明确的任务失败产生`task_pass=False`。未运行、中断、缺失判定及待审不伪填为物理失败；没有布尔判定时用label保留状态。
+- `numeric_ok`来自提交值与冻结数值目标的检查，不宣称覆盖全部建模语义。
+- 只有原run为completed、执行/交付与数值检查均通过、已有自动验收通过且仍在正式合同内，才产生`task_pass=True`。
+- 明确的任务失败产生`task_pass=False`。未运行、中断和缺失判定不伪填为数值失败；没有布尔判定时用label保留状态。
 - 有amendment/task revision或超过冻结显式resume次数的结果标为posthoc，不用它回填正式成绩；正常的预算内resume仍可保持正式资格。
-- 绑定改变、记录损坏、过期审查、scope/policy不符标为invalid_evidence。单题评分器异常由原生evaluator_failures记录。
+- 绑定改变、记录损坏、scope/policy不符标为invalid_evidence。单题评分器异常由原生evaluator_failures记录。
 
 宿主运行分类原先把completed命名为formal_pass，新报告改为`completed`；`task_verdict`另行表达真正的评测结论。
 原始outcome、验收事件、工作区、raw日志和旧报告不会因此被改写。
-
-## 需求审查记录
-
-可在批次工作区之外的`<ROOT>/reviews/<case_id>.json`提供审查记录：
-
-```json
-{
-  "case_id": "cantilever-uniform-load",
-  "reviewer": "实际审查者或审查流程的标识",
-  "reviewed_at": "2026-09-27T00:00:00Z",
-  "passed": true,
-  "reason": "结合题设、实际模型与输入、建模/提取脚本及运行证据写明判断依据",
-  "outcome_sha256": "复制本批原生报告output.evidence_sha256中的对应64位摘要",
-  "verification_event_sha256": "复制同一output.evidence_sha256中的对应64位摘要"
-}
-```
-
-摘要占位文字必须替换为实际值。`RequirementsReview`校验身份、时间、非空理由、bool结论和摘要格式，
-并检查记录是否仍绑定当前outcome及同revision/amendment下最后一次verification事件。
-verification摘要针对事件原始行字节，不含换行符；不要重新序列化事件后猜测摘要。
-报告保留有效审查的身份、时间、理由与文件hash。系统不生成通过意见，不自动签署，也不把AI判断声称为真人验收。
-审查者需检查对应版本的实际证据；hash只能绑定版本，不能证明审查意见本身正确。
 
 ## 整批规则
 
 `SuiteSummary`实现`ReportEvaluator`，用`ScalarResult`和`TableResult`返回统计。
 
 - 计划分母为冻结`manifest.case_ids`与`manifest.scoring_case_ids`的交集，一题一票；VM184三工况合计一道题。
-- 通过率为已确认通过数/计划题数，未运行、中断、待审、证据异常、评分异常和posthoc记录不从分母消失。
-- 同时显示各状态数量；例如0通过但15待审不等于15个已证实的任务错误。
+- 通过率为已确认通过数/计划题数，未运行、中断、证据异常、评分异常和posthoc记录不从分母消失。
+- 同时显示各状态数量；未开始或中断的题目不伪填为已证实的数值失败。
 - 历史/未入选题可以显示诊断结果，但不计入主统计；没有计分题时不生成通过率，避免除零或虚构0%/100%。
 - 自定义子集仍用`full_set_selected=false`标注，不能冒充完整15题结果。
 - 资源表只合计已记录数值，并报告有值的题数；未知费用不填0，活动时间之和不是并发批次总耗时。
 - 不把`report.averages().assertions`作为任务通过率，也不按断言数量或标签计算权重。
 
-使用该批次原worker的`report --root <ROOT>`命令可重建视图。新worker拒绝覆盖v25或更早报告，
+使用该批次原worker的`report --root <ROOT>`命令可重建视图。新worker拒绝覆盖v27及更早报告，
 新判定语义需新批次，不能对旧成绩自动升级。离线接口测试通过不代表15题真实Agent/物理验收通过。
 
 ## Phoenix追踪与评分
@@ -174,16 +172,17 @@ uv run --no-sync python D:/abaqus-runs/my-batch/worker.py report --root D:/abaqu
 `<ROOT>/telemetry/<case_id>/<attempt>.json`保存本机collector、trace/span ID，以及attempt、outcome、
 resume_state和验收事件文件的摘要。这是可缺失的观测关联，不属于运行ledger，也不参与计分。
 报告只关联最新attempt且摘要匹配的记录；未采集的恢复、证据变化、关联损坏或collector地址改变时跳过上传。
-缺少历史追踪时不会补造运行。需求审查本身可以新增或修订，不要求重新运行仿真。
+缺少历史追踪时不会补造运行。外部审查文件不参与本协议的评分和追踪关联。
 
 先保存全部本地报告，再复用Phoenix client上传已有断言、数值误差和状态；同一span、名称及identifier更新
-同一条annotation，重复生成报告不会新增一次运行。审查撤回或相应数值缺失时，受管评分字段更新为unknown，
+同一条annotation，重复生成报告不会新增一次运行。对应证据或数值缺失时，受管评分字段更新为unknown，
 不遗留旧的通过/数值副本；原始报告不会为了上传而补造断言。未开启`--phoenix`时只生成本地报告。
 
 服务不可用、上传失败或关联文件写入失败不改变outcome及计分；没有可靠补传队列。服务恢复后可显式重建报告，
 但实际运行的span若未送达，不保证仅重传评分就能恢复追踪。Phoenix里的旧attempt评分仍表示其当时状态，
 不能按所有attempt的annotation数量计算物理题通过率。
 
+以下接收验证与v26工程验证使用当时的人工审查计分语义；v28不沿用该审查门槛，历史证据不回填。
 既有[2026-09-29本机接收验证](../observability/public_mechanics_phoenix_20260929.json)通过实际`_run_case`入口与报告桥接，
 以离线Service/模型/runtime样例产生两题、一次中断后恢复，共3条Trace、6个span、40条annotation。
 重复报告保持数量不变；加入审查可更新通过评分，撤回后score变为null、label变为unknown，REST读回6个span。

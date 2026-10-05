@@ -5,7 +5,6 @@ import hashlib
 import json
 import os
 from collections import Counter
-from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from time import perf_counter
@@ -257,17 +256,13 @@ def read_case_observation(
 
 
 def _execution_binding(observation: MechanicsObservation) -> tuple:
-    # Reviews can change after a Case finishes; execution evidence and observed usage must not.
+    # Execution evidence and observed usage must match the recorded native result.
     return (
         observation.case_id,
         observation.status,
         observation.metrics,
         observation.evidence_path,
-        {
-            key: value
-            for key, value in observation.evidence_sha256.items()
-            if key != "requirements_review_sha256"
-        },
+        observation.evidence_sha256,
     )
 
 
@@ -328,7 +323,6 @@ async def build_report_async(
         )
         for case, row in zip(cases, rows, strict=True)
     }
-    review_updates_pending: list[str] = []
     if native_report is None:
         native = await evaluate_saved_results(
             cases,
@@ -362,12 +356,6 @@ async def build_report_async(
             for item in native_report.cases
         ):
             raise ValueError("native execution report no longer matches saved evidence")
-        review_updates_pending = [
-            item.name
-            for item in native_report.cases
-            if item.output.evidence_sha256.get("requirements_review_sha256")
-            != observations[item.name].evidence_sha256.get("requirements_review_sha256")
-        ]
         native = native_report
     associate_report_traces(root, manifest.get("batch_id", ""), native)
     verdicts = {case.name: native_task_verdict(case) for case in native.cases}
@@ -391,8 +379,7 @@ async def build_report_async(
     }
     summary_valid = not native.report_evaluator_failures
     report = {
-        "schema_version": "public-mechanics-report-v8",
-        "review_updates_pending": review_updates_pending,
+        "schema_version": "public-mechanics-report-v9",
         "evaluation_errors": evaluation_errors,
         "native_result_kind": "case_execution"
         if native_report is not None
@@ -418,13 +405,12 @@ async def build_report_async(
             "max_task_concurrency": manifest.get("max_task_concurrency", 1),
             "max_runtime_concurrency": manifest.get("max_runtime_concurrency", 1),
         },
-        "script_review_status": "see_bound_requirements_review_and_task_verdict",
         "at": datetime.now(UTC).isoformat(),
         "trials": rows,
         "bindings_unchanged": bindings_unchanged,
         "seal_sha256": hashlib.sha256((root / "seal.json").read_bytes()).hexdigest(),
         "native_report": "pydantic-evals-report.json",
-        "note": "Derived view. Task pass requires completion, saved verification and a bound requirements review. Incomplete/posthoc/evidence failures remain in the planned denominator. HTTP usage is not billing.",
+        "note": "Derived view. Task pass requires completion, execution evidence and submitted numerical targets. It does not independently verify all modeling details. Incomplete/posthoc/evidence failures remain in the planned denominator. HTTP usage is not billing.",
     }
     write_text_atomic(
         root / "pydantic-evals-report.json",
@@ -447,27 +433,17 @@ async def build_report_async(
     else:
         summary_line = (
             f"已确认任务通过：{summary.get('tasks_passed', 0)}/{summary.get('planned_tasks', 0)}；"
-            f"待审：{summary.get('tasks_pending_review', 0)}。未运行/中断不是已证实的物理失败，且不从计划分母剔除。"
+            "未运行/中断不伪填为数值失败，且不从计划分母剔除。"
         )
     lines = [
         "# 公开力学评测运行报告",
         "",
-        "自动派生视图，不修改原 outcome；收到的 usage 不包含失败调用账单。自动结果检查与评测者脚本审查分开记录。",
+        "自动派生视图，不修改原 outcome；收到的 usage 不包含失败调用账单。通过表示执行、交付及提交数值指标通过，不表示独立核实了全部建模细节。",
         "",
-        "计分成员来自本批冻结的manifest，标签不改变分母；历史诊断题不计分。这里只汇总自动终态，不替代脚本审查。",
+        "计分成员来自本批冻结的manifest，标签不改变分母；历史诊断题不计分。这里汇总实际执行和数值指标，不增加建模写法的人工确认门槛。",
         "",
         summary_line,
         "",
-        *(
-            [
-                "审查记录已有更新："
-                + ", ".join(review_updates_pending)
-                + "。当前保留Case完成时的评分快照；运行report读取最新审查。",
-                "",
-            ]
-            if review_updates_pending
-            else []
-        ),
         "| 案例 | 计分 | 运行状态 | 任务判定 | 首次/最终自动评分 | 反馈轮数 | 收到响应 | HTTP尝试/失败/未知 | Abaqus/Solver |",
         "|---|---|---|---|---|---:|---:|---|---|",
     ]
@@ -525,22 +501,14 @@ async def build_report_async(
         ]
     )
     write_text_atomic(root / "report.md", "\n".join(lines) + "\n")
-    # A later review must be explicitly re-read before its old grade is sent to Phoenix again.
-    feedback = replace(
-        native,
-        cases=[
-            case for case in native.cases if case.name not in review_updates_pending
-        ],
-    )
     await publish_evaluation_feedback(
-        feedback,
+        native,
         expected_annotations={
             case.case_id: {
                 "assertion": (
                     "task_pass",
                     "execution_ok",
-                    "requirements_ok",
-                    "physics_ok",
+                    "numeric_ok",
                     "automatic_pass",
                 ),
                 "score": tuple(f"relative_error.{key}" for key in case.metrics),

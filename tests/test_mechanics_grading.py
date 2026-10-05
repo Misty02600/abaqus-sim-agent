@@ -44,7 +44,7 @@ def freeze(root, names):
             "version": PUBLIC_MECHANICS_PROTOCOL,
             "case_ids": names,
             "scoring_case_ids": list(BASIC_LINEAR_CASE_IDS),
-            "verification_policy": "results_first_v1",
+            "verification_policy": "submitted_results_v1",
             "max_explicit_resumes": 3,
         },
     )
@@ -60,9 +60,7 @@ def freeze(root, names):
     )
 
 
-def completed(
-    root, name, *, review=True, amendment=0, failed=False, wrong_number=False
-):
+def completed(root, name, *, amendment=0, failed=False, wrong_number=False):
     state = root / name / "state"
     case = get_case(name)
     measured = {key: metric.target for key, metric in case.metrics.items()}
@@ -83,8 +81,8 @@ def completed(
         passed=True,
         feedback="fixture host verification",
         artifacts=(artifact,),
-        measured=measured,
-        verification_policy="results_first_v1",
+        reported=measured,
+        verification_policy="submitted_results_v1",
     )
     outcome = CodingRunOutcome(
         run_id="fixture-" + name,
@@ -106,19 +104,6 @@ def completed(
         ensure_ascii=False,
     ).encode("utf-8")
     (state / "events.jsonl").write_bytes(line + b"\n")
-    if review:
-        save_json(
-            root / "reviews" / f"{name}.json",
-            {
-                "case_id": name,
-                "reviewer": "fixture-reviewer",
-                "reviewed_at": "2026-09-27T00:00:00Z",
-                "passed": True,
-                "reason": "fixture requirements reviewed",
-                "outcome_sha256": digest((state / "outcome.json").read_bytes()),
-                "verification_event_sha256": digest(line),
-            },
-        )
     return state
 
 
@@ -142,7 +127,7 @@ def test_native_rules_keep_planned_denominator_and_all_evidence_layers(
     ]
     freeze(tmp_path, names)
     completed(tmp_path, names[0])
-    completed(tmp_path, names[1], review=False)
+    completed(tmp_path, names[1])
     completed(tmp_path, names[2], failed=True)
     save_json(
         tmp_path / names[3] / "state/resume_state.json",
@@ -168,23 +153,23 @@ def test_native_rules_keep_planned_denominator_and_all_evidence_layers(
     report = build_report(tmp_path, bindings_unchanged=True)
     summary = report["scoring"]["task_summary"]
     assert summary["planned_tasks"] == 6
-    assert summary["tasks_passed"] == 1
+    assert summary["tasks_passed"] == 2
     assert summary["tasks_failed"] == 1
-    assert summary["tasks_pending_review"] == 1
+    assert "tasks_pending_review" not in summary
     assert summary["tasks_unknown"] == 2
     assert summary["tasks_posthoc"] == 1
-    assert summary["task_pass_rate"] == pytest.approx(1 / 6)
+    assert summary["task_pass_rate"] == pytest.approx(2 / 6)
     assert not report["scoring"]["full_set_selected"]
     native = native_report(tmp_path)
     assert len(native.cases) == 7
     assert not native.failures
     by_name = {case.name: case for case in native.cases}
     assert by_name[names[1]].assertions["automatic_pass"].value is True
-    assert "task_pass" not in by_name[names[1]].assertions
-    assert by_name[names[2]].assertions["physics_ok"].value is True
+    assert by_name[names[1]].assertions["task_pass"].value is True
+    assert by_name[names[2]].assertions["numeric_ok"].value is True
     assert by_name[names[2]].assertions["task_pass"].value is False
     assert by_name[names[3]].labels["run_status"].value == "provider_interrupted"
-    assert "physics_ok" not in by_name[names[3]].assertions
+    assert "numeric_ok" not in by_name[names[3]].assertions
     assert by_name[names[6]].labels["score_scope"].value == "diagnostic"
     assert by_name[names[3]].metrics["requests"] == 3
     assert "input_tokens" not in by_name[names[3]].metrics
@@ -198,7 +183,6 @@ def test_default_assertion_average_is_not_task_pass_rate(tmp_path):
     names = ["cantilever-uniform-load", "circular-shaft-pure-torsion"]
     freeze(tmp_path, names)
     completed(tmp_path, names[0])
-    completed(tmp_path, names[1], review=False)
     report = build_report(tmp_path, bindings_unchanged=True)
     native = native_report(tmp_path)
     assert native.averages().assertions == 1
@@ -214,7 +198,7 @@ def test_incomplete_or_mismatched_evidence_cannot_become_task_pass(tmp_path, def
     state = completed(tmp_path, name)
     if defect == "outcome":
         value = read_json(state / "outcome.json")
-        value["summary"] = "changed since review"
+        value["artifacts"] = []
         save_json(state / "outcome.json", value)
     elif defect == "missing_event":
         (state / "events.jsonl").unlink()
@@ -223,7 +207,7 @@ def test_incomplete_or_mismatched_evidence_cannot_become_task_pass(tmp_path, def
     else:
         event = json.loads((state / "events.jsonl").read_bytes())
         if defect == "event":
-            event["data"]["feedback"] = "changed since review"
+            event["data"]["artifacts"] = []
         elif defect == "policy":
             event["data"]["verification_policy"] = "strict_contract_v1"
         else:
@@ -241,23 +225,27 @@ def test_host_pass_flag_cannot_override_saved_numeric_failure(tmp_path):
     report = build_report(tmp_path, bindings_unchanged=True)
     assert report["trials"][0]["task_verdict"] == "failed"
     native = native_report(tmp_path)
-    assert native.cases[0].assertions["physics_ok"].value is False
+    assert native.cases[0].assertions["numeric_ok"].value is False
     assert any(
         score.value == pytest.approx(0.5) for score in native.cases[0].scores.values()
     )
 
 
-def test_rejected_requirements_review_does_not_rewrite_outcome(tmp_path):
+def test_unrelated_review_records_do_not_gate_numeric_success(tmp_path):
     name = "circular-shaft-pure-torsion"
     freeze(tmp_path, [name])
     state = completed(tmp_path, name)
     original = (state / "outcome.json").read_bytes()
     path = tmp_path / "reviews" / f"{name}.json"
-    review = read_json(path)
-    review.update(passed=False, reason="Wrong support region in fixture")
-    save_json(path, review)
+    save_json(
+        path,
+        {
+            "passed": False,
+            "reason": "legacy parser complaint: surface load or FOLLOWER=NO",
+        },
+    )
     report = build_report(tmp_path, bindings_unchanged=True)
-    assert report["trials"][0]["task_verdict"] == "failed"
+    assert report["trials"][0]["task_verdict"] == "passed"
     assert (state / "outcome.json").read_bytes() == original
 
 

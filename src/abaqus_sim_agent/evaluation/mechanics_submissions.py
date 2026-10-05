@@ -150,22 +150,18 @@ def model_feedback(
                 "No extraction provenance after current solver outputs",
                 "extraction provenance",
             ),
-            ("ODB changed during oracle reading", "ODB stability"),
         ):
             if finding == detail:
                 checks.append(label)
                 matched = True
         for key in metric_names:
-            if finding.startswith((f"{key}:", f"missing/nonfinite oracle {key}")):
+            if finding.startswith(f"{key}:"):
                 checks.append(f"metric {key}")
                 matched = True
-            elif (
-                finding
-                == f"results.json {key} does not match independent ODB measurement"
-            ):
-                checks.append(f"results.json consistency for {key}")
-                matched = True
-            elif finding == f"refinement change exceeds 1% for {key}":
+            elif finding in {
+                f"refinement change exceeds 1% for {key}",
+                f"refinement values missing/nonfinite for {key}",
+            }:
                 checks.append(f"mesh convergence for {key}")
                 matched = True
         if not matched:
@@ -173,7 +169,7 @@ def model_feedback(
             checks.append(
                 "delivery and execution evidence"
                 if attempt.failure_stage == "provenance"
-                else "model identity and delivery checks"
+                else "submitted result and delivery checks"
             )
     if not checks:
         checks.append(
@@ -248,10 +244,6 @@ class MechanicsSubmissionVerifier:
             attempt = await self.verifier.verify(
                 request, runner, initial_snapshot, executions, decision
             )
-            if attempt.failure_stage == "oracle":
-                attempt = attempt.model_copy(
-                    update={"failure_stage": "evaluation_error"}
-                )
         except Exception as exc:
             # 完整诊断只落在宿主目录，绝不作为模型修复线索。
             write_text_atomic(

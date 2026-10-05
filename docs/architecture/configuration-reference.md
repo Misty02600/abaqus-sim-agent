@@ -486,10 +486,12 @@ HTTP 传入旧字段返回校验错误，不静默忽略。上下文窗口使用
 
 ## 当前实现：基础线性测评提交合同
 
-基础线性测评的独立冻结字段：`manifest.submission_policy`由v27程序固定为
+基础线性测评的独立冻结字段：`manifest.submission_policy`由v28程序固定为
 `first_submission_bounded_feedback_v1`，无用户覆盖或环境来源；`prepare`保存、worker校验，恢复不得更换。
+`manifest.verification_policy`由v28程序固定为`submitted_results_v1`，同样随批次冻结且不允许恢复覆盖；数值来自提交的results.json，无独立ODB读取。
+v28不再生成`manifest.script_review`，不读取reviews文件或以人工确认作为计分条件；报告使用`numeric_ok`，通过范围限于执行、交付和提交数值。
 该合同固定最多三次提交、两轮反馈，预算仍由原`manifest.budgets`转入同一CodingRun控制字段。
-`manifest.knowledge_resources`在v27固定为null，非空输入拒绝；旧批次继续使用其冻结worker。
+`manifest.knowledge_resources`在v28固定为null，非空输入拒绝；旧批次继续使用其冻结worker。
 上述字段仅属于测评批次，普通CLI/Web不增加对应选项。完整行为见[结果报告约定](../../benchmarks/coding/result_reporting.md)。
 
 ## 当前实现：逐次Solver工具参数

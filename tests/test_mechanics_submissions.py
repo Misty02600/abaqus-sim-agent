@@ -76,7 +76,7 @@ class Scorer(PublicMechanicsRunVerifier):
             findings=()
             if passed
             else ("tip_u2: actual 1, reference 9876543, relative tolerance 0.03",),
-            measured={key: metric.target for key, metric in self.case.metrics.items()},
+            reported={key: metric.target for key, metric in self.case.metrics.items()},
             failure_stage=None if passed else "task_oracle",
         )
 
@@ -233,7 +233,7 @@ def test_scoring_exception_is_evaluation_error_and_does_not_invite_repair(run_co
         summarize_case(root, case.case_id),
         {
             "submission_policy": SUBMISSION_POLICY,
-            "verification_policy": "results_first_v1",
+            "verification_policy": "submitted_results_v1",
         },
         bindings_unchanged=True,
     )
@@ -246,24 +246,6 @@ def test_scoring_exception_is_evaluation_error_and_does_not_invite_repair(run_co
     assert "task_pass" not in report.cases[0].assertions
     assert "first_submission_pass" not in report.cases[0].assertions
     assert "automatic_pass" not in report.cases[0].assertions
-
-
-def test_reader_failure_is_not_sent_as_answer_feedback(run_context):
-    _, case, _, _ = run_context
-
-    class ReaderFailure(Scorer):
-        async def verify(self, *args, **kwargs):
-            return PublicMechanicsAttempt(
-                passed=False,
-                feedback="reader failed: reference 9876543",
-                failure_stage="oracle",
-            )
-
-    model = RepairModel()
-    result = asyncio.run(service(run_context, ReaderFailure(case), model).run())
-    assert result.outcome.failure_stage == "evaluation_error"
-    assert model.deliveries == 1
-    assert "9876543" not in result.outcome.summary
 
 
 def test_interruption_during_scoring_retains_ungraded_first_submission(run_context):
@@ -305,7 +287,7 @@ def test_native_report_keeps_first_and_final_as_one_case(run_context):
     asyncio.run(service(run_context, Scorer(case, pass_at=2), RepairModel()).run())
     manifest = {
         "submission_policy": SUBMISSION_POLICY,
-        "verification_policy": "results_first_v1",
+        "verification_policy": "submitted_results_v1",
     }
     observation = observe_saved_case(
         root,
@@ -325,7 +307,7 @@ def test_native_report_keeps_first_and_final_as_one_case(run_context):
     assert len(report.cases) == 1
     assert report.cases[0].assertions["first_submission_pass"].value is False
     assert report.cases[0].assertions["final_submission_pass"].value is True
-    assert report.cases[0].labels["task_status"].value == "pending_review"
+    assert report.cases[0].labels["task_status"].value == "passed"
     totals = {
         entry.title: entry.value for entry in report.analyses if hasattr(entry, "value")
     }
@@ -496,13 +478,13 @@ def test_feedback_uses_check_names_without_numbers_or_direction():
         feedback="secret 9876543 too high",
         findings=(
             "tip_u2: actual 100, reference 9876543, relative tolerance 0.01",
-            "results.json tip_u2 does not match independent ODB measurement",
+            "refinement values missing/nonfinite for tip_u2",
             "model: arbitrary oracle detail 9876543 too high",
         ),
     )
     feedback = model_feedback(attempt, ("tip_u2",))
     assert "metric tip_u2" in feedback
-    assert "consistency for tip_u2" in feedback
+    assert "mesh convergence for tip_u2" in feedback
     assert "9876543" not in feedback
     assert "high" not in feedback
     assert "100" not in feedback

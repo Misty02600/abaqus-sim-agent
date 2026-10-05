@@ -47,7 +47,7 @@ def mechanics_runtime(tmp_path, monkeypatch):
             "batch_id": "offline-telemetry",
             "case_ids": names,
             "scoring_case_ids": list(BASIC_LINEAR_CASE_IDS),
-            "verification_policy": "results_first_v1",
+            "verification_policy": "submitted_results_v1",
             "max_explicit_resumes": 1,
             "catalog_mode": "full",
             "foundation": True,
@@ -112,8 +112,8 @@ def mechanics_runtime(tmp_path, monkeypatch):
                     passed=True,
                     feedback="offline fixture",
                     artifacts=(),
-                    measured={k: m.target for k, m in case.metrics.items()},
-                    verification_policy="results_first_v1",
+                    reported={k: m.target for k, m in case.metrics.items()},
+                    verification_policy="submitted_results_v1",
                 )
                 save_json(
                     req.state_dir / "outcome.json",
@@ -178,7 +178,7 @@ async def test_actual_concurrent_attempts_and_report_updates(
             s.parent and s.parent.span_id == parent.context.span_id for s in spans
         )
     report = await build_report_async(tmp_path, bindings_unchanged=True)
-    assert report["scoring"]["task_summary"]["tasks_pending_review"] == 2
+    assert report["scoring"]["task_summary"]["tasks_passed"] == 2
     count = len(rows)
     await build_report_async(tmp_path, bindings_unchanged=True)
     assert len(rows) == count
@@ -209,10 +209,7 @@ async def test_actual_concurrent_attempts_and_report_updates(
         (tmp_path / "reviews" / (n + ".json")).unlink()
     await build_report_async(tmp_path, bindings_unchanged=True)
     assert all(
-        r["result"]
-        == {"label": "unknown", "explanation": "No value in the current local report."}
-        for r in rows.values()
-        if r["name"] == "task_pass"
+        r["result"]["score"] == 1 for r in rows.values() if r["name"] == "task_pass"
     )
 
 
@@ -237,7 +234,7 @@ async def test_resume_links_latest_attempt_without_reparenting_history(
         if row["name"] == "task_status"
     }
     assert statuses[first["span_id"]] == "unknown"
-    assert statuses[second["span_id"]] == "pending_review"
+    assert statuses[second["span_id"]] == "passed"
     parents = [s for s in traces.get_finished_spans() if s.name == "evaluation.case"]
     assert {s.attributes["session.id"] for s in parents} == {"fixture-" + name}
 
@@ -285,7 +282,7 @@ async def test_export_failure_keeps_local_report_and_outcome(
 
     monkeypatch.setattr(phoenix.client, "Client", unavailable)
     report = await build_report_async(tmp_path, bindings_unchanged=True)
-    assert report["scoring"]["task_summary"]["tasks_pending_review"] == 1
+    assert report["scoring"]["task_summary"]["tasks_passed"] == 1
     assert (tmp_path / name / "state" / "outcome.json").read_bytes() == outcome
     assert (tmp_path / "report.md").is_file()
 
@@ -315,7 +312,7 @@ async def test_trace_record_failure_does_not_fail_case(
         read_json(tmp_path / name / "state" / "outcome.json")["status"] == "completed"
     )
     report = await build_report_async(tmp_path, bindings_unchanged=True)
-    assert report["scoring"]["task_summary"]["tasks_pending_review"] == 1
+    assert report["scoring"]["task_summary"]["tasks_passed"] == 1
 
 
 @pytest.mark.asyncio
@@ -385,9 +382,9 @@ async def test_native_dataset_can_invoke_existing_mechanics_executor(
     )
     assert not report.failures
     row = report.cases[0]
-    assert row.assertions["physics_ok"].value is True
-    assert row.labels["task_status"].value == "pending_review"
-    assert "task_pass" not in row.assertions
+    assert row.assertions["numeric_ok"].value is True
+    assert row.labels["task_status"].value == "passed"
+    assert row.assertions["task_pass"].value is True
     assert len(list((tmp_path / name / "state/attempts").glob("*.json"))) == 1
 
 
@@ -434,13 +431,13 @@ async def test_suite_executes_through_native_dataset_and_rebuild_does_not_execut
     await suite.run(tmp_path)
     report = read_json(tmp_path / "report.json")
     assert report["native_result_kind"] == "case_execution"
-    assert report["scoring"]["task_summary"]["tasks_pending_review"] == 2
+    assert report["scoring"]["task_summary"]["tasks_passed"] == 2
     native = read_json(tmp_path / "pydantic-evals-report.json")
     assert native["experiment_metadata"]["action"] == "run"
     assert not native["failures"]
     for case in native["cases"]:
         assert case["attributes"]["duration_scope"] == "case_execution_and_observation"
-        assert case["assertions"]["physics_ok"]["value"] is True
+        assert case["assertions"]["numeric_ok"]["value"] is True
         assert case["span_id"]
     assert len(list((tmp_path / "control").glob("evaluation-*.json"))) == 1
     attempts = {
@@ -495,7 +492,7 @@ async def test_suite_resume_and_continue_keep_original_denominator(
     await suite.run(tmp_path, "resume", names[:1])
     report = read_json(tmp_path / "report.json")
     assert report["scoring"]["task_summary"]["planned_tasks"] == 2
-    assert report["scoring"]["task_summary"]["tasks_pending_review"] == 1
+    assert report["scoring"]["task_summary"]["tasks_passed"] == 1
     assert report["scoring"]["task_summary"]["tasks_unknown"] == 1
     assert len(list((state.parent / "attempts").glob("*.json"))) == 2
     assert not (tmp_path / names[1]).exists()
@@ -508,9 +505,7 @@ async def test_suite_resume_and_continue_keep_original_denominator(
         == first_attempts
     )
     assert (
-        read_json(tmp_path / "report.json")["scoring"]["task_summary"][
-            "tasks_pending_review"
-        ]
+        read_json(tmp_path / "report.json")["scoring"]["task_summary"]["tasks_passed"]
         == 2
     )
 
@@ -770,7 +765,7 @@ async def test_case_lifecycle_publishes_progress_before_whole_batch_finishes(
             assert progress["handled_cases"] == 1
             assert progress["planned_cases"] == 2
             assert progress["cases"][0]["phase"] == "evaluated"
-            assert progress["cases"][0]["task_verdict"] == "pending_review"
+            assert progress["cases"][0]["task_verdict"] == "passed"
             assert progress["cases"][1]["phase"] == "evaluating"
             assert progress["cases"][1]["task_verdict"] is None
             assert "1/2" in (tmp_path / "progress.md").read_text(encoding="utf-8")
@@ -795,7 +790,7 @@ async def test_progress_write_failure_does_not_change_case_execution_or_grades(
     monkeypatch.setattr(mechanics_progress, "write_text_atomic", unwritable)
     await suite.run(tmp_path)
     report = read_json(tmp_path / "report.json")
-    assert report["scoring"]["task_summary"]["tasks_pending_review"] == 2
+    assert report["scoring"]["task_summary"]["tasks_passed"] == 2
     assert all(
         len(list((tmp_path / name / "state/attempts").glob("*.json"))) == 1
         for name in names
@@ -825,7 +820,7 @@ def add_fixture_review(root, name):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("withdraw", [False, True])
-async def test_review_update_during_batch_keeps_execution_snapshot_and_can_refresh(
+async def test_unrelated_review_files_do_not_change_batch_scores_or_feedback(
     tmp_path, mechanics_runtime, monkeypatch, withdraw, traces
 ):
     names = configure_suite(tmp_path, monkeypatch)
@@ -852,19 +847,21 @@ async def test_review_update_during_batch_keeps_execution_snapshot_and_can_refre
     await job
     report = read_json(tmp_path / "report.json")
     assert [r["classification"] for r in report["trials"]] == ["completed", "completed"]
-    assert report["review_updates_pending"] == [names[0]]
+    assert "review_updates_pending" not in report
     span = read_json(tmp_path / "telemetry" / names[0] / "001.json")["span_id"]
-    assert not any(key[0] == span for key in mechanics_runtime[2])
-    assert report["scoring"]["task_summary"]["tasks_passed"] == int(withdraw)
-    assert "审查记录已有更新" in (tmp_path / "report.md").read_text(encoding="utf-8")
+    assert any(key[0] == span for key in mechanics_runtime[2])
+    assert report["scoring"]["task_summary"]["tasks_passed"] == 2
+    assert "审查记录已有更新" not in (tmp_path / "report.md").read_text(
+        encoding="utf-8"
+    )
     original_archives = {
         p.name: p.read_bytes() for p in (tmp_path / "control").glob("evaluation-*.json")
     }
     await build_report_async(tmp_path, bindings_unchanged=True)
     refreshed = read_json(tmp_path / "report.json")
-    assert refreshed["review_updates_pending"] == []
+    assert "review_updates_pending" not in refreshed
     assert any(key[0] == span for key in mechanics_runtime[2])
-    assert refreshed["scoring"]["task_summary"]["tasks_passed"] == int(not withdraw)
+    assert refreshed["scoring"]["task_summary"]["tasks_passed"] == 2
     assert {
         p.name: p.read_bytes() for p in (tmp_path / "control").glob("evaluation-*.json")
     } == original_archives

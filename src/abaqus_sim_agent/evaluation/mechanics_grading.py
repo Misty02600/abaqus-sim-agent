@@ -5,9 +5,9 @@ import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Literal
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic_evals import Case, Dataset
 from pydantic_evals.dataset import increment_eval_metric, set_eval_attribute
 from pydantic_evals.evaluators import (
@@ -44,34 +44,16 @@ class _Model(BaseModel):
     )
 
 
-Digest = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
-Text = Annotated[str, Field(min_length=1)]
-
-
-class RequirementsReview(_Model):
-    """宿主侧需求审查，绑定已完成的outcome与实际verification事件版本。"""
-
-    case_id: Text
-    reviewer: Text
-    reviewed_at: AwareDatetime
-    passed: bool
-    reason: Text
-    outcome_sha256: Digest
-    verification_event_sha256: Digest
-
-
 class MechanicsObservation(_Model):
     case_id: str
     status: str
     execution_ok: bool | None = None
-    requirements_ok: bool | None = None
-    physics_ok: bool | None = None
+    numeric_ok: bool | None = None
     automatic_pass: bool | None = None
     exclusion: Literal["posthoc", "invalid_evidence"] | None = None
     reason: str
     failure_kind: str
     verification_feedback: str | None = None
-    requirements_review: RequirementsReview | None = None
     relative_errors: dict[str, float] = Field(default_factory=dict)
     metrics: dict[str, int | float] = Field(default_factory=dict)
     evidence_path: str
@@ -123,11 +105,11 @@ def observe_saved_case(
     *,
     bindings_unchanged: bool,
 ) -> MechanicsObservation:
-    """只读任务记录及独立审查，把缺失、损坏和事后干预保留为显式状态。
+    """只读任务记录，把缺失、损坏和事后干预保留为显式状态。
 
     Note:
         verification事件是已有验收结果，不用于推断缺失的runtime副作用ledger。
-        审查文件位于批次reviews目录；本函数不生成或签署审查，不重新打开ODB。
+        本函数不重新打开ODB，也不读取人工审查文件。
     """
     state = root / case.case_id / "state"
     values = {
@@ -217,10 +199,8 @@ def observe_saved_case(
         )
         verification, verification_digest = _load_verification(state, outcome)
         execution_ok = None
-        physics_ok = None
+        numeric_ok = None
         automatic_pass = None
-        requirements_ok = None
-        requirements_review = None
         errors: dict[str, float] = {}
         if verification is not None:
             if verification_digest is None:
@@ -235,18 +215,18 @@ def observe_saved_case(
             execution_ok = verification.failure_stage != "provenance"
             if verification.failure_stage == "evaluation_error":
                 execution_ok = None
-            if verification.measured is not None:
+            if verification.reported is not None:
                 for key, metric in case.metrics.items():
-                    if key not in verification.measured:
+                    if key not in verification.reported:
                         continue
-                    actual = verification.measured[key]
+                    actual = verification.reported[key]
                     if not math.isfinite(actual) or not math.isfinite(metric.target):
-                        raise ValueError("nonfinite measurement")
+                        raise ValueError("nonfinite submitted value")
                     errors[key] = abs(actual - metric.target) / max(
                         abs(metric.target), metric.absolute_tolerance
                     )
-                physics_ok = verification.passed and not compare_metrics(
-                    case, verification.measured, verification.measured
+                numeric_ok = verification.passed and not compare_metrics(
+                    case, verification.reported
                 )
             if outcome.status == "completed":
                 if (
@@ -254,41 +234,24 @@ def observe_saved_case(
                     or outcome.artifacts != verification.artifacts
                 ):
                     raise ValueError("outcome does not match verification evidence")
-                automatic_pass = physics_ok
+                automatic_pass = numeric_ok
             elif (
                 outcome.status == "failed"
                 and verification.failure_stage != "evaluation_error"
             ):
                 automatic_pass = False
-            review_path = root / "reviews" / f"{case.case_id}.json"
-            if review_path.exists():
-                review_raw = review_path.read_bytes()
-                review = RequirementsReview.model_validate_json(review_raw)
-                if (
-                    review.case_id != case.case_id
-                    or review.outcome_sha256 != hashes["outcome_sha256"]
-                    or review.verification_event_sha256 != verification_digest
-                ):
-                    raise ValueError("stale or mismatched requirements review")
-                requirements_ok = review.passed
-                requirements_review = review
-                hashes["requirements_review_sha256"] = _digest(review_raw)
-                if not review.passed and outcome.status == "completed":
-                    values["failure_kind"] = "requirements"
         return MechanicsObservation(
             **values,
             metrics=metrics,
             evidence_sha256=hashes,
             execution_ok=execution_ok,
-            requirements_ok=requirements_ok,
-            physics_ok=physics_ok,
+            numeric_ok=numeric_ok,
             automatic_pass=automatic_pass,
             relative_errors=errors,
             exclusion="posthoc" if posthoc else None,
             verification_feedback=verification.feedback
             if verification is not None
             else None,
-            requirements_review=requirements_review,
         )
     except (OSError, ValueError, KeyError, TypeError) as exc:
         values["reason"] = f"Saved evidence could not be graded: {type(exc).__name__}"
@@ -307,7 +270,7 @@ class TaskPassed(Evaluator[str, MechanicsObservation, CaseMetadata]):
         self, ctx: EvaluatorContext[str, MechanicsObservation, CaseMetadata]
     ) -> EvaluatorOutput:
         result = ctx.output
-        checks = (result.execution_ok, result.requirements_ok, result.physics_ok)
+        checks = (result.execution_ok, result.numeric_ok)
         passed: bool | None = None
         status = "unknown"
         if result.exclusion is not None:
@@ -326,25 +289,15 @@ class TaskPassed(Evaluator[str, MechanicsObservation, CaseMetadata]):
                 all(value is True for value in checks) and result.automatic_pass is True
             ):
                 passed = True
-            elif result.automatic_pass is True and result.requirements_ok is None:
-                status = "pending_review"
         if passed is not None:
             status = "passed" if passed else "failed"
         reason = result.reason
-        if status == "pending_review":
-            reason = "Automatic results passed; requirements have no bound review."
-        elif status == "posthoc":
+        if status == "posthoc":
             reason = (
                 "Amended/revised or over-resumed run; retained as posthoc evidence."
             )
         elif status == "passed":
-            reason = "Completed with independent verification and a bound requirements review."
-        elif result.status == "completed" and result.requirements_ok is False:
-            reason = (
-                result.requirements_review.reason
-                if result.requirements_review
-                else result.reason
-            )
+            reason = "Execution, deliverables and submitted numerical targets passed; modeling details are not independently verified."
         elif result.status == "completed" and passed is False:
             reason = (
                 result.verification_feedback
@@ -368,12 +321,10 @@ class TaskPassed(Evaluator[str, MechanicsObservation, CaseMetadata]):
                     output[f"{prefix}_submission_pass"] = submission_status == "passed"
             output["submission_count"] = float(result.submission_count)
             output["feedback_rounds"] = float(result.feedback_rounds)
-        for key in ("execution_ok", "requirements_ok", "physics_ok", "automatic_pass"):
+        for key in ("execution_ok", "numeric_ok", "automatic_pass"):
             value = getattr(result, key)
             if value is not None:
                 check_reason = result.verification_feedback or result.reason
-                if key == "requirements_ok" and result.requirements_review is not None:
-                    check_reason = result.requirements_review.reason
                 output[key] = EvaluationReason(value=value, reason=check_reason)
         if passed is not None:
             output["task_pass"] = EvaluationReason(value=passed, reason=reason)
@@ -411,7 +362,6 @@ class SuiteSummary(ReportEvaluator[str, MechanicsObservation, CaseMetadata]):
             (
                 "passed",
                 "failed",
-                "pending_review",
                 "unknown",
                 "posthoc",
                 "invalid_evidence",

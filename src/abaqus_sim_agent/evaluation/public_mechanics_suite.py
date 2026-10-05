@@ -75,6 +75,7 @@ from abaqus_sim_agent.execution import (
 )
 from abaqus_sim_agent.skills import skill_library_path
 from abaqus_sim_agent.verification.public_mechanics_run import (
+    VERIFICATION_POLICY,
     PublicMechanicsRunVerifier,
 )
 
@@ -130,7 +131,7 @@ def prepare(
         raise FileExistsError(root)
     if knowledge_resources is not None:
         raise ValueError(
-            "v27 does not attach external reference folders; their benchmark answers are not audited"
+            "v28 does not attach external reference folders; their benchmark answers are not audited"
         )
     case_ids = list(selected_case_ids(case_ids))
     cases = [get_case(k) for k in case_ids]
@@ -180,9 +181,8 @@ def prepare(
             "repetitions": 1,
             "max_explicit_resumes": 3,
             "provider_failure_policy": "stop_batch",
-            "verification_policy": "results_first_v1",
+            "verification_policy": VERIFICATION_POLICY,
             "submission_policy": SUBMISSION_POLICY,
-            "script_review": "separate_reviewer_record",
             "purpose": (
                 "knowledge_and_api_profile_qualification"
                 if api_catalog_mode == "full_with_discovery"
@@ -258,8 +258,10 @@ def verify_binding(root):
         if file_digest(Path(name)) != sha:
             raise ValueError(f"runtime library changed: {name}")
     manifest = read_json(root / "manifest.json")
-    if manifest.get("verification_policy") != "results_first_v1":
-        raise ValueError("verification policy is not the frozen results-first policy")
+    if manifest.get("verification_policy") != VERIFICATION_POLICY:
+        raise ValueError(
+            "verification policy is not the frozen submitted-results policy"
+        )
     if manifest.get("submission_policy") != SUBMISSION_POLICY:
         raise ValueError("submission policy differs from frozen worker")
     if manifest["version"] != VERSION:
@@ -273,7 +275,7 @@ def verify_binding(root):
     if manifest["max_runtime_concurrency"] > manifest["max_task_concurrency"]:
         raise ValueError("runtime concurrency exceeds task concurrency")
     if manifest.get("knowledge_resources") is not None:
-        raise ValueError("v27 does not attach external reference folders")
+        raise ValueError("v28 does not attach external reference folders")
     if read_json(root / "goals.json") != {
         name: get_case(name).goal() for name in manifest["case_ids"]
     }:
