@@ -24,7 +24,6 @@ from abaqus_sim_agent.coding.contracts import (
     CodingRunBudget,
     CodingRunRequest,
     RuntimeProfile,
-    RuntimeScriptPolicy,
 )
 from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
 from abaqus_sim_agent.coding.model import (
@@ -503,7 +502,6 @@ async def doctor(root: Path):
 
 
 def _request(root, name, catalog):
-    c = get_case(name)
     w = root / name / "workspace"
     s = root / name / "state"
     manifest = read_json(root / "manifest.json")
@@ -513,13 +511,6 @@ def _request(root, name, catalog):
         workspace=w,
         state_dir=s,
         runtime=RuntimeProfile(launcher_path=DEFAULT_ABAQUS_2024_LAUNCHER.resolve()),
-        runtime_script_policy=RuntimeScriptPolicy(
-            allowed_cae_scripts=("build_model.py",),
-            allowed_abaqus_python_scripts=("extract_results.py",),
-            allowed_solver_inputs=("model.inp", "model_coarse.inp")
-            if c.refinement
-            else ("model.inp",),
-        ),
         api_catalog=_eval_api_catalog_binding(catalog),
         **CodingRunBudget.model_validate(
             manifest["budgets"][name]

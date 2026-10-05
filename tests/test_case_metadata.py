@@ -156,6 +156,11 @@ def test_cli_prepare_freezes_the_default_scoring_set_and_metadata(
     suite.main()
     manifest = read_json(root / "manifest.json")
     assert manifest["version"] == PUBLIC_MECHANICS_PROTOCOL
+    for budget in manifest["budgets"].values():
+        assert budget["max_model_requests"] == 200
+        assert budget["max_abaqus_calls"] == 80
+        assert budget["max_solver_calls"] == 10
+        assert budget["wall_time_seconds"] == 5400.0
     assert (
         manifest["case_ids"]
         == manifest["scoring_case_ids"]

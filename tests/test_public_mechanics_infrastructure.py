@@ -33,8 +33,9 @@ from abaqus_sim_agent.evaluation.public_mechanics_control import (
 )
 
 
-def root_fixture(tmp_path):
-    names = ["solid-cantilever-directional-bending", "plate-with-hole-tension"]
+def root_fixture(tmp_path, names=None):
+    if names is None:
+        names = ["solid-cantilever-directional-bending", "plate-with-hole-tension"]
     config = new_run_execution_config(
         model_provider=DeepSeekGateway.OPENCODE_GO,
         model_name=DEEPSEEK_V4_FLASH,
@@ -454,12 +455,12 @@ def test_knowledge_discovery_profile_copies_and_binds_resources(tmp_path, monkey
     assert manifest["execution_config"]["http_retries"] == 4
     assert manifest["execution_config"]["planning_enabled"] is False
     for budget in manifest["budgets"].values():
-        assert budget["max_model_requests"] == 80
+        assert budget["max_model_requests"] == 200
         assert budget["max_api_lookup_calls"] is None
         assert budget["max_concept_lookup_calls"] is None
         assert budget["max_diagnostic_retrieval_calls"] is None
         assert budget["max_static_preflight_calls"] is None
-        assert budget["max_abaqus_calls"] == 30
+        assert budget["max_abaqus_calls"] == 80
         assert budget["max_solver_calls"] == 10
         assert budget["wall_time_seconds"] == 5400.0
     assert manifest["knowledge_resources"]["files"] == {
@@ -625,3 +626,72 @@ def test_frozen_worker_rejects_ignored_transport_overrides(tmp_path, monkeypatch
         suite.main()
     assert exc.value.code == 2
     assert not (tmp_path / "started.json").exists()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "case_id", ["nafems-le10-thick-plate-pressure", "plate-with-hole-tension"]
+)
+async def test_diagnostic_filenames_are_allowed_but_do_not_satisfy_final_delivery(
+    tmp_path, case_id
+):
+    from abaqus_sim_agent.coding.dependencies import CodingAgentDependencies
+    from abaqus_sim_agent.coding.workspace import WorkspaceResolver
+    from abaqus_sim_agent.evaluation.public_mechanics_runner import (
+        PublicMechanicsRunner,
+    )
+    from abaqus_sim_agent.execution import ProcessOutput
+    from abaqus_sim_agent.verification.public_mechanics_run import (
+        PublicMechanicsRunVerifier,
+    )
+
+    root_fixture(tmp_path, [case_id])
+    request = suite._request(tmp_path, case_id, None)
+    workspace = request.workspace
+    workspace.mkdir(parents=True)
+    initial = WorkspaceResolver(captured_cwd=workspace).snapshot(workspace)
+    (workspace / "check_mesh.py").write_text("pass\n", encoding="ascii")
+    (workspace / "inspect_odb.py").write_text("pass\n", encoding="ascii")
+    (workspace / "minimal_c3d20r.inp").write_text("*HEADING\n", encoding="ascii")
+    commands = []
+
+    class Process:
+        async def run(self, command, *, cwd, timeout_seconds):
+            commands.append(tuple(command))
+            return ProcessOutput(exit_code=0, stdout=b"", stderr=b"")
+
+    runner = PublicMechanicsRunner(
+        workspace, request.state_dir, process_strategy=Process()
+    )
+    deps = CodingAgentDependencies(request=request, runner=runner)
+    assert deps.runtime_script_policy_denial(kind="cae", path="check_mesh.py") is None
+    assert (
+        deps.runtime_script_policy_denial(kind="abaqus_python", path="inspect_odb.py")
+        is None
+    )
+    assert (
+        deps.runtime_script_policy_denial(
+            kind="solver_input", path="minimal_c3d20r.inp"
+        )
+        is None
+    )
+    executions = [
+        await runner.run_cae_script("check_mesh.py"),
+        await runner.run_abaqus_python("inspect_odb.py"),
+        await runner.run_solver_job("minimal_c3d20r", input_file="minimal_c3d20r.inp"),
+    ]
+    assert all(result.stage_succeeded for result in executions)
+    assert "input=minimal_c3d20r.inp" in commands[-1]
+    outside = tmp_path / "outside.inp"
+    outside.write_text("*HEADING\n", encoding="ascii")
+    with pytest.raises(ValueError, match="inside workspace"):
+        await runner.run_solver_job("outside", input_file=outside)
+    with pytest.raises(ValueError, match="suffix"):
+        await runner.run_solver_job("wrong", input_file="check_mesh.py")
+    assert len(commands) == 3
+    verdict = await PublicMechanicsRunVerifier(get_case(case_id)).verify(
+        request, runner, initial, executions
+    )
+    assert not verdict.passed
+    assert verdict.failure_stage == "provenance"
+    assert "missing/stale artifact model.inp" in verdict.feedback
