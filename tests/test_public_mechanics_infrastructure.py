@@ -405,7 +405,9 @@ def test_suite_same_run_resume_retains_usage_and_file_work(tmp_path, monkeypatch
     assert read_json(state / "outcome.json")["status"] == "failed"
 
 
-def test_knowledge_discovery_profile_copies_and_binds_resources(tmp_path, monkeypatch):
+def test_discovery_profile_freezes_inputs_without_reference_attachments(
+    tmp_path, monkeypatch
+):
     # Exercise copying and sealing with small source/runtime inputs, not the installed SDK tree.
     source = tmp_path / "source"
     (source / "src").mkdir(parents=True)
@@ -436,13 +438,15 @@ def test_knowledge_discovery_profile_copies_and_binds_resources(tmp_path, monkey
     knowledge.mkdir()
     (knowledge / "README.md").write_text("bounded reference", encoding="utf-8")
     monkeypatch.setattr(suite.ApiCatalog, "open", lambda path: object())
+    with pytest.raises(ValueError, match="does not attach"):
+        suite.prepare(root, catalog, knowledge_resources=knowledge)
+    assert not root.exists()
     suite.prepare(
         root,
         catalog,
         ["plate-with-hole-tension", "solid-cantilever-directional-bending"],
         True,
         api_catalog_mode="full_with_discovery",
-        knowledge_resources=knowledge,
         max_task_concurrency=2,
         max_runtime_concurrency=2,
     )
@@ -463,10 +467,9 @@ def test_knowledge_discovery_profile_copies_and_binds_resources(tmp_path, monkey
         assert budget["max_abaqus_calls"] == 80
         assert budget["max_solver_calls"] == 10
         assert budget["wall_time_seconds"] == 5400.0
-    assert manifest["knowledge_resources"]["files"] == {
-        "README.md": suite.file_digest(root / "knowledge-resources/README.md")
-    }
-    assert (root / "knowledge-resources/README.md").read_text() == ("bounded reference")
+    assert manifest["knowledge_resources"] is None
+    assert manifest["submission_policy"] == suite.SUBMISSION_POLICY
+    assert not (root / "knowledge-resources").exists()
     assert (root / "snapshot/src/fixture.py").read_bytes() == (
         source / "src/fixture.py"
     ).read_bytes()
@@ -477,7 +480,7 @@ def test_knowledge_discovery_profile_copies_and_binds_resources(tmp_path, monkey
     }
     monkeypatch.setattr(suite, "ROOT", root / "snapshot")
     suite.verify_binding(root)
-    (root / "knowledge-resources/README.md").write_text("changed", encoding="utf-8")
+    (root / "goals.json").write_text("changed", encoding="utf-8")
     with pytest.raises(ValueError, match="bound input changed"):
         suite.verify_binding(root)
 

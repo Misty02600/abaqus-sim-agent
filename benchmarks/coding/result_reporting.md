@@ -1,7 +1,37 @@
 # 基础线性评测结果与自定义规则
 
-新批次协议为`public-mechanics-e2e-v26-native-case-execution`。当前Pydantic Evals 2.51.0组织真实Case执行、单题评分和整批汇总；
+新批次协议为`public-mechanics-e2e-v27-bounded-feedback`。当前Pydantic Evals 2.51.0组织真实Case执行、单题评分和整批汇总；
 现有CodingRunService、外部执行、物理verifier和恢复策略继续拥有原始运行事实。
+
+## 首次提交与有限反馈
+
+模型题设保留完整物理输入、交付物、取值位置/分量/单位、壳表面、平均或外推方式，以及自主网格收敛检查要求。
+参考答案、相对答案的偏差和官方样例结果只留在评测侧。v27不再附加外部整包参考目录：入口拒绝
+`--knowledge-resources`，避免把未经答案内容审查的文件传给模型；内置领域Skill及API Catalog继续使用。
+公开题仍可能被模型从训练或其他资料获知，此合同不保证答案绝对未知。
+
+每次有效`ready_for_verification`完成声明先在`state/submissions/001`等独立目录保存
+`submission.json`（声明、累计用量、文件摘要）和`workspace/`字节副本，再运行现有独立ODB与执行证据验收。
+缺失交付也计一次提交。`result.json`保存完整内部评分，评分异常另留`error.json`；后续修复不覆盖前次目录。
+反馈只生成受控的失败指标或交付检查名称，原诊断文本不进入模型消息。宿主将实际写入history的反馈记为
+`verification_feedback`事件；报告据此统计反馈轮数。
+
+首次失败后最多两轮反馈，最多三次提交；通过、第三次失败、累计预算耗尽或模型明确失败时停止。
+评分器异常或独立读取器运行失败归为`evaluation_error`，不邀请模型修复，也不记成答案错误。
+提交前自调试不计反馈次数，所有阶段共用200次模型请求、80次Abaqus调用（含至多10次Solver）和5400秒活动时间。
+这些均沿用同一CodingRun的累计预算。普通产品没有开启提交留证回调和有限反馈控制，验收行为不变。
+
+恢复继续读取原提交序列、预算和基线。快照复制或评分中断、反馈检查点未完成、提交文件损坏时拒绝自动续跑，
+不会根据修复后的工作区补造首次成绩，也不自动重新执行独立评分；该边界不承诺跨文件事务恢复。
+每次提交复制实际工作区，因此大型ODB会增加磁盘和复制时间；副本不使用会随原文件修改的硬链接。
+
+原生报告和派生报告分别保存`first_submission_status`、`final_submission_status`、`submission_count`、
+`feedback_rounds`和逐提交累计`submission_usage`。状态为`passed`、`failed`、`not_submitted`或
+`evaluation_error`；未评分的中断提交属于测评未完成/错误，不计答案失败。原生断言
+`first_submission_pass`与`final_submission_pass`记录自动评分，完整`task_pass`仍需独立需求审查。
+每项通过率以计划中的物理Case为分母，每题只占一个权重；修复轮次、评分错误和未交付不增加题目数。
+首次通过则最终同为通过；从未声明完成明确显示未交付。预算耗尽后不额外验收以制造一次首次提交。
+新合同只进入新批次，既有v26 worker、workspace、state、报告及80/30预算均保持原值。
 
 ## 结果文件
 

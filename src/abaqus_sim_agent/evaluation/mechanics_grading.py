@@ -25,8 +25,12 @@ from pydantic_evals.reporting import (
     TableResult,
 )
 
-from abaqus_sim_agent.coding.contracts import CodingRunOutcome
+from abaqus_sim_agent.coding.contracts import CodingRunOutcome, CodingRunUsage
 from abaqus_sim_agent.evaluation.case_metadata import CaseMetadata
+from abaqus_sim_agent.evaluation.mechanics_submissions import (
+    SUBMISSION_POLICY,
+    load_submissions,
+)
 from abaqus_sim_agent.evaluation.public_mechanics_cases import MechanicsCase
 from abaqus_sim_agent.verification.public_mechanics_run import (
     PublicMechanicsAttempt,
@@ -72,6 +76,11 @@ class MechanicsObservation(_Model):
     metrics: dict[str, int | float] = Field(default_factory=dict)
     evidence_path: str
     evidence_sha256: dict[str, str] = Field(default_factory=dict)
+    first_submission_status: str | None = None
+    final_submission_status: str | None = None
+    submission_count: int = 0
+    feedback_rounds: int = 0
+    submission_usage: tuple[CodingRunUsage, ...] = ()
 
 
 def _digest(raw: bytes) -> str:
@@ -156,10 +165,45 @@ def observe_saved_case(
             **values, metrics=metrics, exclusion="invalid_evidence"
         )
     outcome_path = state / "outcome.json"
-    if not outcome_path.exists():
-        return MechanicsObservation(**values, metrics=metrics)
     hashes: dict[str, str] = {}
     try:
+        if manifest.get("submission_policy") == SUBMISSION_POLICY:
+            submissions = load_submissions(state)
+            statuses = [
+                "evaluation_error"
+                if result is None or result.failure_stage == "evaluation_error"
+                else "passed"
+                if result.passed
+                else "failed"
+                for _, result in submissions
+            ]
+            values.update(
+                first_submission_status=statuses[0] if statuses else "not_submitted",
+                final_submission_status=statuses[-1] if statuses else "not_submitted",
+                submission_count=len(submissions),
+                feedback_rounds=sum(
+                    json.loads(line).get("event") == "verification_feedback"
+                    for line in (state / "events.jsonl").read_bytes().splitlines()
+                )
+                if (state / "events.jsonl").exists()
+                else 0,
+                submission_usage=tuple(
+                    submission.usage for submission, _ in submissions
+                ),
+            )
+            for submission, _ in submissions:
+                folder = state / "submissions" / f"{submission.number:03}"
+                hashes[f"submission_{submission.number}_sha256"] = _digest(
+                    (folder / "submission.json").read_bytes()
+                )
+                if (folder / "result.json").exists():
+                    hashes[f"submission_{submission.number}_result_sha256"] = _digest(
+                        (folder / "result.json").read_bytes()
+                    )
+        if not outcome_path.exists():
+            return MechanicsObservation(
+                **values, metrics=metrics, evidence_sha256=hashes
+            )
         outcome_raw = outcome_path.read_bytes()
         outcome = CodingRunOutcome.model_validate_json(outcome_raw, strict=True)
         hashes["outcome_sha256"] = _digest(outcome_raw)
@@ -189,8 +233,12 @@ def observe_saved_case(
             ):
                 raise ValueError("verification scope/policy mismatch")
             execution_ok = verification.failure_stage != "provenance"
+            if verification.failure_stage == "evaluation_error":
+                execution_ok = None
             if verification.measured is not None:
                 for key, metric in case.metrics.items():
+                    if key not in verification.measured:
+                        continue
                     actual = verification.measured[key]
                     if not math.isfinite(actual) or not math.isfinite(metric.target):
                         raise ValueError("nonfinite measurement")
@@ -207,7 +255,10 @@ def observe_saved_case(
                 ):
                     raise ValueError("outcome does not match verification evidence")
                 automatic_pass = physics_ok
-            elif outcome.status == "failed":
+            elif (
+                outcome.status == "failed"
+                and verification.failure_stage != "evaluation_error"
+            ):
                 automatic_pass = False
             review_path = root / "reviews" / f"{case.case_id}.json"
             if review_path.exists():
@@ -261,6 +312,11 @@ class TaskPassed(Evaluator[str, MechanicsObservation, CaseMetadata]):
         status = "unknown"
         if result.exclusion is not None:
             status = result.exclusion
+        elif (
+            result.status == "evaluation_error"
+            or result.final_submission_status == "evaluation_error"
+        ):
+            status = "grading_error"
         elif result.status == "task_failed":
             passed = False
         elif result.status == "completed":
@@ -302,6 +358,16 @@ class TaskPassed(Evaluator[str, MechanicsObservation, CaseMetadata]):
             if ctx.attributes.get("included_in_score")
             else "diagnostic",
         }
+        if result.first_submission_status is not None:
+            for prefix in ("first", "final"):
+                submission_status = result.exclusion or getattr(
+                    result, f"{prefix}_submission_status"
+                )
+                output[f"{prefix}_submission_status"] = submission_status
+                if submission_status in {"passed", "failed", "not_submitted"}:
+                    output[f"{prefix}_submission_pass"] = submission_status == "passed"
+            output["submission_count"] = float(result.submission_count)
+            output["feedback_rounds"] = float(result.feedback_rounds)
         for key in ("execution_ok", "requirements_ok", "physics_ok", "automatic_pass"):
             value = getattr(result, key)
             if value is not None:
@@ -368,6 +434,39 @@ class SuiteSummary(ReportEvaluator[str, MechanicsObservation, CaseMetadata]):
                 for key, value in counts.items()
             ],
         ]
+        for prefix in ("first", "final"):
+            label = f"{prefix}_submission_status"
+            if not any(label in case.labels for case in by_name.values()):
+                continue
+            statuses = [
+                by_name[name].labels[label].value
+                if name in by_name
+                and label in by_name[name].labels
+                and not by_name[name].evaluator_failures
+                else "evaluation_error"
+                for name in self.planned_case_ids
+            ]
+            if statuses:
+                for status in (
+                    "passed",
+                    "failed",
+                    "not_submitted",
+                    "evaluation_error",
+                    "posthoc",
+                    "invalid_evidence",
+                ):
+                    analyses.append(
+                        ScalarResult(
+                            title=f"{prefix}_submissions_{status}",
+                            value=statuses.count(status),
+                        )
+                    )
+                analyses.append(
+                    ScalarResult(
+                        title=f"{prefix}_submission_pass_rate",
+                        value=statuses.count("passed") / len(self.planned_case_ids),
+                    )
+                )
         if self.planned_case_ids:
             analyses.append(
                 ScalarResult(

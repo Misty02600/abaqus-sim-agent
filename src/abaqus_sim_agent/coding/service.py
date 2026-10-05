@@ -160,6 +160,9 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
     _view_outcome: bytes | None = field(default=None, init=False, repr=False)
     _view_verification: bytes | None = field(default=None, init=False, repr=False)
     verify_on_budget_exhaustion: bool = False
+    verification_started: (
+        Callable[[ReadyForVerificationDecision, CodingRunUsage], None] | None
+    ) = None
     resume: bool = False
     step_store: StepStore | None = None
     launch_manifest_json: str | None = None
@@ -615,6 +618,10 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                             self._current_task_revision,
                         ),
                     )
+                    if self.verification_started is not None:
+                        self.verification_started(
+                            decision, _usage(shared_usage, self.dependencies, started)
+                        )
                     verification = await self._verify(decision)
                     self._append_event(
                         "verification",
@@ -646,11 +653,25 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
                             verification=verification,
                         )
 
+                    if verification.terminal_failure_stage is not None:
+                        return self._failed(
+                            verification.terminal_failure_stage,
+                            verification.feedback,
+                            shared_usage,
+                            clarifications,
+                            started,
+                            verification=verification,
+                        )
+
                     history = self._persist_history_json(
                         result.all_messages_json(
                             output_tool_return_content=verification.feedback
                         )
                     )
+                    if self.verification_started is not None:
+                        self._append_event(
+                            "verification_feedback", {"feedback": verification.feedback}
+                        )
                     self.dependencies.set_concept_lookup_trigger(
                         "verification",
                         "feedback",

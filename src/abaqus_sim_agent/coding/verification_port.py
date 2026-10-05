@@ -28,6 +28,7 @@ class VerificationAttempt(BaseModel):
     artifacts: tuple[ArtifactRef, ...] = ()
     scope: VerificationScope = "task_oracle"
     failure_stage: str | None = None
+    terminal_failure_stage: str | None = None
 
 
 VerificationAttemptT_co = TypeVar(

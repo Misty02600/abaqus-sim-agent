@@ -163,6 +163,8 @@ def summarize_case(root: Path, name: str):
         classification = (
             "completed" if outcome["status"] == "completed" else "task_failed"
         )
+        if outcome.get("failure_stage") == "evaluation_error":
+            classification = "evaluation_error"
     elif resume:
         classification = {
             "running": "interrupted_unknown",
@@ -371,6 +373,17 @@ async def build_report_async(
     verdicts = {case.name: native_task_verdict(case) for case in native.cases}
     for row in rows:
         row["task_verdict"] = verdicts.get(row["case_id"], "grading_error")
+        observation = observations[row["case_id"]]
+        for field in (
+            "first_submission_status",
+            "final_submission_status",
+            "submission_count",
+            "feedback_rounds",
+        ):
+            row[field] = getattr(observation, field)
+        row["submission_usage"] = [
+            usage.model_dump(mode="json") for usage in observation.submission_usage
+        ]
     summary = {
         item.title: item.value
         for item in native.analyses
@@ -397,6 +410,7 @@ async def build_report_async(
             "summary_valid": summary_valid,
         },
         "verification_policy": manifest.get("verification_policy"),
+        "submission_policy": manifest.get("submission_policy"),
         "profile": {
             "foundation": manifest.get("foundation"),
             "catalog_mode": manifest.get("catalog_mode"),
@@ -454,14 +468,14 @@ async def build_report_async(
             if review_updates_pending
             else []
         ),
-        "| 案例 | 计分 | 运行状态 | 任务判定 | 收到响应 | HTTP尝试/失败/未知 | Abaqus/Solver |",
-        "|---|---|---|---|---:|---|---|",
+        "| 案例 | 计分 | 运行状态 | 任务判定 | 首次/最终自动评分 | 反馈轮数 | 收到响应 | HTTP尝试/失败/未知 | Abaqus/Solver |",
+        "|---|---|---|---|---|---:|---:|---|---|",
     ]
     for row in rows:
         u = row["received_usage"] or {}
         h = row["http"]
         lines.append(
-            f"| {row['case_id']} | {'是' if row['included_in_score'] else '否'} | {row['classification']} | {row['task_verdict']} | {u.get('requests', 'unknown')} | "
+            f"| {row['case_id']} | {'是' if row['included_in_score'] else '否'} | {row['classification']} | {row['task_verdict']} | {row['first_submission_status'] or '未记录'}/{row['final_submission_status'] or '未记录'} | {row['feedback_rounds']} | {u.get('requests', 'unknown')} | "
             f"{h['attempts']}/{h['failed']}/{h['unknown']} | {row['abaqus_calls']}/{row['solver_calls']} |"
         )
     if evaluation_errors:

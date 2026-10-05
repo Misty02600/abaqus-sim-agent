@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, TypeAdapter
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
 from abaqus_sim_agent.evaluation.case_metadata import CaseMetadata, SourceRef
 
-PUBLIC_MECHANICS_PROTOCOL = "public-mechanics-e2e-v26-native-case-execution"
+PUBLIC_MECHANICS_PROTOCOL = "public-mechanics-e2e-v27-bounded-feedback"
 
 # 物理Case身份决定评分范围；标签和载荷工况不增加权重。
 BASIC_LINEAR_CASE_IDS = (
@@ -126,15 +126,14 @@ class MechanicsCase(BaseModel):
 
     def goal(self) -> str:
         metric_text = "\n".join(
-            f"- {name}: {m.meaning}；公开参考 {m.target:g}；相对容差 {m.relative_tolerance:.2%}，绝对容差 {m.absolute_tolerance:g}。"
-            for name, m in self.metrics.items()
+            f"- {name}: {m.meaning}。" for name, m in self.metrics.items()
         )
         extra = (
             "必须保存粗、细两套实际网格及结果：model_coarse.inp/model_coarse.odb 与 model.inp/model.odb；"
             "说明网格如何加密，节点数仅作辅助检查。两者物理问题不变，目标位移或孔表面应力相对细网格的变化不超过1%。"
             "这只是本题的加密一致性检查，不是通用收敛阈值。"
             if self.refinement
-            else "本题不强制第二次求解，是否需要加密由实际误差决定。"
+            else "自行检查目标量的网格收敛性，在report.md记录判断依据；必要时加密网格。"
         )
         return f"""使用 Abaqus 2024 在空工作区自主完成以下完整仿真，而非仅写理论分析。
 {self.physical_description()}
@@ -150,9 +149,11 @@ class MechanicsCase(BaseModel):
 按题给全局坐标建立几何以便独立取数，使用常数各向同性Elastic；梁截面的物理尺寸和方向保持题设。
 results.json 的顶层数值字段（含方向；每项必须来自 ODB 或由其截面合力恢复）为：
 {metric_text}
-同时交付简短 report.md，说明模型选择、读取定义、误差与仍存在的限制。
-只有脚本、CAE/INP/ODB、JSON 和实际三阶段证据齐全后才请求宿主验收；失败时依据反馈自行修复。
-公开参考用于对照；宿主以独立ODB数值、反力、几何材料尺度及收敛结果为主要验收依据。
+同时交付简短 report.md，说明模型选择、读取定义、网格收敛检查与仍存在的限制。
+只有脚本、CAE/INP/ODB、JSON 和实际三阶段证据齐全后才请求宿主验收。
+首次完成声明即计一次提交，缺失交付也计入；最多三次提交、两轮验收反馈，所有阶段共用每题累计预算。
+提交前自主调试不计验收反馈轮数，但正常消耗预算。验收通过即停止；不能继续时明确报告失败。
+宿主以独立ODB数值、反力、几何材料尺度及收敛结果为主要验收依据；不提供参考答案及相对答案的偏差。
 完整INP检查是建议，不因实现写法不同直接判错；脚本审查由评测者单独记录，不由Agent自我认证。
 """
 
@@ -463,7 +464,6 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
                 "不得把边界改成固支，也不得额外约束转角。网格必须包含板中心E节点，以便宿主独立读取。"
                 "center_lower_max_principal 定义为E点下表面ELEMENT_NODAL贡献先按应力分量平均、"
                 "再计算面内最大主应力；reaction_z 为所有受U3约束边界节点RF3总和。"
-                "公开0.802 MPa是NAFEMS连续体参考；离散化需要足够准确才能进入10%容差。"
             ),
             metrics={
                 "center_lower_max_principal": _m(
@@ -582,7 +582,6 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
                 "CPS6/CPS6M/CPS8/CPS8R，并使曲边网格足以解析D=(2,0)处局部应力。"
                 "网格必须包含精确D节点。d_sigma_yy 定义为D点未平均ELEMENT_NODAL S22贡献的均值；"
                 "reaction_x/reaction_y 分别为x=0对称边RF1和y=0对称边RF2总和。"
-                "公开92.7 MPa是NAFEMS连续体参考；Abaqus 2024官方细网格CPS8结果为92.81 MPa。"
             ),
             metrics={
                 "d_sigma_yy": _m(92.7e6, "D点切向S22/Pa", 0.05),
@@ -634,8 +633,6 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
                 "网格必须包含精确D=(2,0,0.6)节点，并足以解析厚板弯曲和D点局部S22。"
                 "d_sigma_yy 定义为D点未平均ELEMENT_NODAL S22贡献的均值；"
                 "reaction_z 为外椭圆边厚度中面U3约束节点RF3总和。"
-                "公开-5.38 MPa是NAFEMS参考；Abaqus官方细网格C3D20/C3D20R结果分别约"
-                "-5.64/-5.53 MPa，因此本题采用10%应力容差。"
             ),
             metrics={
                 "d_sigma_yy": _m(-5.38e6, "D点全局S22/Pa", 0.10),
@@ -680,7 +677,7 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
                 "必须使用常规shell表示完整四分之一球面和0.04 m均匀壳厚；"
                 "允许S8R/S8R5/S9R5。网格必须包含精确A、C、E节点，且所有壳节点位于半径10 m球面。"
                 "XSYMM/YSYMM按Abaqus壳自由度语义验收，不能只约束平移自由度，也不能额外固支边界。"
-                "a_u1 定义为A点最终帧U1。公开参考为0.185 m；Abaqus官方细网格S8R5结果为0.185 m。"
+                "a_u1 定义为A点最终帧U1。"
             ),
             metrics={
                 "a_u1": _m(0.185, "A点径向U1/m", 0.02),
@@ -722,7 +719,6 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
                 "端部载荷只能是x=10处、y=±1翼缘上的Z向CLOAD；合力为零且"
                 "sum(y*Fz)=+1.2e6 N·m。a_sigma_xx 定义为A点ELEMENT_NODAL S11的壳中面值："
                 "若ODB有显式中面section point则直接取其贡献均值，否则分别平均负/正表面贡献后取二者中值。"
-                "公开参考为-108 MPa；Abaqus官方S8R粗网格结果约-109.85 MPa。"
             ),
             metrics={
                 "a_sigma_xx": _m(-108.0e6, "A点壳中面轴向S11/Pa", 0.03),
@@ -772,7 +768,7 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
                 "网格必须包含精确E=(r=1 m, theta=6.6667°, z=0.3 m)节点。壳局部1方向须为"
                 "圆周切向，使e_outer_s11表示E点外表面SPOS的切向S11；按所有相邻单元的"
                 "ELEMENT_NODAL外推贡献取均值。DC边矩只允许绕圆柱轴正向施加，总矩500 N·m；"
-                "reaction_m3为AB固支边绕同一轴的总反力矩，目标为-500 N·m。"
+                "reaction_m3为AB固支边绕同一轴的总反力矩。"
             ),
             metrics={
                 "e_outer_s11": _m(60.0e6, "E点外表面圆周切向S11/Pa", 0.03),
@@ -823,8 +819,7 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
                 "仅K点U2=0，不额外约束径向位移或转角；对全部壳单元施加+1 MPa压力。"
                 "k_meridional_s11/k_hoop_s22 定义为K点ELEMENT_NODAL S11/S22的壳中面值；"
                 "若无显式中面section point，则分别平均负/正表面贡献后取二者中值。"
-                "reaction_z 为K点RF2。Abaqus官方细网格SAX2约为-50.02 MPa、48.34 MPa，"
-                "因此环向应力使用4%容差；K点轴向反力应平衡 pi*1e6 N。"
+                "reaction_z 为K点RF2。"
             ),
             metrics={
                 "k_meridional_s11": _m(-50.0e6, "K点壳中面子午向S11/Pa", 0.03),
@@ -873,8 +868,7 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
                 "必须使用常规轴对称壳SAX1或SAX2表示球冠与圆柱连续中面；网格必须精确包含"
                 "D=(r=1,z=1.4034 m)节点。D点外表面SPOS的子午/轴向S11按相邻单元"
                 "ELEMENT_NODAL贡献取均值，记为d_outer_s11。reaction_z为底部(r=1,z=0)"
-                "节点RF2。Abaqus官方fine SAX2为25.878 MPa；底部轴向反力应平衡"
-                "-pi*1e6 N。"
+                "节点RF2。"
             ),
             metrics={
                 "d_outer_s11": _m(25.9e6, "D点外表面SPOS轴向/子午向S11/Pa", 0.02),
@@ -929,9 +923,6 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
                 "(r=0.1875,z=0.5 m)、半径0.0625 m。网格必须精确包含"
                 "D=(r=0.150763,z=0.5505748 m)节点。D点外表面SPOS环向S22按相邻单元"
                 "ELEMENT_NODAL贡献取均值，记为d_outer_s22。reaction_z为底部节点RF2。"
-                "NAFEMS连续体参考为94.5 MPa；Abaqus官方SAX2粗/细网格约为90.12/90.41 MPa，"
-                "官方fine SAX1约89.3 MPa，因此应把这一本征离散偏差与错误建模区分开。"
-                "底部轴向反力应平衡-pi*1e6*0.25^2 N。"
             ),
             metrics={
                 "d_outer_s22": _m(94.5e6, "D点外表面SPOS环向S22/Pa", 0.06),
@@ -992,9 +983,7 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
                 "厚度积分点。压力只覆盖上圆柱与球壳分支，DLOAD符号为-1 MPa。"
                 "c_outer_s11取C处上圆柱单元的轴向S11；3点Gauss的section-point fraction"
                 "约为±0.774597和0，它们是厚度积分点而不是壳面，因此宿主按section-point"
-                "fraction线性外推到负侧fraction=-1的外表面。Abaqus官方fine SAX2约为"
-                "-314.81 MPa；NAFEMS连续体参考为-319.9 MPa。reaction_z为底部RF2，"
-                "应平衡+pi*p*r^2。"
+                "fraction线性外推到负侧fraction=-1的外表面。reaction_z为底部RF2。"
             ),
             metrics={
                 "c_outer_s11": _m(-319.9e6, "C点上圆柱外表面轴向S11/Pa", 0.03),
@@ -1044,9 +1033,7 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
                 "必须使用C3D20或C3D20R并覆盖完整实体；公开测评使用显式节点TEMPERATURE，"
                 "不依赖UTEMP/用户子程序。每个节点温度必须等于sqrt(x^2+y^2)+z，"
                 "不得叠加CLOAD/DLOAD/DSLOAD。A点为(1,0,0)内表面底部交点，"
-                "a_sigma_zz读取最终ODB中该点的全局S33。Abaqus官方fine C3D20约为"
-                "-103.26 MPa，fine C3D20R约为-99.60 MPa，因此相对NAFEMS -105 MPa"
-                "采用6%容差以覆盖两种允许的二次实体离散。"
+                "a_sigma_zz读取最终ODB中该点的全局S33。"
             ),
             metrics={
                 "a_sigma_zz": _m(-105.0e6, "A点全局轴向S33/Pa", 0.06),

@@ -39,7 +39,11 @@ def main(argv: Sequence[str] | None = None):
         choices=("full", "full_with_discovery"),
         default="full",
     )
-    parser.add_argument("--knowledge-resources", type=Path)
+    parser.add_argument(
+        "--knowledge-resources",
+        type=Path,
+        help="历史入口；v27拒绝未审查答案内容的外部参考附件",
+    )
     parser.add_argument("--max-task-concurrency", type=int, choices=(1, 2), default=1)
     parser.add_argument(
         "--max-runtime-concurrency", type=int, choices=(1, 2), default=1

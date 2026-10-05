@@ -135,14 +135,16 @@ NAFEMS各题单位均为m–N–Pa（LE11另含°C），除LE3外E=210GPa、ν=.
 
 | 入口 | 当前配置/可用性 | 历史边界 |
 |---|---|---|
-| `public_mechanics_suite` | v26；`prepare/preflight/doctor/run/continue/resume/pause/report/launch`；`--case`可指定多个不同Case，不选则15题；历史/未入选Case只作非计分诊断。必传新ASCII `--root` 与 `--catalog`；默认Foundation on、API full、Planning off、docs off、legacy_decision；新批次每题累计上限为200次模型请求、80次Abaqus调用（其中Solver最多10次），活动时间5400秒，澄清0，lookup/preflight计数不限；HTTP300秒+4次retry；任务/runtime并发各1（可选2） | `prepare`复制源码/Skill/Catalog，可选knowledge；seal绑定依赖与launcher。`preflight`是假模型，`doctor`会真实访问Provider。旧批次必须用其worker/snapshot与匹配依赖，当前report拒绝覆盖旧version |
+| `public_mechanics_suite` | v27；`prepare/preflight/doctor/run/continue/resume/pause/report/launch`；`--case`可指定多个不同Case，不选则15题；历史/未入选Case只作非计分诊断。必传新ASCII `--root` 与 `--catalog`；默认Foundation on、API full、Planning off、docs off、legacy_decision；新批次每题累计上限为200次模型请求、80次Abaqus调用（其中Solver最多10次），活动时间5400秒，澄清0，lookup/preflight计数不限；HTTP300秒+4次retry；任务/runtime并发各1（可选2） | `prepare`复制源码/Skill/Catalog，拒绝未经答案审查的外部knowledge附件；seal绑定依赖与launcher。`preflight`是假模型，`doctor`会真实访问Provider。旧批次必须用其worker/snapshot与匹配依赖，当前report拒绝覆盖旧version |
 | `foundation_public_mechanics_benchmark` | 更早的力学行为/回答题集装配与评分 | 与当前20题仿真suite不同，不能因同名Case把行为分数计入仿真完成 |
 
 公开 v1及多项v6–v22历史配置通常为40/18/6/2700秒、API8、Planning on，HTTP又分60/retry10、600/retry0、180/retry1等。
 v5事后恢复还修改limits/timeout；完整值按冻结manifest与amendment分别读，不能仅以目录v号推断当前执行条件。
 新批次不把最终交付文件名用作执行白名单：模型可在工作区内运行单独的诊断脚本和INP。最终验收仍核对题设要求的交付物及其执行证据。
 
-当前v26将真实Case执行接入原生Dataset；沿用15题选择和判分规则，尚未运行新的真实模型/持证批次。元数据schema、批次冻结和报告语义见[Coding入口](README.md)。
+当前v27沿用v26的原生Dataset执行链，并保存首次提交与最多两轮反馈后的最终自动评分；题设和反馈不主动提供参考答案。
+交付副本、用量、独立诊断和错误均留在宿主侧，评分器错误不计答案失败。尚未运行新合同的真实模型/持证批次。
+元数据schema、批次冻结和报告语义见[Coding入口](README.md)与[结果报告约定](result_reporting.md)。
 
 旧state不能交给当前CLI猜测升级；依赖、旧Planning适配、prompt/Skill、case/oracle和运行资源一起决定可复现性。
 [LE10续跑记录](le10_continuation60_20260922.md)已记载Harness/Pydantic AI升级导致93个绑定文件不符，恢复匹配runtime后才继续。

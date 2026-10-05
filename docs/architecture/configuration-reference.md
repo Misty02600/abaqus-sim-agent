@@ -484,6 +484,14 @@ HTTP 传入旧字段返回校验错误，不静默忽略。上下文窗口使用
 已有 SDK 云连接/环境来源及 `provider_environment` 的恢复绑定保持原合同；这不代表 Azure 等部署场景已完成
 产品验收，也不新增一套地址环境变量。旧 `model_base_url` 非空的开发期会话明确拒绝恢复，不自动改指向。
 
+## 当前实现：基础线性测评提交合同
+
+基础线性测评的独立冻结字段：`manifest.submission_policy`由v27程序固定为
+`first_submission_bounded_feedback_v1`，无用户覆盖或环境来源；`prepare`保存、worker校验，恢复不得更换。
+该合同固定最多三次提交、两轮反馈，预算仍由原`manifest.budgets`转入同一CodingRun控制字段。
+`manifest.knowledge_resources`在v27固定为null，非空输入拒绝；旧批次继续使用其冻结worker。
+上述字段仅属于测评批次，普通CLI/Web不增加对应选项。完整行为见[结果报告约定](../../benchmarks/coding/result_reporting.md)。
+
 ## 当前实现：逐次Solver工具参数
 
 `run_solver_job`及`solver_job(action="submit")`接受模型本次传入的`cpus`、`memory`；

@@ -44,6 +44,10 @@ from abaqus_sim_agent.evaluation.mechanics_grading import (
     record_observation,
 )
 from abaqus_sim_agent.evaluation.mechanics_progress import progress_lifecycle
+from abaqus_sim_agent.evaluation.mechanics_submissions import (
+    SUBMISSION_POLICY,
+    MechanicsSubmissionVerifier,
+)
 from abaqus_sim_agent.evaluation.mechanics_telemetry import trace_attempt
 from abaqus_sim_agent.evaluation.public_mechanics_cases import (
     BASIC_LINEAR_CASE_IDS,
@@ -124,6 +128,10 @@ def prepare(
 ):
     if root.exists():
         raise FileExistsError(root)
+    if knowledge_resources is not None:
+        raise ValueError(
+            "v27 does not attach external reference folders; their benchmark answers are not audited"
+        )
     case_ids = list(selected_case_ids(case_ids))
     cases = [get_case(k) for k in case_ids]
     ApiCatalog.open(catalog)
@@ -146,22 +154,6 @@ def prepare(
     shutil.copytree(
         catalog, root / "catalog", ignore=shutil.ignore_patterns("__pycache__")
     )
-    knowledge_binding = None
-    if knowledge_resources is not None:
-        source = knowledge_resources.resolve(strict=True)
-        if not source.is_dir():
-            raise ValueError("knowledge resources must be a directory")
-        target = root / "knowledge-resources"
-        shutil.copytree(
-            source,
-            target,
-            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
-        )
-        knowledge_binding = {
-            "path": "knowledge-resources",
-            "source_path": str(source),
-            "files": _files(target),
-        }
     _write(root / "cases.json", [c.model_dump(mode="json") for c in cases])
     _write(root / "goals.json", {c.case_id: c.goal() for c in cases})
     config = new_run_execution_config(
@@ -182,18 +174,18 @@ def prepare(
             "foundation": foundation,
             "execution_config": config.model_dump(mode="json"),
             "catalog_mode": api_catalog_mode,
-            "knowledge_resources": knowledge_binding,
+            "knowledge_resources": None,
             "docs_mode": "off",
             "question_protocol": "legacy_decision",
             "repetitions": 1,
             "max_explicit_resumes": 3,
             "provider_failure_policy": "stop_batch",
             "verification_policy": "results_first_v1",
+            "submission_policy": SUBMISSION_POLICY,
             "script_review": "separate_reviewer_record",
             "purpose": (
                 "knowledge_and_api_profile_qualification"
-                if knowledge_binding is not None
-                or api_catalog_mode == "full_with_discovery"
+                if api_catalog_mode == "full_with_discovery"
                 else "case qualification, not Foundation A/B benefit"
             ),
             "max_task_concurrency": max_task_concurrency,
@@ -268,6 +260,8 @@ def verify_binding(root):
     manifest = read_json(root / "manifest.json")
     if manifest.get("verification_policy") != "results_first_v1":
         raise ValueError("verification policy is not the frozen results-first policy")
+    if manifest.get("submission_policy") != SUBMISSION_POLICY:
+        raise ValueError("submission policy differs from frozen worker")
     if manifest["version"] != VERSION:
         raise ValueError("use the original worker for historical versions")
     if manifest.get("catalog_mode") not in {"full", "full_with_discovery"}:
@@ -278,11 +272,8 @@ def verify_binding(root):
         raise ValueError("invalid runtime concurrency")
     if manifest["max_runtime_concurrency"] > manifest["max_task_concurrency"]:
         raise ValueError("runtime concurrency exceeds task concurrency")
-    knowledge = manifest.get("knowledge_resources")
-    if knowledge is not None:
-        directory = root / knowledge["path"]
-        if not directory.is_dir() or _files(directory) != knowledge["files"]:
-            raise ValueError("knowledge resource binding changed")
+    if manifest.get("knowledge_resources") is not None:
+        raise ValueError("v27 does not attach external reference folders")
     if read_json(root / "goals.json") != {
         name: get_case(name).goal() for name in manifest["case_ids"]
     }:
@@ -356,9 +347,6 @@ async def preflight(root: Path):
         foundation_skill_profile="linear_structural_fea_v1"
         if manifest["foundation"]
         else "off",
-        knowledge_resources_dir=(root / manifest["knowledge_resources"]["path"])
-        if manifest.get("knowledge_resources")
-        else None,
     )
     await agent.run(
         req.goal,
@@ -622,21 +610,21 @@ async def _run_case(root, name, *, resume, key, catalog, runtime_gate=None):
                 foundation_skill_profile="linear_structural_fea_v1"
                 if manifest["foundation"]
                 else "off",
-                knowledge_resources_dir=(
-                    root / manifest["knowledge_resources"]["path"]
-                    if manifest.get("knowledge_resources")
-                    else None
-                ),
                 task_instructions="Complete the actual simulation and artifacts under the stated physical contract. Do not submit jobs inside the CAE script. Use API discovery, exact lookup, or optional reference material only when they resolve a real implementation uncertainty. No physical input is missing. Preserve the declared model/units/QoI and use the independent verifier feedback for in-scope repair.",
+            )
+            verifier = MechanicsSubmissionVerifier(
+                req,
+                PublicMechanicsRunVerifier(
+                    get_case(name), policy=manifest["verification_policy"]
+                ),
             )
             service = CodingRunService(
                 agent=agent,
                 request=req,
                 dependencies=deps,
                 clarification_provider=ScriptedClarificationProvider({}),
-                verifier=PublicMechanicsRunVerifier(
-                    get_case(name), policy=manifest["verification_policy"]
-                ),
+                verifier=verifier,
+                verification_started=verifier.capture,
                 resume=resume,
                 initial_snapshot=load_initial_snapshot(s)
                 if resume

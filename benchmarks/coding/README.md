@@ -9,7 +9,9 @@
 - [合同与证据详表](domain_mechanics_case_details.md)：物理判据、逐题证据、当前预算和资源条件。
 - 当前入口：`python -m abaqus_sim_agent.evaluation.public_mechanics_suite --help`。
 
-新批次使用 `public-mechanics-e2e-v26-native-case-execution`，`prepare`默认选已确认的15题：均布梁、圆轴、厚壁圆筒、孔板、VM184及NAFEMS LE1–LE10。
+新批次使用 `public-mechanics-e2e-v27-bounded-feedback`，`prepare`默认选已确认的15题：均布梁、圆轴、厚壁圆筒、孔板、VM184及NAFEMS LE1–LE10。
+题设不提供参考答案；首次提交固定留证，最多两轮反馈、三次提交，首次与最终自动评分分别报告。
+新批次拒绝未经答案内容审查的外部参考附件，累计预算与恢复沿用同一CodingRun；详见[结果报告约定](result_reporting.md)。
 全部20题仍保留定义；`--case`可指定子集或历史/未入选题。历史及LE11可以产生诊断记录，但不增加评分分母。
 `manifest.case_ids`是实际运行选择，`manifest.scoring_case_ids`冻结15题评分范围；报告按两者交集逐物理Case计数。
 自定义子集的`full_set_selected=false`，不能把子集结果称为完整15题成绩；VM184三工况仍只计一道题。
