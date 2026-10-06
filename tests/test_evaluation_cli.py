@@ -10,11 +10,12 @@ from abaqus_sim_agent.evaluation import public_mechanics_suite as suite
 
 
 @pytest.mark.parametrize("enabled", [False, True])
-def test_mechanics_launch_passes_tracing_to_worker_without_starting_parent_exporter(
-    tmp_path, monkeypatch, enabled
-):
+def test_mechanics_foreground_run_owns_tracing(tmp_path, monkeypatch, enabled):
     sessions = []
-    launches = []
+    runs = []
+
+    async def run(*args):
+        runs.append(args)
 
     @contextmanager
     def session(active, *, environment):
@@ -22,16 +23,12 @@ def test_mechanics_launch_passes_tracing_to_worker_without_starting_parent_expor
         yield
 
     monkeypatch.setattr(suite.telemetry, "telemetry_session", session)
-    monkeypatch.setattr(
-        suite, "launch", lambda *args, **kwargs: launches.append((args, kwargs))
-    )
+    monkeypatch.setattr(suite, "run", run)
     argv = [
         "worker.py",
-        "launch",
+        "resume",
         "--root",
         str(tmp_path),
-        "--action",
-        "resume",
         "--case",
         "circular-shaft-pure-torsion",
     ]
@@ -39,13 +36,17 @@ def test_mechanics_launch_passes_tracing_to_worker_without_starting_parent_expor
         argv.append("--phoenix")
     monkeypatch.setattr(sys, "argv", argv)
     suite.main()
-    assert sessions == [(False, "evaluation")]
-    assert launches == [
-        (
-            (tmp_path.resolve(), "resume", ["circular-shaft-pure-torsion"]),
-            {"phoenix": enabled},
-        )
-    ]
+    assert sessions == [(enabled, "evaluation")]
+    assert runs == [(tmp_path.resolve(), "resume", ["circular-shaft-pure-torsion"])]
+
+
+@pytest.mark.parametrize("mode", ["launch", "pause"])
+def test_removed_mechanics_controls_are_rejected(tmp_path, monkeypatch, mode):
+    monkeypatch.setattr(sys, "argv", ["worker.py", mode, "--root", str(tmp_path)])
+    with pytest.raises(SystemExit) as exc:
+        suite.main()
+    assert exc.value.code == 2
+    assert not list(tmp_path.iterdir())
 
 
 @pytest.mark.parametrize("mode", ["run", "continue", "resume"])
@@ -100,23 +101,6 @@ def test_mechanics_report_preserves_binding_failure_and_still_marks_report_inval
         with pytest.raises(ValueError, match="fixture binding drift"):
             suite.main()
     assert checks == ["verified", valid]
-
-
-def test_mechanics_pause_verifies_before_writing_marker(tmp_path, monkeypatch):
-    def refuse(root):
-        raise ValueError("fixture binding drift")
-
-    monkeypatch.setattr(suite, "verify_binding", refuse)
-    monkeypatch.setattr(sys, "argv", ["worker.py", "pause", "--root", str(tmp_path)])
-    with pytest.raises(ValueError, match="fixture binding drift"):
-        suite.main()
-    assert not (tmp_path / "pause.json").exists()
-    monkeypatch.setattr(suite, "verify_binding", lambda root: None)
-    suite.main()
-    assert (
-        json.loads((tmp_path / "pause.json").read_text(encoding="utf-8"))["reason"]
-        == "operator_requested_pause"
-    )
 
 
 @pytest.mark.parametrize(("passed", "code"), [(True, 0), (False, 1)])

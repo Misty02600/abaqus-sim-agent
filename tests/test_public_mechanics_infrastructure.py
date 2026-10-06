@@ -27,7 +27,6 @@ from abaqus_sim_agent.evaluation.public_mechanics_control import (
     append_event,
     build_report,
     read_json,
-    run_until_pause,
     save_json,
     transport_summary,
 )
@@ -197,22 +196,6 @@ def test_body_timeout_and_process_interruption_remain_observable(tmp_path):
     assert "sensitive error text" not in path.read_text(encoding="utf-8")
 
 
-def test_pause_cancels_service_and_waits_for_its_cleanup(tmp_path):
-    marker = tmp_path / "pause.json"
-    cleaned = []
-
-    class Service:
-        async def run(self):
-            save_json(marker, {})
-            try:
-                await asyncio.Event().wait()
-            finally:
-                cleaned.append(True)
-
-    asyncio.run(run_until_pause(Service(), marker))
-    assert cleaned == [True]
-
-
 def test_report_rebuild_preserves_unknown_and_does_not_write_outcome(tmp_path):
     names = root_fixture(tmp_path)
     state = tmp_path / names[0] / "state"
@@ -285,7 +268,7 @@ def test_continue_never_replays_and_resume_is_bounded(tmp_path):
         suite.selected_cases(tmp_path, "run", None)
 
 
-def test_batch_provider_failure_stops_remaining_cases_and_keeps_report(
+def test_batch_provider_failures_are_recorded_without_stopping_cases(
     tmp_path, monkeypatch
 ):
     names = root_fixture(tmp_path)
@@ -314,12 +297,12 @@ def test_batch_provider_failure_stops_remaining_cases_and_keeps_report(
 
     monkeypatch.setattr(suite, "_run_case", fail)
     asyncio.run(suite.run(tmp_path))
-    assert called == names[:1]
+    assert called == names
     assert (
         read_json(tmp_path / "report.json")["trials"][1]["classification"]
-        == "not_started"
+        == "provider_interrupted"
     )
-    assert read_json(tmp_path / "health.json")["passed"] is False
+    assert not (tmp_path / "health.json").exists()
 
 
 def test_suite_same_run_resume_retains_usage_and_file_work(tmp_path, monkeypatch):
@@ -553,32 +536,6 @@ def test_model_factory_error_is_retained_without_an_outcome(tmp_path, monkeypatc
     assert "credential-like-text" not in (tmp_path / "report.json").read_text(
         encoding="utf-8"
     )
-
-
-def test_hidden_worker_starts_after_launcher_releases_lock(tmp_path, monkeypatch):
-    import os
-    import time
-
-    if os.name != "nt":
-        pytest.skip("Windows detached-process integration")
-    root_fixture(tmp_path)
-    monkeypatch.setattr(suite, "_checked_preflight", lambda root: None)
-    monkeypatch.setattr(suite, "_ensure_health", lambda root: None)
-    (tmp_path / "worker.py").write_text(
-        "from pathlib import Path\nimport sys\n"
-        f"sys.path.insert(0, {str(suite.ROOT / 'src')!r})\n"
-        "from abaqus_sim_agent.coding.run_lock import CodingRunFileLock\n"
-        "root=Path(__file__).parent\n"
-        "with CodingRunFileLock(root/'control'):\n"
-        "    (root/'detached.ok').write_text('no model or Abaqus calls')\n",
-        encoding="utf-8",
-    )
-    suite.launch(tmp_path, "run", None)
-    deadline = time.monotonic() + 10
-    while not (tmp_path / "detached.ok").exists() and time.monotonic() < deadline:
-        time.sleep(0.05)
-    assert (tmp_path / "detached.ok").exists()
-    assert list((tmp_path / "control").glob("*/launch.json"))
 
 
 def test_doctor_records_setup_and_client_close_errors(tmp_path, monkeypatch):

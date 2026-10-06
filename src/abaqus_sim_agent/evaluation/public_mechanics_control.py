@@ -123,35 +123,6 @@ def transport_summary(path: Path):
     }
 
 
-async def run_until_pause(service, marker: Path):
-    """取消由 service 持有的任务，让它记录 interrupted 并清理 typed runtime。"""
-    task = asyncio.create_task(service.run())
-
-    async def watch():
-        # A cross-process pause marker requires polling, not an in-process Event.
-        while not marker.exists():  # noqa: ASYNC110, ASYNC240
-            await asyncio.sleep(0.2)
-
-    watcher = asyncio.create_task(watch())
-    try:
-        done, _ = await asyncio.wait(
-            (task, watcher), return_when=asyncio.FIRST_COMPLETED
-        )
-        if task in done:
-            return await task
-        task.cancel()
-        try:
-            await task
-        except asyncio.CancelledError:
-            pass
-        return None
-    finally:
-        for pending in (task, watcher):
-            if not pending.done():
-                pending.cancel()
-        await asyncio.gather(task, watcher, return_exceptions=True)
-
-
 def summarize_case(root: Path, name: str):
     state = root / name / "state"
     outcome = read_json(state / "outcome.json")

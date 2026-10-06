@@ -20,9 +20,7 @@ def main(argv: Sequence[str] | None = None):
             "run",
             "continue",
             "resume",
-            "pause",
             "report",
-            "launch",
         ),
     )
     parser.add_argument("--root", type=Path, required=True)
@@ -50,9 +48,6 @@ def main(argv: Sequence[str] | None = None):
     )
     parser.add_argument("--http-timeout-seconds", type=float)
     parser.add_argument("--http-retries", type=int)
-    parser.add_argument(
-        "--action", choices=("run", "continue", "resume"), default="run"
-    )
     telemetry.add_phoenix_argument(parser)
     args = parser.parse_args(argv)
     if args.phoenix and args.mode not in {
@@ -60,12 +55,9 @@ def main(argv: Sequence[str] | None = None):
         "continue",
         "resume",
         "report",
-        "launch",
     }:
-        parser.error("--phoenix is supported for run/continue/resume/report/launch")
-    with telemetry.telemetry_session(
-        args.phoenix and args.mode != "launch", environment="evaluation"
-    ):
+        parser.error("--phoenix is supported for run/continue/resume/report")
+    with telemetry.telemetry_session(args.phoenix, environment="evaluation"):
         _dispatch(args, parser)
 
 
@@ -110,9 +102,5 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser):
             raise SystemExit(2)
     elif args.mode == "report":
         suite.report(root)
-    elif args.mode == "pause":
-        suite.pause(root)
-    elif args.mode == "launch":
-        suite.launch(root, args.action, args.cases, phoenix=args.phoenix)
     else:
         asyncio.run(suite.run(root, args.mode, args.cases))

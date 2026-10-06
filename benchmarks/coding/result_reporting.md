@@ -134,9 +134,11 @@ TaskPassed和SuiteSummary直接对这次结果评分。完成后报告接收原�
 默认两者均为1，现有可选上限2不变。并发2时改为按空闲Case槽位补题，区别于旧协议等待整波完成；
 该调度变化只进入v26新批次，不回填旧批次或用旧worker混跑。
 
-任务在观察到Provider/setup/证据基础设施异常后设置停止状态并使health失效；未启动题只读已有证据，
-不创建业务工作区、不调用模型或Solver；已在执行的题自然收尾。普通task_failed继续下一题。
-显式pause仍走已有标记与Service取消路径。单题取消传播到批次owner，外部批次取消同样等待在途任务清理；
+当前入口直接前台执行，不再提供后台 `launch` 或基于 `pause.json` 的暂停通信。
+单题失败、中断、Provider/setup/证据投影异常记录到该题或原生失败报告后，继续后续独立题目，不使整批 health 失效。
+新批次 manifest 记录 `case_failure_policy=continue`；冻结历史 worker 保留原行为。
+用户通过终端 Ctrl+C 或取消运行 `Dataset.evaluate()` 的异步任务停止本次执行。
+单题收到取消信号时传播到批次owner，外部批次取消同样等待在途任务清理；
 这是公开asyncio取消组合，没有修改Evals内部实现或增加会话恢复状态机。
 
 run只能启动新批次；continue只执行从未启动题；resume只接受原入口允许的中断Case，继承Service预算和基线。
@@ -144,7 +146,7 @@ run只能启动新批次；continue只执行从未启动题；resume只接受原
 采用原生并发调度、CaseLifecycle逐题进度、最终EvaluationReport的组合：setup标记Case处理中，
 teardown直接使用原生ReportCase/ReportCaseFailure及已有判定更新`progress.json/progress.md`。
 处理数量包含实际执行和只读投影，不等于通过题数；未启动、缺失判定和取消不补造通过或物理失败。
-取消传播时SDK可能已进入下一Case的生命周期，但业务停止检查仍在副作用前执行；进度阶段不证明模型或Solver已经启动。
+取消传播时SDK可能已进入下一Case的生命周期，但在副作用前检查批次任务的原生 `cancelling()` 状态；进度阶段不证明模型或Solver已经启动。
 
 启动时不重建完整报告或上传旧评分。新批次在本次调用结束时生成完整报告；continue/resume期间保留上次报告，收尾再更新。
 运行中查看progress文件，也可查逐题state、attempt、stdout和Phoenix。
@@ -194,8 +196,7 @@ uv run --no-sync python D:/abaqus-runs/my-batch/worker.py resume --root D:/abaqu
 uv run --no-sync python D:/abaqus-runs/my-batch/worker.py report --root D:/abaqus-runs/my-batch --phoenix
 ```
 
-`continue`同样支持；后台`launch --action run|continue|resume --phoenix`将开关传给实际worker，
-启动器自身不初始化 exporter。`prepare/preflight/doctor/pause`不接受该开关。
+`continue`同样支持，追踪在直接运行的worker中初始化。`prepare/preflight/doctor`不接受该开关。
 开关属于本次宿主命令，不写入冻结任务配置，恢复不会根据旧追踪记录自动开启。
 旧冻结worker不因当前代码更新获得此能力，也不修改旧seal或报告。
 

@@ -21,7 +21,7 @@
 运行中由原生CaseLifecycle更新progress.json/progress.md，完整报告在调用结束时生成。
 独立report只读重建，不重跑业务；执行档案保留该次评分错误，不读取reviews文件或要求逐项人工确认。
 通过范围为执行、交付及提交数值，不扩大为全部建模细节已核实。规则、原生报告、审查记录及重建方式见[结果报告约定](result_reporting.md)。
-新worker的`run/continue/resume/report/launch --phoenix`可显式记录真实attempt并上传已算评分，默认关闭；
+新worker的`run/continue/resume/report --phoenix`可显式记录真实attempt并上传已算评分，默认关闭；
 报告重建不产生新的仿真追踪，详见[Phoenix接线](result_reporting.md#phoenix追踪与评分)。
 
 ## Metadata约定
@@ -76,12 +76,18 @@ Foundation行为测评仍将语义结论留给独立审查，不把路由分数�
 ## 命令与Python实现
 
 公开力学的参数解析/分发位于[public_mechanics_cli.py](../../src/abaqus_sim_agent/evaluation/public_mechanics_cli.py)，
-实际prepare/run/report/pause等操作仍由[public_mechanics_suite.py](../../src/abaqus_sim_agent/evaluation/public_mechanics_suite.py)负责。
+实际prepare/run/continue/resume/report等操作由[public_mechanics_suite.py](../../src/abaqus_sim_agent/evaluation/public_mechanics_suite.py)负责。
 API修复同样由[api_repair_cli.py](../../src/abaqus_sim_agent/evaluation/api_repair_cli.py)解析参数，调用
 [api_repair.py](../../src/abaqus_sim_agent/evaluation/api_repair.py)的原生Dataset执行和评分函数。
 原来的`python -m ...public_mechanics_suite`、`python -m ...api_repair`和worker导入的`main()`保持可用，转发到唯一命令实现。
 
-此分离只改变代码职责；选题、默认参数、退出码和冻结校验保持原语义。直接调用Python操作也须满足对应批次绑定，
+当前测评直接在终端前台运行：`python <批次目录>/worker.py run --root <批次目录>`；
+不再提供 `launch`、`--action`、`pause` 或停止标记文件。Ctrl+C 通过标准异步取消中止本次执行，
+等待在途任务清理并重建报告。普通单题失败、中断、Provider 或启动异常记录后继续下一题，不使整批 health 失效。
+`continue` 仍仅选从未启动的题；`resume --case` 仍显式选择符合条件的中断题，已完成题不重复执行。
+历史批次保留冻结 worker 原来的行为，不回填新的调度规则。
+
+选题、评分与冻结校验保持原语义。直接调用Python操作也须满足对应批次绑定，
 不能从活动checkout绕过public mechanics的snapshot校验。
 
 两组Skill路由原生入口（`skill_routing_behavior`、`structural_topic_skill_routing`）将内部单题取消传播到本次批次调用，

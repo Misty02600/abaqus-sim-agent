@@ -4,7 +4,6 @@ import asyncio
 import json
 import os
 import shutil
-import subprocess
 import sys
 from datetime import UTC, datetime
 from importlib.metadata import distribution, distributions
@@ -63,7 +62,6 @@ from abaqus_sim_agent.evaluation.public_mechanics_control import (
     build_report_async,
     read_case_observation,
     read_json,
-    run_until_pause,
     save_json,
 )
 from abaqus_sim_agent.evaluation.public_mechanics_runner import PublicMechanicsRunner
@@ -180,7 +178,7 @@ def prepare(
             "question_protocol": "legacy_decision",
             "repetitions": 1,
             "max_explicit_resumes": 3,
-            "provider_failure_policy": "stop_batch",
+            "case_failure_policy": "continue",
             "verification_policy": VERIFICATION_POLICY,
             "submission_policy": SUBMISSION_POLICY,
             "purpose": (
@@ -632,7 +630,7 @@ async def _run_case(root, name, *, resume, key, catalog, runtime_gate=None):
                 if resume
                 else WorkspaceResolver(captured_cwd=w).snapshot(w),
             )
-            await run_until_pause(service, root / "pause.json")
+            await service.run()
         except Exception as exc:
             attempt["error_type"] = type(exc).__name__
             # Deliberately exclude arbitrary exception strings/headers that may contain credentials.
@@ -666,6 +664,7 @@ async def run(root: Path, action="run", case_ids=None):
     """由原生Dataset调度Case，恢复与副作用仍交给现有单题Service。
 
     Note:
+        单题异常或中断保留结果并继续后续题目，不设置自有整批停止状态。
         单题取消会取消整个本次调用并等待在途任务收尾；完成的Case不重新执行。
         正常结束保留原生评分失败；取消或绑定变化时只读重建全题集报告。
     """
@@ -688,11 +687,6 @@ async def run(root: Path, action="run", case_ids=None):
                     "seal_sha256": file_digest(root / "seal.json"),
                 },
             )
-        # Explicit continue/resume acknowledges a prior cooperative pause; archive the request.
-        if action != "run" and (root / "pause.json").exists():
-            (root / "pause.json").rename(
-                root / ("pause-consumed-" + uuid4().hex + ".json")
-            )
         append_event(
             root / "control/events.jsonl",
             "batch_started",
@@ -706,28 +700,13 @@ async def run(root: Path, action="run", case_ids=None):
         scoring_ids = tuple(manifest["scoring_case_ids"])
         invocation_id = uuid4().hex
         native = None
-        stopped = False
         batch_task = asyncio.current_task()
 
-        def stop_batch():
-            nonlocal stopped
-            stopped = True
-            save_json(
-                root / "health.json",
-                {
-                    "passed": False,
-                    "at": datetime.now(UTC).isoformat(),
-                    "seal_sha256": file_digest(root / "seal.json"),
-                    "reason": "batch_interrupted",
-                },
-            )
-
         async def execute_or_observe(case_id: str):
-            execute = (
-                case_id in selected
-                and not stopped
-                and not (root / "pause.json").exists()
-            )
+            # A queued case can acquire its slot before cancellation reaches it.
+            if batch_task is not None and batch_task.cancelling():
+                raise asyncio.CancelledError
+            execute = case_id in selected
             if execute:
                 try:
                     verify_binding(root)
@@ -741,13 +720,11 @@ async def run(root: Path, action="run", case_ids=None):
                         runtime_gate=runtime_gate,
                     )
                 except asyncio.CancelledError:
-                    stop_batch()
                     # Propagate child cancellation to the owner: Evals 2.51 must not treat a cancelled child as a result.
                     if batch_task is not None and not batch_task.cancelling():
                         batch_task.cancel()
                     raise
                 except Exception as exc:
-                    stop_batch()
                     # Keep exceptions outside the Service boundary visible without leaking arbitrary details.
                     raise RuntimeError(
                         f"Case execution failed: {type(exc).__name__}"
@@ -755,14 +732,11 @@ async def run(root: Path, action="run", case_ids=None):
             try:
                 observation = read_case_observation(root, by_id[case_id], manifest)
             except Exception as exc:
-                stop_batch()
                 raise RuntimeError(
                     f"Case evidence failed: {type(exc).__name__}"
                 ) from None
             if execute:
                 print("END " + case_id + " " + observation.status, flush=True)
-                if observation.status not in {"completed", "task_failed"}:
-                    stop_batch()
             return record_observation(
                 observation,
                 included_in_score=case_id in scoring_ids,
@@ -825,60 +799,6 @@ async def run(root: Path, action="run", case_ids=None):
                 )
 
 
-def launch(root, action, cases, *, phoenix=False):
-    _checked_preflight(root)
-    with CodingRunFileLock(root / "control"):
-        selected_cases(root, action, cases)
-        _ensure_health(root)
-        launch_id = uuid4().hex
-        logs = root / "control" / launch_id
-        logs.mkdir()
-        command = [
-            sys.executable,
-            "-I",
-            str(root / "worker.py"),
-            action,
-            "--root",
-            str(root),
-        ]
-        if phoenix:
-            command.append("--phoenix")
-        for name in cases or []:
-            command.extend(["--case", name])
-    flags = (
-        (
-            subprocess.CREATE_NO_WINDOW
-            | subprocess.DETACHED_PROCESS
-            | subprocess.CREATE_NEW_PROCESS_GROUP
-        )
-        if os.name == "nt"
-        else 0
-    )
-    with (
-        (logs / "stdout.log").open("wb") as out,
-        (logs / "stderr.log").open("wb") as err,
-    ):
-        process = subprocess.Popen(
-            command,
-            cwd=root,
-            stdin=subprocess.DEVNULL,
-            stdout=out,
-            stderr=err,
-            creationflags=flags,
-            close_fds=True,
-        )
-    save_json(
-        logs / "launch.json",
-        {
-            "pid": process.pid,
-            "command": command,
-            "at": datetime.now(UTC).isoformat(),
-            "note": "Independent worker; PID is informational, pause via marker.",
-        },
-    )
-    print(json.dumps({"pid": process.pid, "logs": str(logs)}), flush=True)
-
-
 def report(root: Path):
     if read_json(root / "manifest.json")["version"] != VERSION:
         raise ValueError("historical reports must not be overwritten by this worker")
@@ -889,14 +809,6 @@ def report(root: Path):
             unchanged = True
         finally:
             build_report(root, bindings_unchanged=unchanged)
-
-
-def pause(root: Path):
-    verify_binding(root)
-    save_json(
-        root / "pause.json",
-        {"at": datetime.now(UTC).isoformat(), "reason": "operator_requested_pause"},
-    )
 
 
 def main():

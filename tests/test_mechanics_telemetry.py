@@ -326,23 +326,6 @@ async def test_cancel_closes_attempt_trace(tmp_path, traces, mechanics_runtime):
     assert read_json(tmp_path / "telemetry" / name / "001.json")["span_id"]
 
 
-@pytest.mark.parametrize("enabled", [False, True])
-def test_launch_forwards_explicit_flag_only(tmp_path, monkeypatch, enabled):
-    (tmp_path / "control").mkdir()
-    for function in ("_checked_preflight", "_ensure_health"):
-        monkeypatch.setattr(suite, function, lambda root: None)
-    monkeypatch.setattr(suite, "selected_cases", lambda *args: None)
-    commands = []
-    monkeypatch.setattr(
-        suite.subprocess,
-        "Popen",
-        lambda command, **kw: commands.append(command) or SimpleNamespace(pid=123),
-    )
-    suite.launch(tmp_path, "resume", ["example"], phoenix=enabled)
-    assert ("--phoenix" in commands[0]) is enabled
-    assert commands[0][-2:] == ["--case", "example"]
-
-
 @pytest.mark.asyncio
 async def test_native_dataset_can_invoke_existing_mechanics_executor(
     tmp_path, mechanics_runtime
@@ -481,7 +464,9 @@ async def test_suite_resume_and_continue_keep_original_denominator(
     names = configure_suite(tmp_path, monkeypatch)
     behavior = mechanics_runtime[1]
     behavior["interrupt"] = True
-    await suite.run(tmp_path)
+    behavior["cancel"] = True
+    with pytest.raises(asyncio.CancelledError):
+        await asyncio.create_task(suite.run(tmp_path))
     assert not (tmp_path / names[1]).exists()
     state = tmp_path / names[0] / "state/resume_state.json"
     saved = read_json(state)
@@ -489,6 +474,7 @@ async def test_suite_resume_and_continue_keep_original_denominator(
     saved["usage"] = {"requests": 3}
     save_json(state, saved)
     behavior["interrupt"] = False
+    behavior["cancel"] = False
     await suite.run(tmp_path, "resume", names[:1])
     report = read_json(tmp_path / "report.json")
     assert report["scoring"]["task_summary"]["planned_tasks"] == 2
@@ -511,22 +497,23 @@ async def test_suite_resume_and_continue_keep_original_denominator(
 
 
 @pytest.mark.asyncio
-async def test_suite_parallel_failure_drains_active_case_and_skips_queued_case(
-    tmp_path, mechanics_runtime, monkeypatch
+@pytest.mark.parametrize(
+    ("status", "error_type"),
+    [
+        ("interrupted", "ModelAPIError"),
+        ("interrupted", "UnexpectedModelBehavior"),
+        ("needs_reconcile", "RuntimeError"),
+    ],
+)
+async def test_suite_case_interruption_does_not_stop_active_or_queued_cases(
+    tmp_path, mechanics_runtime, monkeypatch, status, error_type
 ):
     names = configure_suite(tmp_path, monkeypatch, concurrency=2, case_count=3)
     both_started = asyncio.Event()
     release = asyncio.Event()
     called = []
-    stopped = asyncio.Event()
-    original_save = suite.save_json
-
-    def record_health(path, value):
-        original_save(path, value)
-        if path == tmp_path / "health.json" and not value["passed"]:
-            stopped.set()
-
-    monkeypatch.setattr(suite, "save_json", record_health)
+    queued_started = asyncio.Event()
+    original = suite._run_case
 
     async def execute(root, name, **kwargs):
         called.append(name)
@@ -534,7 +521,7 @@ async def test_suite_parallel_failure_drains_active_case_and_skips_queued_case(
             await both_started.wait()
             save_json(
                 root / name / "state/resume_state.json",
-                {"status": "interrupted", "last_error_type": "ModelAPIError"},
+                {"status": status, "last_error_type": error_type},
             )
         elif name == names[1]:
             both_started.set()
@@ -549,25 +536,27 @@ async def test_suite_parallel_failure_drains_active_case_and_skips_queued_case(
                 ).model_dump(mode="json"),
             )
         else:
-            pytest.fail("queued case started after the provider failure")
+            queued_started.set()
+            await original(root, name, **kwargs)
 
     monkeypatch.setattr(suite, "_run_case", execute)
     job = asyncio.create_task(suite.run(tmp_path))
     async with asyncio.timeout(5):
-        await stopped.wait()
+        await queued_started.wait()
         assert not job.done()
-        assert called == names[:2]
-        assert not (tmp_path / names[2]).exists()
+        assert called == names
         release.set()
         await job
     report = read_json(tmp_path / "report.json")
     assert [r["classification"] for r in report["trials"]] == [
-        "provider_interrupted",
+        "provider_interrupted" if error_type == "ModelAPIError" else status,
         "task_failed",
-        "not_started",
+        "completed",
     ]
     assert report["scoring"]["task_summary"]["planned_tasks"] == 3
     assert report["scoring"]["task_summary"]["tasks_failed"] == 1
+    assert report["scoring"]["task_summary"]["tasks_passed"] == 1
+    assert not (tmp_path / "health.json").exists()
 
 
 @pytest.mark.asyncio
@@ -607,21 +596,24 @@ async def test_suite_case_and_runtime_concurrency_are_separate(
 
 
 @pytest.mark.asyncio
-async def test_suite_setup_exception_stops_execution_but_native_failure_is_preserved(
+async def test_suite_setup_exception_is_recorded_and_next_case_runs(
     tmp_path, mechanics_runtime, monkeypatch
 ):
     from pydantic_evals.reporting import EvaluationReportAdapter
 
     names = configure_suite(tmp_path, monkeypatch)
     called = []
+    original = suite._run_case
 
     async def execute(root, name, **kwargs):
         called.append(name)
-        raise OSError("do-not-export-this-private-detail")
+        if name == names[0]:
+            raise OSError("do-not-export-this-private-detail")
+        await original(root, name, **kwargs)
 
     monkeypatch.setattr(suite, "_run_case", execute)
     await suite.run(tmp_path)
-    assert called == names[:1]
+    assert called == names
     raw = (tmp_path / "pydantic-evals-report.json").read_bytes()
     assert b"do-not-export-this-private-detail" not in raw
     native = EvaluationReportAdapter.validate_json(raw)
@@ -633,7 +625,9 @@ async def test_suite_setup_exception_stops_execution_but_native_failure_is_prese
         ]
         == 1
     )
-    assert not (tmp_path / names[1]).exists()
+    assert (
+        read_json(tmp_path / names[1] / "state/outcome.json")["status"] == "completed"
+    )
 
 
 @pytest.mark.asyncio
