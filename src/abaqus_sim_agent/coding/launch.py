@@ -50,6 +50,8 @@ class LaunchManifest(BaseModel):
     )
     model_provider: DeepSeekGateway
     model_name: str
+    max_tokens: int | None = Field(default=None, gt=0, exclude_if=lambda v: v is None)
+    output_truncation_recovery: bool = False
     http_retries: int | None = Field(ge=0)
     skill_library: Path
     api_catalog_dir: Path | None = None
@@ -120,6 +122,8 @@ class LaunchManifest(BaseModel):
         return ModelExecutionConfig(
             model_provider=self.model_provider,
             model_name=self.model_name,
+            max_tokens=self.max_tokens,
+            output_truncation_recovery=self.output_truncation_recovery,
             http_retries=self.http_retries,
             http_timeout_seconds=self.http_timeout_seconds,
             reasoning_policy=self.reasoning_policy,

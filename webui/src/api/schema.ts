@@ -124,6 +124,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/model-output-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Model Output Settings */
+        get: operations["model_output_settings_api_v1_model_output_settings_get"];
+        /** Save Model Output Settings */
+        put: operations["save_model_output_settings_api_v1_model_output_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/model-connections": {
         parameters: {
             query?: never;
@@ -1040,6 +1058,8 @@ export interface components {
             scope: "execution_evidence" | "task_oracle";
             /** Failure Stage */
             failure_stage?: string | null;
+            /** Terminal Failure Stage */
+            terminal_failure_stage?: string | null;
             /**
              * Declared Deliverable Paths
              * @default []
@@ -1198,6 +1218,11 @@ export interface components {
              */
             api_key?: string;
         };
+        /** ModelOutputSettings */
+        ModelOutputSettings: {
+            /** Max Tokens */
+            max_tokens?: number | null;
+        };
         /**
          * ModelProvider
          * @enum {string}
@@ -1277,6 +1302,8 @@ export interface components {
             model_provider?: components["schemas"]["ModelProvider"] | null;
             /** Model Name */
             model_name?: string | null;
+            /** Max Tokens */
+            max_tokens?: number | null;
             /** Http Retries */
             http_retries?: number | null;
             /** Http Timeout Seconds */
@@ -1854,6 +1881,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AvailableModel"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    model_output_settings_api_v1_model_output_settings_get: {
+        parameters: {
+            query: {
+                provider: components["schemas"]["ModelProvider"];
+                model_name: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelOutputSettings"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_model_output_settings_api_v1_model_output_settings_put: {
+        parameters: {
+            query: {
+                provider: components["schemas"]["ModelProvider"];
+                model_name: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelOutputSettings"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelOutputSettings"];
                 };
             };
             /** @description Validation Error */

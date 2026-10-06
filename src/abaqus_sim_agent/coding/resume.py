@@ -151,6 +151,7 @@ class StaticPreflightCacheSnapshot(_StrictModel):
 
 
 class DependencyResumeState(_StrictModel):
+    output_truncation_recovery_used: bool = False
     api_lookup_calls: int = Field(default=0, ge=0)
     concept_lookup_calls: int = Field(default=0, ge=0)
     diagnostic_retrieval_calls: int = Field(default=0, ge=0)
@@ -194,6 +195,7 @@ class DependencyResumeState(_StrictModel):
         )
         syntax_gate = dependencies.syntax_gate
         return cls(
+            output_truncation_recovery_used=dependencies.output_truncation_recovery_used,
             api_lookup_calls=dependencies.api_lookup_calls,
             concept_lookup_calls=dependencies.concept_lookup_calls,
             diagnostic_retrieval_calls=dependencies.diagnostic_retrieval_calls,
@@ -275,6 +277,9 @@ class DependencyResumeState(_StrictModel):
             raise CodingRunResumeError(
                 "resume requires a freshly composed CodingAgentDependencies object"
             )
+        dependencies.output_truncation_recovery_used = (
+            self.output_truncation_recovery_used
+        )
         dependencies.api_lookup_calls = max(
             self.api_lookup_calls,
             sum(trace.counted for trace in journaled_api_lookups)
@@ -857,6 +862,7 @@ def _dependencies_have_runtime_state(
 ) -> bool:
     return any(
         (
+            dependencies.output_truncation_recovery_used,
             dependencies.api_lookup_calls,
             dependencies.concept_lookup_calls,
             dependencies.diagnostic_retrieval_calls,

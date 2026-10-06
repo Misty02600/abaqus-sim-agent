@@ -3,6 +3,7 @@
 ## 当前系统
 
 配置已采用“程序默认值、本次显式输入、必要会话记录”；偏好读取撤回、内部静态资源准备和固定命令入口已实施，
+模型输出上限现允许按 provider/model 单独保存，作为新会话的可选默认值；不恢复通用用户/项目偏好，
 Catalog 已作为包内资源接入 CLI/Web，原生 provider 与动态模型窗口已接入，见
 [ADR-0045](../adr/0045-use-explicit-run-options-without-preference-files.md)、
 [模型接入与选用 ADR-0046](../adr/0046-use-native-providers-and-available-model-selection.md)及[逐字段修订方案](configuration-reference.md#已确认的修订方案)。

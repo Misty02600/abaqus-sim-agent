@@ -33,6 +33,10 @@ Web CLI 在服务 started 后默认打开普通 `127.0.0.1` URL。浏览器首�
 
 每个字段的具体规则见[配置逐字段合同](configuration-reference.md)；本节说明跨组件的生命周期与所有权。
 
+模型 `max_tokens` 是用户于 2026-10-06 明确允许的单项持久设置：应用数据目录中的
+`model-output-settings.json` 按提供商/模型保存，仅新会话解析时读取；本次显式输入优先。
+解析后保存到 launch，已有会话不重读；不恢复通用用户/项目 settings.json 或默认模型选择。
+
 **第一阶段已实施：** 已撤回用户/项目偏好读取，改用程序默认值和本次显式输入；内置 Skill、静态 wheel/cache
 由程序管理，runner 以 abq2024 命令启动，文档模式由 spec 推导，Web 管理根提供默认。
 Catalog 已随应用包安装并自动定位，原生 provider 与动态模型窗口已接入。见

@@ -780,6 +780,7 @@ def _validate_resume_arguments(args: argparse.Namespace) -> None:
     conflicts = {
         "--reasoning-policy": args.reasoning_policy,
         "--http-timeout-seconds": args.http_timeout_seconds,
+        "--max-tokens": args.max_tokens,
         "--document-policy-spec": args.document_policy_spec,
         "--workspace": args.workspace,
         "--state-dir": args.state_dir,

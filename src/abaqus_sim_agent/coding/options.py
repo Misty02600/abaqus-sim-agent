@@ -33,6 +33,7 @@ class RunOptions(BaseModel):
 
     model_provider: DeepSeekGateway | None = None
     model_name: str | None = Field(default=None, min_length=1)
+    max_tokens: int | None = Field(default=None, gt=0)
     http_retries: int | None = Field(default=None, ge=0)
     http_timeout_seconds: float | None = Field(default=None, gt=0, allow_inf_nan=False)
     reasoning_policy: Literal["provider_default", "enabled_high"] | None = None
@@ -89,6 +90,7 @@ def merge_run_options(*overrides: RunOptions) -> RunOptions:
 def model_execution(options: RunOptions) -> ModelExecutionConfig:
     effective = options
     from .model_connections import resolve_context_window
+    from .model_output_settings import ModelOutputSettingsStore
     from .providers import SDK_DEFAULT_RETRY_PROVIDERS, connection_environment
 
     provider = effective.model_provider
@@ -98,6 +100,11 @@ def model_execution(options: RunOptions) -> ModelExecutionConfig:
     return new_run_execution_config(
         model_provider=provider,
         model_name=name,
+        max_tokens=(
+            effective.max_tokens
+            if effective.max_tokens is not None
+            else ModelOutputSettingsStore().get(provider, name).max_tokens
+        ),
         context_window=resolve_context_window(provider, name),
         provider_environment=connection_environment(provider),
         http_retries=(

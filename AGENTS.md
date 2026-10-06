@@ -11,6 +11,7 @@
 - 先检查当前分支、工作树改动和作用域指令。按当前分支的源码与文档判断现状，不把其他工作树或旧分支的状态当作当前事实。
 - 先读 [架构总览](docs/architecture/overview.md)；涉及架构、状态所有权、权限、兼容或“之前决定过”的问题，先查 [ADR 索引](docs/adr/README.md)及相关已采纳决定，再查实现和测试。
 - 配置设计先查 [配置输入与恢复记录](docs/architecture/system-framework.md#配置输入运行合同与恢复记录)及 [ADR-0045](docs/adr/0045-use-explicit-run-options-without-preference-files.md)：采用程序默认值、本次显式输入与必要会话记录，不读取用户/项目偏好文件；区分宿主设置、运行输入和恢复状态，不重新扩建自动偏好来源。Catalog 等固定资源由程序管理。
+- 模型输出上限是用户于 2026-10-06 明确允许的单项例外：按提供商/模型保存到应用管理的 `model-output-settings.json`，只供新会话解析，已有会话沿用 launch；不扩展为通用偏好系统。逐字段语义见配置合同。
 - 模型接入与选用先查 [ADR-0046](docs/adr/0046-use-native-providers-and-available-model-selection.md)：复用原生 provider，OpenCode 专用适配保持局部；CLI/Web 共用可用模型列表，新会话必须本次明确选择模型，不自动取默认或首项，恢复不自动换模型。普通输入不暴露窗口或通用 API 地址，不另建型号黑名单；支持范围与验证边界以当前文档和实现为准。
 - 宿主凭据见 [ADR-0047](docs/adr/0047-persist-host-credentials-and-bundle-model-catalog.md)：CLI/Web 共用程序管理的 auth.json，环境密钥不自动保存。模型目录按 [ADR-0048](docs/adr/0048-fetch-models-dev-with-local-cache.md) 直接获取 models.dev 并缓存，不再生成打包、提取 Pi 源码或使用 SDK 名称表兜底；目录不等于账号授权清单。
 - 普通产品按 [ADR-0049](docs/adr/0049-select-product-models-only-from-available-catalog.md) 必须显式从可选目录选择；未选模型不能发送，登录不自动选择，已连接但无候选的 provider 仍展示空列表；不开放目录外手填型号，CLI/API 新建和主动换型号同样检查候选。SDK 按名称推导不是远端校验；已有会话恢复沿用保存合同，不重新筛选。

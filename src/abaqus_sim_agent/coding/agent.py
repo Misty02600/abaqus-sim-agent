@@ -310,6 +310,10 @@ def create_abaqus_coding_agent(
         coder,
         StepPersistence(store=step_store or _create_step_store(request.state_dir)),
     ]
+    if execution_config is not None and execution_config.output_truncation_recovery:
+        from .output_recovery import OutputTruncationRecovery
+
+        capabilities.append(OutputTruncationRecovery())
     if (trace_settings := instrumentation_settings()) is not None:
         capabilities.append(Instrumentation(settings=trace_settings))
     if planning_enabled:

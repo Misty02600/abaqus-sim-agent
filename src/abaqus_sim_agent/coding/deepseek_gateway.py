@@ -12,6 +12,7 @@ from pydantic_ai.messages import ModelMessage, ModelResponse
 from pydantic_ai.models import ModelRequestParameters, StreamedResponse
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.profiles import ModelProfile
+from pydantic_ai.profiles.openai import OpenAIModelProfile
 from pydantic_ai.providers.deepseek import DeepSeekProvider
 from pydantic_ai.settings import ModelSettings
 
@@ -212,10 +213,12 @@ def create_deepseek_chat_model(
         DeepSeekGateway.OPENCODE_GO: OpenCodeGoDeepSeekProvider,
     }[gateway]
     provider = provider_type(openai_client=client)
-    profile = ModelProfile(
+    profile = OpenAIModelProfile(
+        # DeepSeek's documented Chat Completions field is max_tokens.
+        openai_chat_supports_max_completion_tokens=False,
         context_window=execution_config.context_window
         if execution_config and execution_config.context_window is not None
-        else DEEPSEEK_V4_FLASH_CONTEXT_WINDOW
+        else DEEPSEEK_V4_FLASH_CONTEXT_WINDOW,
     )
     model = (
         OpenCodeGoChatModel(

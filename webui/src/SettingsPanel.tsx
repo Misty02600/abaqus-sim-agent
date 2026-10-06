@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useState, useSyncExternalStore } from "r
 import { errorText, request } from "./api/client";
 import type { components } from "./api/schema";
 import { SidePanel } from "./SidePanel";
+import { ModelOutputSettings } from "./ModelOutputSettings";
 import { getAppearance, setAppearance, subscribeAppearance, type Appearance } from "./appearance";
 
 type Provider = components["schemas"]["ProviderOption"];
@@ -132,6 +133,7 @@ export function SettingsPanel({ open, ready, busy, section, onSectionChange, onC
           <div><button type="button" disabled={busy || working || waiting} onClick={() => void beginLogin()}>登录账号</button></div>
         </>}
         {selected.local_auth && <p className="muted small">也可使用提供商支持的本机认证来源。</p>}
+        {configured.includes(provider) && <ModelOutputSettings key={provider} provider={provider} disabled={busy || working || !!waiting} />}
         {waiting && login && <div className="row"><a href={login.url} target="_blank" rel="noreferrer">打开登录页面</a>{login.user_code && <code>{login.user_code}</code>}
           <button type="button" onClick={() => { void request(`/model-logins/${login.id}`, {}, "DELETE").then(() => { setLogin(null); setMessage("登录已取消。"); }).catch(error => setMessage(errorText(error))); }}>取消登录</button>
         </div>}

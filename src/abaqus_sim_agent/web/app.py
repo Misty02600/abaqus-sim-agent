@@ -23,7 +23,8 @@ from ..coding.domain_knowledge import DomainKnowledgeInventory
 from ..coding.model import DeepSeekGateway
 from ..coding.model_catalog import ModelCatalogUnavailable
 from ..coding.model_connections import create_model as create_deepseek_chat_model
-from ..coding.model_selection import AvailableModel
+from ..coding.model_output_settings import ModelOutputSettings, ModelOutputSettingsStore
+from ..coding.model_selection import AvailableModel, select_model
 from ..coding.providers import (
     ProviderOption,
     ProviderUnavailable,
@@ -218,6 +219,19 @@ def create_app(
         if refresh:
             model_catalog.catalog_store().get(refresh=True)
         return controller.available_models()
+
+    @app.get("/api/v1/model-output-settings", response_model=ModelOutputSettings)
+    def model_output_settings(provider: DeepSeekGateway, model_name: str):
+        select_model(controller.available_models(), provider, model_name)
+        return ModelOutputSettingsStore().get(provider, model_name)
+
+    @app.put("/api/v1/model-output-settings", response_model=ModelOutputSettings)
+    def save_model_output_settings(
+        body: ModelOutputSettings, provider: DeepSeekGateway, model_name: str
+    ):
+        select_model(controller.available_models(), provider, model_name)
+        ModelOutputSettingsStore().save(provider, model_name, body)
+        return body
 
     @app.post("/api/v1/model-connections")
     def connect_model(body: ModelConnection):

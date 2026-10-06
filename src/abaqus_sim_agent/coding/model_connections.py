@@ -200,9 +200,21 @@ def create_model(
         client.max_retries = http_retries
     if hasattr(client, "timeout"):
         client.timeout = timeout_seconds
-    model = infer_model(
-        f"{gateway.value}:{model_name}", provider_factory=lambda _: provider
-    )
+    if gateway is ModelProvider.OFFICIAL:
+        from pydantic_ai.models.openai import OpenAIChatModel
+        from pydantic_ai.profiles.openai import OpenAIModelProfile
+
+        model = OpenAIChatModel(
+            model_name,
+            provider=provider,
+            profile=OpenAIModelProfile(
+                openai_chat_supports_max_completion_tokens=False
+            ),
+        )
+    else:
+        model = infer_model(
+            f"{gateway.value}:{model_name}", provider_factory=lambda _: provider
+        )
     if execution_config and execution_config.context_window is not None:
         # Bind the saved window while retaining the native wire-capability profile.
         from pydantic_ai.models.wrapper import WrapperModel

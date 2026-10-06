@@ -39,6 +39,10 @@ typed `ModelExecutionConfig` 保存 thinking enabled/high、Planning 开关、HT
 显式拒绝，不迁移。历史批次复现使用其冻结源码和依赖，不能套新默认后声称复现旧请求。
 
 Go adapter 已恢复框架原生 `reasoning_content` 历史回传，不再沿用禁用回传的旧说明；不补造历史缺失推理。
+可选的模型输出上限经 `ModelSettings.max_tokens` 传递；DeepSeek/Go/Zen 的 profile 指定发送 `max_tokens`，
+不使用 `extra_body` 绕过运行配置。Web 模型高级设置与 CLI 共用按模型保存值，新会话解析后冻结到 launch，
+已有会话不重读。新运行通过原生 `after_model_request`/`ModelRetry` 对无可用输出的长度截断最多恢复一次；
+既有输出重试额度、请求用量和时间限制继续生效。详见[配置合同](configuration-reference.md#模型输出上限与截断恢复2026-10-06)。
 协议与离线发送一致不证明服务端实际执行 high 强度，也不能推断所有网关错误已解决。
 实现见 [model.py](../../src/abaqus_sim_agent/coding/model.py)，背景见
 [配置实施记录](../plans/done/0005-align-target-agent-runtime.md)。

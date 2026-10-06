@@ -12,6 +12,7 @@ from abaqus_sim_agent.coding import (
     credential_store,
     domain_knowledge,
     model_catalog,
+    model_output_settings,
     model_selection,
     static_preflight,
 )
@@ -34,6 +35,11 @@ def offline_environment(monkeypatch, tmp_path):
         lambda: tmp_path / "host-auth" / "auth.json",
     )
     monkeypatch.setattr(models, "ALLOW_MODEL_REQUESTS", False)
+    monkeypatch.setattr(
+        model_output_settings,
+        "model_output_settings_path",
+        lambda: tmp_path / "host-model-output-settings.json",
+    )
     monkeypatch.setattr(
         model_selection, "local_authenticated_providers", lambda: frozenset()
     )

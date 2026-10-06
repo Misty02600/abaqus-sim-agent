@@ -245,6 +245,108 @@
         }
       }
     },
+    "/api/v1/model-output-settings": {
+      "get": {
+        "summary": "Model Output Settings",
+        "operationId": "model_output_settings_api_v1_model_output_settings_get",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ModelProvider"
+            }
+          },
+          {
+            "name": "model_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelOutputSettings"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Save Model Output Settings",
+        "operationId": "save_model_output_settings_api_v1_model_output_settings_put",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ModelProvider"
+            }
+          },
+          {
+            "name": "model_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelOutputSettings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelOutputSettings"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/model-connections": {
       "get": {
         "summary": "Model Connections",
@@ -2735,6 +2837,17 @@
             ],
             "title": "Failure Stage"
           },
+          "terminal_failure_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terminal Failure Stage"
+          },
           "declared_deliverable_paths": {
             "items": {
               "type": "string"
@@ -3114,6 +3227,25 @@
         ],
         "title": "ModelConnection"
       },
+      "ModelOutputSettings": {
+        "properties": {
+          "max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tokens"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ModelOutputSettings"
+      },
       "ModelProvider": {
         "type": "string",
         "enum": [
@@ -3372,6 +3504,18 @@
               }
             ],
             "title": "Model Name"
+          },
+          "max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tokens"
           },
           "http_retries": {
             "anyOf": [

@@ -42,6 +42,8 @@ class ModelExecutionConfig(BaseModel):
         default=DEFAULT_MODEL_HTTP_TIMEOUT_SECONDS, gt=0, allow_inf_nan=False
     )
     reasoning_policy: Literal["provider_default", "enabled_high"] = "provider_default"
+    max_tokens: int | None = Field(default=None, gt=0, exclude_if=lambda v: v is None)
+    output_truncation_recovery: bool = False
     planning_enabled: bool = False
     interaction_policy: Literal["legacy", "workspace_facts_first"] = "legacy"
     context_window: int | None = Field(
@@ -87,13 +89,15 @@ class ModelExecutionConfig(BaseModel):
         return self
 
     def model_settings(self) -> OpenAIChatModelSettings:
-        if self.reasoning_policy == "provider_default":
-            return {"timeout": self.http_timeout_seconds}
-        return {
-            "timeout": self.http_timeout_seconds,
-            "extra_body": {"thinking": {"type": "enabled"}},
-            "openai_reasoning_effort": "high",
-        }
+        settings: OpenAIChatModelSettings = {"timeout": self.http_timeout_seconds}
+        if self.max_tokens is not None:
+            settings["max_tokens"] = self.max_tokens
+        if self.reasoning_policy == "enabled_high":
+            settings.update(
+                extra_body={"thinking": {"type": "enabled"}},
+                openai_reasoning_effort="high",
+            )
+        return settings
 
     def checked_settings(self, settings: ModelSettings | None) -> ModelSettings:
         """拒绝与run快照冲突的下游覆盖，再填充快照字段。
@@ -107,19 +111,18 @@ class ModelExecutionConfig(BaseModel):
         if raw_extra is not None and not isinstance(raw_extra, dict):
             raise ValueError("extra_body override must be an object")
         extra: dict[str, Any] = dict(raw_extra or {})
-        if self.model_provider in (
-            DeepSeekGateway.OFFICIAL,
-            DeepSeekGateway.OPENCODE_GO,
-            DeepSeekGateway.OPENCODE_ZEN,
-        ) and any(
-            k in supplied or k in extra for k in ("max_tokens", "max_completion_tokens")
-        ):
-            raise ValueError("run profile does not permit an extra response token cap")
+        if any(
+            k in extra
+            for k in ("max_tokens", "max_completion_tokens", "max_output_tokens")
+        ) or any(k in supplied for k in ("max_completion_tokens", "max_output_tokens")):
+            raise ValueError(
+                "use the saved max_tokens setting, not a provider-specific override"
+            )
         if "thinking" in supplied:
             raise ValueError(
                 "unified thinking override conflicts with fixed reasoning policy"
             )
-        for key in ("timeout", "openai_reasoning_effort"):
+        for key in ("timeout", "openai_reasoning_effort", "max_tokens"):
             if key in supplied and supplied[key] != desired.get(key):
                 raise ValueError(f"{key} differs from the run configuration")
         expected_thinking = (
@@ -151,6 +154,7 @@ def new_run_execution_config(
     planning_enabled: bool = False,
     context_window: int | None = None,
     provider_environment: dict[str, str] | None = None,
+    max_tokens: int | None = None,
 ) -> ModelExecutionConfig:
     from .providers import SDK_DEFAULT_RETRY_PROVIDERS
 
@@ -172,6 +176,8 @@ def new_run_execution_config(
         interaction_policy="workspace_facts_first",
         context_window=context_window,
         provider_environment=provider_environment,
+        max_tokens=max_tokens,
+        output_truncation_recovery=True,
     )
 
 

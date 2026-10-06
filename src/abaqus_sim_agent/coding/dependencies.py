@@ -79,6 +79,7 @@ class CodingAgentDependencies:
     syntax_gate: RuntimePythonSyntaxGate | None = None
     edit_scope_gate: ReferenceEditGate | None = field(default=None, init=False)
     current_turn: int = 0
+    output_truncation_recovery_used: bool = False
     current_amendment_sequence: int = 0
     current_task_revision: int = 0
     concept_trigger_source: ConceptTriggerSource = "task_start"

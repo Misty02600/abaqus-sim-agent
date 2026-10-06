@@ -19,6 +19,11 @@ def add_run_arguments(
     parser.add_argument("--http-retries", type=int)
     parser.add_argument("--http-timeout-seconds", type=float)
     parser.add_argument(
+        "--max-tokens",
+        type=int,
+        help="本次最大输出 token；省略时使用该模型的保存设置或服务商默认值",
+    )
+    parser.add_argument(
         "--reasoning-policy", choices=("provider_default", "enabled_high")
     )
     parser.add_argument(
@@ -50,6 +55,7 @@ def options_from_args(args: argparse.Namespace) -> RunOptions:
             "model_name": "model",
             "http_retries": "http_retries",
             "http_timeout_seconds": "http_timeout_seconds",
+            "max_tokens": "max_tokens",
             "reasoning_policy": "reasoning_policy",
             "api_catalog_mode": "api_catalog_mode",
             "static_preflight_mode": "static_preflight_mode",
