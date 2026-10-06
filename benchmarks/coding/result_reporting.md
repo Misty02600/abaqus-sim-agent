@@ -1,12 +1,12 @@
 # 基础线性评测结果与自定义规则
 
-新批次协议为`public-mechanics-e2e-v28-submitted-results`。当前Pydantic Evals 2.51.0组织真实Case执行、单题评分和整批汇总；
+新批次协议为`public-mechanics-e2e-v29-declared-results`。当前Pydantic Evals 2.51.0组织真实Case执行、单题评分和整批汇总；
 现有CodingRunService、外部执行、物理verifier和恢复策略继续拥有原始运行事实。
 
 ## 首次提交与有限反馈
 
 模型题设保留完整物理输入、交付物、取值位置/分量/单位、壳表面、平均或外推方式，以及自主网格收敛检查要求。
-参考答案、相对答案的偏差和官方样例结果只留在评测侧。v28不再附加外部整包参考目录：入口拒绝
+参考答案、相对答案的偏差和官方样例结果只留在评测侧。v29不再附加外部整包参考目录：入口拒绝
 `--knowledge-resources`，避免把未经答案内容审查的文件传给模型；内置领域Skill及API Catalog继续使用。
 公开题仍可能被模型从训练或其他资料获知，此合同不保证答案绝对未知。
 
@@ -33,9 +33,9 @@
 首次通过则最终同为通过；从未声明完成明确显示未交付。预算耗尽后不额外验收以制造一次首次提交。
 新合同只进入新批次，既有v26 worker、workspace、state、报告及80/30预算均保持原值。
 
-## v28数值评分与通过范围
+## v29声明结果、数值评分与通过范围
 
-`verification_policy=submitted_results_v1`只比较本次`results.json`中有限、非布尔的数值与隐藏参考值及容差。
+`verification_policy=declared_results_v1`只比较本次`results.json`中有限、非布尔的数值与隐藏参考值及容差。
 验收记录用`reported`保存实际评分值；原生报告的相对误差也来自这些提交值。缺项、字符串、布尔、NaN或无穷大均为提交失败。
 新入口不再运行另一套ODB提取程序，不比较JSON与独立读数，不要求单实例、精确取值节点或指定的提取API。
 已无其他活动消费者的公开力学独立读取器、有界INP检查及重复数值比较逻辑撤除；旧冻结worker保留其自身副本。
@@ -54,7 +54,21 @@ LE6保留板中心下表面面内最大主应力，并从同一位置的应力�
 实体梁保留自由端面各工况方向位移最大值，梁/轴保留由截面合力恢复名义应力。允许合理插值、外推及坐标转换，不能改成附近峰值或Mises。
 壳表面需按实际法向和截面积分映射，不强制SPOS、固定Gauss点数或一套外推算法。逐题合同见[案例详表](domain_mechanics_case_details.md)。
 
-v27的首次留证、最多两轮反馈、累计预算和未完成检查点拒绝恢复规则全部沿用；新数值合同只用于v28新批次，v26/v27历史成绩不回填。
+v27的首次留证、最多两轮反馈、累计预算和未完成检查点拒绝恢复规则全部沿用；新的结果声明合同只用于v29新批次，v26/v27/v28历史成绩不回填。
+
+### 自选作业名与结果声明
+
+继续使用ReadyForVerificationDecision.deliverables，每项包含relative_path，可选role。力学测评必须明确唯一primary ODB；粗细网格题另声明唯一coarse ODB。例如：
+
+```json
+{"deliverables": [{"relative_path": "beam_final.odb", "role": "primary"}, {"relative_path": "beam_check.odb", "role": "coarse"}]}
+```
+
+以上仅展示ODB角色，实际提交仍包括其余要求的文件。model.cae、build_model.py、extract_results.py、results.json和report.md仍按题设交付；本项放开的是Job及其INP/ODB名称。主结果用于顶层指标，粗结果用于coarse_metrics。普通产品允许省略role，不额外增加验收条件；角色随原提交声明持久化，不建立第二套映射清单。
+
+从声明ODB寻找成功Solver记录，依据实际job=和input=参数核对当前INP指纹、ODB与该Job的STA产物，再核对CAE生成来源、完成状态及之后的JSON提取执行。输入名不必等于Job名，STA按Job定位。角色缺失、重复、不是ODB或没有匹配执行均拒绝，不根据fine字样、大小或时间自动选择。
+
+PublicMechanicsRunner对工作区INP动态记录前后状态，Solver同时记录ODB和STA，保留同字节重写的证据。来源链证明对应产物和执行顺序，不宣称已监控任意Python实际打开了哪个ODB或排除硬编码；v28取消独立ODB读数的边界继续成立。CAE历史文件删除误判是另一项待修问题，本次未改变其规则。
 
 ## 结果文件
 
@@ -81,7 +95,7 @@ TaskPassed和SuiteSummary直接对这次结果评分。完成后报告接收原�
 
 ## 异常留存
 
-正常run结束时保存每个Case完成时的原生评分快照。v28不读取reviews文件，不产生pending_review或requirements_ok，不要求逐项人工确认INP解析规则。
+正常run结束时保存每个Case完成时的原生评分快照。v29不读取reviews文件，不产生pending_review或requirements_ok，不要求逐项人工确认INP解析规则。
 已有审查文件保留原字节，但不影响本批计分或Phoenix反馈。
 
 任务适配或单题评分异常通过CaseLifecycle立即追加到已有`control/events.jsonl`的`case_evaluation_error`事件，

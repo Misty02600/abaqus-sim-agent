@@ -120,23 +120,30 @@ def model_feedback(
             "build_model.py",
             "extract_results.py",
             "model.cae",
-            "model.inp",
-            "model.odb",
-            "model_coarse.inp",
-            "model_coarse.odb",
             "results.json",
             "report.md",
         ):
             if finding == f"missing/stale artifact {name}":
                 checks.append(f"delivery {name}")
                 matched = True
-        for job in ("model", "model_coarse"):
-            if finding == f"{job}.sta does not confirm completion":
-                checks.append(f"solver completion for {job}")
-                matched = True
-            if finding == f"No solver provenance for current {job}.odb/INP":
-                checks.append(f"solver provenance for {job}")
-                matched = True
+        for role in ("primary", "coarse"):
+            for detail, label in (
+                (
+                    f"{role} ODB declaration must identify exactly one ODB",
+                    f"{role} ODB declaration",
+                ),
+                (
+                    f"No current solver provenance for {role} result",
+                    f"solver provenance for {role} result",
+                ),
+                (
+                    f"{role} solver status does not confirm completion",
+                    f"solver completion for {role} result",
+                ),
+            ):
+                if finding == detail:
+                    checks.append(label)
+                    matched = True
         for detail, label in (
             (
                 "No CAE invocation produced the current CAE/INPs from current build_model.py",

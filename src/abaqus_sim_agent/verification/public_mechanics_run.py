@@ -3,6 +3,8 @@
 import json
 import math
 from collections.abc import Sequence
+from dataclasses import dataclass
+from pathlib import PurePosixPath
 from typing import TypeGuard
 
 from abaqus_sim_agent.coding.contracts import (
@@ -28,7 +30,7 @@ from abaqus_sim_agent.execution import (
 )
 from abaqus_sim_agent.verification.model_change_evidence import status_completed
 
-VERIFICATION_POLICY = "submitted_results_v1"
+VERIFICATION_POLICY = "declared_results_v1"
 
 
 class PublicMechanicsAttempt(VerificationAttempt):
@@ -67,23 +69,81 @@ def _read_input(result, name, current):
     )
 
 
-def provenance_errors(
+@dataclass(frozen=True)
+class SolverResult:
+    role: str
+    odb: str
+    inp: str
+    job: str
+    execution_index: int
+
+    @property
+    def status_file(self) -> str:
+        return self.job + ".sta"
+
+
+def resolve_solver_results(
     case: MechanicsCase,
+    decision: ReadyForVerificationDecision | None,
     current: WorkspaceSnapshot,
     executions: Sequence[AbaqusExecutionResult],
+    observations: dict,
+) -> tuple[tuple[SolverResult, ...], list[str]]:
+    """按交付用途和真实Solver记录定位产物，不从名称或文件大小推测主结果。"""
+    files = current.by_path()
+    results = []
+    errors = []
+    for role in ("primary", "coarse") if case.refinement else ("primary",):
+        declarations = (
+            [item for item in decision.deliverables if item.role == role]
+            if decision is not None
+            else []
+        )
+        if (
+            len(declarations) != 1
+            or PurePosixPath(declarations[0].relative_path).suffix.lower() != ".odb"
+        ):
+            errors.append(f"{role} ODB declaration must identify exactly one ODB")
+            continue
+        odb = declarations[0].relative_path
+        matches = []
+        for index, execution in enumerate(executions):
+            if execution.invocation != AbaqusInvocation.SOLVER_JOB:
+                continue
+            jobs = [arg[4:] for arg in execution.command if arg.startswith("job=")]
+            inputs = [arg[6:] for arg in execution.command if arg.startswith("input=")]
+            if len(jobs) != 1 or len(inputs) != 1 or jobs[0] + ".odb" != odb:
+                continue
+            inp = inputs[0].replace("\\", "/")
+            if (
+                PurePosixPath(inp).suffix.lower() == ".inp"
+                and _read_input(execution, inp, files)
+                and _produced(execution, (odb, jobs[0] + ".sta"), files, observations)
+            ):
+                matches.append(SolverResult(role, odb, inp, jobs[0], index))
+        if not matches:
+            errors.append(f"No current solver provenance for {role} result")
+        else:
+            results.append(matches[-1])
+    return tuple(results), errors
+
+
+def provenance_errors(
+    current: WorkspaceSnapshot,
+    executions: Sequence[AbaqusExecutionResult],
+    results: Sequence[SolverResult],
     observations: dict | None = None,
     *,
     require_current_scripts: bool = True,
 ) -> list[str]:
     files = current.by_path()
     observations = observations or {}
-    jobs = ("model_coarse", "model") if case.refinement else ("model",)
     cae = [
         i
         for i, r in enumerate(executions)
         if r.invocation == AbaqusInvocation.CAE_NOGUI
         and _produced(
-            r, ("model.cae", *(j + ".inp" for j in jobs)), files, observations
+            r, ("model.cae", *(result.inp for result in results)), files, observations
         )
         and (not require_current_scripts or _read_input(r, "build_model.py", files))
     ]
@@ -98,22 +158,13 @@ def provenance_errors(
         for c in r.artifact_changes
     ):
         return ["CAE stage produced solver artifacts"]
-    solver_indices = []
-    for job in jobs:
-        matches = [
-            i
-            for i, r in enumerate(executions)
-            if i > (max(cae) if require_current_scripts else min(cae))
-            and r.invocation == AbaqusInvocation.SOLVER_JOB
-            and f"job={job}" in r.command
-            and _produced(r, (job + ".odb",), files, observations)
-            and _read_input(r, job + ".inp", files)
-        ]
-        if not matches:
-            return [f"No solver provenance for current {job}.odb/INP"]
-        solver_indices.append(max(matches))
+    for result in results:
+        if result.execution_index <= (
+            max(cae) if require_current_scripts else min(cae)
+        ):
+            return [f"No current solver provenance for {result.role} result"]
     if not any(
-        i > max(solver_indices)
+        i > max(result.execution_index for result in results)
         and r.invocation == AbaqusInvocation.ABAQUS_PYTHON
         and _produced(r, ("results.json",), files, observations)
         and (not require_current_scripts or _read_input(r, "extract_results.py", files))
@@ -187,14 +238,21 @@ class PublicMechanicsRunVerifier:
         artifacts, freshness = artifact_evidence_from_snapshots(
             initial_snapshot, current
         )
-        jobs = ("model_coarse", "model") if self.case.refinement else ("model",)
+        observations = read_observations(request.state_dir)
+        sources, source_errors = resolve_solver_results(
+            self.case, decision, current, executions, observations
+        )
         required = {
             "build_model.py",
             "extract_results.py",
             "model.cae",
             "results.json",
             "report.md",
-            *(j + suffix for j in jobs for suffix in (".inp", ".odb")),
+            *(
+                path
+                for source in sources
+                for path in (source.inp, source.odb, source.status_file)
+            ),
         }
         errors = [
             f"missing/stale artifact {p}"
@@ -203,16 +261,22 @@ class PublicMechanicsRunVerifier:
         ]
         if not evidence.passed:
             errors.append(evidence.feedback)
-        observations = read_observations(request.state_dir)
-        errors += provenance_errors(
-            self.case, current, executions, observations, require_current_scripts=False
-        )
-        advisories = provenance_errors(self.case, current, executions, observations)
-        errors += [
-            f"{j}.sta does not confirm completion"
-            for j in jobs
-            if not status_completed(request.workspace / (j + ".sta"))
-        ]
+        errors += source_errors
+        advisories = []
+        if not source_errors:
+            errors += provenance_errors(
+                current,
+                executions,
+                sources,
+                observations,
+                require_current_scripts=False,
+            )
+            advisories = provenance_errors(current, executions, sources, observations)
+            errors += [
+                f"{source.role} solver status does not confirm completion"
+                for source in sources
+                if not status_completed(request.workspace / source.status_file)
+            ]
         if errors:
             return PublicMechanicsAttempt(
                 passed=False,

@@ -35,7 +35,9 @@ class NoIndependentReader(Abaqus2024Runner):
         pytest.fail("submitted-results grading must not run an independent ODB reader")
 
 
-def delivered_case(tmp_path, case_id, *, values=None, inp_text="*Heading\nfixture"):
+def delivered_case(
+    tmp_path, case_id, *, values=None, inp_text="*Heading\nfixture", job_specs=None
+):
     case = get_case(case_id)
     workspace, state = tmp_path / "workspace", tmp_path / "state"
     workspace.mkdir()
@@ -55,16 +57,24 @@ def delivered_case(tmp_path, case_id, *, values=None, inp_text="*Heading\nfixtur
         "report.md": "Interpolation at the prescribed physical location.",
         "results.json": json.dumps(values),
     }
-    jobs = ("model_coarse", "model") if case.refinement else ("model",)
-    for job in jobs:
+    job_specs = job_specs or (
+        {
+            "coarse": ("model_coarse", "model_coarse.inp"),
+            "primary": ("model", "model.inp"),
+        }
+        if case.refinement
+        else {"primary": ("model", "model.inp")}
+    )
+    for job, inp in job_specs.values():
         files.update(
             {
-                job + ".inp": inp_text,
+                inp: inp_text,
                 job + ".odb": "fixture; independent readings deliberately unavailable",
                 job + ".sta": "THE ANALYSIS HAS COMPLETED SUCCESSFULLY",
             }
         )
     for name, value in files.items():
+        (workspace / name).parent.mkdir(parents=True, exist_ok=True)
         (workspace / name).write_text(value, encoding="utf-8")
     snapshot = WorkspaceResolver().snapshot(workspace).by_path()
 
@@ -102,18 +112,18 @@ def delivered_case(tmp_path, case_id, *, values=None, inp_text="*Heading\nfixtur
         execution(
             AbaqusInvocation.CAE_NOGUI,
             ["build_model.py"],
-            ["model.cae", *(j + ".inp" for j in jobs)],
+            ["model.cae", *(inp for _, inp in job_specs.values())],
             ("abaqus", "cae"),
         )
     ]
     executions += [
         execution(
             AbaqusInvocation.SOLVER_JOB,
-            [j + ".inp"],
-            [j + ".odb"],
-            ("abaqus", "job=" + j),
+            [inp],
+            [j + ".odb", j + ".sta"],
+            ("abaqus", "job=" + j, "input=" + inp),
         )
-        for j in jobs
+        for j, inp in job_specs.values()
     ]
     executions.append(
         execution(
@@ -130,9 +140,12 @@ def delivered_case(tmp_path, case_id, *, values=None, inp_text="*Heading\nfixtur
         state_dir=state,
         runtime=RuntimeProfile(launcher_path=tmp_path / "abq2024.bat"),
     )
+    roles = {job + ".odb": role for role, (job, _) in job_specs.items()}
     decision = ReadyForVerificationDecision(
         summary="finished",
-        deliverables=tuple({"relative_path": name} for name in files),
+        deliverables=tuple(
+            {"relative_path": name, "role": roles.get(name)} for name in files
+        ),
     )
     return (
         case,
@@ -338,3 +351,171 @@ async def test_vm184_surface_load_spelling_does_not_create_parser_or_review_gate
     assert attempt.passed
     assert attempt.findings == attempt.advisories == ()
     assert "script_review_status" not in attempt.model_dump()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("refinement", [False, True])
+async def test_custom_job_names_and_distinct_input_names_are_accepted(
+    tmp_path, refinement
+):
+    specs = {"primary": ("chosen_run", "meshes/main_input.inp")}
+    if refinement:
+        specs["coarse"] = ("check_mesh", "meshes/check_input.inp")
+    else:
+        specs["diagnostic"] = ("later_experiment", "other_mesh.inp")
+    case, request, runner, initial, executions, decision = delivered_case(
+        tmp_path,
+        "plate-with-hole-tension"
+        if refinement
+        else "nafems-le2-cylindrical-shell-patch",
+        job_specs=specs,
+    )
+    attempt = await PublicMechanicsRunVerifier(case).verify(
+        request, runner, initial, executions, decision
+    )
+    assert attempt.passed, attempt.feedback
+    assert not (request.workspace / "model.inp").exists()
+    assert not (request.workspace / "model.odb").exists()
+    assert "role=primary" in case.goal() or 'role="primary"' in case.goal()
+    assert "model_coarse.odb" not in case.goal()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "missing_primary",
+        "duplicate_primary",
+        "primary_not_odb",
+        "missing_coarse",
+        "unexecuted_result",
+        "stale_input",
+        "wrong_job",
+        "wrong_input",
+        "unwitnessed_status",
+    ],
+)
+async def test_declared_results_do_not_bypass_provenance(tmp_path, defect):
+    case, request, runner, initial, executions, decision = delivered_case(
+        tmp_path,
+        "plate-with-hole-tension",
+        job_specs={
+            "coarse": ("rough", "rough_mesh.inp"),
+            "primary": ("final_mesh", "input/deck.inp"),
+        },
+    )
+    declarations = list(decision.deliverables)
+    if defect in {"missing_primary", "missing_coarse"}:
+        role = "primary" if defect == "missing_primary" else "coarse"
+        declarations = [
+            d.model_copy(update={"role": None}) if d.role == role else d
+            for d in declarations
+        ]
+    elif defect == "duplicate_primary":
+        declarations = [
+            d.model_copy(update={"role": "primary"}) if d.role == "coarse" else d
+            for d in declarations
+        ]
+    elif defect == "primary_not_odb":
+        declarations = [
+            d.model_copy(
+                update={"role": "primary" if d.relative_path == "report.md" else None}
+            )
+            if d.role == "primary" or d.relative_path == "report.md"
+            else d
+            for d in declarations
+        ]
+    elif defect == "unexecuted_result":
+        (request.workspace / "unexecuted.odb").write_bytes(
+            (request.workspace / "final_mesh.odb").read_bytes()
+        )
+        declarations = [
+            d.model_copy(update={"relative_path": "unexecuted.odb"})
+            if d.role == "primary"
+            else d
+            for d in declarations
+        ]
+    elif defect == "stale_input":
+        (request.workspace / "input/deck.inp").write_text(
+            "different mesh", encoding="utf-8"
+        )
+    elif defect in {"wrong_job", "wrong_input"}:
+        command = (
+            "abaqus",
+            "job=wrong" if defect == "wrong_job" else "job=final_mesh",
+            "input=rough_mesh.inp"
+            if defect == "wrong_input"
+            else "input=input/deck.inp",
+        )
+        executions[2] = executions[2].model_copy(update={"command": command})
+    else:
+        executions[2] = executions[2].model_copy(
+            update={
+                "artifact_changes": tuple(
+                    c
+                    for c in executions[2].artifact_changes
+                    if c.path != "final_mesh.sta"
+                )
+            }
+        )
+    decision = decision.model_copy(update={"deliverables": tuple(declarations)})
+    attempt = await PublicMechanicsRunVerifier(case).verify(
+        request, runner, initial, executions, decision
+    )
+    assert not attempt.passed
+    assert attempt.failure_stage == "provenance"
+    feedback = model_feedback(attempt, tuple(case.metrics))
+    assert "primary" in feedback or "coarse" in feedback
+
+
+@pytest.mark.asyncio
+async def test_custom_names_rewritten_identically_keep_stage_observations(tmp_path):
+    import os
+
+    from abaqus_sim_agent.evaluation.public_mechanics_runner import (
+        PublicMechanicsRunner,
+    )
+    from abaqus_sim_agent.execution import ProcessOutput
+
+    case, request, _, initial, _, decision = delivered_case(
+        tmp_path,
+        "nafems-le2-cylindrical-shell-patch",
+        job_specs={"primary": ("chosen", "mesh/deck.inp")},
+    )
+
+    class Process:
+        async def run(self, command, *, cwd, timeout_seconds):
+            if "cae" in command:
+                names = ("model.cae", "mesh/deck.inp")
+            elif "python" in command:
+                names = ("results.json",)
+            else:
+                names = ("chosen.odb", "chosen.sta")
+            for name in names:
+                path = cwd / name
+                stamp = path.stat().st_mtime + 2
+                path.write_bytes(path.read_bytes())
+                os.utime(path, (stamp, stamp))
+            return ProcessOutput(exit_code=0, stdout=b"", stderr=b"")
+
+    runner = PublicMechanicsRunner(
+        request.workspace, request.state_dir, process_strategy=Process()
+    )
+    executions = [await runner.run_cae_script("build_model.py")]
+    executions.append(await runner.run_solver_job("chosen", input_file="mesh/deck.inp"))
+    executions.append(await runner.run_abaqus_python("extract_results.py"))
+    assert all(not r.artifact_changes for r in executions)
+    attempt = await PublicMechanicsRunVerifier(case).verify(
+        request, runner, initial, executions, decision
+    )
+    assert attempt.passed, attempt.feedback
+
+
+def test_plain_product_deliverables_do_not_require_or_serialize_a_role():
+    from abaqus_sim_agent.coding.contracts import DeliverableDeclaration
+
+    declaration = DeliverableDeclaration(relative_path="arbitrary.txt")
+    assert declaration.model_dump() == {"relative_path": "arbitrary.txt"}
+    assert ReadyForVerificationDecision(
+        summary="done", deliverables=(declaration,)
+    ).deliverables == (declaration,)

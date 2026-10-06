@@ -54,7 +54,7 @@ def root_fixture(tmp_path, names=None):
             "knowledge_resources": None,
             "max_task_concurrency": 1,
             "max_runtime_concurrency": 1,
-            "verification_policy": "submitted_results_v1",
+            "verification_policy": "declared_results_v1",
             "max_explicit_resumes": 3,
             "execution_config": config.model_dump(mode="json"),
             "budgets": {
@@ -697,4 +697,4 @@ async def test_diagnostic_filenames_are_allowed_but_do_not_satisfy_final_deliver
     )
     assert not verdict.passed
     assert verdict.failure_stage == "provenance"
-    assert "missing/stale artifact model.inp" in verdict.feedback
+    assert "primary ODB declaration" in verdict.feedback

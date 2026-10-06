@@ -44,7 +44,7 @@ def freeze(root, names):
             "version": PUBLIC_MECHANICS_PROTOCOL,
             "case_ids": names,
             "scoring_case_ids": list(BASIC_LINEAR_CASE_IDS),
-            "verification_policy": "submitted_results_v1",
+            "verification_policy": "declared_results_v1",
             "max_explicit_resumes": 3,
         },
     )
@@ -82,7 +82,7 @@ def completed(root, name, *, amendment=0, failed=False, wrong_number=False):
         feedback="fixture host verification",
         artifacts=(artifact,),
         reported=measured,
-        verification_policy="submitted_results_v1",
+        verification_policy="declared_results_v1",
     )
     outcome = CodingRunOutcome(
         run_id="fixture-" + name,

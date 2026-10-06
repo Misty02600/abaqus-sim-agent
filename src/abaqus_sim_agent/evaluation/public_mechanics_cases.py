@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, TypeAdapter
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
 from abaqus_sim_agent.evaluation.case_metadata import CaseMetadata, SourceRef
 
-PUBLIC_MECHANICS_PROTOCOL = "public-mechanics-e2e-v28-submitted-results"
+PUBLIC_MECHANICS_PROTOCOL = "public-mechanics-e2e-v29-declared-results"
 
 # 物理Case身份决定评分范围；标签和载荷工况不增加权重。
 BASIC_LINEAR_CASE_IDS = (
@@ -139,10 +139,10 @@ class MechanicsCase(BaseModel):
             f"- {name}: {m.meaning}。" for name, m in self.metrics.items()
         )
         extra = (
-            "必须保存粗、细两套实际网格及结果：model_coarse.inp/model_coarse.odb 与 model.inp/model.odb；"
+            "必须保存粗、细两套实际网格对应的INP和ODB；交付清单中分别用role=coarse和role=primary标记粗、细网格ODB，文件名自行选择；"
             "说明网格如何加密，节点数仅作辅助检查。两者物理问题不变，目标位移或孔表面应力相对细网格的变化不超过1%。"
             "这只是本题的加密一致性检查，不是通用收敛阈值。"
-            f"results.json顶层指标来自细网格；另用coarse_metrics对象提交粗网格的{', '.join(self.refinement_metrics)}，由同一提取脚本从model_coarse.odb取数，并说明两套取值方法一致。"
+            f"results.json顶层指标来自细网格；另用coarse_metrics对象提交粗网格的{', '.join(self.refinement_metrics)}，由同一提取脚本从声明为coarse的ODB取数，并说明两套取值方法一致。"
             if self.refinement
             else "自行检查目标量的网格收敛性，在report.md记录判断依据；必要时加密网格。"
         )
@@ -154,6 +154,9 @@ class MechanicsCase(BaseModel):
 所有必需物理输入已给全；接口/网格等实现选择可在预算内查证，不用请求用户选择 API。
 建模脚本 build_model.py 只能生成 model.cae 和 INP，不能提交 Job；求解必须用独立 solver 工具。
 使用独立 extract_results.py 从本次 ODB 读取结果，写 results.json；不得硬编码参考结果。
+Solver作业名、输入INP及输出ODB文件名自行选择，INP文件名不必与作业名相同。
+申请验收时在deliverables中用role="primary"明确唯一主ODB，例如{{"relative_path":"beam_final.odb","role":"primary"}}；其他交付物可省略role。
+主ODB用于results.json顶层指标；多套结果不得让宿主按文件名猜测主结果。提交对应的实际INP/ODB，宿主沿Solver执行记录核对输入版本、输出及该Job的完成日志。
 保留提取目标量所需的场或历史输出；梁/圆轴还需能读取 UR/RM（来自 U/RF 输出）。
 {extra}
 实例划分、集合名称、INP分块及API写法自行选择。在报告中简述装配、约束和载荷的实现。

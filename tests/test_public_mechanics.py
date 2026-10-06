@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from abaqus_sim_agent.coding.contracts import ReadyForVerificationDecision
 from abaqus_sim_agent.coding.workspace import FileSnapshot, WorkspaceSnapshot
 from abaqus_sim_agent.evaluation.public_mechanics_cases import get_case, mechanics_cases
 from abaqus_sim_agent.evaluation.public_mechanics_runner import execution_key
@@ -13,7 +14,12 @@ from abaqus_sim_agent.execution.abaqus2024 import (
     ArtifactChangeKind,
     ArtifactFingerprint,
 )
-from abaqus_sim_agent.verification.public_mechanics_run import provenance_errors
+from abaqus_sim_agent.verification.public_mechanics_run import (
+    provenance_errors as check_provenance,
+)
+from abaqus_sim_agent.verification.public_mechanics_run import (
+    resolve_solver_results,
+)
 
 
 def test_twenty_distinct_cases_and_independent_reference_formulas():
@@ -131,6 +137,7 @@ def test_provenance_requires_current_inputs_order_and_no_cae_solver(tmp_path):
         "model.cae",
         "model.inp",
         "model.odb",
+        "model.sta",
         "results.json",
     ]
     current = WorkspaceSnapshot(
@@ -176,8 +183,8 @@ def test_provenance_requires_current_inputs_order_and_no_cae_solver(tmp_path):
     solver = execution(
         AbaqusInvocation.SOLVER_JOB,
         ["model.inp"],
-        ["model.odb"],
-        ("abaqus", "job=model"),
+        ["model.odb", "model.sta"],
+        ("abaqus", "job=model", "input=model.inp"),
     )
     extract = execution(
         AbaqusInvocation.ABAQUS_PYTHON,
@@ -186,6 +193,19 @@ def test_provenance_requires_current_inputs_order_and_no_cae_solver(tmp_path):
         ("abaqus", "python"),
     )
     c = get_case("uniform-axial-bar")
+
+    def provenance_errors(case, snapshot, executions, observations=None, **kwargs):
+        decision = ReadyForVerificationDecision(
+            summary="finished",
+            deliverables=({"relative_path": "model.odb", "role": "primary"},),
+        )
+        sources, errors = resolve_solver_results(
+            case, decision, snapshot, executions, observations or {}
+        )
+        return errors or check_provenance(
+            snapshot, executions, sources, observations, **kwargs
+        )
+
     assert provenance_errors(c, current, [cae, solver, extract]) == []
     edited = current.model_copy(
         update={

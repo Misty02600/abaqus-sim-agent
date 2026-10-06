@@ -233,7 +233,7 @@ def test_scoring_exception_is_evaluation_error_and_does_not_invite_repair(run_co
         summarize_case(root, case.case_id),
         {
             "submission_policy": SUBMISSION_POLICY,
-            "verification_policy": "submitted_results_v1",
+            "verification_policy": "declared_results_v1",
         },
         bindings_unchanged=True,
     )
@@ -287,7 +287,7 @@ def test_native_report_keeps_first_and_final_as_one_case(run_context):
     asyncio.run(service(run_context, Scorer(case, pass_at=2), RepairModel()).run())
     manifest = {
         "submission_policy": SUBMISSION_POLICY,
-        "verification_policy": "submitted_results_v1",
+        "verification_policy": "declared_results_v1",
     }
     observation = observe_saved_case(
         root,

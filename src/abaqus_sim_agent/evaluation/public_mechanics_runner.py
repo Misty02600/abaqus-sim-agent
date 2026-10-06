@@ -47,13 +47,23 @@ class PublicMechanicsRunner(Abaqus2024Runner):
             )
         return result
 
+    def _cae_outputs(self):
+        return (
+            "model.cae",
+            *(
+                p.relative_to(self.workspace).as_posix()
+                for p in self.workspace.rglob("*")
+                if p.suffix.lower() == ".inp" and p.is_file() and not p.is_symlink()
+            ),
+        )
+
     async def run_cae_script(self, script, *, args=(), timeout_seconds=600.0):
-        names = ("model.cae", "model.inp", "model_coarse.inp")
+        names = self._cae_outputs()
         before = output_state(self.workspace, names)
         result = await super().run_cae_script(
             script, args=args, timeout_seconds=timeout_seconds
         )
-        return self._record(result, before, names)
+        return self._record(result, before, self._cae_outputs())
 
     async def run_solver_job(
         self,
@@ -64,7 +74,7 @@ class PublicMechanicsRunner(Abaqus2024Runner):
         cpus: SolverCpus | None = None,
         memory: SolverMemory | None = None,
     ):
-        names = (job_name + ".odb",)
+        names = (job_name + ".odb", job_name + ".sta")
         before = output_state(self.workspace, names)
         result = await super().run_solver_job(
             job_name,

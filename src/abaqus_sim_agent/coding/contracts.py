@@ -761,6 +761,9 @@ class NeedsInputDecision(_StrictModel):
 
 class DeliverableDeclaration(_StrictModel):
     relative_path: str = Field(min_length=1)
+    role: str | None = Field(
+        default=None, min_length=1, exclude_if=lambda value: value is None
+    )
 
     @model_validator(mode="after")
     def check_relative_path(self) -> "DeliverableDeclaration":
