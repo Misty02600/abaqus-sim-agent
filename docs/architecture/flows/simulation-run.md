@@ -96,7 +96,7 @@ API lookup/discovery journal 与 snapshot 合并恢复计数、去重和实际�
 Gold 从空工作区开始；verified-seed change 先核对 source 和 hash，再从缓存脚本建种子。具体 Case 的
 文件修改范围和 gate 保持冻结，不能由产品默认演进替换。
 
-失败、预算耗尽和 Provider 中断分别留证；显式 evaluator 的预算耗尽验收仍须完整通过其 verifier。
+工具权限/局部执行额度拒绝返回模型，允许它继续其他获准操作，不直接结束整题。模型请求或总活动时间耗尽、模型明确失败和 Provider 中断分别留证；显式 evaluator 的预算耗尽验收仍须完整通过其 verifier。
 当前缺少 PID/Job 跨进程重新附着、人工 reconcile 解锁、多 worker 异步 Job 管理和完整 durable workflow。
 
 ## 决定与实现

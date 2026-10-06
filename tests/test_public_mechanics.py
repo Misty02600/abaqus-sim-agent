@@ -130,7 +130,7 @@ def test_twenty_distinct_cases_and_independent_reference_formulas():
     assert cases[19].metrics["a_sigma_zz"].target == pytest.approx(-105.0e6)
 
 
-def test_provenance_requires_current_inputs_order_and_no_cae_solver(tmp_path):
+def test_provenance_requires_current_inputs_and_order(tmp_path):
     files = [
         "build_model.py",
         "extract_results.py",
@@ -194,7 +194,7 @@ def test_provenance_requires_current_inputs_order_and_no_cae_solver(tmp_path):
     )
     c = get_case("uniform-axial-bar")
 
-    def provenance_errors(case, snapshot, executions, observations=None, **kwargs):
+    def provenance_errors(case, snapshot, executions, observations=None):
         decision = ReadyForVerificationDecision(
             summary="finished",
             deliverables=({"relative_path": "model.odb", "role": "primary"},),
@@ -202,9 +202,7 @@ def test_provenance_requires_current_inputs_order_and_no_cae_solver(tmp_path):
         sources, errors = resolve_solver_results(
             case, decision, snapshot, executions, observations or {}
         )
-        return errors or check_provenance(
-            snapshot, executions, sources, observations, **kwargs
-        )
+        return errors or check_provenance(snapshot, executions, sources, observations)
 
     assert provenance_errors(c, current, [cae, solver, extract]) == []
     edited = current.model_copy(
@@ -217,17 +215,9 @@ def test_provenance_requires_current_inputs_order_and_no_cae_solver(tmp_path):
             )
         }
     )
-    assert provenance_errors(c, edited, [cae, solver, extract])
-    assert (
-        provenance_errors(
-            c, edited, [cae, solver, extract], require_current_scripts=False
-        )
-        == []
-    )
+    # Script-only edits do not invalidate matching artifact/execution evidence.
+    assert provenance_errors(c, edited, [cae, solver, extract]) == []
     assert provenance_errors(c, current, [solver, cae, extract])
-    assert provenance_errors(
-        c, current, [solver, cae, extract], require_current_scripts=False
-    )
     altered = current.model_copy(
         update={
             "files": tuple(
@@ -239,13 +229,19 @@ def test_provenance_requires_current_inputs_order_and_no_cae_solver(tmp_path):
         }
     )
     assert provenance_errors(c, altered, [cae, solver, extract])
-    illegal = execution(
+    authoring_with_old_solver_output = execution(
         AbaqusInvocation.CAE_NOGUI,
         ["build_model.py"],
         ["model.cae", "model.inp", "model.odb"],
         ("abaqus", "cae"),
     )
-    assert provenance_errors(c, current, [illegal, solver, extract])
+    assert (
+        provenance_errors(
+            c, current, [authoring_with_old_solver_output, solver, extract]
+        )
+        == []
+    )
+    assert provenance_errors(c, current, [authoring_with_old_solver_output, extract])
     identical = extract.model_copy(update={"artifact_changes": ()})
     assert provenance_errors(c, current, [cae, solver, identical])
     before = {"sha256": "a" * 64, "size": 1, "mtime_ns": 1}

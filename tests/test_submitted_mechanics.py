@@ -349,7 +349,8 @@ async def test_vm184_surface_load_spelling_does_not_create_parser_or_review_gate
         request, runner, initial, executions, decision
     )
     assert attempt.passed
-    assert attempt.findings == attempt.advisories == ()
+    assert attempt.findings == ()
+    assert "advisories" not in attempt.model_dump()
     assert "script_review_status" not in attempt.model_dump()
 
 
@@ -519,3 +520,108 @@ def test_plain_product_deliverables_do_not_require_or_serialize_a_role():
     assert ReadyForVerificationDecision(
         summary="done", deliverables=(declaration,)
     ).deliverables == (declaration,)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("kind", ["deleted", "created", "modified"])
+async def test_prior_cae_artifact_changes_do_not_poison_valid_solver_delivery(
+    tmp_path, kind
+):
+    case, request, runner, initial, executions, decision = delivered_case(
+        tmp_path, "nafems-le2-cylindrical-shell-patch"
+    )
+    changes = []
+    for suffix in ("odb", "sta", "msg", "dat"):
+        name = "superseded." + suffix
+        fingerprint = ArtifactFingerprint(path=name, size_bytes=1, sha256="a" * 64)
+        changes.append(
+            ArtifactChange(
+                kind=ArtifactChangeKind(kind),
+                path=name,
+                before=fingerprint if kind != "created" else None,
+                after=fingerprint if kind != "deleted" else None,
+            )
+        )
+    historical = executions[0].model_copy(update={"artifact_changes": tuple(changes)})
+    executions.insert(0, historical)
+    attempt = await PublicMechanicsRunVerifier(case).verify(
+        request, runner, initial, executions, decision
+    )
+    assert attempt.passed, attempt.feedback
+
+
+@pytest.mark.asyncio
+async def test_cae_output_without_independent_solver_evidence_is_still_rejected(
+    tmp_path,
+):
+    case, request, runner, initial, executions, decision = delivered_case(
+        tmp_path, "nafems-le2-cylindrical-shell-patch"
+    )
+    solver = executions.pop(1)
+    executions[0] = executions[0].model_copy(
+        update={
+            "artifact_changes": executions[0].artifact_changes
+            + solver.artifact_changes,
+        }
+    )
+    attempt = await PublicMechanicsRunVerifier(case).verify(
+        request, runner, initial, executions, decision
+    )
+    assert not attempt.passed
+    assert "No current solver provenance for primary result" in attempt.findings
+
+
+@pytest.mark.asyncio
+async def test_mechanics_verifier_reuses_product_artifact_snapshot(
+    tmp_path, monkeypatch
+):
+    case, request, runner, initial, executions, decision = delivered_case(
+        tmp_path, "nafems-le2-cylindrical-shell-patch"
+    )
+    calls = []
+    original = WorkspaceResolver.snapshot
+
+    def snapshot(resolver, workspace):
+        calls.append(workspace)
+        return original(resolver, workspace)
+
+    monkeypatch.setattr(WorkspaceResolver, "snapshot", snapshot)
+    attempt = await PublicMechanicsRunVerifier(case).verify(
+        request, runner, initial, executions, decision
+    )
+    assert attempt.passed, attempt.feedback
+    assert calls == [request.workspace]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("wrong_order", [False, True])
+async def test_mesh_inputs_may_be_generated_in_separate_cae_calls(
+    tmp_path, wrong_order
+):
+    case, request, runner, initial, executions, decision = delivered_case(
+        tmp_path, "plate-with-hole-tension"
+    )
+    cae, coarse_solver, fine_solver, extract = executions
+    coarse_cae = cae.model_copy(
+        update={
+            "artifact_changes": tuple(
+                c for c in cae.artifact_changes if c.path == "model_coarse.inp"
+            )
+        }
+    )
+    fine_cae = cae.model_copy(
+        update={
+            "artifact_changes": tuple(
+                c for c in cae.artifact_changes if c.path != "model_coarse.inp"
+            )
+        }
+    )
+    chain = [coarse_cae, coarse_solver, fine_cae, fine_solver, extract]
+    if wrong_order:
+        chain[0], chain[1] = chain[1], chain[0]
+    attempt = await PublicMechanicsRunVerifier(case).verify(
+        request, runner, initial, chain, decision
+    )
+    assert attempt.passed is not wrong_order
+    if wrong_order:
+        assert "No CAE provenance for coarse input before solver" in attempt.findings

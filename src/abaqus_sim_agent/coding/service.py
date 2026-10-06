@@ -49,7 +49,6 @@ from abaqus_sim_agent.coding.deferred_runtime import (
 )
 from abaqus_sim_agent.coding.dependencies import (
     CodingAgentDependencies,
-    RuntimeBudgetExceeded,
 )
 from abaqus_sim_agent.coding.diagnostic_retrieval import DiagnosticRetrievalMode
 from abaqus_sim_agent.coding.document_policy import DocumentPolicy
@@ -742,15 +741,6 @@ class CodingRunService[VerificationAttemptT: VerificationAttempt]:
         except UsageLimitExceeded as exc:
             return await self._finalize_budget_exhaustion(
                 "model_budget",
-                str(exc),
-                shared_usage,
-                clarifications,
-                started,
-                verification=verification,
-            )
-        except RuntimeBudgetExceeded as exc:
-            return await self._finalize_budget_exhaustion(
-                "runtime_budget",
                 str(exc),
                 shared_usage,
                 clarifications,

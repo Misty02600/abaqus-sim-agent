@@ -488,8 +488,8 @@ HTTP 传入旧字段返回校验错误，不静默忽略。上下文窗口使用
 
 基础线性测评的独立冻结字段：`manifest.submission_policy`由v28程序固定为
 `first_submission_bounded_feedback_v1`，无用户覆盖或环境来源；`prepare`保存、worker校验，恢复不得更换。
-`manifest.verification_policy`由v29程序固定为`declared_results_v1`，同样随批次冻结且不允许恢复覆盖；数值来自提交的results.json，无独立ODB读取。
-v29不再生成`manifest.script_review`，不读取reviews文件或以人工确认作为计分条件；报告使用`numeric_ok`，通过范围限于执行、交付和提交数值。
+`manifest.verification_policy`由v31程序固定为`declared_results_v2`，同样随批次冻结且不允许恢复覆盖；数值来自提交的results.json，无独立ODB读取。
+v30不再生成`manifest.script_review`，不读取reviews文件或以人工确认作为计分条件；报告使用`numeric_ok`，通过范围限于执行、交付和提交数值。
 该合同固定最多三次提交、两轮反馈，预算仍由原`manifest.budgets`转入同一CodingRun控制字段。
 `manifest.knowledge_resources`在v28固定为null，非空输入拒绝；旧批次继续使用其冻结worker。
 上述字段仅属于测评批次，普通CLI/Web不增加对应选项。完整行为见[结果报告约定](../../benchmarks/coding/result_reporting.md)。
@@ -511,3 +511,11 @@ v29不再生成`manifest.script_review`，不读取reviews文件或以人工确�
 ### 力学测评的交付用途声明（v29）
 
 这不是应用配置项。DeliverableDeclaration新增可选role（非空字符串，缺省None且序列化省略），与relative_path一起保存到原声明及逐提交快照；普通产品不要求角色。公开力学新批次要求primary标记唯一主ODB，粗细题另要求coarse标记唯一粗ODB。Job名及INP/ODB名称不再固定，按实际执行命令、指纹和产物记录解析；原有路径归属和重复路径校验继续生效。v28及更早批次使用其冻结worker，不迁移旧状态或回填成绩。
+
+
+v30继续沿用v29的可选交付role；`verification_policy=declared_results_v2`不再保存未消费的advisories严格脚本提示，不再以历史CAE文件变化否决当前提交。正式工具拦截和当前Solver来源检查继续有效；旧批次沿用原冻结worker。
+
+
+### 局部工具拒绝与整题停止
+
+runtime_policy的权限及调用额度数值不变，但当前runtime工具对拒绝返回RuntimePolicyDenied，不再抛RuntimeBudgetExceeded结束Service。Solver子额度耗尽不阻止额度仍可用的提取；Abaqus总额度耗尽仍允许普通文件工作，等待既有后台Solver不受新提交额度影响。拒绝不增加runtime计数。模型请求和总活动时间仍是整题预算，恢复继续累计，不重置用量。旧冻结worker保留旧行为；新力学协议v31在题设公开容差和具体预算上限，参考答案及偏差仍隐藏。

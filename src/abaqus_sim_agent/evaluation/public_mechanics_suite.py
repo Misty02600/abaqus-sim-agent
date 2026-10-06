@@ -131,7 +131,7 @@ def prepare(
         raise FileExistsError(root)
     if knowledge_resources is not None:
         raise ValueError(
-            "v29 does not attach external reference folders; their benchmark answers are not audited"
+            "v31 does not attach external reference folders; their benchmark answers are not audited"
         )
     case_ids = list(selected_case_ids(case_ids))
     cases = [get_case(k) for k in case_ids]
@@ -275,7 +275,7 @@ def verify_binding(root):
     if manifest["max_runtime_concurrency"] > manifest["max_task_concurrency"]:
         raise ValueError("runtime concurrency exceeds task concurrency")
     if manifest.get("knowledge_resources") is not None:
-        raise ValueError("v29 does not attach external reference folders")
+        raise ValueError("v31 does not attach external reference folders")
     if read_json(root / "goals.json") != {
         name: get_case(name).goal() for name in manifest["case_ids"]
     }:

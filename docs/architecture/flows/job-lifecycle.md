@@ -13,6 +13,9 @@ Job 名、资源参数、timeout 或输入文件（存在性、工作区归属�
 许可证或求解错误继续计入次数，不依赖日志分类退还额度。启动前校验后文件被外部改动的竞争情况也不退还。
 后台返回 submitted 仅表示已创建后台执行任务，不保证 Abaqus 已成功启动。冻结历史 worker 不回填此规则。
 
+Solver权限不足或子额度耗尽，只返回当前调用的RuntimePolicyDenied，不终止整个CodingRun；若Abaqus总额度仍可用，可继续提取已有ODB。Abaqus总额度耗尽则不再启动新的CAE/Solver/Abaqus Python，但普通文件工作与交付仍可继续。拒绝不计入runtime次数；已有后台Solver的wait不消耗新提交额度。整题的模型请求和活动时间上限继续生效。
+
+
 
 ```mermaid
 stateDiagram-v2

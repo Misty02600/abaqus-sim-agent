@@ -38,11 +38,7 @@ from abaqus_sim_agent.retrieval import AbaqusDocumentIndex
 
 from .active_wall import ActiveWallClock
 
-__all__ = ["CodingAgentDependencies", "RuntimeBudgetExceeded"]
-
-
-class RuntimeBudgetExceeded(RuntimeError):
-    pass
+__all__ = ["CodingAgentDependencies"]
 
 
 @dataclass(slots=True)

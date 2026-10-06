@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, TypeAdapter
 from abaqus_sim_agent.coding.contracts import CodingRunBudget
 from abaqus_sim_agent.evaluation.case_metadata import CaseMetadata, SourceRef
 
-PUBLIC_MECHANICS_PROTOCOL = "public-mechanics-e2e-v29-declared-results"
+PUBLIC_MECHANICS_PROTOCOL = "public-mechanics-e2e-v31-visible-tolerances"
 
 # 物理Case身份决定评分范围；标签和载荷工况不增加权重。
 BASIC_LINEAR_CASE_IDS = (
@@ -135,8 +135,10 @@ class MechanicsCase(BaseModel):
         )
 
     def goal(self) -> str:
+        budget = self.run_budget()
         metric_text = "\n".join(
-            f"- {name}: {m.meaning}。" for name, m in self.metrics.items()
+            f"- {name}: {m.meaning}；验收相对容差{m.relative_tolerance * 100:g}%，绝对容差{m.absolute_tolerance:g}（同指标单位）。"
+            for name, m in self.metrics.items()
         )
         extra = (
             "必须保存粗、细两套实际网格对应的INP和ODB；交付清单中分别用role=coarse和role=primary标记粗、细网格ODB，文件名自行选择；"
@@ -169,7 +171,10 @@ results.json 的顶层数值字段（含方向；每项必须来自 ODB 或由�
 只有脚本、CAE/INP/ODB、JSON 和实际三阶段证据齐全后才请求宿主验收。
 首次完成声明即计一次提交，缺失交付也计入；最多三次提交、两轮验收反馈，所有阶段共用每题累计预算。
 提交前自主调试不计验收反馈轮数，但正常消耗预算。验收通过即停止；不能继续时明确报告失败。
-宿主比较提交数值与隐藏参考值及容差，检查粗细网格提交值的一致性和实际执行证据；不提供参考答案及相对答案的偏差。
+本题初始累计上限：模型请求{budget.max_model_requests}次，Abaqus总调用{budget.max_abaqus_calls}次（其中Solver最多{budget.max_solver_calls}次），活动时间{budget.wall_time_seconds:g}秒。
+工具额度耗尽只拒绝该类新调用；仍可使用其他获准工具和已有产物完成提取、报告与交付，不能把被拒绝的调用当成已执行。模型请求或总活动时间耗尽会停止整题。
+上述容差是相对隐藏参考值的验收要求，满足相对或绝对容差即可；相邻网格变化小不等于真实误差小。自行选择并说明收敛判断方法，在预算内优先形成可追溯交付，如实报告尚未消除的不确定性。
+宿主比较提交数值与隐藏参考值及容差，检查粗细网格提交值的一致性和实际执行证据；公开容差，但不提供参考答案或相对答案的实际偏差。
 通过表示实际执行、交付及提交数值指标通过，不表示宿主自动核实了全部建模细节；不解析INP判断建模写法，也不设置对应人工审查门槛。
 """
 

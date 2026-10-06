@@ -5,7 +5,7 @@
 当前案例为20个公开力学仿真任务，按物理能力分组。旧Gold已删除；输入变体不增加本套件的题数或权重。
 选题已确认5题入选（均布梁、圆轴扭转、厚壁圆筒、孔板、三向实体梁VM184）、4题历史（均匀杆、分段杆、均匀平面应力板、端载梁），NAFEMS LE1–LE10共10题暂留评分，LE11待单独处理；目前评分选择规模为15题。VM184三个工况全部合格才记整题通过。入选不等于当前配置已经验收通过。下文保留全部20题合同与既有证据，v26运行器已接入15题默认选择和显式评分范围。
 源码定义见[public_mechanics_cases.py](../../src/abaqus_sim_agent/evaluation/public_mechanics_cases.py)，
-验收见[提交值与执行证据验收](../../src/abaqus_sim_agent/verification/public_mechanics_run.py)。v29不再运行独立ODB读取器或有界INP检查；旧实现随冻结worker保留。
+验收见[提交值与执行证据验收](../../src/abaqus_sim_agent/verification/public_mechanics_run.py)。v30不再运行独立ODB读取器或有界INP检查；旧实现随冻结worker保留。
 下列运行证据为删除前在`aa7116f`基线的只读盘点，不是当前版本的新成绩。
 逐题来源链接见[分类与来源清单](domain_mechanics_inventory.md)，原始来源登记见[前六题](foundation_public_mechanics_sources_v1.json)及各扩展报告。
 新增Abaqus 2025公开查阅链接不替换冻结来源；2026文档与2024运行证据分别解释。
@@ -124,7 +124,7 @@ NAFEMS各题单位均为m–N–Pa（LE11另含°C），除LE3外E=210GPa、ν=.
 | 容差不能统一为2% | 均匀场解析题可以较紧；LE10参考细C3D20约−5.643MPa，本就偏离−5.38约4.9%；LE8、LE11也记载允许单元的离散偏差。各容差是冻结任务误差预算，不是普适FEA标准 |
 | 取数不能统一成“最大应力” | 孔板取孔壁全局S11最大值；LE1/10取指定D点S22；LE6由中心下表面张量计算主应力；LE4/5取中面；LE2/7/8/9取物理外表面；梁名义应力从RM恢复。取值API可变，物理量不能替换 |
 | 曾把合法实现当错答案 | [公开v2](public_mechanics_e2e_measurement_correction_20260915.md)：零载荷分量、同字节重写误拒。[v4](public_mechanics_results_first_v4_20260915.md)：OP=NEW多块处理修正。旧成绩未回填 |
-| 提交数值不是完整规格验证 | v29只比较提交结果和隐藏参考值，保留执行provenance；题设继续明确物理几何、材料、边界、载荷、表示及取值方法，模型自主完成；测评不解析INP或要求逐项人工确认，数值接近不证明全部物理条件正确 |
+| 提交数值不是完整规格验证 | v30只比较提交结果和隐藏参考值，保留执行provenance；题设继续明确物理几何、材料、边界、载荷、表示及取值方法，模型自主完成；测评不解析INP或要求逐项人工确认，数值接近不证明全部物理条件正确 |
 | 独立复测的边界 | v28撤除旧ODB读取、geometry/material/EVOL identity检查及有界INP检查，不保留无消费者的第二套数值评分。新自动通过不证明JSON确实忠实于ODB，不再将原解析规则转为逐条人工审查任务 |
 | LE10给出的反例 | 原错误支承模型反力和体积均合理，D点却为+0.003773MPa；只改SYM_Y后为−5.562129MPa。整体平衡不能代替局部边界和应力；这是参考正确、Agent实现错误的证据，不是题设与参考冲突 |
 
@@ -135,14 +135,14 @@ NAFEMS各题单位均为m–N–Pa（LE11另含°C），除LE3外E=210GPa、ν=.
 
 | 入口 | 当前配置/可用性 | 历史边界 |
 |---|---|---|
-| `public_mechanics_suite` | v29；`prepare/preflight/doctor/run/continue/resume/pause/report/launch`；`--case`可指定多个不同Case，不选则15题；历史/未入选Case只作非计分诊断。必传新ASCII `--root` 与 `--catalog`；默认Foundation on、API full、Planning off、docs off、legacy_decision；新批次每题累计上限为200次模型请求、80次Abaqus调用（其中Solver最多10次），活动时间5400秒，澄清0，lookup/preflight计数不限；HTTP300秒+4次retry；任务/runtime并发各1（可选2） | `prepare`复制源码/Skill/Catalog，拒绝未经答案审查的外部knowledge附件；seal绑定依赖与launcher。`preflight`是假模型，`doctor`会真实访问Provider。旧批次必须用其worker/snapshot与匹配依赖，当前report拒绝覆盖旧version |
+| `public_mechanics_suite` | v31；`prepare/preflight/doctor/run/continue/resume/pause/report/launch`；`--case`可指定多个不同Case，不选则15题；历史/未入选Case只作非计分诊断。必传新ASCII `--root` 与 `--catalog`；默认Foundation on、API full、Planning off、docs off、legacy_decision；新批次每题累计上限为200次模型请求、80次Abaqus调用（其中Solver最多10次），活动时间5400秒，澄清0，lookup/preflight计数不限；HTTP300秒+4次retry；任务/runtime并发各1（可选2） | `prepare`复制源码/Skill/Catalog，拒绝未经答案审查的外部knowledge附件；seal绑定依赖与launcher。`preflight`是假模型，`doctor`会真实访问Provider。旧批次必须用其worker/snapshot与匹配依赖，当前report拒绝覆盖旧version |
 | `foundation_public_mechanics_benchmark` | 更早的力学行为/回答题集装配与评分 | 与当前20题仿真suite不同，不能因同名Case把行为分数计入仿真完成 |
 
 公开 v1及多项v6–v22历史配置通常为40/18/6/2700秒、API8、Planning on，HTTP又分60/retry10、600/retry0、180/retry1等。
 v5事后恢复还修改limits/timeout；完整值按冻结manifest与amendment分别读，不能仅以目录v号推断当前执行条件。
 新批次不把最终交付文件名用作执行白名单：模型可在工作区内运行单独的诊断脚本和INP。最终验收仍核对题设要求的交付物及其执行证据。
 
-当前v29沿用v26的原生Dataset执行链，并保存首次提交与最多两轮反馈后的最终自动评分；题设和反馈不主动提供参考答案。
+当前v31沿用v26的原生Dataset执行链，并保存首次提交与最多两轮反馈后的最终自动评分；题设和反馈不主动提供参考答案。
 交付副本、用量、内部数值诊断和错误均留在宿主侧，评分器错误不计答案失败。尚未运行新合同的真实模型/持证批次。
 元数据schema、批次冻结和报告语义见[Coding入口](README.md)与[结果报告约定](result_reporting.md)。
 

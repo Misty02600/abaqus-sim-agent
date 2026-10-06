@@ -47,7 +47,7 @@ def mechanics_runtime(tmp_path, monkeypatch):
             "batch_id": "offline-telemetry",
             "case_ids": names,
             "scoring_case_ids": list(BASIC_LINEAR_CASE_IDS),
-            "verification_policy": "declared_results_v1",
+            "verification_policy": "declared_results_v2",
             "max_explicit_resumes": 1,
             "catalog_mode": "full",
             "foundation": True,
@@ -113,7 +113,7 @@ def mechanics_runtime(tmp_path, monkeypatch):
                     feedback="offline fixture",
                     artifacts=(),
                     reported={k: m.target for k, m in case.metrics.items()},
-                    verification_policy="declared_results_v1",
+                    verification_policy="declared_results_v2",
                 )
                 save_json(
                     req.state_dir / "outcome.json",

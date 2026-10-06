@@ -14,9 +14,8 @@ from abaqus_sim_agent.coding.contracts import (
 from abaqus_sim_agent.coding.execution_verifier import ExecutionEvidenceVerifier
 from abaqus_sim_agent.coding.verification_port import VerificationAttempt
 from abaqus_sim_agent.coding.workspace import (
-    WorkspaceResolver,
+    FileSnapshot,
     WorkspaceSnapshot,
-    artifact_evidence_from_snapshots,
 )
 from abaqus_sim_agent.evaluation.public_mechanics_cases import MechanicsCase
 from abaqus_sim_agent.evaluation.public_mechanics_runner import (
@@ -30,13 +29,12 @@ from abaqus_sim_agent.execution import (
 )
 from abaqus_sim_agent.verification.model_change_evidence import status_completed
 
-VERIFICATION_POLICY = "declared_results_v1"
+VERIFICATION_POLICY = "declared_results_v2"
 
 
 class PublicMechanicsAttempt(VerificationAttempt):
     reported: dict[str, float] | None = None
     findings: tuple[str, ...] = ()
-    advisories: tuple[str, ...] = ()
     verification_policy: str = VERIFICATION_POLICY
 
 
@@ -133,41 +131,27 @@ def provenance_errors(
     executions: Sequence[AbaqusExecutionResult],
     results: Sequence[SolverResult],
     observations: dict | None = None,
-    *,
-    require_current_scripts: bool = True,
 ) -> list[str]:
     files = current.by_path()
     observations = observations or {}
     cae = [
-        i
+        (i, r)
         for i, r in enumerate(executions)
-        if r.invocation == AbaqusInvocation.CAE_NOGUI
-        and _produced(
-            r, ("model.cae", *(result.inp for result in results)), files, observations
-        )
-        and (not require_current_scripts or _read_input(r, "build_model.py", files))
+        if r.invocation == AbaqusInvocation.CAE_NOGUI and r.stage_succeeded
     ]
-    if not cae:
-        return [
-            "No CAE invocation produced the current CAE/INPs from current build_model.py"
-        ]
-    if any(
-        c.path.lower().endswith((".odb", ".sta", ".msg", ".dat"))
-        for r in executions
-        if r.invocation == AbaqusInvocation.CAE_NOGUI
-        for c in r.artifact_changes
-    ):
-        return ["CAE stage produced solver artifacts"]
+    if not any(_produced(r, ("model.cae",), files, observations) for _, r in cae):
+        return ["No CAE provenance for current model.cae"]
     for result in results:
-        if result.execution_index <= (
-            max(cae) if require_current_scripts else min(cae)
+        if not any(
+            i < result.execution_index
+            and _produced(r, (result.inp,), files, observations)
+            for i, r in cae
         ):
-            return [f"No current solver provenance for {result.role} result"]
+            return [f"No CAE provenance for {result.role} input before solver"]
     if not any(
         i > max(result.execution_index for result in results)
         and r.invocation == AbaqusInvocation.ABAQUS_PYTHON
         and _produced(r, ("results.json",), files, observations)
-        and (not require_current_scripts or _read_input(r, "extract_results.py", files))
         for i, r in enumerate(executions)
     ):
         return ["No extraction provenance after current solver outputs"]
@@ -232,12 +216,18 @@ class PublicMechanicsRunVerifier:
         evidence = await ExecutionEvidenceVerifier().verify(
             request, runner, initial_snapshot, executions, decision
         )
-        current = WorkspaceResolver(captured_cwd=request.workspace).snapshot(
-            request.workspace
+        artifacts = evidence.artifacts
+        current = WorkspaceSnapshot(
+            files=tuple(
+                FileSnapshot(
+                    relative_path=artifact.relative_path,
+                    size_bytes=artifact.size_bytes,
+                    sha256=artifact.sha256,
+                )
+                for artifact in artifacts
+            )
         )
-        artifacts, freshness = artifact_evidence_from_snapshots(
-            initial_snapshot, current
-        )
+        freshness = {artifact.relative_path: artifact.fresh for artifact in artifacts}
         observations = read_observations(request.state_dir)
         sources, source_errors = resolve_solver_results(
             self.case, decision, current, executions, observations
@@ -262,16 +252,8 @@ class PublicMechanicsRunVerifier:
         if not evidence.passed:
             errors.append(evidence.feedback)
         errors += source_errors
-        advisories = []
         if not source_errors:
-            errors += provenance_errors(
-                current,
-                executions,
-                sources,
-                observations,
-                require_current_scripts=False,
-            )
-            advisories = provenance_errors(current, executions, sources, observations)
+            errors += provenance_errors(current, executions, sources, observations)
             errors += [
                 f"{source.role} solver status does not confirm completion"
                 for source in sources
@@ -284,7 +266,6 @@ class PublicMechanicsRunVerifier:
                 artifacts=artifacts,
                 failure_stage="provenance",
                 findings=tuple(errors),
-                advisories=tuple(advisories),
             )
         try:
             reported = json.loads((request.workspace / "results.json").read_bytes())
@@ -315,6 +296,5 @@ class PublicMechanicsRunVerifier:
                 if _finite_number(reported.get(key))
             },
             findings=tuple(errors),
-            advisories=tuple(advisories),
             failure_stage="task_oracle" if errors else None,
         )

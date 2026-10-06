@@ -2,7 +2,8 @@ import asyncio
 import json
 
 import pytest
-from pydantic_ai.messages import ModelResponse, ToolCallPart
+from pydantic_ai import ModelMessagesTypeAdapter
+from pydantic_ai.messages import ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import FunctionModel
 
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
@@ -233,7 +234,7 @@ def test_scoring_exception_is_evaluation_error_and_does_not_invite_repair(run_co
         summarize_case(root, case.case_id),
         {
             "submission_policy": SUBMISSION_POLICY,
-            "verification_policy": "declared_results_v1",
+            "verification_policy": "declared_results_v2",
         },
         bindings_unchanged=True,
     )
@@ -287,7 +288,7 @@ def test_native_report_keeps_first_and_final_as_one_case(run_context):
     asyncio.run(service(run_context, Scorer(case, pass_at=2), RepairModel()).run())
     manifest = {
         "submission_policy": SUBMISSION_POLICY,
-        "verification_policy": "declared_results_v1",
+        "verification_policy": "declared_results_v2",
     }
     observation = observe_saved_case(
         root,
@@ -407,19 +408,31 @@ def test_runtime_allowance_survives_feedback_and_process_resume(run_context):
             )
         return ModelResponse(parts=[part])
 
-    process, scorer = Process(), Scorer(case)
+    process, scorer = Process(), Scorer(case, pass_at=3)
     with pytest.raises(CodingRunInfrastructureError):
         asyncio.run(service(context, scorer, model, process=process).run())
     result = asyncio.run(
         service(context, scorer, model, resume=True, process=process).run()
     )
-    assert result.outcome.failure_stage == "runtime_budget"
+    assert result.outcome.status.value == "completed"
     assert process.calls == result.outcome.usage.abaqus_calls == 2
     assert [
         submission.usage.abaqus_calls
         for submission, _ in load_submissions(request.state_dir)
-    ] == [1, 2]
-    assert scorer.calls == 2
+    ] == [1, 2, 2]
+    assert scorer.calls == 3
+    denied = [
+        part
+        for message in ModelMessagesTypeAdapter.validate_json(
+            (request.state_dir / "history.json").read_bytes()
+        )
+        for part in message.parts
+        if isinstance(part, ToolReturnPart)
+        and part.tool_name == "run_cae_script"
+        and isinstance(part.content, dict)
+        and part.content.get("error_type") == "RuntimePolicyDenied"
+    ]
+    assert len(denied) == 1
 
 
 def test_corrupted_first_snapshot_cannot_receive_credit(run_context):
@@ -454,9 +467,7 @@ def test_goal_does_not_depend_on_reference_values_or_source_metadata():
         changed = case.model_copy(
             update={
                 "metrics": {
-                    key: metric.model_copy(
-                        update={"target": 9876543.0, "relative_tolerance": 0.987}
-                    )
+                    key: metric.model_copy(update={"target": 9876543.0})
                     for key, metric in case.metrics.items()
                 },
                 "metadata": case.metadata.model_copy(
@@ -488,3 +499,21 @@ def test_feedback_uses_check_names_without_numbers_or_direction():
     assert "9876543" not in feedback
     assert "high" not in feedback
     assert "100" not in feedback
+
+
+def test_goal_exposes_tolerances_and_budget_without_reference_answers():
+    case = get_case("nafems-le6-skew-plate")
+    goal = case.goal()
+    assert "相对容差10%" in goal
+    assert "相对容差0.2%" in goal
+    assert "模型请求200次" in goal
+    assert "其中Solver最多10次" in goal
+    metric = case.metrics["center_lower_max_principal"].model_copy(
+        update={"relative_tolerance": 0.123, "absolute_tolerance": 0.45}
+    )
+    changed = case.model_copy(
+        update={"metrics": {**case.metrics, "center_lower_max_principal": metric}}
+    )
+    assert "相对容差12.3%" in changed.goal()
+    assert "绝对容差0.45" in changed.goal()
+    assert changed.goal() != goal

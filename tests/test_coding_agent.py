@@ -1164,7 +1164,9 @@ def test_open_product_solver_submit_allows_other_work_before_wait(
     resources,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    request = _request(tmp_path)
+    request = _request(
+        tmp_path, budget=CodingRunBudget(max_abaqus_calls=1, max_solver_calls=1)
+    )
     (request.workspace / "demo.inp").write_text("*HEADING\n", encoding="utf-8")
     (request.workspace / "notes.txt").write_text("independent\n", encoding="utf-8")
     execution_id = "a" * 32
@@ -2700,3 +2702,66 @@ async def test_solver_failure_after_prevalidation_still_consumes_budget(
         )
     assert result["succeeded"] is False
     assert (deps.abaqus_calls, deps.solver_calls) == (1, 1)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("kind", ["cae", "extract", "solver", "submit"])
+@pytest.mark.parametrize("permission_denied", [False, True])
+async def test_runtime_policy_denial_is_local_and_does_not_spend_allowance(
+    tmp_path, kind, permission_denied
+):
+    from pydantic_ai import RunContext
+    from pydantic_ai.models.test import TestModel
+    from pydantic_ai.usage import RunUsage
+
+    from abaqus_sim_agent.coding.runtime_tools import (
+        _run_abaqus_python_tool,
+        _run_cae_tool,
+        _run_solver_tool,
+        _submit_solver_tool,
+    )
+
+    solver = kind in {"solver", "submit"}
+    request = _request(
+        tmp_path,
+        budget=CodingRunBudget(
+            max_abaqus_calls=3 if solver else (0 if permission_denied else 1),
+            max_solver_calls=(0 if permission_denied else 1) if solver else 0,
+        ),
+    )
+    deps = CodingAgentDependencies(
+        request=request, runner=Abaqus2024Runner(request.workspace, request.state_dir)
+    )
+    if not permission_denied:
+        deps.abaqus_calls = 1
+        deps.solver_calls = 1 if solver else 0
+    before = deps.abaqus_calls, deps.solver_calls
+    common = {
+        "probe_protocol_enabled": False,
+        "probe_result": None,
+        "probe_target_scripts": None,
+        "api_catalog_mode": "off",
+    }
+    if kind == "cae":
+        result = await _run_cae_tool(deps, "missing.py", purpose="production", **common)
+    elif kind == "extract":
+        result = await _run_abaqus_python_tool(
+            deps, "missing.py", purpose="production", **common
+        )
+    elif kind == "solver":
+        result = await _run_solver_tool(
+            RunContext(deps=deps, model=TestModel(), usage=RunUsage()),
+            "job",
+            "missing.inp",
+            diagnostic_retrieval_mode="off",
+            **common,
+        )
+    else:
+        result = await _submit_solver_tool(deps, "job", "missing.inp")
+    assert result["error_type"] == "RuntimePolicyDenied"
+    assert result["blocked"] is True
+    assert result["budget_consumed"] is False
+    assert result["runtime_executed"] is False
+    assert (deps.abaqus_calls, deps.solver_calls) == before
+    assert not deps.executions
+    assert not deps.pending_solver_executions

@@ -22,7 +22,6 @@ from abaqus_sim_agent.coding.contracts import (
 )
 from abaqus_sim_agent.coding.dependencies import (
     CodingAgentDependencies,
-    RuntimeBudgetExceeded,
 )
 from abaqus_sim_agent.coding.diagnostic_retrieval import (
     DiagnosticRetrievalMode,
@@ -351,6 +350,24 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _runtime_denial(reason: str) -> dict[str, object]:
+    return {
+        "succeeded": False,
+        "stage_succeeded": False,
+        "blocked": True,
+        "runtime_executed": False,
+        "budget_consumed": False,
+        "error_type": "RuntimePolicyDenied",
+        "error": reason,
+        "guidance": (
+            "Do not repeat this execution while the restriction remains in force. "
+            "Continue with other permitted tools and existing artifacts, or report "
+            "that the task cannot be completed within the remaining limits. "
+            "Do not claim that a denied execution ran."
+        ),
+    }
+
+
 async def _run_cae_tool(
     dependencies: CodingAgentDependencies,
     script_path: str,
@@ -362,7 +379,7 @@ async def _run_cae_tool(
     api_catalog_mode: ApiCatalogMode,
 ) -> dict[str, object]:
     if permission_denied := dependencies.runtime_permission_denial(solver=False):
-        raise RuntimeBudgetExceeded(permission_denied)
+        return _runtime_denial(permission_denied)
     denied = dependencies.runtime_script_policy_denial(
         kind="cae",
         path=script_path,
@@ -429,7 +446,7 @@ async def _run_cae_tool(
                 return blocked
         exhausted = dependencies.reserve_runtime_call(solver=False)
         if exhausted:
-            raise RuntimeBudgetExceeded(exhausted)
+            return _runtime_denial(exhausted)
         notify(
             dependencies.observer,
             CodingProgress(
@@ -470,7 +487,7 @@ async def _run_abaqus_python_tool(
     api_catalog_mode: ApiCatalogMode,
 ) -> dict[str, object]:
     if permission_denied := dependencies.runtime_permission_denial(solver=False):
-        raise RuntimeBudgetExceeded(permission_denied)
+        return _runtime_denial(permission_denied)
     denied = dependencies.runtime_script_policy_denial(
         kind="abaqus_python",
         path=script_path,
@@ -510,7 +527,7 @@ async def _run_abaqus_python_tool(
                 return blocked
         exhausted = dependencies.reserve_runtime_call(solver=False)
         if exhausted:
-            raise RuntimeBudgetExceeded(exhausted)
+            return _runtime_denial(exhausted)
         notify(
             dependencies.observer,
             CodingProgress(
@@ -582,7 +599,7 @@ async def _run_solver_tool(
 ) -> dict[str, object]:
     dependencies = ctx.deps
     if permission_denied := dependencies.runtime_permission_denial(solver=True):
-        raise RuntimeBudgetExceeded(permission_denied)
+        return _runtime_denial(permission_denied)
     denied = dependencies.runtime_script_policy_denial(
         kind="solver_input",
         path=input_file,
@@ -617,7 +634,7 @@ async def _run_solver_tool(
             return validation_error
         exhausted = dependencies.reserve_runtime_call(solver=True)
         if exhausted:
-            raise RuntimeBudgetExceeded(exhausted)
+            return _runtime_denial(exhausted)
         notify(
             dependencies.observer,
             CodingProgress(
@@ -655,7 +672,7 @@ async def _submit_solver_tool(
     memory: SolverMemory | None = None,
 ) -> dict[str, object]:
     if permission_denied := dependencies.runtime_permission_denial(solver=True):
-        raise RuntimeBudgetExceeded(permission_denied)
+        return _runtime_denial(permission_denied)
     denied = dependencies.runtime_script_policy_denial(
         kind="solver_input",
         path=input_file,
@@ -673,7 +690,7 @@ async def _submit_solver_tool(
         return validation_error
     exhausted = dependencies.reserve_runtime_call(solver=True)
     if exhausted:
-        raise RuntimeBudgetExceeded(exhausted)
+        return _runtime_denial(exhausted)
     notify(
         dependencies.observer,
         CodingProgress(

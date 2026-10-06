@@ -137,6 +137,10 @@ def model_feedback(
                     f"solver provenance for {role} result",
                 ),
                 (
+                    f"No CAE provenance for {role} input before solver",
+                    f"CAE provenance for {role} input",
+                ),
+                (
                     f"{role} solver status does not confirm completion",
                     f"solver completion for {role} result",
                 ),
@@ -146,12 +150,8 @@ def model_feedback(
                     matched = True
         for detail, label in (
             (
-                "No CAE invocation produced the current CAE/INPs from current build_model.py",
+                "No CAE provenance for current model.cae",
                 "CAE provenance",
-            ),
-            (
-                "CAE stage produced solver artifacts",
-                "separate CAE and solver execution",
             ),
             (
                 "No extraction provenance after current solver outputs",

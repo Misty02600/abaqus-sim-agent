@@ -582,63 +582,175 @@ def test_service_keeps_budget_failure_when_terminal_verifier_rejects(
     }
 
 
-def test_service_stops_when_runtime_budget_is_exhausted(tmp_path: Path) -> None:
+@pytest.mark.parametrize("allowance", [0, 1])
+def test_runtime_denial_allows_file_work_and_delivery(
+    tmp_path: Path, allowance: int
+) -> None:
     request, initial_snapshot = _request(
-        tmp_path,
-        budget=CodingRunBudget(max_abaqus_calls=0, max_solver_calls=0),
+        tmp_path, budget=CodingRunBudget(max_abaqus_calls=allowance, max_solver_calls=0)
     )
     (request.workspace / "build_model.py").write_text(
-        "print('not executed')\n",
-        encoding="utf-8",
+        "print('fixture')\n", encoding="utf-8"
     )
     call_count = 0
 
-    def model_function(
-        _messages: list[ModelMessage],
-        _info: AgentInfo,
-    ) -> ModelResponse:
+    def model_function(messages, info):
         nonlocal call_count
         call_count += 1
-        if call_count > 1:
-            raise AssertionError("runtime budget exhaustion must stop the turn")
+        if call_count <= 2:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart("run_cae_script", {"script_path": "build_model.py"})
+                ]
+            )
+        if call_count == 3:
+            returns = [
+                p
+                for m in messages
+                if isinstance(m, ModelRequest)
+                for p in m.parts
+                if isinstance(p, ToolReturnPart) and p.tool_name == "run_cae_script"
+            ]
+            denial = returns[-1].content
+            assert denial["error_type"] == "RuntimePolicyDenied"
+            assert denial["runtime_executed"] is False
+            assert denial["budget_consumed"] is False
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "write_file",
+                        {
+                            "path": "report.md",
+                            "content": "Execution limit reached; existing evidence retained.",
+                        },
+                    )
+                ]
+            )
         return ModelResponse(
             parts=[
                 ToolCallPart(
-                    "run_cae_script",
-                    {"script_path": "build_model.py"},
-                    tool_call_id="runtime-budget",
+                    _decision_tool(info, "ReadyForVerificationDecision"),
+                    {
+                        "summary": "Report delivered",
+                        "deliverables": [{"relative_path": "report.md"}],
+                    },
                 )
             ]
         )
 
-    runner = Abaqus2024Runner(request.workspace, request.state_dir)
-    dependencies = CodingAgentDependencies(request=request, runner=runner)
+    process = _CountingSuccessfulProcess()
+    deps = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(
+            request.workspace, request.state_dir, process_strategy=process
+        ),
+    )
     service = CodingRunService(
         agent=create_abaqus_coding_agent(FunctionModel(model_function), request),
         request=request,
-        dependencies=dependencies,
+        dependencies=deps,
         clarification_provider=ScriptedClarificationProvider({}),
-        verifier=_PassingVerifier(),
+        verifier=ExecutionEvidenceVerifier(),
         initial_snapshot=initial_snapshot,
     )
-
     result = asyncio.run(service.run())
+    assert result.outcome.status is CodingRunStatus.COMPLETED
+    assert call_count == 4
+    assert result.outcome.usage.abaqus_calls == process.calls == allowance
+    assert (request.workspace / "report.md").is_file()
 
-    assert result.outcome.status is CodingRunStatus.FAILED
-    assert result.outcome.failure_stage == "runtime_budget"
-    assert "not authorized" in result.outcome.summary
-    assert call_count == 1
-    persisted_history = ModelMessagesTypeAdapter.validate_json(
-        (request.state_dir / "history.json").read_bytes()
+    async def unresolved_effects():
+        store = create_step_store(request.state_dir)
+        runs = await store.list_runs(conversation_id=request.run_id)
+        return [
+            effect
+            for run in runs
+            for effect in await store.list_unresolved_tool_effects(run_id=run.run_id)
+        ]
+
+    assert asyncio.run(unresolved_effects()) == []
+
+
+def test_solver_limit_still_allows_extraction_and_completion(tmp_path: Path) -> None:
+    request, initial_snapshot = _request(
+        tmp_path, budget=CodingRunBudget(max_abaqus_calls=3, max_solver_calls=1)
     )
-    runtime_calls = [
-        part
-        for message in persisted_history
-        if isinstance(message, ModelResponse)
-        for part in message.parts
-        if isinstance(part, ToolCallPart) and part.tool_name == "run_cae_script"
-    ]
-    assert [part.tool_call_id for part in runtime_calls] == ["runtime-budget"]
+    (request.workspace / "mesh.inp").write_text("*HEADING\n", encoding="utf-8")
+    (request.workspace / "extract_results.py").write_text(
+        "print('fixture extraction')\n", encoding="utf-8"
+    )
+    calls = 0
+
+    class Process:
+        calls = 0
+
+        async def run(self, command, *, cwd, timeout_seconds):
+            self.calls += 1
+            if "python" in command:
+                (cwd / "results.json").write_text('{"value": 1}', encoding="utf-8")
+            return ProcessOutput(exit_code=0, stdout=b"done", stderr=b"")
+
+    def model(messages, info):
+        nonlocal calls
+        calls += 1
+        if calls <= 2:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "run_solver_job",
+                        {"job_name": "result", "input_file": "mesh.inp"},
+                    )
+                ]
+            )
+        if calls == 3:
+            returned = [
+                p
+                for m in messages
+                if isinstance(m, ModelRequest)
+                for p in m.parts
+                if isinstance(p, ToolReturnPart) and p.tool_name == "run_solver_job"
+            ][-1].content
+            assert returned["blocked"]
+            assert "solver invocation allowance" in returned["error"]
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "run_abaqus_python", {"script_path": "extract_results.py"}
+                    )
+                ]
+            )
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    _decision_tool(info, "ReadyForVerificationDecision"),
+                    {
+                        "summary": "Extracted existing result",
+                        "deliverables": [{"relative_path": "results.json"}],
+                    },
+                )
+            ]
+        )
+
+    process = Process()
+    deps = CodingAgentDependencies(
+        request=request,
+        runner=Abaqus2024Runner(
+            request.workspace, request.state_dir, process_strategy=process
+        ),
+    )
+    service = CodingRunService(
+        agent=create_abaqus_coding_agent(FunctionModel(model), request),
+        request=request,
+        dependencies=deps,
+        clarification_provider=ScriptedClarificationProvider({}),
+        verifier=ExecutionEvidenceVerifier(),
+        initial_snapshot=initial_snapshot,
+    )
+    result = asyncio.run(service.run())
+    assert result.outcome.status is CodingRunStatus.COMPLETED
+    assert result.outcome.usage.solver_calls == 1
+    assert result.outcome.usage.abaqus_calls == process.calls == 2
+    assert calls == 4
 
 
 def test_service_rejects_verification_with_unresolved_probe_state(
