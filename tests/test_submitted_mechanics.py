@@ -310,7 +310,7 @@ def test_refinement_has_no_node_count_or_reader_numerical_constraint():
         ("nafems-le7-axisymmetric-cylinder-sphere", "D=(r=1,z=1.4034 m)物理外表面"),
         (
             "nafems-le8-axisymmetric-crown-knuckle-shell",
-            "D=(r=0.150763,z=0.5505748 m)物理外表面",
+            "D为圆环过渡段中面上的测点",
         ),
         ("nafems-le9-branched-axisymmetric-shell", "不能混入球壳或下圆柱"),
         ("nafems-le10-thick-plate-pressure", "D=(2,0,0.6)处全局S22"),

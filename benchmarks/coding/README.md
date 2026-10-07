@@ -17,6 +17,11 @@
 `manifest.case_ids`是实际运行选择，`manifest.scoring_case_ids`冻结15题评分范围；报告按两者交集逐物理Case计数。
 自定义子集的`full_set_selected=false`，不能把子集结果称为完整15题成绩；VM184三工况仍只计一道题。
 
+LE8新题面按原题图中的36°定位过渡圆弧中面上的D截面，再取远离受压内腔一侧的外表面环向应力。
+角度从过渡圆弧圆心处的竖直向上半径朝球冠方向量取；坐标由圆心、半径和角度统一计算，不把D替换为两圆弧相切点。
+物理定位参照[NAFEMS LE8题图的Ansys文档复现](https://ansyshelp.ansys.com/public/Views/Secured/corp/v251/en/ans_vm/vmlsb2le8.html)，
+参考应力及容差不变；这是Case题面的澄清，v31执行和评分协议不变。新的`cases.json`、`goals.json`和源码摘要只进入新批次，历史题面与成绩不回填。
+
 真实Case由原生Dataset组织，task调用现有Service并返回验收证据；`TaskPassed(Evaluator)`与`SuiteSummary(ReportEvaluator)`产生结果。
 运行中由原生CaseLifecycle更新progress.json/progress.md，完整报告在调用结束时生成。
 独立report只读重建，不重跑业务；执行档案保留该次评分错误，不读取reviews文件或要求逐项人工确认。

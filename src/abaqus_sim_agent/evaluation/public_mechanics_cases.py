@@ -193,6 +193,9 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
     axial = "经典轴向杆关系；参数沿用 foundation_public_mechanics_v1，Abaqus 端到端补充 nu=0.3。"
     beam = "经典 Euler–Bernoulli 悬臂梁参考；参数沿用 foundation_public_mechanics_v1。"
     common: _Common = {"young": 200000.0, "poisson": 0.3, "length": 1000.0}
+    le8_sample_angle = 36.0
+    le8_sample_radius = 0.1875 - 0.0625 * math.sin(math.radians(le8_sample_angle))
+    le8_sample_z = 0.5 + 0.0625 * math.cos(math.radians(le8_sample_angle))
     return (
         MechanicsCase(
             **common,
@@ -900,8 +903,9 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             radius=0.25,
             crown_radius=0.25,
             knuckle_radius=0.0625,
-            sample_radius=0.150763,
-            sample_axial_position=0.5505748,
+            sample_angle_degrees=le8_sample_angle,
+            sample_radius=le8_sample_radius,
+            sample_axial_position=le8_sample_z,
             young=210.0e9,
             poisson=0.3,
             load=1.0e6,
@@ -934,11 +938,16 @@ def mechanics_cases() -> tuple[MechanicsCase, ...]:
             ),
             adaptation=(
                 "必须使用常规轴对称壳SAX1或SAX2表示球冠、圆环过渡段和圆柱连续中面；球冠圆心为(r=0,z=0.75 m)、半径0.25 m，圆环段圆心为(r=0.1875,z=0.5 m)、半径0.0625 m。"
-                "d_outer_s22求D=(r=0.150763,z=0.5505748 m)物理外表面的环向正应力，单位Pa；说明所选壳面与法向的对应。"
+                "D为圆环过渡段中面上的测点：以该圆弧圆心为顶点，从竖直向上的半径朝球冠方向（r减小的一侧）"
+                f"转过{le8_sample_angle:g}°定位。精确定义为r_D=0.1875-0.0625*sin(36°)、z_D=0.5+0.0625*cos(36°)，"
+                f"坐标约为D=(r={le8_sample_radius:.11f},z={le8_sample_z:.11f} m)，以角度和公式为准。"
+                "D坐标用于定位中面截面，不是厚度外表面上的空间坐标；取值位置以D为准，不以两段圆弧的相切点代替。"
+                "d_outer_s22求D截面远离受压内腔一侧（物理外表面）的环向正应力，即沿绕轴圆周方向的正应力，单位Pa；"
+                "根据实际单元法向选择对应的厚度截面点，并说明所选壳面与法向的对应。"
                 "reaction_z为底部节点RF2。"
             ),
             metrics={
-                "d_outer_s22": _m(94.5e6, "D点物理外表面环向正应力/Pa", 0.06),
+                "d_outer_s22": _m(94.5e6, "D截面物理外表面环向正应力/Pa", 0.06),
                 "reaction_z": _m(
                     -math.pi * 1.0e6 * 0.25**2,
                     "底部节点轴向RF2/N",

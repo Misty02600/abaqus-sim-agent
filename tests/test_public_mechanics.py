@@ -110,8 +110,11 @@ def test_twenty_distinct_cases_and_independent_reference_formulas():
     assert cases[16].metrics["reaction_z"].target == pytest.approx(-math.pi * 1.0e6)
     assert cases[17].case_id == "nafems-le8-axisymmetric-crown-knuckle-shell"
     assert cases[17].axisymmetric_shell_profile == "crown_knuckle_cylinder"
-    assert cases[17].sample_radius == pytest.approx(0.150763)
-    assert cases[17].sample_axial_position == pytest.approx(0.5505748)
+    assert cases[17].sample_angle_degrees == 36.0
+    assert cases[17].sample_radius == pytest.approx(0.15076342173172042, abs=1e-12)
+    assert cases[17].sample_axial_position == pytest.approx(
+        0.5505635621484342, abs=1e-12
+    )
     assert cases[17].metrics["d_outer_s22"].target == pytest.approx(94.5e6)
     assert cases[17].metrics["reaction_z"].target == pytest.approx(
         -math.pi * 1.0e6 * 0.25**2
@@ -128,6 +131,22 @@ def test_twenty_distinct_cases_and_independent_reference_formulas():
     assert cases[19].family == "thermal_solid"
     assert cases[19].thermal_expansion == pytest.approx(2.3e-4)
     assert cases[19].metrics["a_sigma_zz"].target == pytest.approx(-105.0e6)
+
+
+def test_le8_measurement_station_is_on_knuckle_mid_surface():
+    case = get_case("nafems-le8-axisymmetric-crown-knuckle-shell")
+    dr = 0.1875 - case.sample_radius
+    dz = case.sample_axial_position - 0.5
+    assert math.hypot(dr, dz) == pytest.approx(case.knuckle_radius, abs=1e-12)
+    assert math.degrees(math.atan2(dr, dz)) == pytest.approx(36.0, abs=1e-10)
+    assert (
+        math.dist((case.sample_radius, case.sample_axial_position), (0.15, 0.55))
+        > 0.0009
+    )
+    goal = case.goal()
+    assert "中面截面，不是厚度外表面上的空间坐标" in goal
+    assert "远离受压内腔一侧（物理外表面）" in goal
+    assert "94.5" not in goal
 
 
 def test_provenance_requires_current_inputs_and_order(tmp_path):
