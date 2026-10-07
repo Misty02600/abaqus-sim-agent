@@ -22,6 +22,8 @@ from pydantic_evals.reporting.analyses import ReportAnalysis, ScalarResult
 
 from abaqus_sim_agent.coding.persistence import write_text_atomic
 from abaqus_sim_agent.coding.run_lock import CodingRunFileLock
+from abaqus_sim_agent.evaluation.phoenix_experiments import phoenix_experiment
+from abaqus_sim_agent.evaluation.phoenix_service import evaluation_telemetry_session
 from abaqus_sim_agent.evaluation.task_baseline import (
     HumanReview,
     TaskTrialReview,
@@ -38,7 +40,6 @@ from abaqus_sim_agent.evaluation.telemetry import (
 from abaqus_sim_agent.telemetry import (
     add_phoenix_argument,
     telemetry_metadata,
-    telemetry_session,
 )
 
 
@@ -572,97 +573,130 @@ async def _run_batch(
                     batch_task.cancel()
             raise
 
-    with CodingRunFileLock(root):
-        save_progress()
-        write_text_atomic(
-            root / "manifest.json",
-            json.dumps(
-                {
-                    "purpose": purpose,
-                    "batch_id": batch_id,
-                    "slots": slots,
-                    "max_concurrency": max_concurrency,
-                    "pydantic_evals_version": version("pydantic-evals"),
-                    "telemetry": telemetry_metadata(),
-                    (
-                        "effective_configuration"
-                        if live
-                        else "target_configuration_not_executed"
-                    ): baseline_execution_config().model_dump(mode="json"),
-                    "case_candidates": [
-                        c.model_dump(mode="json")
-                        for c in (
-                            simple_task_candidates() if pair else task_candidates()
-                        )
-                        if c.task_id in {slot.split("/")[0] for slot in slots}
-                    ],
-                    "runner_sha256": hashlib.sha256(
-                        await asyncio.to_thread(Path(__file__).read_bytes)
-                    ).hexdigest(),
-                    "pilot": manifest_extra,
-                },
-                ensure_ascii=False,
-                indent=2,
-            ),
-        )
-        try:
-            for offset in range(0, len(slots), 4):
-                if stopped:
-                    break
-                dataset = Dataset(
-                    name=f"offline-block-{offset // 4 + 1}",
-                    cases=[
-                        Case(name=slot, inputs=_context(root, slot))
-                        for slot in slots[offset : offset + 4]
-                    ],
-                    report_evaluators=[PlannedSummary()],
-                )
-                framework_report = await dataset.evaluate(
-                    invoke,
-                    max_concurrency=max_concurrency,
-                    repeat=1,
-                    retry_task=None,
-                    retry_evaluators=None,
-                    lifecycle=Lifecycle,
-                    progress=False,
-                    metadata={
-                        "batch_id": batch_id,
-                        "purpose": purpose,
-                        "telemetry": telemetry_metadata(),
-                    },
-                )
-                await publish_evaluation_feedback(framework_report)
-                if framework_report.report_evaluator_failures:
-                    raise RuntimeError(
-                        "offline report evaluator failed; preserve original trial results"
-                    )
-                write_text_atomic(
-                    root / f"block-{offset // 4 + 1}-analyses.json",
-                    json.dumps(
-                        [a.model_dump(mode="json") for a in framework_report.analyses],
-                        indent=2,
+    candidates = simple_task_candidates() if pair else task_candidates()
+    candidates_by_id = {candidate.task_id: candidate for candidate in candidates}
+    async with phoenix_experiment(
+        root=root,
+        family="task-baseline",
+        examples={
+            slot: {
+                "input": {
+                    "slot": slot,
+                    "task": candidates_by_id[slot.split("/")[0]].model_dump(
+                        mode="json"
                     ),
-                )
-            status = "stopped" if stopped else "finished"
-        except BaseException:
-            status = "interrupted"
-            raise
-        finally:
-            for slot, row in tuple(records.items()):
-                if row.terminal == "running":
-                    row = row.model_copy(
-                        update={
-                            "terminal": "interrupted",
-                            "cause": "unknown",
-                            "error_type": "BatchInterrupted",
-                        }
-                    )
-                    write_text_atomic(
-                        _context(root, slot).state_dir / "trial-result.json", _json(row)
-                    )
-                    records[slot] = row
+                },
+                "metadata": {"purpose": purpose},
+            }
+            for slot in slots
+        },
+        name=f"{purpose}-{batch_id}",
+        invocation_id=batch_id,
+        metadata={
+            "batch_id": batch_id,
+            "purpose": purpose,
+            "slots": slots,
+            "max_concurrency": max_concurrency,
+            "scope": "task observations; post-run verification remains in local reports",
+        },
+    ) as publication:
+        with CodingRunFileLock(root):
             save_progress()
-            _write_summary(root, snapshot())
+            write_text_atomic(
+                root / "manifest.json",
+                json.dumps(
+                    {
+                        "purpose": purpose,
+                        "batch_id": batch_id,
+                        "slots": slots,
+                        "max_concurrency": max_concurrency,
+                        "pydantic_evals_version": version("pydantic-evals"),
+                        "telemetry": telemetry_metadata(),
+                        (
+                            "effective_configuration"
+                            if live
+                            else "target_configuration_not_executed"
+                        ): baseline_execution_config().model_dump(mode="json"),
+                        "case_candidates": [
+                            c.model_dump(mode="json")
+                            for c in (
+                                simple_task_candidates() if pair else task_candidates()
+                            )
+                            if c.task_id in {slot.split("/")[0] for slot in slots}
+                        ],
+                        "runner_sha256": hashlib.sha256(
+                            await asyncio.to_thread(Path(__file__).read_bytes)
+                        ).hexdigest(),
+                        "pilot": manifest_extra,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+            )
+            try:
+                for offset in range(0, len(slots), 4):
+                    if stopped:
+                        break
+                    dataset = Dataset(
+                        name=f"offline-block-{offset // 4 + 1}",
+                        cases=[
+                            Case(name=slot, inputs=_context(root, slot))
+                            for slot in slots[offset : offset + 4]
+                        ],
+                        report_evaluators=[PlannedSummary()],
+                    )
+                    framework_report = await dataset.evaluate(
+                        invoke,
+                        max_concurrency=max_concurrency,
+                        repeat=1,
+                        retry_task=None,
+                        retry_evaluators=None,
+                        lifecycle=publication.lifecycle(Lifecycle)
+                        if publication
+                        else Lifecycle,
+                        progress=False,
+                        metadata={
+                            "batch_id": batch_id,
+                            "purpose": purpose,
+                            "telemetry": telemetry_metadata(),
+                        },
+                    )
+                    await publish_evaluation_feedback(framework_report)
+                    if framework_report.report_evaluator_failures:
+                        raise RuntimeError(
+                            "offline report evaluator failed; preserve original trial results"
+                        )
+                    write_text_atomic(
+                        root / f"block-{offset // 4 + 1}-analyses.json",
+                        json.dumps(
+                            [
+                                a.model_dump(mode="json")
+                                for a in framework_report.analyses
+                            ],
+                            indent=2,
+                        ),
+                    )
+                status = "stopped" if stopped else "finished"
+            except BaseException:
+                status = "interrupted"
+                raise
+            finally:
+                for slot, row in tuple(records.items()):
+                    if row.terminal == "running":
+                        row = row.model_copy(
+                            update={
+                                "terminal": "interrupted",
+                                "cause": "unknown",
+                                "error_type": "BatchInterrupted",
+                            }
+                        )
+                        write_text_atomic(
+                            _context(root, slot).state_dir / "trial-result.json",
+                            _json(row),
+                        )
+                        records[slot] = row
+                save_progress()
+                _write_summary(root, snapshot())
     return _summary(root, snapshot())
 
 
@@ -720,7 +754,7 @@ def main() -> None:
     parser.add_argument("--review-file", type=Path)
     add_phoenix_argument(parser)
     args = parser.parse_args()
-    with telemetry_session(args.phoenix, environment="evaluation"):
+    with evaluation_telemetry_session(args.phoenix):
         if args.mode == "review":
             if args.slot is None or args.review_file is None:
                 parser.error(

@@ -47,7 +47,11 @@ from abaqus_sim_agent.evaluation.mechanics_submissions import (
     SUBMISSION_POLICY,
     MechanicsSubmissionVerifier,
 )
-from abaqus_sim_agent.evaluation.mechanics_telemetry import trace_attempt
+from abaqus_sim_agent.evaluation.mechanics_telemetry import (
+    associate_case_trace,
+    trace_attempt,
+)
+from abaqus_sim_agent.evaluation.phoenix_experiments import phoenix_experiment
 from abaqus_sim_agent.evaluation.public_mechanics_cases import (
     BASIC_LINEAR_CASE_IDS,
     PUBLIC_MECHANICS_PROTOCOL,
@@ -679,124 +683,160 @@ async def run(root: Path, action="run", case_ids=None):
         catalog = ApiCatalog.open(root / "catalog")
         task_concurrency = manifest["max_task_concurrency"]
         runtime_gate = asyncio.Semaphore(manifest["max_runtime_concurrency"])
-        if action == "run":
-            _write(
-                root / "started.json",
-                {
-                    "at": datetime.now(UTC).isoformat(),
-                    "seal_sha256": file_digest(root / "seal.json"),
-                },
-            )
-        append_event(
-            root / "control/events.jsonl",
-            "batch_started",
-            action=action,
-            cases=names,
-            pid=os.getpid(),
-        )
         cases = load_frozen_cases(root, manifest["case_ids"])
         by_id = {case.case_id: case for case in cases}
         selected = set(names)
         scoring_ids = tuple(manifest["scoring_case_ids"])
         invocation_id = uuid4().hex
-        native = None
-        batch_task = asyncio.current_task()
+        async with phoenix_experiment(
+            root=root,
+            family="public-mechanics",
+            examples={
+                case.case_id: {
+                    "input": {"goal": case.goal()},
+                    "metadata": {
+                        **case.metadata.model_dump(mode="json"),
+                        "protocol": manifest["version"],
+                        "included_in_score": case.case_id in scoring_ids,
+                    },
+                }
+                for case in cases
+            },
+            name=f"{manifest['batch_id']}-{action}-{invocation_id}",
+            invocation_id=invocation_id,
+            metadata={
+                "batch_id": manifest["batch_id"],
+                "protocol": manifest["version"],
+                "action": action,
+                "selected_case_ids": names,
+                "scoring_case_ids": list(scoring_ids),
+                "execution_config": manifest.get("execution_config"),
+                "source_seal_sha256": file_digest(root / "seal.json"),
+                "summary_authority": "local report; missing examples are not passes",
+            },
+        ) as publication:
+            if action == "run":
+                _write(
+                    root / "started.json",
+                    {
+                        "at": datetime.now(UTC).isoformat(),
+                        "seal_sha256": file_digest(root / "seal.json"),
+                    },
+                )
+            append_event(
+                root / "control/events.jsonl",
+                "batch_started",
+                action=action,
+                cases=names,
+                pid=os.getpid(),
+            )
+            native = None
+            batch_task = asyncio.current_task()
 
-        async def execute_or_observe(case_id: str):
-            # A queued case can acquire its slot before cancellation reaches it.
-            if batch_task is not None and batch_task.cancelling():
-                raise asyncio.CancelledError
-            execute = case_id in selected
-            if execute:
+            async def execute_or_observe(case_id: str):
+                # A queued case can acquire its slot before cancellation reaches it.
+                if batch_task is not None and batch_task.cancelling():
+                    raise asyncio.CancelledError
+                execute = case_id in selected
+                if execute:
+                    try:
+                        verify_binding(root)
+                        print("START " + case_id, flush=True)
+                        await _run_case(
+                            root,
+                            case_id,
+                            resume=action == "resume",
+                            key=key,
+                            catalog=catalog,
+                            runtime_gate=runtime_gate,
+                        )
+                    except asyncio.CancelledError:
+                        # Propagate child cancellation to the owner: Evals 2.51 must not treat a cancelled child as a result.
+                        if batch_task is not None and not batch_task.cancelling():
+                            batch_task.cancel()
+                        raise
+                    except Exception as exc:
+                        # Keep exceptions outside the Service boundary visible without leaking arbitrary details.
+                        raise RuntimeError(
+                            f"Case execution failed: {type(exc).__name__}"
+                        ) from None
                 try:
-                    verify_binding(root)
-                    print("START " + case_id, flush=True)
-                    await _run_case(
-                        root,
-                        case_id,
-                        resume=action == "resume",
-                        key=key,
-                        catalog=catalog,
-                        runtime_gate=runtime_gate,
-                    )
-                except asyncio.CancelledError:
-                    # Propagate child cancellation to the owner: Evals 2.51 must not treat a cancelled child as a result.
-                    if batch_task is not None and not batch_task.cancelling():
-                        batch_task.cancel()
-                    raise
+                    observation = read_case_observation(root, by_id[case_id], manifest)
                 except Exception as exc:
-                    # Keep exceptions outside the Service boundary visible without leaking arbitrary details.
                     raise RuntimeError(
-                        f"Case execution failed: {type(exc).__name__}"
+                        f"Case evidence failed: {type(exc).__name__}"
                     ) from None
-            try:
-                observation = read_case_observation(root, by_id[case_id], manifest)
-            except Exception as exc:
-                raise RuntimeError(
-                    f"Case evidence failed: {type(exc).__name__}"
-                ) from None
-            if execute:
-                print("END " + case_id + " " + observation.status, flush=True)
-            return record_observation(
-                observation,
-                included_in_score=case_id in scoring_ids,
-                duration_scope="case_execution_and_observation"
-                if execute
-                else "saved_result_projection_only",
-            )
+                if execute:
+                    print("END " + case_id + " " + observation.status, flush=True)
+                return record_observation(
+                    observation,
+                    included_in_score=case_id in scoring_ids,
+                    duration_scope="case_execution_and_observation"
+                    if execute
+                    else "saved_result_projection_only",
+                )
 
-        try:
-            dataset = build_mechanics_dataset(
-                cases, scoring_ids, name="basic-linear-case-execution"
-            )
-            native = await dataset.evaluate(
-                execute_or_observe,
-                name=f"{manifest['batch_id']}-{action}-{invocation_id}",
-                max_concurrency=task_concurrency,
-                progress=False,
-                retry_task=None,
-                retry_evaluators=None,
-                repeat=1,
-                lifecycle=progress_lifecycle(
+            try:
+                dataset = build_mechanics_dataset(
+                    cases, scoring_ids, name="basic-linear-case-execution"
+                )
+                lifecycle = progress_lifecycle(
                     root,
                     tuple(by_id),
                     tuple(names),
                     invocation_id=invocation_id,
                     action=action,
-                ),
-                metadata={
-                    "protocol": manifest["version"],
-                    "root": str(root),
-                    "action": action,
-                    "selected_case_ids": names,
-                    "scoring_case_ids": list(scoring_ids),
-                    "invocation_id": invocation_id,
-                },
-            )
-            # Preserve this invocation's original task/evaluator failures even if later report rebuilding changes views.
-            save_json(
-                root / "control" / f"evaluation-{invocation_id}.json",
-                json.loads(EvaluationReportAdapter.dump_json(native)),
-            )
-        finally:
-            unchanged = False
-            try:
-                try:
-                    verify_binding(root)
-                    unchanged = True
-                finally:
-                    await build_report_async(
-                        root,
-                        bindings_unchanged=unchanged,
-                        native_report=native if unchanged else None,
-                    )
-            finally:
-                append_event(
-                    root / "control/events.jsonl",
-                    "batch_stopped",
-                    action=action,
-                    evaluation_invocation_id=invocation_id,
                 )
+                if publication is not None:
+                    lifecycle = publication.lifecycle(
+                        lifecycle,
+                        selected=selected,
+                        link_trace=lambda result: associate_case_trace(
+                            root, manifest["batch_id"], result
+                        ),
+                    )
+                native = await dataset.evaluate(
+                    execute_or_observe,
+                    name=f"{manifest['batch_id']}-{action}-{invocation_id}",
+                    max_concurrency=task_concurrency,
+                    progress=False,
+                    retry_task=None,
+                    retry_evaluators=None,
+                    repeat=1,
+                    lifecycle=lifecycle,
+                    metadata={
+                        "protocol": manifest["version"],
+                        "root": str(root),
+                        "action": action,
+                        "selected_case_ids": names,
+                        "scoring_case_ids": list(scoring_ids),
+                        "invocation_id": invocation_id,
+                    },
+                )
+                # Preserve this invocation's original task/evaluator failures even if later report rebuilding changes views.
+                save_json(
+                    root / "control" / f"evaluation-{invocation_id}.json",
+                    json.loads(EvaluationReportAdapter.dump_json(native)),
+                )
+            finally:
+                unchanged = False
+                try:
+                    try:
+                        verify_binding(root)
+                        unchanged = True
+                    finally:
+                        await build_report_async(
+                            root,
+                            bindings_unchanged=unchanged,
+                            native_report=native if unchanged else None,
+                        )
+                finally:
+                    append_event(
+                        root / "control/events.jsonl",
+                        "batch_stopped",
+                        action=action,
+                        evaluation_invocation_id=invocation_id,
+                    )
 
 
 def report(root: Path):

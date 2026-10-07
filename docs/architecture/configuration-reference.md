@@ -192,10 +192,11 @@ model provider、model name、HTTP retries。二者省略表示不改，显式 n
 |---|---|---|
 | Web `port` / `--port` | 8765，整数参数；宿主绑定 `127.0.0.1` | 不进会话；当前由 server/socket 检查绑定可用性，不宣称 CLI 已预检整个端口范围 |
 | Web `no_open` / `--no-open` | False，服务 started 后打开普通本机 URL | 不进会话；每次启动独立选择 |
-| `phoenix` / `--phoenix` | False，必须显式启用；公开力学支持run/continue/resume/report/launch | 不从项目偏好自动开启，不进冻结任务配置；launch传给worker，恢复不据旧记录启用；记录和评分关联见[力学报告](../../benchmarks/coding/result_reporting.md#phoenix追踪与评分) |
+| `phoenix` / `--phoenix` | False，必须显式启用；公开力学支持run/continue/resume/report | 不进冻结任务配置，只作用于本次进程，恢复不据旧记录启用。当前测评CLI直接启动6006服务，就绪后登记并执行，结束后先关闭导出再关闭本次服务、保留默认数据库；端口占用不复用。普通CLI/Web只连接已有服务。写入失败保留结果并在收尾报错；report不新增实验，回执不用于恢复或补传。见[力学报告](../../benchmarks/coding/result_reporting.md#phoenix追踪与评分) |
 | `DEEPSEEK_API_KEY` | 无；当前进程环境 | 官方网关凭据，捕获后剥离继承环境；不写入偏好或 request/launch |
 | `OPENCODE_API_KEY` | 无；当前进程环境 | Go/Zen 凭据；Web 按会话 provider 选取，缺失拒绝，不回退到别的模型 |
-| `PHOENIX_COLLECTOR_ENDPOINT` | `http://127.0.0.1:6006`；当前进程环境 | 只接受无鉴权本机 HTTP 地址，可指定端口；`--phoenix` 启用时校验，不进会话配置 |
+| `PHOENIX_COLLECTOR_ENDPOINT` | 普通产品缺省 `http://127.0.0.1:6006`；显式测评由程序临时固定为该地址 | 普通产品允许本机HTTP端口覆盖；测评自动模式忽略原覆盖，收尾恢复原环境。不进会话或冻结任务配置 |
+| `PHOENIX_WORKING_DIR`、`PHOENIX_SQL_DATABASE_URL`、服务端端口等覆盖 | 不是项目的自动测评配置输入 | 新服务进程不继承Phoenix服务端覆盖，固定使用原生6006和`~/.phoenix/phoenix.db`；保留同一数据库，不迁移旧目录。用户独立启动的服务遵循Phoenix自身配置 |
 | `PHOENIX_API_KEY`、`PHOENIX_CLIENT_HEADERS`、`OTEL_EXPORTER_OTLP*HEADERS` | 不作为产品配置输入 | 本机模式不需要密钥；清除以避免子进程继承 |
 | `OTEL_EXPORTER_OTLP*ENDPOINT`、`OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_*` | 不作为产品配置输入 | SDK 会话忽略其他导出地址及请求头采集设置，退出时恢复；不发现工作区 `.env.phoenix` |
 

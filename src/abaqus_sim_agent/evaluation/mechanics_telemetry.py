@@ -10,7 +10,7 @@ from typing import Annotated, Literal
 
 from opentelemetry import trace
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic_evals.reporting import EvaluationReport
+from pydantic_evals.reporting import EvaluationReport, ReportCase, ReportCaseFailure
 
 from abaqus_sim_agent import telemetry
 from abaqus_sim_agent.coding.persistence import write_text_atomic
@@ -137,29 +137,35 @@ def associate_report_traces(
         需求审查可更新；运行、验收和 attempt 字节变化则拒绝沿用旧关联。
     """
     for case in report.cases:
-        try:
-            state = root / case.name / "state"
-            attempts = sorted((state / "attempts").glob("*.json"))
-            if not attempts:
-                continue
-            latest = attempts[-1]
-            path = root / "telemetry" / case.name / latest.name
-            if not path.is_file():
-                continue
-            link = AttemptTrace.model_validate_json(path.read_bytes())
-            endpoint = telemetry.collector_endpoint()
-            if (
-                int(link.trace_id, 16) == 0
-                or int(link.span_id, 16) == 0
-                or link.batch_id != batch_id
-                or link.case_id != case.name
-                or link.attempt_id != latest.stem
-                or link.attempt_sha256 != _digest(latest)
-                or link.state_sha256 != _state_hashes(state)
-                or (endpoint is not None and link.endpoint != endpoint)
-            ):
-                continue
-            case.trace_id = link.trace_id
-            case.span_id = link.span_id
-        except (OSError, ValueError, TypeError):
-            _logger.warning("Could not associate mechanics report with its trace")
+        associate_case_trace(root, batch_id, case)
+
+
+def associate_case_trace(
+    root: Path, batch_id: str, case: ReportCase | ReportCaseFailure
+) -> None:
+    try:
+        state = root / case.name / "state"
+        attempts = sorted((state / "attempts").glob("*.json"))
+        if not attempts:
+            return
+        latest = attempts[-1]
+        path = root / "telemetry" / case.name / latest.name
+        if not path.is_file():
+            return
+        link = AttemptTrace.model_validate_json(path.read_bytes())
+        endpoint = telemetry.collector_endpoint()
+        if (
+            int(link.trace_id, 16) == 0
+            or int(link.span_id, 16) == 0
+            or link.batch_id != batch_id
+            or link.case_id != case.name
+            or link.attempt_id != latest.stem
+            or link.attempt_sha256 != _digest(latest)
+            or link.state_sha256 != _state_hashes(state)
+            or (endpoint is not None and link.endpoint != endpoint)
+        ):
+            return
+        case.trace_id = link.trace_id
+        case.span_id = link.span_id
+    except (OSError, ValueError, TypeError):
+        _logger.warning("Could not associate mechanics report with its trace")

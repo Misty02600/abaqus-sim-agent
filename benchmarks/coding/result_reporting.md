@@ -188,7 +188,7 @@ teardown直接使用原生ReportCase/ReportCaseFailure及已有判定更新`prog
 
 ## Phoenix追踪与评分
 
-新准备批次的冻结 worker 支持以下显式入口；先按[README](../../README.md#按需查看本地-phoenix-trace)启动本机服务：
+新准备批次的冻结 worker 支持以下显式入口；加上 `--phoenix` 后由命令自动启动并收尾本次服务，无需提前手动启动。使用说明见[README](../../README.md#按需查看本地-phoenix-trace)：
 
 ```powershell
 uv run --no-sync python D:/abaqus-runs/my-batch/worker.py run --root D:/abaqus-runs/my-batch --phoenix
@@ -199,6 +199,11 @@ uv run --no-sync python D:/abaqus-runs/my-batch/worker.py report --root D:/abaqu
 `continue`同样支持，追踪在直接运行的worker中初始化。`prepare/preflight/doctor`不接受该开关。
 开关属于本次宿主命令，不写入冻结任务配置，恢复不会根据旧追踪记录自动开启。
 旧冻结worker不因当前代码更新获得此能力，也不修改旧seal或报告。
+
+当前worker在显式启用时直接启动本次Phoenix服务，固定使用本机6006和原生默认`~/.phoenix/phoenix.db`。
+端口被占用就报错，不复用或停止原服务；无需手动设置PHOENIX_COLLECTOR_ENDPOINT或工作目录。
+任务与记录收尾后调用官方close_app关闭本次服务，数据库保留。普通CLI/Web不因此自动启动服务；旧16007验证库不搬迁。
+完整生命周期及隔离服务依赖见[ADR-0051](../../docs/adr/0051-manage-phoenix-lifecycle-for-evaluation.md)。
 
 每次实际`_run_case`运行建立独立`evaluation.case` span，记录批次、Case、attempt及已有run ID；
 `session.id`沿用run ID。并发Case互相隔离；允许的resume另开追踪，原attempt保留。
@@ -214,9 +219,26 @@ resume_state和验收事件文件的摘要。这是可缺失的观测关联，�
 同一条annotation，重复生成报告不会新增一次运行。对应证据或数值缺失时，受管评分字段更新为unknown，
 不遗留旧的通过/数值副本；原始报告不会为了上传而补造断言。未开启`--phoenix`时只生成本地报告。
 
-服务不可用、上传失败或关联文件写入失败不改变outcome及计分；没有可靠补传队列。服务恢复后可显式重建报告，
+原有span annotation上传或关联文件写入失败不改变outcome及计分；没有可靠补传队列。服务恢复后可显式重建报告，
 但实际运行的span若未送达，不保证仅重传评分就能恢复追踪。Phoenix里的旧attempt评分仍表示其当时状态，
 不能按所有attempt的annotation数量计算物理题通过率。
+
+当前worker的run/continue/resume在显式启用Phoenix后，会在开始任务前自动登记题集和原生实验。题集只含公开goal、
+Case元数据和计分范围，以内容摘要复用并绑定平台版本；同名题集被改动时拒绝沿用。每次invocation建立独立实验，
+并在原CaseLifecycle完成后立即写入本次选择执行的Case输出、断言、数值、标签和评分异常。未选择题目的只读投影
+不创建新的平台run；report只重建原本地报告与评分注释，不新增实验或补造历史执行。
+
+首次与最终提交成绩分别以assertion.first_submission_pass与assertion.final_submission_pass记录，其他字段带
+assertion/score/label前缀以避免同名冲突；评分器异常单独记录，不能记成答案错误。平台run耗时覆盖Case执行与评分，
+输出中保留原metrics，累计Agent活动时间仍以本地指标为准。实验元数据保存batch、invocation动作、选题范围、模型配置和seal摘要；
+网页均值不替代本地完整题目分母。每次invocation的观测回执为telemetry/experiments/<invocation_id>.json。
+
+初始登记失败时不启动任何Case；中途写入失败会明确记录并停止本次后续实验写入，但不会重试任务或修改本地outcome。
+原Evals流程收尾、保存本地报告后以PhoenixRecordingError报错；业务异常和取消优先传播。没有自动补传或平台恢复系统。
+Trace仍由官方SDK单独导出，实验记录成功不等于所有span均已接收。实现边界见[ADR-0050](../../docs/adr/0050-record-evals-as-phoenix-experiments.md)。
+
+[2026-10-06本机原生实验验证](../observability/phoenix_experiments_20261006.json)覆盖题集复用、两轮独立四题实验、
+评分异常和Trace跳转，并完成浏览器并排比较；样例均为确定性离线任务，不是力学成绩。
 
 以下接收验证与v26工程验证使用当时的人工审查计分语义；v28不沿用该审查门槛，历史证据不回填。
 既有[2026-09-29本机接收验证](../observability/public_mechanics_phoenix_20260929.json)通过实际`_run_case`入口与报告桥接，

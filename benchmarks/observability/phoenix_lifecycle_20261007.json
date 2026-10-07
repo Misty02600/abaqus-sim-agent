@@ -1,0 +1,43 @@
+{
+  "checked_at": "2026-10-07T03:45:53.290685+00:00",
+  "kind": "actual_local_phoenix_lifecycle_with_offline_fixture_evaluation",
+  "server_version": "20.16.0",
+  "endpoint": "http://127.0.0.1:6006",
+  "database": "C:\\Users\\Administrator\\.phoenix\\phoenix.db",
+  "normal_evaluation_exit": 0,
+  "cases": 12,
+  "database_preserved_after_normal_exit": true,
+  "readback_after_service_restart": true,
+  "occupied_port_rejected_without_stopping_existing_service": true,
+  "cancel_propagated_and_service_closed": true,
+  "port_6006_released": true,
+  "legacy_16007_service_unchanged": true,
+  "database_counts": {
+    "datasets": 1,
+    "experiments": 1,
+    "experiment_runs": 12
+  },
+  "real_model": false,
+  "abaqus": false,
+  "source_sha256": {
+    "src\\abaqus_sim_agent\\evaluation\\phoenix_service.py": "e9a9939fa1f330c2377fa9fad6405ce717e1f6c61dc83525f02c69c402d60614",
+    "src\\abaqus_sim_agent\\evaluation\\_phoenix_server_host.py": "817e918ec8a22a942e9f919d852eef88e2f3f827cc2997bebca758d615a3945c",
+    "src/abaqus_sim_agent/evaluation/public_mechanics_cli.py": "c144c75636af0ddd075280dd0d2b6127c66e09c45a0c1f1488902b10af174188",
+    "src/abaqus_sim_agent/evaluation/task_baseline_runner.py": "0139f7148f0ffdc1c482ae147f6492c8ff800b4d1b9de3b8bf477939282faf28",
+    "src/abaqus_sim_agent/evaluation/task_baseline_pilot.py": "2741f755a807bd35ec3ff80e72dfc15c7caaf2cc04e37ae8f31ddb7a8fb567d2",
+    "src/abaqus_sim_agent/evaluation/simple_modeling_batch.py": "07cc63b0fb794b23b81f124cd35bb2048e6d7a4bc28ebe5c488591029f34e102"
+  },
+  "source_head": "3ed4291c3781b6904c768b16de265a23750a7b42",
+  "dirty_worktree": true,
+  "offline_tests": {
+    "passed": 136,
+    "final_lifecycle_tests_passed": 16,
+    "command": "python -m pytest -q tests/test_phoenix_service.py tests/test_phoenix_experiments.py tests/test_mechanics_telemetry.py tests/test_task_baseline.py tests/test_task_baseline_pilot.py tests/test_simple_modeling_batch.py tests/test_telemetry.py"
+  },
+  "static_checks": [
+    "ruff check",
+    "ruff format --check",
+    "basedpyright changed modules",
+    "git diff --check"
+  ]
+}

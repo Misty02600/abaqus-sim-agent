@@ -24,6 +24,57 @@ from abaqus_sim_agent.evaluation.public_mechanics_control import (
     save_json,
 )
 from abaqus_sim_agent.verification.public_mechanics_run import PublicMechanicsAttempt
+from tests.support.phoenix import PhoenixStub
+
+
+@pytest.mark.asyncio
+async def test_native_experiment_preflight_precedes_case_start(
+    tmp_path, mechanics_runtime, traces, monkeypatch
+):
+    from abaqus_sim_agent.evaluation.phoenix_experiments import PhoenixRecordingError
+
+    configure_suite(tmp_path, monkeypatch)
+    api = PhoenixStub()
+    api.unavailable = True
+    monkeypatch.setattr(phoenix.client, "AsyncClient", lambda **kw: api)
+    with pytest.raises(PhoenixRecordingError, match="no task was started"):
+        await suite.run(tmp_path)
+    assert not (tmp_path / "started.json").exists()
+    assert not list(tmp_path.glob("*/state/attempts/*.json"))
+
+
+@pytest.mark.asyncio
+async def test_suite_native_results_have_actual_traces_and_report_is_read_only(
+    tmp_path, mechanics_runtime, traces, monkeypatch
+):
+    names = configure_suite(tmp_path, monkeypatch, concurrency=2)
+    api = PhoenixStub()
+    monkeypatch.setattr(phoenix.client, "AsyncClient", lambda **kw: api)
+    await suite.run(tmp_path)
+    assert len(api.runs) == len(names)
+    assert all(row["trace_id"] for row in api.runs)
+    assert any(row["name"] == "assertion.task_pass" for row in api.evaluations)
+    before = (len(api.created_experiments), len(api.runs), len(api.evaluations))
+    await build_report_async(tmp_path, bindings_unchanged=True)
+    assert (len(api.created_experiments), len(api.runs), len(api.evaluations)) == before
+
+
+@pytest.mark.asyncio
+async def test_suite_native_write_failure_keeps_every_local_result(
+    tmp_path, mechanics_runtime, traces, monkeypatch
+):
+    from abaqus_sim_agent.evaluation.phoenix_experiments import PhoenixRecordingError
+
+    names = configure_suite(tmp_path, monkeypatch)
+    api = PhoenixStub()
+    api.fail_recording = True
+    monkeypatch.setattr(phoenix.client, "AsyncClient", lambda **kw: api)
+    with pytest.raises(PhoenixRecordingError, match="local results are retained"):
+        await suite.run(tmp_path)
+    assert api.run_attempts == 1
+    assert all((tmp_path / name / "state/outcome.json").exists() for name in names)
+    assert (tmp_path / "pydantic-evals-report.json").exists()
+    assert (tmp_path / "report.md").exists()
 
 
 @pytest.fixture
@@ -39,6 +90,8 @@ def traces(monkeypatch):
 
 @pytest.fixture
 def mechanics_runtime(tmp_path, monkeypatch):
+    experiment_api = PhoenixStub()
+    monkeypatch.setattr(phoenix.client, "AsyncClient", lambda **kw: experiment_api)
     names = list(BASIC_LINEAR_CASE_IDS[:2])
     save_json(
         tmp_path / "manifest.json",

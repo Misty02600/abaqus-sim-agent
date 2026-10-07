@@ -185,7 +185,8 @@ Catalog 随程序包安装，显式文档索引仍是外部知识数据，二者
 ### 可选启用的遥测
 
 CLI/Web 和首轮评测入口使用 `--phoenix` 启动一次官方 Phoenix SDK 会话。默认关闭；只向无鉴权本机 HTTP
-服务发送，默认 `127.0.0.1:6006`，可用官方 `PHOENIX_COLLECTOR_ENDPOINT` 改本机端口。不读取工作区
+服务发送。普通产品默认连接 `127.0.0.1:6006`，可用 `PHOENIX_COLLECTOR_ENDPOINT` 改本机端口；测评CLI在显式启用时
+直接启动本次服务并固定使用6006，结束后关闭服务，不复用现有进程。服务启动或端口检查失败时不执行任务。不读取工作区
 `.env.phoenix` 或项目偏好；入口负责配置、跨线程上下文传播及有界关闭，每个 run 不重配全局 SDK。
 完整 Logfire SDK、旧启用参数和云端 Token 接线已移除；Pydantic 上游仍间接依赖 `logfire-api` 空操作 shim。
 
@@ -196,13 +197,28 @@ submit/wait 分开记录，等待后开启新工作段，不恢复跨进程 span
 
 Evals 2.47 的内置 Case spans 依赖完整 Logfire SDK，移除后由公开 `CaseLifecycle` 建立每次 Case 的
 `evaluation.case` span，并填回 `ReportCase` 的 trace/span ID；原 span_tree evaluator 继续使用同一
-provider。评测专用 Phoenix client 将已有 assertion/score/label 复制为 span annotation，发送失败只警告。
-Case、oracle、gate 和本地报告的所有权不变；未迁移 Dataset/Experiment，也不自动修改历史结果。
+provider。评测专用 Phoenix client 继续将已有 assertion/score/label 复制为 span annotation。
+公开力学 run/continue/resume 和任务基线共享入口在显式启用后，还会先通过官方 client 自动创建或复用题集、
+创建本次原生 Experiment，再由原 Evals 执行任务。题集按公开输入和元数据内容摘要复用，绑定实际平台版本；
+同名题集内容变化时拒绝运行，不上传隐藏参考答案。每次运行或恢复拥有独立实验，只读 report 不创建实验。
 
-Phoenix 服务独立运行，SQLite 与追踪数据由它保存，产品包不内嵌服务或启动服务。详细内容可含消息、脚本和
+每题在原生命周期保存本地证据后，上传输出、评分、异常和已有 Trace 关联；本次未执行的结果投影不作为新运行。
+服务不可用或初始登记失败时，不启动模型或 Abaqus；中途写入失败保留业务运行与本地结果，收尾后明确报错。
+观测错误不覆盖原业务异常或取消。`telemetry/experiments/<invocation_id>.json` 保存记录回执，不参与恢复，
+不是补传队列。Case、oracle、gate 和本地报告的所有权不变；平台默认平均值不替代计划题目分母。
+任务基线记录任务阶段观察；后置独立验收和人工审查仍属于原本地报告。见[ADR-0050](../adr/0050-record-evals-as-phoenix-experiments.md)。
+
+Phoenix 服务在独立uv工具环境运行，服务端版本固定20.16.0；普通产品不自动启动，测评CLI使用
+[专用生命周期](../../src/abaqus_sim_agent/evaluation/phoenix_service.py)直接启动并等待本次宿主的就绪信号。
+宿主调用官方 `launch_app(use_temp_dir=False)`，使用原生 `~/.phoenix/phoenix.db`；不继承Phoenix工作目录、数据库地址
+及端口覆盖，不创建项目专属数据库配置。只启用本机HTTP，固定版本的额外gRPC接收器在隔离宿主内关闭。
+已有16007验证库不搬迁。关闭时先收尾追踪，再通过stdin结束请求调用官方close_app；超时才终止本次进程树。
+新进程继续读取同一数据库，但不接管已有服务。详见[ADR-0051](../adr/0051-manage-phoenix-lifecycle-for-evaluation.md)。
+详细内容可含消息、脚本和
 私有资料；已知模型凭据过滤不保证任意正文匿名化。不采集 HTTP body/header 或二进制附件，不配置 Console
 exporter；原始 stdout/stderr、state 和 oracle 继续由原路径保存。工作台删除不清空 Phoenix 副本。
-进程退出在业务收尾后尝试有界 SDK shutdown；服务不可用或导出失败不改变业务 outcome、不重跑业务，
+进程退出在业务收尾后尝试有界 SDK shutdown；普通产品追踪或已有评分注释发送失败仍只警告。
+显式评测的新实验记录按上述规则检查和报错；观测故障不改变业务 outcome、不重跑业务，
 也没有离线补传队列。数据与所有权决定见 [ADR-0044](../adr/0044-local-phoenix-observability.md)。
 
 ### 执行与会话

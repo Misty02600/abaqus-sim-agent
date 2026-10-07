@@ -11,6 +11,8 @@
 
 | 决定 | 状态与作用域 |
 |---|---|
+| [0051：测评直接启停 Phoenix](0051-manage-phoenix-lifecycle-for-evaluation.md) | 显式测评启动本次服务、收尾后关闭；固定6006与原生默认数据库，不复用进程或新增补传；部分替代0044并具体化0050 |
+| [0050：自动记录 Phoenix 题集与实验](0050-record-evals-as-phoenix-experiments.md) | 保留 Evals 执行与判分；显式启用后先检查平台，逐题写入派生记录；不增加补传队列，部分替代0044的评测范围 |
 | [0049：普通产品只从可选目录选择模型](0049-select-product-models-only-from-available-catalog.md) | 已采纳；新会话必须显式选择，取消默认/首项自动选择与目录外输入；既有会话恢复不重新筛选 |
 | [0048：直接获取 models.dev 与本机缓存](0048-fetch-models-dev-with-local-cache.md) | 已采纳；目录不再生成打包，移除 Pi 提取与 SDK 名称表兜底；部分替代0047，凭据与原生模型调用保持原合同 |
 | [0047：宿主凭据与包内模型目录](0047-persist-host-credentials-and-bundle-model-catalog.md) | CLI/Web 共用本地凭据；目录分发部分由0048替代；部分替代0046的进程内保存决定 |

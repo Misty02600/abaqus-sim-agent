@@ -2,6 +2,10 @@
 
 ## 状态
 
+2026-10-07：[ADR-0051](0051-manage-phoenix-lifecycle-for-evaluation.md) 将显式测评改为直接启停独立 Phoenix 服务、使用原生默认数据库。普通 CLI/Web 的可选追踪和数据所有权保持原合同。
+
+2026-10-06：[ADR-0050](0050-record-evals-as-phoenix-experiments.md) 为显式启用的评测增加原生题集与实验记录、执行前服务检查；部分替代下述评测仅上传评分注释的范围，其余业务状态与观测副本分离原则继续成立。
+
 已采纳；替代 [ADR-0042](0042-opt-in-logfire-observability.md) 的 Logfire SDK、云端出口与启用契约。
 原有运行状态、验收和追踪副本分离的原则继续成立。
 

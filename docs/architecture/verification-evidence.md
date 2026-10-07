@@ -17,6 +17,14 @@
 
 ## 产品与会话
 
+- [Phoenix 测评自动启停验证](../../benchmarks/observability/phoenix_lifecycle_20261007.json)：136 项相关离线测试通过。
+  实际启动隔离的 Phoenix 20.16.0，12 条离线样例写入原生默认数据库，正常结束释放6006；重启读回记录，
+  验证端口占用拒绝、取消后关闭及数据库保留。原16007服务保持运行；没有真实模型或Abaqus调用。
+
+- [Phoenix 原生题集与实验接入](../../benchmarks/observability/phoenix_experiments_20261006.json)：119 项相关离线测试通过；
+  本机 Phoenix 20.16.0 接收任务基线 12 条样例及两轮四题确定性对照，验证题集复用、独立实验、逐题评分、
+  任务/评分异常和 Trace 关联，并在网页核对实验比较与逐题追踪。只证明接线与故障边界；未调用真实模型或 Abaqus。
+
 - [Phoenix / MLflow 本地 OTel 对照](../../benchmarks/observability/phoenix_mlflow_poc_20260927.md)：5 个现有
   确定性场景产生的同一批 49 spans 在两家均持久保存并通过重启读回；原始消息映射、官方适配探针、评分
   桥接和业务身份限制分开记录。该报告冻结的是替换前的隔离 PoC，后续产品接入单独验收如下。

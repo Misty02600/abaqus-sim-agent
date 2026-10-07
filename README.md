@@ -51,31 +51,37 @@ Windows 的 Just recipes 需要 PowerShell 7.4+（`pwsh`）；直接运行上述
 
 ## 按需查看本地 Phoenix Trace
 
-Phoenix 追踪 SDK 随产品安装，CLI、Web 和下列评测入口加 `--phoenix` 才启用。默认使用不变，无需账号或
-Token。需要查看追踪时，先在一个终端启动独立的本机 Phoenix 服务；首次使用由 uv 下载服务端依赖：
+Phoenix 追踪 SDK 随产品安装，CLI、Web 和下列评测入口加 `--phoenix` 才启用。默认关闭，无需账号或 Token。
+测评 CLI 会自动启动本次 Phoenix 服务，等待就绪后再执行；记录和追踪收尾后关闭服务、保留数据库。
+无需另外启动服务或设置 collector 地址，端口固定为6006；已有服务占用该端口时明确报错，不复用或终止它。
+服务端由 uvx 在隔离环境准备，固定20.16.0，不加入普通产品运行依赖，首次启用可能需要下载包。
+
+运行期间可打开 [本机 Phoenix](http://127.0.0.1:6006)。数据库使用原生默认 `~/.phoenix/phoenix.db`，
+Windows 当前用户对应 `C:\Users\Administrator\.phoenix\phoenix.db`；不同批次继续使用同一数据库，历史记录不清空。
+自动模式不设置项目专属目录，也不迁移先前16007验证库。仅查看已保存数据或为普通Agent排障时，可手动启动官方服务：
 
 ```powershell
-$env:PHOENIX_WORKING_DIR = Join-Path $env:LOCALAPPDATA "abaqus-sim-agent/phoenix"
 $env:PHOENIX_HOST = "127.0.0.1"
 $env:PHOENIX_TELEMETRY_ENABLED = "false"
 $env:PHOENIX_ALLOW_EXTERNAL_RESOURCES = "false"
 uvx --python 3.12 --from arize-phoenix==20.16.0 phoenix serve
 ```
 
-另一个终端启动原来的产品命令并加参数：
+普通 CLI/Web 不自动启动服务；开发排障需要追踪时，在服务运行后启动原产品命令并加参数：
 
 ```powershell
 uv run --no-sync abaqus-sim-agent-web --phoenix --root D:\abaqus-web
 ```
 
 打开 [本机 Phoenix](http://127.0.0.1:6006)，进入 `abaqus-sim-agent` 项目，查看消息、工具参数/返回、
-工作段、runtime、verifier 和评测 Case。SQLite 数据保存在上面设置的目录，重启服务后仍可查看。
-普通 CLI 同样支持 `--phoenix`；不需要追踪时省略该参数。产品不自动启动或管理 Phoenix 服务。
+工作段、runtime、verifier 和评测 Case。普通 CLI 同样支持 `--phoenix`；不需要追踪时省略该参数。
 模型凭据与工作区仍按原方式提供，普通终端/Web 进度和 raw logs 保持原用途。
 
-服务换端口时，在产品终端设置官方 `PHOENIX_COLLECTOR_ENDPOINT`，例如 `http://127.0.0.1:6007`。
+普通产品连接其他本机端口时，可设置 `PHOENIX_COLLECTOR_ENDPOINT`，例如 `http://127.0.0.1:6007`。
+测评自动模式会临时把该变量统一为6006并在退出后恢复，服务进程不继承 `PHOENIX_WORKING_DIR`、数据库地址和端口覆盖。
 目前只支持无鉴权的本机 HTTP 地址；不读取工作区 `.env.phoenix`，也不通过项目偏好自动开启。
-服务未启动或导出失败时会有 SDK 诊断，业务继续；未送达数据没有本地离线队列，之后启动服务不会自动补传。
+普通产品的追踪导出失败时会有 SDK 诊断，业务继续。显式开启 Phoenix 的评测运行会在任务开始前检查服务并登记实验；
+初始登记失败则不启动任务，中途结果写入失败保留本地结果并在收尾时报错。未送达数据没有离线队列，不自动补传。
 
 启用会保存脚本、问题和工具读入的私有文本；已知凭据过滤不等于任意正文匿名化。关闭二进制采集，不额外
 复制整个 ODB/CAE 或 raw log 文件。工作台删除会话不会删除 Phoenix 已保存的副本；通过 Phoenix 单独管理。
@@ -83,7 +89,11 @@ uv run --no-sync abaqus-sim-agent-web --phoenix --root D:\abaqus-web
 当前评测接线为 `evaluation.public_mechanics_suite`、`evaluation.task_baseline_runner`、
 `evaluation.task_baseline_pilot`、`evaluation.simple_modeling_batch`（模块前缀均为 `abaqus_sim_agent`）。
 评测组另含 Phoenix client：逐 Case 建立 Trace，将现有 assertion/score/label 复制为对应 span 的评分。
-原 Case、oracle、gate 和本地报告继续负责验收；没有迁移为 Phoenix Dataset/Experiment，也不回填旧报告。
+原 Case、oracle、gate 和本地报告继续负责验收。上述运行入口会自动创建或复用 Phoenix 题集，并为本次运行登记
+原生 Experiment；逐题上传输出、评分及追踪关联，不需要手工录入，也不由 Phoenix 重跑任务。不同运行或恢复
+保留独立实验，题目内容变化时使用另一份题集；只读 report 不新增实验，不回填旧 worker 或历史成绩。
+在网页的 **Datasets & Experiments** 中查看结果；平台默认平均值不能替代本地报告的计划分母。
+任务基线的实验输出仅代表任务阶段，后置验收与人工审查仍以原本地报告为准。
 公开力学套件在实际运行时记录每次 attempt，报告重建将评分关联到已有追踪；命令与关联边界见
 [力学结果报告](benchmarks/coding/result_reporting.md#phoenix追踪与评分)。
 实现与验证范围见[验证证据](docs/architecture/verification-evidence.md)。各类测评的固定代码入口见[测评与证据入口](benchmarks/README.md)。

@@ -18,6 +18,7 @@ from abaqus_sim_agent.coding.model import (
 )
 from abaqus_sim_agent.coding.persistence import write_text_atomic
 from abaqus_sim_agent.coding.run_lock import CodingRunFileLock
+from abaqus_sim_agent.evaluation.phoenix_service import evaluation_telemetry_session
 from abaqus_sim_agent.evaluation.task_baseline import (
     baseline_execution_config,
     prepare_task,
@@ -42,7 +43,6 @@ from abaqus_sim_agent.evaluation.task_baseline_service import run_service_live
 from abaqus_sim_agent.execution import DEFAULT_ABAQUS_2024_LAUNCHER
 from abaqus_sim_agent.telemetry import (
     add_phoenix_argument,
-    telemetry_session,
 )
 
 
@@ -260,7 +260,7 @@ def main():
     parser.add_argument("--approve-spec-sha256")
     add_phoenix_argument(parser)
     args = parser.parse_args()
-    with telemetry_session(args.phoenix, environment="evaluation"):
+    with evaluation_telemetry_session(args.phoenix):
         if args.mode == "prepare":
             if args.run_root is None:
                 parser.error("prepare requires --run-root")

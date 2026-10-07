@@ -7,6 +7,7 @@ from pathlib import Path
 
 from abaqus_sim_agent import telemetry
 from abaqus_sim_agent.evaluation import public_mechanics_suite as suite
+from abaqus_sim_agent.evaluation.phoenix_service import evaluation_telemetry_session
 
 
 def main(argv: Sequence[str] | None = None):
@@ -57,7 +58,7 @@ def main(argv: Sequence[str] | None = None):
         "report",
     }:
         parser.error("--phoenix is supported for run/continue/resume/report")
-    with telemetry.telemetry_session(args.phoenix, environment="evaluation"):
+    with evaluation_telemetry_session(args.phoenix):
         _dispatch(args, parser)
 
 
