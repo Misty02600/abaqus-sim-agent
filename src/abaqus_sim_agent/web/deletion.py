@@ -131,8 +131,16 @@ class RunDeletionStore:
         """
         state = self.registry.state_dir(run_id)
         registration = self.registry.directory(run_id)
-        for target, parent in ((state, "states"), (registration, "registry")):
-            self._validate_tree(target, self.registry.root / parent)
+        state_owner = (
+            self.registry.state_root
+            if state.parent == self.registry.state_root
+            else self.registry.root / "states"
+        )
+        for target, parent in (
+            (state, state_owner),
+            (registration, self.registry.root / "registry"),
+        ):
+            self._validate_tree(target, parent)
         receipt = self.load(run_id)
         if receipt is not None and receipt.state == "deleted":
             return receipt

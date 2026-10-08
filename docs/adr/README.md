@@ -11,6 +11,7 @@
 
 | 决定 | 状态与作用域 |
 |---|---|
+| [0053：普通 CLI/Web 共用运行状态目录与读取入口](0053-share-cli-web-run-storage.md) | 默认共用 runs；Web 可读取无 Web 登记的普通 CLI 会话，保留原状态与空闲交接边界；不新增评测页面 |
 | [0052：按名称选择工具与固定Catalog报错提示](0052-select-tools-by-name-and-fix-catalog-error-hints.md) | 新产品使用工具集合和launch v11；默认精确查询开启、目录发现关闭；部分替代0040的产品模式，冻结评测不回填 |
 | [0051：测评直接启停 Phoenix](0051-manage-phoenix-lifecycle-for-evaluation.md) | 显式测评启动本次服务、收尾后关闭；固定6006与原生默认数据库，不复用进程或新增补传；部分替代0044并具体化0050 |
 | [0050：自动记录 Phoenix 题集与实验](0050-record-evals-as-phoenix-experiments.md) | 保留 Evals 执行与判分；显式启用后先检查平台，逐题写入派生记录；不增加补传队列，部分替代0044的评测范围 |

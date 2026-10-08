@@ -36,6 +36,13 @@ class WorkspaceResolutionError(ValueError):
     pass
 
 
+def default_run_root() -> Path:
+    local_app_data = os.environ.get("LOCALAPPDATA")
+    if local_app_data:
+        return Path(local_app_data) / "abaqus-sim-agent" / "runs"
+    return Path.home() / ".local" / "share" / "abaqus-sim-agent" / "runs"
+
+
 class WorkspaceResolver:
     def __init__(
         self,
@@ -95,10 +102,7 @@ class WorkspaceResolver:
 
     @staticmethod
     def _default_state_root() -> Path:
-        local_app_data = os.environ.get("LOCALAPPDATA")
-        if local_app_data:
-            return Path(local_app_data) / "abaqus-sim-agent" / "runs"
-        return Path.home() / ".local" / "share" / "abaqus-sim-agent" / "runs"
+        return default_run_root()
 
     def _resolve_state_dir(self, run_id: str, state_dir: Path | None) -> Path:
         if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", run_id) is None:

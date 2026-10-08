@@ -12,6 +12,10 @@ Abaqus Sim Agent 是本地 Windows Coding Agent：一个 Pydantic AI Harness Cod
 Abaqus Python，通过受控工具运行 Abaqus 2024。CLI 和本地 Web 工作台共用宿主应用入口；宿主管理会话、
 预算、用户问答、执行证据和最终验收。
 
+默认 CLI/Web 共用应用数据目录下的 `runs/<run_id>`，Web 可直接发现当前格式的普通 CLI 会话；
+Web 管理元数据仍独立保存，旧 Web 状态按原路径读取。切换入口须等待原执行段空闲，不跨进程接管工具；
+独立评测批次不进入该会话目录发现范围，见 [ADR-0053](../adr/0053-share-cli-web-run-storage.md)。
+
 文件或执行请求的完成表示 `execution_evidence` 通过：交付物存在且 fresh、fresh Python 符合 3.10 语法、
 每种已使用 runtime 的最后一次阶段检查通过。它不证明全部自然语言要求或物理正确。launch v11 还允许
 `ResponseDecision` 直接交付纯文字答复，但不把它描述成文件、执行或物理验收。固定 evaluator 另行注入

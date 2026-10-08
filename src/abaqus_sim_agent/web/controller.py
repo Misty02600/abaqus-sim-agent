@@ -137,6 +137,7 @@ DELETE_STOP_TIMEOUT_SECONDS = 20.0
 @dataclass(frozen=True)
 class ServerConfig:
     root: Path
+    state_root: Path | None = None
     knowledge_packs_root: Path | None = None
     stream_model: bool = True
     overrides: RunOptions = field(default_factory=RunOptions)
@@ -311,7 +312,7 @@ class RunController:
         from ..coding.credential_store import CredentialStore
 
         self.credential_store = CredentialStore()
-        self.registry = RunRegistry(config.root)
+        self.registry = RunRegistry(config.root, state_root=config.state_root)
         self.threads = ThreadStore(self.registry)
         self.invocations = InvocationStore(self.registry)
         self.tool_executions = ToolExecutionStore(self.registry)
@@ -1137,6 +1138,7 @@ class RunController:
                     )
                 return self.snapshot(run_id)
             workspace = selected_workspace(command.workspace, self.registry.root)
+            selected_workspace(workspace, self.registry.state_root)
             conflict = self._workspace_conflict(workspace)
             if conflict:
                 raise WebError("workspace_busy", conflict)
@@ -1207,10 +1209,13 @@ class RunController:
     def _discard_failed_create(
         self, run_id: str, directory: Path, state: Path | None
     ) -> None:
-        for section, path in (("registry", directory), ("states", state)):
+        for owner, path in (
+            (self.registry.root / "registry", directory),
+            (self.registry.state_root, state),
+        ):
             if path is None:
                 continue
-            owner = (self.registry.root / section).resolve()
+            owner = owner.resolve()
             if (
                 path.is_symlink()
                 or path.resolve().parent != owner
@@ -1654,7 +1659,7 @@ class RunController:
                 runs.append(self.snapshot(run_id))
             except (ValueError, OSError, WebError):
                 unavailable.append(
-                    RunIssue(run_id=run_id, message="任务登记不可用，请检查本地记录。")
+                    RunIssue(run_id=run_id, message="会话记录不可用，请检查本地记录。")
                 )
         unavailable.extend(
             RunIssue(

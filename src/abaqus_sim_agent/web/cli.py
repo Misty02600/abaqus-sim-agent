@@ -12,6 +12,7 @@ from ..coding.option_arguments import (
     add_run_arguments,
     options_from_args,
 )
+from ..coding.workspace import default_run_root
 from ..telemetry import add_phoenix_argument, instrument_web, telemetry_session
 from .controller import ServerConfig
 
@@ -53,6 +54,7 @@ def _serve(args: argparse.Namespace) -> None:
         raise SystemExit("请安装Web依赖：uv sync --extra web --all-groups") from exc
     config = ServerConfig(
         root=args.root if args.root is not None else default_management_root(),
+        state_root=None if args.root is not None else default_run_root(),
         overrides=options_from_args(args),
     )
     keys = take_gateway_api_keys_from_environment()

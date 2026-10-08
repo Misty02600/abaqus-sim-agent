@@ -8,6 +8,8 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from ..coding.contracts import CodingRunRequest
+from ..coding.launch import LaunchManifest
 from ..coding.persistence import write_text_atomic
 from ..coding.workspace import WorkspaceSnapshot
 from ..execution import AbaqusExecutionResult
@@ -21,7 +23,7 @@ from .contracts import (
     WebError,
 )
 
-RUN_ID = re.compile(r"web-[0-9a-f]{32}\Z")
+RUN_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}\Z")
 
 
 def plain_path(path: Path, *, directory: bool | None = None) -> Path:
@@ -81,16 +83,20 @@ def save_model(path: Path, model: BaseModel) -> None:
 
 
 class RunRegistry:
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, *, state_root: Path | None = None):
         self.root = plain_path(root, directory=True).resolve()
+        self.state_root = plain_path(
+            state_root or self.root / "states", directory=True
+        ).resolve()
         if not str(self.root).isascii():
             raise WebError("ascii_root", "Web工作目录必须是ASCII路径", 400)
 
     def initialize(self) -> None:
-        for name in ("registry", "states", "cache", "control"):
+        for name in ("registry", "cache", "control"):
             plain_path(self.root / name, directory=True).mkdir(
                 parents=True, exist_ok=True
             )
+        plain_path(self.state_root, directory=True).mkdir(parents=True, exist_ok=True)
 
     def directory(self, run_id: str) -> Path:
         if RUN_ID.fullmatch(run_id) is None:
@@ -99,36 +105,80 @@ class RunRegistry:
 
     def state_dir(self, run_id: str) -> Path:
         self.directory(run_id)
-        return plain_path(self.root / "states" / run_id, directory=True)
+        current = plain_path(self.state_root / run_id, directory=True)
+        previous = plain_path(self.root / "states" / run_id, directory=True)
+        if previous != current and previous.exists():
+            if current.exists():
+                raise WebError(
+                    "state_conflict", "同一会话标识存在两份状态，不能选择恢复目标"
+                )
+            return previous
+        return current
 
     def load(self, run_id: str) -> Registration:
         if self.deletion_pending(run_id):
             raise WebError("run_deleted", "会话已进入永久删除流程。", 410)
         file = plain_path(self.directory(run_id) / "registration.json", directory=False)
         if not file.exists():
-            raise WebError("not_found", "任务不存在或初始化尚未完成", 404)
-        data = Registration.model_validate_json(file.read_bytes())
+            data = self._stored_run(run_id)
+        else:
+            data = Registration.model_validate_json(file.read_bytes())
         request = data.request
-        if (
-            request.run_id != run_id
-            or request.state_dir != self.root / "states" / run_id
-        ):
+        if request.run_id != run_id or request.state_dir != self.state_dir(run_id):
             raise WebError("registration_corrupt", "任务路径与登记不一致")
         if data.workspace_kind == "managed":
             if request.workspace != self.root / "workspaces" / run_id:
                 raise WebError("registration_corrupt", "托管工作区路径与登记不一致")
         elif selected_workspace(request.workspace, self.root) != request.workspace:
             raise WebError("registration_corrupt", "所选工作区路径与登记不一致")
+        if data.workspace_kind == "selected":
+            selected_workspace(request.workspace, self.state_root)
         plain_path(request.workspace, directory=True)
         plain_path(request.state_dir, directory=True)
         return data
 
+    def _stored_run(self, run_id: str) -> Registration:
+        """从普通 CLI 的原始运行文件读取入口信息，不补写 Web 登记或启动运行。"""
+        state = self.state_dir(run_id)
+        request_path = plain_path(state / "request.json", directory=False)
+        launch_path = plain_path(state / "launch.json", directory=False)
+        if not request_path.is_file() or not launch_path.is_file():
+            raise WebError("not_found", "会话不存在或初始化尚未完成", 404)
+        request = CodingRunRequest.model_validate_json(request_path.read_bytes())
+        launch = LaunchManifest.model_validate_json(launch_path.read_bytes())
+        if (
+            launch.schema_version != "coding-run-launch-v11"
+            or launch.question_protocol != "ask_user_v1"
+        ):
+            raise WebError("profile_mismatch", "仅支持当前格式的普通 CLI/Web 会话")
+        initial = WorkspaceSnapshot.model_validate_json(
+            plain_path(state / "initial_snapshot.json", directory=False).read_bytes()
+        )
+        return Registration(
+            workspace_kind="selected",
+            request_digest=digest(request),
+            created_at=datetime.fromtimestamp(request_path.stat().st_mtime, UTC),
+            request=request,
+            initial_snapshot=initial,
+            launch=launch,
+        )
+
     def ids(self) -> list[str]:
-        return sorted(
+        ids = {
             p.name
             for p in (self.root / "registry").iterdir()
             if RUN_ID.fullmatch(p.name) and not self.deletion_pending(p.name)
+        }
+        ids.update(
+            p.name
+            for p in self.state_root.iterdir()
+            if RUN_ID.fullmatch(p.name)
+            and p.is_dir()
+            and (p / "request.json").is_file()
+            and (p / "launch.json").is_file()
+            and not self.deletion_pending(p.name)
         )
+        return sorted(ids)
 
     def deletion_pending(self, run_id: str) -> bool:
         self.directory(run_id)

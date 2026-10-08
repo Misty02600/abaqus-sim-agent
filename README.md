@@ -109,19 +109,27 @@ uv run --no-sync abaqus-sim-agent-web --phoenix --root D:\abaqus-web
 ```powershell
 uv sync --locked --all-groups --extra web
 uv run --no-sync python scripts/build_web.py
-uv run --no-sync abaqus-sim-agent-web --root D:\abaqus-web
+uv run --no-sync abaqus-sim-agent-web
 ```
 
 启动前可在宿主环境配置 `OPENCODE_API_KEY` 或 `DEEPSEEK_API_KEY` 等相应提供商凭据，也可在右上角“设置 → 模型账号”登录或填写 API Key。服务就绪后默认打开
 普通本机地址 `http://127.0.0.1:8765/`，使用 `--no-open` 可关闭自动打开。页面会无感建立本地浏览器会话，
-不需要复制终端 token。根目录必须是 ASCII 路径，下面分开保存 `states/`、`registry/`、`cache/`、`control/`；
-`workspaces/` 只保留旧托管工作区记录。
+不需要复制终端 token。默认 CLI/Web 共用 `%LOCALAPPDATA%/abaqus-sim-agent/runs/<run_id>` 保存运行状态；
+Web 的 `registry/`、`cache/`、`control/` 仍保存在应用数据目录下的 `web/`。CLI 已保存的当前格式普通会话
+会出现在网页列表中，不需要生成 Web 登记；刷新页面即可发现其他进程新建的会话。也可用
+`--root D:\abaqus-web` 启动隔离的管理目录，此时只读取该目录的 `states/`，不扫描默认 CLI 目录。
+旧 Web 会话继续从原 `web/states/` 读取，不搬迁状态；`workspaces/` 只保留旧托管工作区记录。
 新会话必须先选择已有本机 ASCII 目录，网页不会自动创建托管空工作区；文件原地读写，会话建立后目录固定，
-所选目录不能包含宿主管理根或位于其中。左侧栏显示当前工作区并可切换：选择已有工作区会恢复其最近会话，选择其他目录会进入新会话草稿。
+所选目录不能包含宿主管理根、状态根或位于其中。左侧栏显示当前工作区并可切换：选择已有工作区会恢复其最近会话，选择其他目录会进入新会话草稿。
 原会话始终绑定原目录。现有文件会进入验收基线，state/evidence 仍由管理根保存。
 Web 登记格式现为 v3，旧 v2 明确拒绝读取，不自动迁移。普通产品不限制模型请求、提问、低成本工具或 active wall；Abaqus 默认允许，
 Solver 默认禁止，创建会话时可改为允许或允许有限次数。Go/Flash 使用 enabled/high、HTTP 300 秒和 4 次
 SDK request retry，普通产品默认关闭 Planning。
+
+CLI 会话空闲后可以在 Web 查看、回答澄清或追加消息；Web 已落盘的会话也可通过 CLI `--resume <state目录>`
+恢复原状态。两端保持原模型、权限、累计用量和执行证据，同一状态仍由 OS 锁排他保护。另一进程正在执行时，
+网页只显示占用状态，不提供跨进程停止或接管。CLI 对终态的纯 `--resume` 仍拒绝空跑，`--resume --goal` 仍是
+显式任务修订，不等同 Web 普通追加消息。本次不增加评测页面、不导入历史批次、不承诺旧 schema 兼容。
 
 会话列表支持确认后永久删除记录，保留工程文件；活动执行由宿主先收尾，失败时显示错误并允许重试。
 会话建立运行状态后，可在“运行详情”修改 Abaqus/Solver 权限；待答状态也可修改，问题保持不变。修改只影响

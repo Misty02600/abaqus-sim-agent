@@ -95,7 +95,7 @@ Pi 的默认发现和显式扩展只是取舍依据：本产品当前没有开�
 ## 当前实现：范围与阅读方式
 
 - 覆盖普通 CLI 的 41 个选项、Web 启动命令的 11 个选项，共 44 个不同选项名，不计 `--help`；其中登录/退出属于宿主操作，不是运行配置。
-- 对 8 个公共运行选项、8 个 `ServerConfig` 字段、运行控制和显式 profile 输入分别定义。
+- 对 8 个公共运行选项、9 个 `ServerConfig` 字段、运行控制和显式 profile 输入分别定义。
 - 对 request/launch 的保存位置逐字段映射；重复序列化不计为另一项用户配置。
 - 会话 ID、操作命令、实验 spec 和宿主生成记录单独列出，避免将它们混为应用偏好。
 - 第三方 SDK 的全部环境变量、每个评测 Case 的物理数据、私有知识包资源 manifest、UI 临时展开状态和
@@ -194,12 +194,13 @@ model provider、model name、HTTP retries。二者省略表示不改，显式 n
 
 ## 宿主与凭据：逐字段
 
-`ServerConfig` 的8个字段如下。它是程序化宿主输入，不能把 dataclass 类型注解当成所有边界都已做运行时校验；
+`ServerConfig` 的9个字段如下。它是程序化宿主输入，不能把 dataclass 类型注解当成所有边界都已做运行时校验；
 各值仍由目录管理、HTTP server 或相应 typed 控制模型检查。
 
 | 字段 | 默认 / 入口 | 使用者与处理决定 | 进会话吗 |
 |---|---|---|---|
-| `root` | Web `--root` 可省略，默认应用数据目录下 `web`；程序化宿主仍显式传 root | 管理根，目录注册器检查；按固定根保存 states/registry，与选定工程互不包含 | 根本身是宿主配置；派生的该 run `state_dir` 保存于 request |
+| `root` | Web `--root` 可省略，默认应用数据目录下 `web`；程序化宿主仍显式传 root | 保存 registry/cache/control，与选定工程互不包含；显式 --root 默认使用自身 states，不扫描全局运行目录 | 根本身是宿主配置；派生 state_dir 保存于 request |
+| `state_root` | 程序化输入默认 None，使用 root/states；默认 Web CLI 显式传入与 CLI 相同的应用数据 runs 目录，不另暴露命令参数 | 目录管理器验证路径；新会话在此保存，列表读取该根下的 request/launch。旧 root/states 按原登记读取；重复 ID 拒绝选择。所选工程与此根互不包含 | 根不进入 launch；解析后的固定 state_dir 保存于 request，恢复不搬迁 |
 | `knowledge_packs_root` | None：用户数据目录 `knowledge/packs`；程序化宿主可覆盖 | 发现私有包的本机目录，源内容由包准备器验证 | 不保存发现根；实际采用的包快照由会话保存 |
 | `stream_model` | True；程序化宿主输入 | 控制当前宿主是否流式展示模型请求；CLI 当前调用默认非流式 | 不作为旧会话的恢复配置 |
 | `overrides` | 空 `RunOptions`；Web 启动公共参数 | 当前服务为新会话提供的非模型选项覆盖；model_provider/model_name 禁止放入 overrides，必须由创建请求指定；其余选项比创建请求优先级低，不读取配置文件 | 容器不落盘；最终采用的字段按公共表保存 |
@@ -233,7 +234,7 @@ model provider、model name、HTTP retries。二者省略表示不改，显式 n
 | `goal` / `--goal` | 新建必需的非空任务文本；CLI 去首尾空白；Web 最长20000字符 | 初始 request；显式修改走 task revision |
 | `request_file` / `--request-file` | 无；UTF-8 文本或含字符串 `goal` 的 JSON，与 `--goal` 互斥 | 只提取任务文本；不把文件中其他键加载成设置 |
 | `workspace` / `--workspace` | CLI 默认启动 cwd；Web 必须显式选择现有 ASCII 目录 | 解析绝对路径进 request；固定，不在恢复时换目录 |
-| `state_dir` / `--state-dir` | CLI 自动选用户数据下 `runs/<run_id>`；Web 从 root 派生 | 绝对路径进 request；必须在 workspace 外，固定 |
+| `state_dir` / `--state-dir` | CLI 自动选用户数据下 `runs/<run_id>`；默认 Web 使用同一根；显式 Web --root 使用 root/states | 绝对路径进 request；必须在 workspace 外，固定；外部显式 CLI state-dir 不自动进入默认列表 |
 | `run_id` / `--run-id` | CLI `run-<随机标识>`；Web 由创建幂等 ID 派生 | request/run identity；格式受合同校验，不能作为恢复覆盖 |
 | `resume` / `--resume` | 无；指定已有 state 目录 | 选择恢复目标，不是一项待保存的新偏好；schema、ledger、文件与副作用仍需检查 |
 | `answer_file` / `--answer-file` | 无；包含 question ID/answer 的严格 JSON | 保存用户答复和关联状态；必须与待答问题匹配，要求 resume |

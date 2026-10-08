@@ -101,6 +101,8 @@ Catalog 已随应用包安装并自动定位，原生 provider 与动态模型�
 Web 创建但尚未首次执行的会话，先在 `registration.json` 保存 prepared request/launch 和 initial snapshot。
 首次执行交给 Service 写 state；已有 `request.json` 后走 state 恢复路径，并核对 Web 登记的初始 request。
 registration 不能覆盖恢复得到的有效合同。创建登记和运行 state 分属两个文件域，不承诺跨文件事务。
+普通 CLI 会话没有 Web 登记；Web 从原 `request.json`、`launch.json` 和 `initial_snapshot.json` 构造入口视图，
+不补写 registration，不替换请求或启动配置。后续读取、回答和追加消息沿用同一 state 与原恢复校验。
 
 恢复还要检查 schema、资源绑定、workspace、修订序号和未决工具副作用；合法配置不等于可以安全继续。
 不支持的开发期 state 显式拒绝，损坏记录不猜测补全；并发和 `needs_reconcile` 规则见下文。上述合同沿用
@@ -159,11 +161,16 @@ CLI 区分未提供与显式指定的静态检查模式：本次输入未指定�
   `api_discoveries.jsonl`、`concept_lookups.jsonl`，以及显式策略的额外 journal。
 - 验收：当前 `outcome.json`、verification 和历史 `outcomes/task-*/`；评测另保存 oracle 和 diff/provenance。
 
-**Web management root** 默认位于应用数据目录的 web 子目录，也可通过 --root 显式覆盖，必须是 ASCII 根目录，保存 `states/`、`registry/`、`cache/` 和
-`control/`。`registry/<run_id>/thread.json`、invocation、命令回执和 `ToolExecution` 是 Web 管理记录；对应
-`states/<run_id>` 仍由 CodingRun 合同拥有。`workspaces/` 仅为旧托管工作区登记保留，不再创建新目录。两类文件的顺序由恢复协议协调，不是数据库事务。
+**Web management root** 默认位于应用数据目录的 `web` 子目录，必须是 ASCII 根目录，保存 `registry/`、`cache/`
+和 `control/`。默认 Web CLI 将 `state_root` 设为普通 CLI 的应用数据目录 `runs/`；新 Web 会话也在那里保存 state。
+程序化宿主省略 `state_root`，或 Web 显式传 `--root` 时，仍使用隔离的 `root/states/`。旧 Web 登记保留原
+`root/states/<run_id>`，不搬迁；同一 ID 在两处同时存在时拒绝选择，不能静默覆盖或合并。
+`registry/<run_id>/thread.json`、invocation、命令回执和 `ToolExecution` 仍是 Web 管理记录。CLI 会话不以此登记
+作为读取前提；默认列表合并 Web 登记和公共状态目录中具有 request/launch 的会话，具体读取要求当前普通产品协议。
+不兼容或损坏的记录显示不可用，不自动修复。Web 新建会话仍保留首次执行前的登记，以支持创建幂等与调度失败恢复。
+`workspaces/` 仅为旧托管工作区登记保留。两类文件的顺序由恢复协议协调，不是数据库事务。
 
-新会话必须显式选择已有本机 ASCII 目录并原地读写；未选择目录时不创建 run。所选目录与整个管理根互不包含，
+新会话必须显式选择已有本机 ASCII 目录并原地读写；未选择目录时不创建 run。所选目录与管理根、状态根互不包含，
 会话建立后不可切换。registration v3 明确保存目录来源，加载时复核路径；旧 v2 登记明确拒绝，不猜测升级。
 旧 managed 登记继续按原路径读取；新登记始终为 selected。目录浏览 API 只列出有界子目录，不读取文件内容或创建运行。
 已有文件进入原始 workspace snapshot，仍按 fresh evidence 合同验收，见 [ADR-0034](../adr/0034-bind-selected-workspaces-for-web-runs.md) 和 [ADR-0041](../adr/0041-require-selected-workspace-for-web-runs.md)。
@@ -171,6 +178,8 @@ CLI 区分未提供与显式指定的静态检查模式：本次输入未指定�
 Web 确认删除会话后，先等待本宿主模型/工具和 Solver 实际收尾，再在 state 锁内永久清理该会话的 state
 和 registry；工程目录及文件保留。`control/deletions` 只保存最小幂等/清理回执，不是回收站。无法确认的
 外部执行和未决 effect 不通过删除记录掩盖，见 [ADR-0035](../adr/0035-delete-web-conversation-records-and-keep-workspaces.md)。
+默认 CLI/Web 的状态共享只支持空闲时切换入口。外部进程持有 state 锁时，Web 禁止写操作和停止；不新增 PID
+重附着、跨进程取消或全局工作区锁。普通 CLI 的终态 resume/任务修订语义不变，评测仍使用原批次入口。
 
 已有 Web 会话可在空闲、待答或终态通过 operational amendment 覆盖 Abaqus/Solver permission。待答问题、
 task revision、workspace/execution baseline 和累计 usage 保持；写入不调度 Agent，也不取消已提交执行。
