@@ -59,6 +59,15 @@ def build_instructions(
         if background_solver_enabled is None
         else background_solver_enabled
     )
+    if response_enabled:
+        return _product_instructions(
+            request,
+            interaction_policy=interaction_policy,
+            api_catalog_enabled=api_catalog_enabled,
+            api_discovery_enabled=api_discovery_enabled,
+            general_shell_enabled=general_shell_enabled,
+            background_solver=background_solver,
+        )
     runtime_script_policy_instructions = _runtime_script_policy_instructions(
         request,
         background_solver_enabled=background_solver,
@@ -347,38 +356,102 @@ output-validation message.
             "Return `needs_input`", "Call `ask_user(question)` alone"
         )
         instructions += "\nAsk only for blocking user facts or intent. The host waits for the user; do not supply a status or field ID. Choose further actions only after the answer. You may ask when new blocking information emerges later, but never proceed using an assumed value."
-    if response_enabled:
-        instructions = instructions.replace(
-            "You are completing one Abaqus 2024 coding run in this workspace:",
-            "Respond to the user's current request, using this workspace when needed:",
-        )
-        instructions = instructions.replace(
-            "- Call `ask_user(question)` alone when a required physical value is missing;",
-            "- Call `ask_user(question)` alone only when a value required for the CURRENT requested action is missing;",
-        )
-        instructions = instructions.replace(
-            "End the run by calling exactly one `final_result_NeedsInputDecision`,\n`final_result_ReadyForVerificationDecision`, or `final_result_FailedDecision`\noutput tool.",
-            "End with exactly one output tool: `final_result_ResponseDecision` for a text-only answer, `final_result_ReadyForVerificationDecision` for file/execution work, or `final_result_FailedDecision` for work that could not be completed.",
-        )
-        instructions += """
-
-The user may ask any question, request an explanation, discuss a choice, ask for
-one small step, or request a complete workflow. Follow that scope exactly.
-Do not turn a question or partial request into a full modeling/solving/extraction
-workflow. Do not demand geometry, material, loads or boundary conditions unless
-the CURRENT requested action actually depends on them. For example, explaining
-CPS4R needs no plate thickness; creating only geometry needs no material or load.
-For a requested complete analysis whose necessary inputs are missing, clarify
-those blocking inputs before dependent work. The same dependency rule applies
-to a small step if that step itself cannot be done without a missing fact.
-For text-only questions, answer directly with final_result_ResponseDecision and
-put the full answer in summary. Do not create a report file or run Abaqus merely
-to satisfy a completion protocol. Read-only inspection is allowed when useful.
-For requested file changes or execution, retain the existing deliverable manifest
-and host verification. Run only the requested stages; do not claim that skipped
-stages were completed. Text delivery is not execution or factual verification.
-"""
     return instructions
+
+
+def _product_instructions(
+    request: CodingRunRequest,
+    *,
+    interaction_policy: Literal["legacy", "workspace_facts_first"],
+    api_catalog_enabled: bool,
+    api_discovery_enabled: bool,
+    general_shell_enabled: bool,
+    background_solver: bool,
+) -> str:
+    inspection = (
+        "Inspect supplied workspace files for existing physical inputs before asking. "
+        "Independent inspection may continue while clarification is pending, unless the user asks you to wait."
+        if interaction_policy == "workspace_facts_first"
+        else "Resolve blocking physical inputs before loading a capability or using other tools."
+    )
+    shell = (
+        "A general coding shell is available for ordinary file work and checks."
+        if general_shell_enabled
+        else "No generic shell or host-Python execution tool is available."
+    )
+    solver = (
+        "Use `solver_job` with action=submit to start a job. Do independent work if useful, "
+        "then use action=wait before reading its outputs or ending the run."
+        if background_solver
+        else "Use `run_solver_job` for the Solver stage."
+    )
+    catalog = (
+        """Use `lookup_abaqus_api` for genuinely uncertain API details not resolved by
+existing evidence or automatic error hints. Do not query familiar APIs preemptively
+or repeat the same lookup. Prefer a qualified method or a single parameter such as
+`Model.SurfaceTraction.directionVector`. Runtime-note paths describe provenance,
+not files in the workspace."""
+        if api_catalog_enabled
+        else ""
+    )
+    discovery = (
+        "`discover_abaqus_api` returns navigation candidates only; use exact lookup "
+        "before relying on a candidate's signature or applicability."
+        if api_discovery_enabled
+        else ""
+    )
+    return "\n\n".join(
+        section
+        for section in (
+            f"""Apply these Abaqus-specific constraints alongside the general coding guidance.
+Workspace: {request.workspace}. Use relative paths for workspace files.
+This is an open-ended user coding task. Follow the CURRENT requested action without
+assuming a geometry, mesh or physical result, or expanding a question/local edit into
+a complete analysis. For example, creating only geometry needs no material or load.""",
+            f"""Reasonable defaults apply only to implementation details, never missing
+physical inputs. {inspection}
+If missing inputs, conflicting constraints or ambiguous intent would change the
+physical problem or acceptance, call `ask_user(question)` alone, explain the impact,
+and wait for the answer before dependent modeling/execution. Ask for engineering
+facts, not API choices, repository owners or file names.""",
+            f"""Load `abaqus-2024-coding` before executing Abaqus code, and before authoring
+code when correctness depends on Abaqus-specific APIs, keywords or runtime behavior.
+Do not load it for a purely local edit or engineering discussion that does not need it.
+{shell} Never launch Abaqus through generic Shell or host Python: use the runtime tools.
+Keep CAE modeling, Solver execution and ODB extraction separate. {solver}""",
+            _runtime_script_policy_instructions(
+                request, background_solver_enabled=background_solver
+            ),
+            _static_preflight_instructions(request),
+            """A retrieval miss is an evidence gap, not proof that an API is absent or
+unsupported, and cannot override user facts. Compare conflicting sources by scope,
+version and provenance; preserve unresolved uncertainty. Make supported in-scope
+repairs, but do not add fallback workflows, objects or broader changes to compensate
+for missing knowledge. If a required technical fact remains unresolved, leave the
+affected code unchanged and report that blocker, not fabricated missing physics.""",
+            catalog,
+            discovery,
+            """Use runtime/verifier feedback to make the smallest relevant repair; do not
+repeat an unchanged execution without a reason. For a proven missing attribute or
+invalid keyword, repair all matching occurrences of that API misuse in the target
+script before rerunning, leaving unrelated code unchanged.""",
+            """For longer tasks, briefly explain the current state and next step at key
+milestones, blockers or changes of approach, without narrating every tool call.
+Finish with one clear, concise answer covering the result, necessary checks and
+limitations, without repeating earlier summaries.""",
+            """End with one typed output: `final_result_ResponseDecision` for a text-only
+answer (put the complete answer in summary; do not create files or run Abaqus just
+to answer); `final_result_ReadyForVerificationDecision` for file/execution work,
+after inspecting the actual results and declaring all requested deliverables; or
+`final_result_FailedDecision` with the evidenced blocker. Scratch/log files do not
+replace requested deliverables. A ready decision requests host verification, not
+proof of physical correctness: the product checks freshness, Python 3.10 syntax
+and the latest used runtime stages, not a hidden task-specific physics oracle.
+Do not claim skipped work was done. Output-schema/JSON retries refer to output-tool
+arguments, not workspace files; correct the decision without rerunning Abaqus.""",
+        )
+        if section
+    )
 
 
 def _runtime_script_policy_instructions(

@@ -47,8 +47,13 @@ Harness 0.36 的 `Coder` 默认提供文件工具、跨 run 存活的持久 Shel
   新普通会话将框架解析或显式提供的窗口保存到 launch，按 90% 触发 tiered compaction，并保留 typed capability activation。
   保留原文量为 `min(32000, context_window // 8)`。旧会话仍按其保存的 `deepseek-1m-tiered-summary-v1` 使用 960K 阈值；
   未知窗口要求显式指定，不把 Harness 的 200K fallback 当成模型实际容量。
-- 新 Coder 默认通用指令与 `RepairToolArguments` 未自动启用；问答和恢复继续由 `CodingRunService` 与
-  `StepPersistence` 协作，不另外接入 `AskUser`、conversation store 或 `BackgroundTools`。
+- 普通 CLI/Web 的 response-enabled 会话保留原生 Coder 通用说明，并叠加精简的 Abaqus 任务边界、
+  澄清、执行、查证和完成协议。合理默认值只适用于实现细节，不能补造物理输入。沟通补充只有两条：
+  较长任务在关键进展、阻碍或做法变化时简短说明现状和下一步，避免逐条复述工具调用；完成时给出一次简洁答复，
+  说明结果、必要检查和限制，避免重复前面的总结。
+  这是模型行为指导，不是按时间自动生成进度消息，也不改变 typed output 或宿主验收。
+- 显式非产品 profile 保留原提示组合。`RepairToolArguments` 仍未启用；问答和恢复继续由 `CodingRunService`
+  与 `StepPersistence` 协作，不另外接入 `AskUser`、conversation store 或 `BackgroundTools`。
 
 已核查 0.36 的 run-scoped Shell 仍保留 0.33 的 `os.killpg` 和前台取消收尾问题；FileStepStore 的同步
 JSONL 追加实现与 0.33 相同，仍没有并行写入锁。宿主补丁精确绑定 0.33.0 和 0.36.0，并分别验证

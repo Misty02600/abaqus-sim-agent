@@ -368,6 +368,7 @@ def test_agent_composes_coder_skill_and_typed_decisions(tmp_path: Path) -> None:
     assert observed["deferred_capabilities"] == {"abaqus-2024-coding"}
     instructions = observed["instructions"]
     assert isinstance(instructions, str)
+    assert "You are a software engineering agent." not in instructions
     assert str(request.workspace) in instructions
     assert "plate_thickness" not in instructions
     assert "open-ended user coding task" in instructions

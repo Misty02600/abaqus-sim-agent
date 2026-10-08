@@ -322,6 +322,7 @@ def create_abaqus_coding_agent(
         request.workspace,
         shell_enabled=product_shell_enabled,
         context_policy_enabled=context_policy_enabled,
+        native_instructions_enabled=response_enabled,
         tools=tools,
     )
     capabilities: list[Any] = [
@@ -554,6 +555,7 @@ def _configure_coder(
     *,
     shell_enabled: bool,
     context_policy_enabled: bool,
+    native_instructions_enabled: bool,
     tools: tuple[str, ...] | None = None,
 ) -> Coder[_CodingAgentDependencies]:
     shell_capabilities: list[Shell[_CodingAgentDependencies]] = []
@@ -583,11 +585,11 @@ def _configure_coder(
     )
 
     def configure(capability):
-        # 0.32 changed Coder defaults. Keep the host's tool/prompt contract using
-        # upstream capabilities; persistent shell and JSON repair are separate choices.
-        if type(capability) is Capability or isinstance(
-            capability, RepairToolArguments
-        ):
+        # 普通产品沿用原生通用说明；显式评测保持原来的提示组合。
+        # Shell 生命周期、参数修复等执行能力仍分别选择。
+        if type(capability) is Capability:
+            return capability if native_instructions_enabled else None
+        if isinstance(capability, RepairToolArguments):
             return None
         if isinstance(capability, FileSystem):
             return AbaqusTextFileSystem[_CodingAgentDependencies](
