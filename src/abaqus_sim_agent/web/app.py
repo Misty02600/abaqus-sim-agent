@@ -378,7 +378,9 @@ def create_app(
     def workspace_file(run_id: str, path: str):
         content, media_type = workspace_preview(controller, run_id, path)
         if isinstance(content, Path):
-            return FileResponse(content, media_type=media_type)
+            return FileResponse(
+                content, media_type=media_type, headers={"Cache-Control": "no-store"}
+            )
         return Response(content=content, media_type=media_type)
 
     @app.post(

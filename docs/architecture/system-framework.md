@@ -267,6 +267,12 @@ API、页面、Thread continuation、模型预览和后台 Solver submit/wait �
 [PLAN-0010](../plans/todo/0010-local-web-workbench.md)，不能由工程接线外推为真实建模或物理收益。
 数据库 Job ledger、durable scheduler、多 worker 和远程执行没有因该 Web 决定自动获选。
 
+对话 PNG 预览复用工作区文件读取接口，按历史工具记录中的相对路径或回复中的 Markdown 图片引用显示。
+它读取的是工作区当前内容，不以当前 continuation 的 `fresh` 标记决定历史图片能否显示，也不新增图片副本、
+附件索引或图片工具。支持 PNG/JPEG/WebP，沿用工作区路径、链接拒绝和 2 MiB 预览边界；图片响应禁止缓存，
+后续重新加载会读取当前文件。原图覆盖后显示新内容，原图移动或删除后显示不可用。已有 artifact 接口的
+hash 校验、执行验收和 OBJ 预览合同保持不变。源文件存在且状态格式兼容时，重启可从保存的对话记录恢复引用。
+
 架构依据：[ADR-0017](../adr/0017-package-by-component-coding-run.md)、
 [ADR-0019](../adr/0019-separate-product-execution-evidence-from-evaluation-oracles.md)、
 [ADR-0020](../adr/0020-resume-coding-runs-with-harness-step-persistence.md)、

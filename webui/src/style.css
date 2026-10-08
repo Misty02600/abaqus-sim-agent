@@ -1252,6 +1252,7 @@ pre {
 }
 .model-preview,
 .viewport-preview {
+  display: block;
   min-width: 0;
   margin: 8px 0 12px 21px;
   overflow: hidden;

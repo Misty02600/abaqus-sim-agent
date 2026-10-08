@@ -158,6 +158,11 @@ workspace/execution状态划定本段fresh evidence。显式修改任务合同�
 也不会自动重跑。本版没有文件上传。文本预览上限256 KiB，
 网页下载上限200 MiB；更大文件从本地工作区读取。HTML/SVG仅作为附件下载。
 
+对话中的本地图片按工作区相对路径读取，例如 `![位移图](outputs/figures/displacement.png)`，
+支持 PNG/JPEG/WebP，沿用工作区文件预览的 2 MiB 上限。CAE 建模执行记录下的 PNG 同样按该次记录的路径显示，
+不要求图片仍是当前轮次的新产物。重启和追加消息不会清除已有引用；覆盖原图后重新加载显示当前内容，
+删除或移动原图后显示读取失败。程序不另存图片副本，图片展示也不代表旧交付物的 hash 验证仍然通过。
+
 接口与状态职责见[架构总览](docs/architecture/overview.md)和[系统框架](docs/architecture/system-framework.md)。
 前端开发与第三方来源见 [webui/README.md](webui/README.md)。`/third-party-notices` 提供构建随附的依赖声明。
 

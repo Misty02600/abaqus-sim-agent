@@ -15,7 +15,7 @@ import type { Artifact, View, Message, ToolSummary } from "./api/client";
 import { ThinkingIcon } from "./ThinkingIcon";
 import { TurnWrittenFiles } from "./TurnWrittenFiles";
 import { ModelPreview } from "./ModelPreview";
-import { ViewportPreview } from "./ViewportPreview";
+import { ViewportPreview, workspaceImagePath } from "./ViewportPreview";
 
 const names: Record<string, string> = {
   ask_user: "补充信息",
@@ -122,13 +122,11 @@ function Tool({
           return file.fresh && path.endsWith(".obj") && changed.has(path);
         })
       : undefined;
-  const viewportArtifact =
+  const viewportPath =
     toolName === "run_cae_script"
-      ? files.find((file) => {
-          const path = file.relative_path.replaceAll("\\", "/").toLowerCase();
-          return file.fresh && path.endsWith(".png") && changed.has(path);
-        })
+      ? (hostSummary?.changed_paths ?? []).find((path) => /\.png$/i.test(path))
       : undefined;
+  const imagePath = viewportPath ? workspaceImagePath(viewportPath) : null;
   return (
     <>
       <div className={`tool-card ${failed ? "tool-failed" : ""}`}>
@@ -180,8 +178,12 @@ function Tool({
       {canPreview && modelArtifact && (
         <ModelPreview runId={runId} artifact={modelArtifact} />
       )}
-      {canPreview && viewportArtifact && (
-        <ViewportPreview runId={runId} artifact={viewportArtifact} />
+      {imagePath && (
+        <ViewportPreview
+          runId={runId}
+          path={imagePath}
+          version={files.find((file) => file.relative_path === imagePath)?.sha256}
+        />
       )}
     </>
   );
@@ -214,11 +216,29 @@ function CodeHeader({ language, code }: CodeHeaderProps) {
     </div>
   );
 }
+function MarkdownImage({ src, alt }: { src?: string; alt?: string }) {
+  const { runId, files } = useConversationRenderContext();
+  if (src && /^https?:\/\//i.test(src)) return <img src={src} alt={alt} />;
+  const path = src ? workspaceImagePath(src) : null;
+  if (!path) {
+    return (
+      <span className="warning">图片路径不可用，请使用工作区内的图片相对路径。</span>
+    );
+  }
+  return (
+    <ViewportPreview
+      runId={runId}
+      path={path}
+      version={files.find((file) => file.relative_path === path)?.sha256}
+      alt={alt}
+    />
+  );
+}
 function Text() {
   return (
     <MarkdownTextPrimitive
       className="markdown"
-      components={{ CodeHeader }}
+      components={{ CodeHeader, img: MarkdownImage }}
     />
   );
 }
