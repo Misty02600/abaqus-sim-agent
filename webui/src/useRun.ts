@@ -13,33 +13,43 @@ export function useRun(id: string | null) {
   const [connected, setConnected] = useState(false);
   const [deleted, setDeleted] = useState(false);
   const generation = useRef(0);
-  const sequence = useRef(0);
+  const inFlight = useRef<{
+    id: string;
+    epoch: number;
+    again: boolean;
+    promise: Promise<void>;
+  } | null>(null);
   const selected = useRef(id);
   selected.current = id;
-  const refresh = useCallback(async () => {
-    if (!id) return;
-    const epoch = generation.current,
-      order = ++sequence.current;
-    try {
-      const next = await request<Snapshot>(runPath(id));
-      if (
-        id === selected.current &&
-        epoch === generation.current &&
-        order === sequence.current
-      ) {
-        setSnapshot(next);
-        setError("");
-      }
-    } catch (error) {
-      if (
-        id === selected.current &&
-        epoch === generation.current &&
-        order === sequence.current
-      ) {
-        setError(errorText(error));
-        if (error instanceof ApiError && error.status === 410) setDeleted(true);
-      }
+  const refresh = useCallback(function refresh(): Promise<void> {
+    if (!id) return Promise.resolve();
+    const epoch = generation.current;
+    const pending = inFlight.current;
+    if (pending?.id === id && pending.epoch === epoch) {
+      pending.again = true;
+      return pending.promise;
     }
+    const current = () => id === selected.current && epoch === generation.current;
+    const flight = { id, epoch, again: false, promise: Promise.resolve() };
+    inFlight.current = flight;
+    flight.promise = request<Snapshot>(runPath(id))
+      .then(next => {
+        if (current()) {
+          setSnapshot(next);
+          setError("");
+        }
+      })
+      .catch(error => {
+        if (current()) {
+          setError(errorText(error));
+          if (error instanceof ApiError && error.status === 410) setDeleted(true);
+        }
+      })
+      .finally(() => {
+        if (inFlight.current === flight) inFlight.current = null;
+        if (flight.again && current()) void refresh();
+      });
+    return flight.promise;
   }, [id]);
   useEffect(() => {
     ++generation.current;
