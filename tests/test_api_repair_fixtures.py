@@ -10,10 +10,18 @@ from typing import Any
 
 import pytest
 
+from abaqus_sim_agent.evaluation.api_repair import ApiRepairCaseSpec, load_case_specs
 from abaqus_sim_agent.execution import Abaqus2024Runner
 
 _PROJECT_ROOT = Path(__file__).parent.parent
 _MANIFEST = _PROJECT_ROOT / "benchmarks" / "coding" / "api_repair_cases.jsonl"
+_VERIFIED_CASES = {
+    "api_repair_final11_new_cards.jsonl": (
+        "set_element_type_direct_faces",
+        "assembly_surface_flat_edges",
+    ),
+    "api_repair_final13_new_cards.jsonl": ("beam_section_orientation_keyword",),
+}
 _PROVENANCE = (
     _PROJECT_ROOT / "benchmarks" / "coding" / "api_repair_runtime_observations.json"
 )
@@ -75,26 +83,47 @@ def test_api_repair_fixture_manifest_is_frozen_and_balanced() -> None:
     )
 
 
+@pytest.mark.parametrize("manifest_name", _VERIFIED_CASES)
+def test_verified_api_repair_manifests_match_broken_fixtures(
+    manifest_name: str,
+) -> None:
+    cases = load_case_specs(_MANIFEST.with_name(manifest_name))
+    assert tuple(case.case_id for case in cases) == _VERIFIED_CASES[manifest_name]
+    assert all(case.runtime_note_available for case in cases)
+    for case in cases:
+        fixture = _PROJECT_ROOT / case.fixture_dir / case.entry_script
+        assert hashlib.sha256(fixture.read_bytes()).hexdigest() == case.fixture_sha256
+        assert not (_PROJECT_ROOT / case.fixture_dir / case.result_file).exists()
+
+
 @pytest.mark.abaqus
 @pytest.mark.skipif(
     not _LICENSED_TESTS_ENABLED,
     reason="set ABAQUS_LICENSED_TESTS=1 to use the local Abaqus license",
 )
-@pytest.mark.parametrize("case", _load_cases(), ids=lambda case: case["case_id"])
+@pytest.mark.parametrize(
+    "case",
+    [
+        case
+        for manifest in (_MANIFEST, *map(_MANIFEST.with_name, _VERIFIED_CASES))
+        for case in load_case_specs(manifest)
+    ],
+    ids=lambda case: case.case_id,
+)
 def test_broken_api_repair_fixture_fails_in_abaqus2024(
-    case: dict[str, Any],
+    case: ApiRepairCaseSpec,
     tmp_path: Path,
 ) -> None:
     if not _LAUNCHER.is_file():
         pytest.skip(f"Abaqus 2024 launcher is not installed at {_LAUNCHER}")
 
-    fixture_dir = _PROJECT_ROOT / case["fixture_dir"]
+    fixture_dir = _PROJECT_ROOT / case.fixture_dir
     workspace = tmp_path / "workspace"
     state_dir = tmp_path / "state"
     workspace.mkdir()
     shutil.copyfile(
-        fixture_dir / case["entry_script"],
-        workspace / case["entry_script"],
+        fixture_dir / case.entry_script,
+        workspace / case.entry_script,
     )
 
     runner = Abaqus2024Runner(
@@ -103,15 +132,19 @@ def test_broken_api_repair_fixture_fails_in_abaqus2024(
         launcher=_LAUNCHER.resolve(strict=True),
     )
     result = asyncio.run(
-        runner.run_cae_script(case["entry_script"], timeout_seconds=300.0)
+        runner.run_cae_script(case.entry_script, timeout_seconds=300.0)
     )
 
     assert not result.timed_out
-    assert not (workspace / case["result_file"]).exists()
+    assert not (workspace / case.result_file).exists()
     combined_output = (result.stdout + "\n" + result.stderr).casefold()
+    if case.case_id in {
+        case_id for case_ids in _VERIFIED_CASES.values() for case_id in case_ids
+    }:
+        assert "abaqus error:" in combined_output
     missing_terms = [
         term
-        for term in case["expected_error_terms"]
+        for term in case.expected_error_terms
         if term.casefold() not in combined_output
     ]
     assert not missing_terms, (

@@ -1,5 +1,4 @@
 import hashlib
-import json
 import shutil
 from pathlib import Path
 from typing import Any, cast
@@ -8,12 +7,6 @@ import lxml.etree as etree
 import pytest
 
 from abaqus_sim_agent.api_catalog import AbaqusScriptingReferenceLoader, ApiCatalog
-from abaqus_sim_agent.api_catalog.cli import main
-from abaqus_sim_agent.api_catalog.discovery import (
-    PROJECTION_V2,
-    CatalogDiscovery,
-    make_views,
-)
 from abaqus_sim_agent.api_catalog.models import (
     ApiParameter,
     ApiSourceRef,
@@ -64,7 +57,7 @@ def test_context_preserves_conditions_math_order_and_sources(tmp_path):
     assert ApiCatalog.open(tmp_path / "catalog").cards == catalog.cards
 
 
-def test_existing_reads_and_versioned_discovery_are_usable(tmp_path):
+def test_method_and_parameter_reads_preserve_official_context(tmp_path):
     catalog, _, _ = source_catalog(tmp_path)
     normal = _api_lookup_payload(catalog.lookup("Material.Elastic"), error_excerpt=None)
     assert "connectors" in normal["cards"][0]["object_descriptions"][0]["text"]
@@ -74,20 +67,6 @@ def test_existing_reads_and_versioned_discovery_are_usable(tmp_path):
     )
     assert "Poisson" in detail["parameter"]["table_data"][0]["text"]
     assert "object_descriptions" not in detail["parameter"]
-    original = CatalogDiscovery.build(catalog, tmp_path / "v1")
-    improved = CatalogDiscovery.build(
-        catalog, tmp_path / "v2", projection=PROJECTION_V2
-    )
-    assert CatalogDiscovery.open(catalog, tmp_path / "v1").views == original.views
-    assert improved.manifest.projection == PROJECTION_V2
-    target = next(v for v in improved.views if v.name == "Material.Elastic")
-    assert "Poisson" in target.text
-    assert "ISOTROPIC" in target.text
-    assert (
-        "Poisson"
-        not in next(v for v in make_views(catalog) if v.name == "Material.Elastic").text
-    )
-    assert improved.read(target.card_id).official_records[0].context
 
 
 def test_unknown_math_and_damaged_source_are_explicit():
@@ -103,55 +82,6 @@ def test_unknown_math_and_damaged_source_are_explicit():
     assert len(value.text_warnings) == 2
     assert "mroot" in value.raw_xhtml
     assert "mroot" in value.text
-
-
-def test_v2_keeps_variant_parameters_separate(tmp_path):
-    catalog, records, _ = source_catalog(tmp_path)
-    record = next(r for r in records if r.callable_name == "Elastic")
-    variants = tuple(
-        record.model_copy(
-            update={
-                "record_id": str(i),
-                "context": (),
-                "summary": "Create an instance.",
-                "required_parameters": (
-                    ApiParameter(name=name, required=True, description=description),
-                ),
-            }
-        )
-        for i, name, description in [
-            (1, "part", "A Part to be instanced."),
-            (2, "model", "A Model to be instanced."),
-        ]
-    )
-    card = (
-        catalog.lookup("Material.Elastic")
-        .cards[0]
-        .model_copy(update={"official_records": variants})
-    )
-    view = make_views(ApiCatalog([card], runtime_release="2024"), PROJECTION_V2)[0]
-    assert "Official variant 1 part: A Part" in view.text
-    assert "Official variant 2 model: A Model" in view.text
-    assert "Official variant 1 model:" not in view.text
-
-
-def test_cli_can_explicitly_build_v2(tmp_path, capsys):
-    source_catalog(tmp_path)
-    assert (
-        main(
-            [
-                "index",
-                "--catalog-dir",
-                str(tmp_path / "catalog"),
-                "--index-dir",
-                str(tmp_path / "index"),
-                "--projection",
-                PROJECTION_V2,
-            ]
-        )
-        == 0
-    )
-    assert json.loads(capsys.readouterr().out)["projection"] == PROJECTION_V2
 
 
 @pytest.mark.parametrize("query", ["Region", "Assembly.Surface"])

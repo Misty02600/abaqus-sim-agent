@@ -56,12 +56,16 @@ LE8新题面按原题图中的36°定位过渡圆弧中面上的D截面，再取
 - [plate修改suite](plate_model_change_suite_evaluation_20260825.json)、[梁截面修改](beam_section_change_evaluation_20260827.json)、
   [梁弯曲合同](beam_bending_convergence_evaluation_20260827.json)：逐Case验收。继续消费经过原合同/hash校验的已有种子，无法通过已删除的Gold驱动新建种子批次。
 - [API修复](api_repair_regression_evaluation_20260824.json)、[runtime feedback repair](runtime_feedback_repair_protocol_v2.md)：固定修复任务，独立于从零仿真。
-- [力学行为题](foundation_public_mechanics_protocol_v1.md)、[Skill routing](skill_routing_protocol_v1.md)：行为测评，不计入领域仿真完成率。
+- [Skill routing](skill_routing_protocol_v1.md)及Foundation行为评测继续维护，不计入领域仿真完成率；
+  [早期力学行为题](foundation_public_mechanics_protocol_v1.md)及配对pilot/follow-up仅保留冻结输入与报告，专用实现已删除，见[历史源码入口](../README.md#已退出维护的实验代码)。
 - [产品执行smoke](product_open_cube_execution_evidence_20260831.json)、[会话恢复](coding_run_resume_provider_smoke_20260902.json)：产品执行与状态边界，不是物理验收。
 
 Skill专项的三份入口共用[skill_observation.py](../../src/abaqus_sim_agent/evaluation/skill_observation.py)读取既有history/analysis/outcome。
 `read_skill_evidence`提取事实，`score_skill_route`只计算两套路由测评的加载判据；各入口的`observe_case`保留原输出字段与本族参数。
 Foundation行为测评仍将语义结论留给独立审查，不把路由分数当作工程正确性。新批次的实现hash包含共享模块；旧批次不回填。
+
+API修复的原始六题及final11/final13新增三题共用`tests/test_api_repair_fixtures.py`，保留各自冻结manifest、
+fixture摘要和持证失败判据；不再为每个历史版本复制测试文件。
 
 线性基础与结构专题两组Skill路由的新运行版本为`*-skill-routing-v2-native-evals`：
 各自的`run_evaluation`构造Dataset，以单题task调用原有CodingRunService；

@@ -135,8 +135,8 @@ NAFEMS各题单位均为m–N–Pa（LE11另含°C），除LE3外E=210GPa、ν=.
 
 | 入口 | 当前配置/可用性 | 历史边界 |
 |---|---|---|
-| `public_mechanics_suite` | v31；`prepare/preflight/doctor/run/continue/resume/pause/report/launch`；`--case`可指定多个不同Case，不选则15题；历史/未入选Case只作非计分诊断。必传新ASCII `--root` 与 `--catalog`；默认Foundation on、API full、Planning off、docs off、legacy_decision；新批次每题累计上限为200次模型请求、80次Abaqus调用（其中Solver最多10次），活动时间5400秒，澄清0，lookup/preflight计数不限；HTTP300秒+4次retry；任务/runtime并发各1（可选2） | `prepare`复制源码/Skill/Catalog，拒绝未经答案审查的外部knowledge附件；seal绑定依赖与launcher。`preflight`是假模型，`doctor`会真实访问Provider。旧批次必须用其worker/snapshot与匹配依赖，当前report拒绝覆盖旧version |
-| `foundation_public_mechanics_benchmark` | 更早的力学行为/回答题集装配与评分 | 与当前20题仿真suite不同，不能因同名Case把行为分数计入仿真完成 |
+| `public_mechanics_suite` | v31；`prepare/preflight/doctor/run/continue/resume/report`；`--case`可指定多个不同Case，不选则15题；历史/未入选Case只作非计分诊断。必传新ASCII `--root` 与 `--catalog`；默认Foundation on、API full、Planning off、docs off、legacy_decision；新批次每题累计上限为200次模型请求、80次Abaqus调用（其中Solver最多10次），活动时间5400秒，澄清0，lookup/preflight计数不限；HTTP300秒+4次retry；任务/runtime并发各1（可选2） | `prepare`复制源码/Skill/Catalog，拒绝未经答案审查的外部knowledge附件；seal绑定依赖与launcher。`preflight`是假模型，`doctor`会真实访问Provider。旧批次必须用其worker/snapshot与匹配依赖，当前report拒绝覆盖旧version |
+| 早期Foundation力学行为题 | 专用装配与配对驱动已删除；输入与报告保留，[原实现见Git基线](../README.md#已退出维护的实验代码) | 与当前20题仿真suite不同，不能因同名Case把行为分数计入仿真完成 |
 
 公开 v1及多项v6–v22历史配置通常为40/18/6/2700秒、API8、Planning on，HTTP又分60/retry10、600/retry0、180/retry1等。
 v5事后恢复还修改limits/timeout；完整值按冻结manifest与amendment分别读，不能仅以目录v号推断当前执行条件。

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import builtins
+import subprocess
 import sys
 import zipfile
 from collections.abc import Mapping, Sequence
@@ -13,7 +14,6 @@ from abaqus_sim_agent.api_catalog.abqpy import (
     load_abqpy_records,
 )
 from abaqus_sim_agent.api_catalog.catalog import ApiCatalog
-from abaqus_sim_agent.api_catalog.cli import main as api_catalog_main
 
 _FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "api_catalog" / "abqpy" / "source"
 _FIXTURE_SRC = _FIXTURE_ROOT / "src"
@@ -186,14 +186,20 @@ def test_rejects_a_source_without_an_abaqus_package(tmp_path: Path) -> None:
         )
 
 
-def test_cli_build_accepts_abqpy_source_without_intermediate_jsonl(
+def test_catalog_command_accepts_abqpy_source_without_intermediate_jsonl(
     tmp_path: Path,
 ) -> None:
     output_dir = tmp_path / "catalog"
 
-    exit_code = api_catalog_main(
+    subprocess.run(
         [
-            "build",
+            str(
+                Path(sys.executable).with_name(
+                    "abaqus-sim-agent-catalog.exe"
+                    if sys.platform == "win32"
+                    else "abaqus-sim-agent-catalog"
+                )
+            ),
             "--runtime-release",
             "2024",
             "--output-dir",
@@ -202,10 +208,13 @@ def test_cli_build_accepts_abqpy_source_without_intermediate_jsonl(
             str(_FIXTURE_ROOT),
             "--abqpy-version",
             "2024.test",
-        ]
+        ],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
     )
 
-    assert exit_code == 0
     catalog = ApiCatalog.open(output_dir)
     assert catalog.lookup("Part.seedEdgeByNumber").status == "found"
     assert catalog.manifest is not None

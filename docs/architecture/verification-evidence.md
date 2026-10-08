@@ -71,6 +71,9 @@
 
 ## API、文档与专业知识
 
+下列历史开发实验保留原题目、报告和seal；API专用实验脚本与Foundation旧配对驱动已删除，
+原实现及复现边界见[历史源码入口](../../benchmarks/README.md#已退出维护的实验代码)。这次精简不重算或更新旧成绩。
+
 - [Catalog candidate v3](../../benchmarks/api_catalog/modeling_candidate_v3_20260914.md)和
   [reference context v2](../../benchmarks/api_catalog/reference_context_discovery_v2_20260914.md)：
   候选内容覆盖与原题开发回放，不是默认替换或跨版本运行兼容保证。

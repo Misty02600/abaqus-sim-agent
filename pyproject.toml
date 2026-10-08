@@ -25,7 +25,6 @@ dependencies = [
   "pydantic-ai-harness[skills]==0.36.0",
   "pydantic-ai-slim[anthropic,bedrock,bedrock-mantle,cerebras,cohere,crusoe,google,groq,huggingface,mistral,openai,openrouter,snowflake,typesafe,zai]==2.51.0",
   "requests>=2.34,<3",
-  "snowballstemmer==3.0.1",
   "tokenizers>=0.23,<1",
 ]
 
@@ -43,6 +42,7 @@ static-preflight = [
 [project.scripts]
 abaqus-sim-agent = "abaqus_sim_agent.coding.cli:main"
 abaqus-sim-agent-web = "abaqus_sim_agent.web.cli:main"
+abaqus-sim-agent-catalog = "abaqus_sim_agent.api_catalog.build:main"
 
 [project.urls]
 Homepage = "https://github.com/Misty02600/abaqus-sim-agent"

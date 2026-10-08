@@ -27,9 +27,14 @@ workspace 下，因此不再用“必须在 workspace 外”判断 Catalog 可�
 底层 `create_abaqus_coding_agent()` 只接受 `api_catalog_mode`，不提供旧式 `api_catalog_enabled`
 开关或兼容转换。工厂默认 `off` 供显式评测等调用使用；普通产品装配始终传入 launch 中已启用的模式。
 
-当前 Catalog 是精确卡片与对象方法目录，独立检索实验另有 BM25/E5 意图搜索。两者不能仅因都叫
-discovery 就视为同一产品接口。早期 [API 方案实验](../../benchmarks/api_catalog/api_discovery_loop_v1_20260915.md)
+当前Catalog保留精确卡片与对象方法目录；旧BM25/E5意图搜索及Catalog多子命令CLI已删除。
+两者不能仅因都叫discovery就视为同一产品接口。早期 [API 方案实验](../../benchmarks/api_catalog/api_discovery_loop_v1_20260915.md)
 没有经过 CodingRunService；后续提交 `74fa6e3` 才加入下面的产品目录工具和恢复接线。
+早期API开发实验和Foundation配对试验的专用实现已退出活动源码，历史证据与源码定位见
+[测评入口](../../benchmarks/README.md#已退出维护的实验代码)。资源构建仅保留`abaqus-sim-agent-catalog`命令，
+由`[project.scripts]`注册并直接调用[build.main](../../src/abaqus_sim_agent/api_catalog/build.py)，
+来源摘要和不可变目录写入语义保持不变。
+产品目录发现与精确查询、runtime notes构建输入、离线Catalog校验函数及两组Skill路由评测继续保留。
 
 ## API卡片返回中的多种官方定义
 

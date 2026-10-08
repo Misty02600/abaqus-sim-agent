@@ -348,7 +348,7 @@ resume、Web continuation 和 task revision 继续使用原快照，不能重新
 新 CLI/Web 始终绑定 Catalog 并支持 ask_user_v1，查询 usage、去重和证据随问答恢复累计。
 `full_with_discovery` 已接入产品 CLI 和恢复：`discover_abaqus_api` 按已知 receiver 列出方法名称与 Card ID，
 模型应继续 `lookup_abaqus_api` 读取证据；候选不会记为已读卡片。journal 保留查询、
-计数与实际交付内容。该目录工具不是下面的 BM25/E5 自然语言发现实验，详见
+计数与实际交付内容。历史 BM25/E5 自然语言发现实验已退出维护；当前目录工具的语义见
 [知识接入与恢复边界](docs/architecture/knowledge-access.md)。
 没有Python异常类型的CAE错误，只有在宿主确认非超时失败、frame指向本次执行hash匹配的工作区脚本，
 且调用可以唯一定位时才进入API提示；歧义或源码变化时不推断修复。默认模式不会向模型暴露主动 Catalog 工具。
@@ -395,55 +395,28 @@ uv run python -m abaqus_sim_agent.retrieval search `
   --index-dir var\rag --mode hybrid "plane stress reduced integration quadrilateral"
 ```
 
-以下是维护与评测入口；普通 CLI/Web 已使用包内 Catalog，无需执行。构建新的本地 Catalog 后再做精确查询；不要覆盖已封存目录：
+Catalog资源通过单一构建命令维护，由`pyproject.toml`的`[project.scripts]`注册；普通CLI/Web自动使用包内Catalog，无需手动构建。输出须为新目录，不覆盖已封存资源：
 
 ```powershell
-uv run python -m abaqus_sim_agent.api_catalog build `
+uv run abaqus-sim-agent-catalog `
   --runtime-release 2024 `
   --docs-root D:\SIMULIA\Documentation\2026LE `
   --abqpy-source var\api-catalog\sources\abqpy-2024.10-py3-none-any.whl `
   --abqpy-version 2024.10 `
   --runtime-notes benchmarks\api_catalog\abaqus_2024_runtime_notes.jsonl `
   --output-dir var\api-catalog\local-build
-
-uv run python -m abaqus_sim_agent.api_catalog lookup `
-  --catalog-dir var\api-catalog\local-build Model.SurfaceTraction.directionVector
 ```
 
 final15 是历史实验的不可变 Catalog；[final15 绑定](benchmarks/api_catalog/abaqus_api_catalog_final15_20260828.json)
 用于复核原批次。上面的命令使用当前修订的 runtime notes，不能声称复现 final15 hash 或旧成绩；
 说明修订与已有目录的关系见[知识接入](docs/architecture/knowledge-access.md)。
 
-新建Catalog会保留abqpy方法docstring；已有lookup可用`Part.setElementType.__doc__`按需读取原文，
+Catalog命令只负责构建，不再提供查询、评分或语义检索子命令。精确查询由`ApiCatalog.lookup()`及Agent工具调用，
+离线质量校验复用`api_catalog.evaluation`和对应工程测试。
+新建Catalog会保留abqpy方法docstring；lookup可用`Part.setElementType.__doc__`按需读取原文，
 参数查询仍使用`Part.setElementType.regions`。旧目录保持可读，不自动补写说明。
-独立 BM25/E5 自然语言发现支持以下离线命令；它尚未成为普通 CLI 的模型工具，与产品 receiver 目录不同：
-
-```powershell
-uv run --no-sync python -m abaqus_sim_agent.api_catalog discover `
-  --catalog-dir var/api-catalog/abaqus-2024-docstrings-v1 `
-  --index-dir var/api-catalog/discovery-docstrings-v1-e5 `
-  --strategy dense --encoder-dir var/models/multilingual-e5-base-d128750 `
-  "将指定有限元单元类型赋给零件中的几何区域"
-```
-
-`--strategy bm25`不需要encoder；`index`构建新索引，`read`按候选card_id读取绑定的完整卡片。
-这些命令需要本地构建资产，不自动下载模型。候选不证明适用性或物理正确性。
-复核命令、固定模型文件绑定和失败分析见[1B/2A报告](benchmarks/api_catalog/docstrings_discovery_v1_20260914.md)。
-
-v2 保留官方对象用途与方法 Table data，支持 `index --projection api-discovery-view-v2` 显式构建，
-旧 v1 仍可读取。内容补齐与原题开发回放见 [v2 报告](benchmarks/api_catalog/reference_context_discovery_v2_20260914.md)，
-不把局部命中改善当作中文范围可用或真实任务收益。
-
-离线发现还可显式使用`discover --intent-file <JSON>`，JSON包含宿主保留的`original_request`和用于排名的
-`operation`。`--lexical-profile english-snowball-v1`启用英文停用词/词干处理，仅作用于BM25；默认legacy和Exact定位不变。
-原需求会完整回传供采用前核对，不代表自动验证约束。该意图搜索仍是独立能力，见
-[操作意图与词法处理报告](benchmarks/api_catalog/operation_intent_lexical_v1_20260914.md)。
-
-API 意图准备、评测专用语义发现和历史失败反馈各有独立实验，详细分数、解释错误与 Provider 中断保留在
-[扩展测评](benchmarks/api_catalog/intent_suite_expansion_20260914.md)、
-[API 方案小闭环](benchmarks/api_catalog/api_discovery_loop_v1_20260915.md)及
-[历史失败查证](benchmarks/api_catalog/historical_api_feedback_v1_20260915.md)。这些零 Abaqus 观察不能称仿真通过。
-产品当前接线以 [知识接入](docs/architecture/knowledge-access.md)为准，实验历史不替代当前接口说明。
+官方对象用途、参数表格和多来源定义仍随卡片保留。旧语义发现、意图改写及API查证实验的报告保持原文，
+历史源码与复现边界见[测评入口](benchmarks/README.md#已退出维护的实验代码)；当前产品接线见[知识接入](docs/architecture/knowledge-access.md)。
 
 检索评测、当前证据基线和已知缺口统一见[RAG索引](benchmarks/rag/README.md)；
 独立服务参数可通过 `uv run python -m abaqus_sim_agent.evaluation.runtime_evidence_service --help` 查看；

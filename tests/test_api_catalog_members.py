@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import subprocess
+import sys
 import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
@@ -25,7 +27,6 @@ from abaqus_sim_agent.api_catalog import (
     load_abqpy_member_cards,
     load_abqpy_records,
 )
-from abaqus_sim_agent.api_catalog.cli import main
 from abaqus_sim_agent.coding.agent import create_abaqus_coding_agent
 from abaqus_sim_agent.coding.api_lookup import runtime_api_hint
 from abaqus_sim_agent.coding.cli import _api_catalog_binding
@@ -231,33 +232,39 @@ def test_member_strict_lookup_and_manifest_contracts(tmp_path: Path) -> None:
         )
 
 
-def test_cli_member_opt_in(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_catalog_command_member_opt_in(tmp_path: Path) -> None:
     path = _wheel(tmp_path)
-    root = tmp_path / "cli-catalog"
-    assert (
-        main(
-            [
-                "build",
-                "--runtime-release",
-                "2024",
-                "--output-dir",
-                str(root),
-                "--abqpy-source",
-                str(path),
-                "--abqpy-version",
-                "2024.10",
-                "--abqpy-member-owner",
-                "OdbAssembly",
-            ]
-        )
-        == 0
+    root = tmp_path / "catalog"
+    completed = subprocess.run(
+        [
+            str(
+                Path(sys.executable).with_name(
+                    "abaqus-sim-agent-catalog.exe"
+                    if sys.platform == "win32"
+                    else "abaqus-sim-agent-catalog"
+                )
+            ),
+            "--runtime-release",
+            "2024",
+            "--output-dir",
+            str(root),
+            "--abqpy-source",
+            str(path),
+            "--abqpy-version",
+            "2024.10",
+            "--abqpy-member-owner",
+            "OdbAssembly",
+        ],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
     )
-    capsys.readouterr()
-    assert main(["lookup", "--catalog-dir", str(root), "OdbAssembly.nodeSets"]) == 0
-    assert (
-        json.loads(capsys.readouterr().out)["members"][0]["declaring_name"]
-        == "Base.nodeSets"
-    )
+    catalog = ApiCatalog.open(root)
+    assert json.loads(completed.stdout)["member_count"] == len(catalog.members)
+    result = catalog.lookup("OdbAssembly.nodeSets")
+    assert result.status == "found"
+    assert result.members[0].declaring_name == "Base.nodeSets"
 
 
 def test_members_traverse_real_coder_tool_budget_and_trace(
