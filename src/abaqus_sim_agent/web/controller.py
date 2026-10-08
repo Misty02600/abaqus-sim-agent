@@ -1150,6 +1150,13 @@ class RunController:
                     inputs,
                     models=self.available_models(),
                 )
+                from ..coding.tool_selection import resolve_tool_names
+
+                resolve_tool_names(
+                    settings.tools,
+                    settings.exclude_tools,
+                    knowledge=bool(settings.knowledge_pack_ids),
+                )
             except ValueError as exc:
                 raise WebError("invalid_options", f"会话配置无效：{exc}", 422) from exc
             state = self.registry.state_dir(run_id)
@@ -1510,7 +1517,7 @@ class RunController:
             runtime_policy_block = None
             if run_id in self._deleting or deletion_stopping:
                 runtime_policy_block = "会话删除尚未完成。"
-            elif launch.schema_version != "coding-run-launch-v10":
+            elif launch.schema_version != "coding-run-launch-v11":
                 runtime_policy_block = "旧会话不支持修改运行权限。"
             elif active or external_busy:
                 runtime_policy_block = "当前工作段仍在执行。"
@@ -1538,7 +1545,7 @@ class RunController:
             message_block = None
             if run_id in self._deleting or deletion_stopping:
                 message_block = "会话删除尚未完成，请重试删除。"
-            elif launch.schema_version != "coding-run-launch-v10":
+            elif launch.schema_version != "coding-run-launch-v11":
                 message_block = "旧会话不支持追加消息，请新建会话。"
             elif tool_needs_reconcile:
                 message_block = "Solver 外部执行状态未知，请先核查运行状态与产物。"

@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Literal, cast
 
 from abaqus_sim_agent.api_catalog import ApiCatalog
-from abaqus_sim_agent.coding.api_lookup import DEFAULT_PRODUCT_API_CATALOG_MODE
 from abaqus_sim_agent.coding.model import (
     DEEPSEEK_V4_FLASH,
     DEFAULT_MODEL_HTTP_RETRIES,
@@ -24,6 +23,10 @@ from abaqus_sim_agent.evaluation.api_repair import (
 )
 
 REPO_ROOT = Path(__file__).parents[3]
+# 固定v2实验的两臂条件，不随普通产品的工具默认值变化。
+STATIC_FEEDBACK_CATALOG_MODE: Literal["automatic_verified_only"] = (
+    "automatic_verified_only"
+)
 DEFAULT_MANIFEST = (
     REPO_ROOT / "benchmarks/coding/runtime_feedback_repair_cases_v1.jsonl"
 )
@@ -110,7 +113,7 @@ async def run_pilot(
         "http_retries": http_retries,
         "repetitions": repetitions,
         "profiles": {"control": "off", "treatment": "on"},
-        "api_catalog_mode": DEFAULT_PRODUCT_API_CATALOG_MODE,
+        "api_catalog_mode": STATIC_FEEDBACK_CATALOG_MODE,
         "bindings": bindings,
         "versions": {
             "pydantic_ai": version("pydantic-ai-slim"),
@@ -132,7 +135,7 @@ async def run_pilot(
                 model_gateway=model_gateway,
                 model_name=model_name,
                 http_retries=http_retries,
-                api_catalog_mode=DEFAULT_PRODUCT_API_CATALOG_MODE,
+                api_catalog_mode=STATIC_FEEDBACK_CATALOG_MODE,
                 api_catalog_dir=api_catalog_dir,
                 case_ids=(trial.case_id,),
                 static_preflight_mode=trial.profile,

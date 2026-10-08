@@ -22,6 +22,7 @@ from .options import ResolvedRunOptions
 from .response_stream import StoppedReply, load_stopped_replies
 from .resume import load_effective_run_for_resume, load_original_request_for_resume
 from .static_preflight import prepare_static_preflight_source
+from .tool_selection import resolve_tool_names
 from .user_questions import UserAnswerInput, UserQuestion, submit_answer
 from .workspace import WorkspaceResolver, WorkspaceSnapshot
 
@@ -58,6 +59,11 @@ def prepare_new_run(
     evaluation_tool_limits: EvaluationToolLimits | None = None,
     knowledge_packs_root: Path | None = None,
 ) -> PreparedCodingRun:
+    selected_tools = resolve_tool_names(
+        settings.tools,
+        settings.exclude_tools,
+        knowledge=bool(settings.knowledge_pack_ids),
+    )
     resolved = WorkspaceResolver().resolve_interactive(
         run_id=run_id, workspace=workspace, state_dir=state_dir
     )
@@ -90,7 +96,7 @@ def prepare_new_run(
     )
     skill_library = settings.skill_library.resolve(strict=True)
     launch = LaunchManifest(
-        schema_version="coding-run-launch-v10",
+        schema_version="coding-run-launch-v11",
         question_protocol="ask_user_v1",
         response_enabled=True,
         domain_knowledge=domain_knowledge,
@@ -101,7 +107,7 @@ def prepare_new_run(
         ),
         context_policy_version="model-window-tiered-summary-v1",
         api_catalog_dir=settings.api_catalog_dir.resolve(strict=True),
-        api_catalog_mode=settings.api_catalog_mode,
+        tools=selected_tools,
         static_preflight_mode=settings.static_preflight_mode,
         abqpy_static_wheel=settings.abqpy_static_wheel,
         static_preflight_cache_dir=settings.static_preflight_cache_dir,
@@ -115,7 +121,7 @@ def prepare_resume(state_dir: Path) -> PreparedCodingRun:
     launch = LaunchManifest.model_validate_json(
         (state_dir / "launch.json").read_bytes()
     )
-    if launch.schema_version != "coding-run-launch-v10":
+    if launch.schema_version != "coding-run-launch-v11":
         raise ValueError("pre-release CodingRun launch schema is not supported")
     return PreparedCodingRun(
         effective.request,

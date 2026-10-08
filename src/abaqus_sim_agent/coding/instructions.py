@@ -31,6 +31,7 @@ def build_instructions(
     question_protocol: Literal["legacy_decision", "ask_user_v1"] = "legacy_decision",
     response_enabled: bool = False,
     general_shell_enabled: bool = False,
+    background_solver_enabled: bool | None = None,
     foundation_skill_profile: Literal["off", "linear_structural_fea_v1"] = "off",
 ) -> str:
     if interaction_policy not in ("legacy", "workspace_facts_first"):
@@ -53,9 +54,14 @@ def build_instructions(
         "blocking input is unresolved. Independent inspection may continue; obey an explicit\n"
         "user instruction to ask first without taking other actions."
     )
+    background_solver = (
+        general_shell_enabled
+        if background_solver_enabled is None
+        else background_solver_enabled
+    )
     runtime_script_policy_instructions = _runtime_script_policy_instructions(
         request,
-        background_solver_enabled=general_shell_enabled,
+        background_solver_enabled=background_solver,
     )
     static_preflight_instructions = _static_preflight_instructions(request)
     catalog_instructions = (
@@ -225,7 +231,7 @@ automatic Skill or Catalog updates.
         "execution ID. You may do independent work after submission, but call "
         "`solver_job` with `action=wait` before reading Solver outputs or ending "
         "the run."
-        if general_shell_enabled
+        if background_solver
         else "Use `run_solver_job` for the Solver stage."
     )
     if foundation_skill_profile == "linear_structural_fea_v1":

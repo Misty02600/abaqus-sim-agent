@@ -74,8 +74,9 @@ async def open_coding_run(
     if continuation_id is not None and not resume:
         raise ValueError("host continuation requires resume mode")
     execution = launch.effective_execution(pure_edit=request.edit_scope is not None)
-    if launch.schema_version != "coding-run-launch-v10":
+    if launch.schema_version != "coding-run-launch-v11":
         raise ValueError("pre-release CodingRun launch schema is not supported")
+    assert launch.tools is not None
     validate_filesystem_skill_bindings(
         launch.skill_library,
         launch.capability_definitions,
@@ -129,7 +130,7 @@ async def open_coding_run(
                 model,
                 request,
                 skill_library=launch.skill_library,
-                api_catalog_mode=launch.api_catalog_mode,
+                tools=launch.tools,
                 concept_retrieval_mode=launch.concept_retrieval_mode,
                 diagnostic_retrieval_mode=launch.diagnostic_retrieval_mode,
                 step_store=store,
@@ -142,7 +143,7 @@ async def open_coding_run(
                     launch.question_protocol == "ask_user_v1"
                     and launch.allows_response()
                 ),
-                context_policy_enabled=launch.schema_version == "coding-run-launch-v10",
+                context_policy_enabled=launch.schema_version == "coding-run-launch-v11",
             )
             dependencies = CodingAgentDependencies(
                 request=request,

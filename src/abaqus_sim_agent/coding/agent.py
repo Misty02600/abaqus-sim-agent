@@ -10,7 +10,7 @@ from pydantic_ai.capabilities import Capability, Instrumentation
 from pydantic_ai.models import Model
 from pydantic_ai_harness import Coder, Skills, StepPersistence, ToolGuardrail
 from pydantic_ai_harness.compaction import ClearToolResults, WarnNearLimits
-from pydantic_ai_harness.filesystem import FileSystem
+from pydantic_ai_harness.filesystem import DEFAULT_TOOL_NAMES, FileSystem
 from pydantic_ai_harness.guardrails import GuardrailResult, ToolCallInfo
 from pydantic_ai_harness.planning import Planning
 from pydantic_ai_harness.repair_tool_arguments import RepairToolArguments
@@ -76,6 +76,7 @@ from abaqus_sim_agent.coding.runtime_tools import (
     register_runtime_tools as _register_runtime_tools,
 )
 from abaqus_sim_agent.coding.text_files import AbaqusTextFileSystem
+from abaqus_sim_agent.coding.tool_selection import SelectedTools, resolve_tool_names
 from abaqus_sim_agent.coding.user_questions import (
     CodingAgentOutput,
     QuestionProtocol,
@@ -203,6 +204,7 @@ def create_abaqus_coding_agent(
     *,
     skill_library: Path | None = None,
     api_catalog_mode: _ApiCatalogMode = "off",
+    tools: tuple[str, ...] | None = None,
     concept_retrieval_mode: _ConceptRetrievalMode = "off",
     diagnostic_retrieval_mode: _DiagnosticRetrievalMode = "off",
     diagnostic_retrieval_instructions_enabled: bool | None = None,
@@ -228,10 +230,12 @@ def create_abaqus_coding_agent(
         model: Pydantic AI 使用的模型实现。
         request: 已解析工作区、运行时和预算合同。
         skill_library: 可选的领域 Skill 库目录。
-        api_catalog_mode: Catalog 注入模式，底层工厂默认 ``off``；普通产品装配显式传入已启用模式。
+        api_catalog_mode: 显式评测沿用的Catalog合同；普通产品由tools控制可见性，报错提示固定开启。
             ``automatic_verified_only`` 仅在运行时失败后注入已验证短注释。
             ``automatic_exact_signature`` 只在精确 traceback 唯一命中时
             注入紧凑签名，并附带适用的已验证短注释。
+        tools: 普通产品launch保存的实际工具集合；提供时固定保留报错后的Catalog提示。
+            未提供时仅供显式评测沿用原来的profile合同。
         concept_retrieval_mode: ``tool`` 时显式暴露官方建模文档查询；
             默认 ``off``，不改变已有 CodingRun 的提示词和工具集合。
         diagnostic_retrieval_mode: ``advisory`` 时在合格Solver诊断的同一
@@ -260,7 +264,7 @@ def create_abaqus_coding_agent(
         knowledge_allowed_patterns: 只读资料工具允许访问的文本文件 glob。
         response_enabled: 新普通会话是否允许无文件的文字答复完成；固定任务及旧会话默认关闭。
         product_coding_tools: 是否启用普通产品的受限 Shell 与后台 Solver 工具。
-        context_policy_enabled: 是否启用 launch v10 的 1M tiered compaction。
+        context_policy_enabled: 是否启用按实际模型窗口绑定的分层上下文管理。
 
     Returns:
         配置完成、但尚未运行的单 Agent 实例。
@@ -291,6 +295,19 @@ def create_abaqus_coding_agent(
     apply_harness_windows_shell_tree_patch()
     apply_harness_windows_jsonl_append_patch()
     product_shell_enabled = product_coding_tools
+    if tools is not None:
+        selected = resolve_tool_names(
+            tools,
+            shell=product_shell_enabled,
+            runtime=request.edit_scope is None,
+            questions=question_protocol == "ask_user_v1",
+            knowledge=knowledge_resources_dir is not None,
+            documents=concept_retrieval_mode == "tool",
+            bounded_documents=bounded_documents,
+        )
+        if set(selected) != set(tools):
+            raise ValueError("saved tools are missing required protocol tools")
+        api_catalog_mode = "full"
     if product_shell_enabled and (
         question_protocol != "ask_user_v1"
         or not response_enabled
@@ -305,11 +322,14 @@ def create_abaqus_coding_agent(
         request.workspace,
         shell_enabled=product_shell_enabled,
         context_policy_enabled=context_policy_enabled,
+        tools=tools,
     )
     capabilities: list[Any] = [
         coder,
         StepPersistence(store=step_store or _create_step_store(request.state_dir)),
     ]
+    if tools is not None:
+        capabilities.append(SelectedTools(tools))
     if execution_config is not None and execution_config.output_truncation_recovery:
         from .output_recovery import OutputTruncationRecovery
 
@@ -335,20 +355,28 @@ def create_abaqus_coding_agent(
                 else None
             ),
         )
-    if product_shell_enabled:
+    shell_guard_tools = tuple(
+        name
+        for name in ("run_command", "start_command")
+        if tools is None or name in tools
+    )
+    if product_shell_enabled and shell_guard_tools:
         capabilities.append(
             ToolGuardrail[_CodingAgentDependencies](
                 guard=_abaqus_launcher_shell_guard,
-                tools=("run_command", "start_command"),
+                tools=shell_guard_tools,
             )
         )
     if request.edit_scope is not None:
         capabilities.append(ReferenceEditCapability())
-    if immutable_workspace_paths:
+    edit_guard_tools = tuple(
+        name for name in ("write_file", "edit_file") if tools is None or name in tools
+    )
+    if immutable_workspace_paths and edit_guard_tools:
         capabilities.append(
             ToolGuardrail[_CodingAgentDependencies](
                 guard=_immutable_workspace_guard(immutable_workspace_paths),
-                tools=("write_file", "edit_file"),
+                tools=edit_guard_tools,
             )
         )
     if skill_library is not None:
@@ -445,9 +473,18 @@ def create_abaqus_coding_agent(
         output_type=outputs,
         instructions=_build_instructions(
             request,
-            api_catalog_enabled=api_catalog_mode in {"full", "full_with_discovery"},
-            api_discovery_enabled=api_catalog_mode == "full_with_discovery",
+            api_catalog_enabled=(
+                "lookup_abaqus_api" in tools
+                if tools is not None
+                else api_catalog_mode in {"full", "full_with_discovery"}
+            ),
+            api_discovery_enabled=(
+                "discover_abaqus_api" in tools
+                if tools is not None
+                else api_catalog_mode == "full_with_discovery"
+            ),
             concept_retrieval_enabled=concept_retrieval_mode == "tool"
+            and (tools is None or "search_abaqus_docs" in tools)
             and not bounded_documents,
             diagnostic_retrieval_enabled=(
                 diagnostic_retrieval_mode == "advisory"
@@ -462,7 +499,9 @@ def create_abaqus_coding_agent(
             interaction_policy=execution_config.interaction_policy
             if execution_config
             else "legacy",
-            general_shell_enabled=product_shell_enabled,
+            general_shell_enabled=product_shell_enabled
+            and (tools is None or any(name in tools for name in RUN_SCOPED_TOOL_NAMES)),
+            background_solver_enabled=product_shell_enabled,
             foundation_skill_profile=foundation_skill_profile,
         )
         + (
@@ -499,7 +538,7 @@ def create_abaqus_coding_agent(
         )
     if api_catalog_mode in {"full", "full_with_discovery"}:
         _register_api_lookup_tool(agent)
-    if api_catalog_mode == "full_with_discovery":
+    if tools is not None or api_catalog_mode == "full_with_discovery":
         _register_api_discovery_tool(agent)
     if concept_retrieval_mode == "tool":
         if bounded_documents:
@@ -515,6 +554,7 @@ def _configure_coder(
     *,
     shell_enabled: bool,
     context_policy_enabled: bool,
+    tools: tuple[str, ...] | None = None,
 ) -> Coder[_CodingAgentDependencies]:
     shell_capabilities: list[Shell[_CodingAgentDependencies]] = []
 
@@ -566,6 +606,11 @@ def _configure_coder(
                 id=capability.id,
                 description=capability.description,
                 defer_loading=capability.defer_loading,
+                tools=tuple(
+                    name
+                    for name in DEFAULT_TOOL_NAMES
+                    if tools is None or name in tools
+                ),
             )
         if isinstance(capability, ToolOutputLimits):
             # Keep spill + read_tool_result instead of Coder's lossy-only truncation.
@@ -583,7 +628,11 @@ def _configure_coder(
                 denied_env_patterns=LLM_API_KEY_ENV_PATTERNS
                 + TELEMETRY_CREDENTIAL_ENV_PATTERNS
                 + PROVIDER_SECRET_PATTERNS,
-                tools=RUN_SCOPED_TOOL_NAMES,
+                tools=tuple(
+                    name
+                    for name in RUN_SCOPED_TOOL_NAMES
+                    if tools is None or name in tools
+                ),
             )
         if isinstance(capability, RepoContext) and not has_repo_context:
             return None

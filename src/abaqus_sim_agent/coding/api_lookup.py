@@ -40,18 +40,8 @@ ApiCatalogMode = Literal[
     "automatic_verified_only",
     "automatic_exact_signature",
 ]
-ProductApiCatalogMode = Literal[
-    "full",
-    "full_with_discovery",
-    "automatic_verified_only",
-    "automatic_exact_signature",
-]
-DEFAULT_PRODUCT_API_CATALOG_MODE: ProductApiCatalogMode = "automatic_verified_only"
-
 __all__ = [
-    "DEFAULT_PRODUCT_API_CATALOG_MODE",
     "ApiCatalogMode",
-    "ProductApiCatalogMode",
     "bind_api_catalog",
     "load_product_api_catalog",
     "register_api_discovery_tool",

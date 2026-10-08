@@ -48,7 +48,7 @@ Chat Completions 的 `max_tokens` 字段，其他提供商沿 SDK 映射。用�
 | `launcher_path` | 从普通用户配置、CLI/Web 路径选择中移除，宿主调用 `abq2024` | 实际命令继续记录；类型/状态变动按开发期规则明确拒绝不兼容 state，不做迁移 |
 | `skill_library` | 普通产品自动定位包内 Skill，移除 `--skills-dir` 等库路径输入；暂不新增外部 Skill 扩展能力 | 继续保存实际 Skill 定义绑定；测试/评测的显式资源注入不作为普通产品配置 |
 | `api_catalog_dir` | 已移除普通用户目录输入；程序直接定位包内 data | 保存实际资源位置与身份/hash；随 wheel/sdist 分发，不另行复制到 AppData |
-| `api_catalog_mode` | 保留程序默认及本次模式选择 | 当前默认 automatic_verified_only、产品无 off 的合同暂保留；模式与资源位置分开 |
+| `api_catalog_mode` | 普通产品已移除，改为通用工具选择 | 新默认精确查询开启、目录发现关闭；报错提示固定保留，旧评测模式不回填 |
 | `static_preflight_mode` | 保留程序默认 off 及本次 on/off；不读取文件默认 | 已选会话保持原值；Python 3.10 语法检查不受开关影响 |
 | `abqpy_static_wheel` | 程序准备与支持版本匹配的静态资源，已移除普通用户 wheel 路径选项 | 已接入固定 abqpy 2024.10 wheel 的校验下载与缓存复用；保存活跃来源版本/hash，off 不加载，失败不伪装为 clean |
 | `static_preflight_cache_dir` | 缓存及解包位置由程序决定，移除普通用户缓存目录选项 | 保留工作区外边界及按内容身份组织的不可变缓存；内部 locator 不成为新的用户偏好 |
@@ -137,12 +137,32 @@ Pi 的默认发现和显式扩展只是取舍依据：本产品当前没有开�
 | `http_retries` | `--http-retries` | 通常 `4`；Mistral、Typesafe、Hugging Face、Bedrock（含 gateway）使用 SDK 默认 | 整数 ≥0；仅使用 SDK 默认重试的 provider 拒绝显式数值；SDK 对可重试 HTTP 失败的额外尝试次数，不等于 Agent 请求次数 | `launch.http_retries`；CLI 可修订，`0` 必须作为显式值保留 |
 | `http_timeout_seconds` | `--http-timeout-seconds` | `300.0` | 有限正数；传给模型/SDK 的请求超时，不等于 active wall 或 Solver 超时 | `launch.http_timeout_seconds`；固定，恢复显式指定拒绝 |
 | `reasoning_policy` | `--reasoning-policy` | 最终 Go + V4-Flash 为 `enabled_high`，其他为 `provider_default` | 仅允许这两个值；`enabled_high` 与最终 provider/model 不兼容时拒绝；显式值优先于自动选择 | `launch.reasoning_policy`；固定。修订模型时不重新按当前偏好推导它 |
-| `api_catalog_mode` | `--api-catalog-mode` | `automatic_verified_only` | `full` / `full_with_discovery` / `automatic_verified_only` / `automatic_exact_signature`；普通产品不接受 `off` | `launch.api_catalog_mode`；固定，不由是否传目录推断成 `full` |
+| `tools` | CLI `--tools`；Web本次`options.tools`或服务启动输入 | 未指定时取本次可用默认集合，精确查询开启、目录发现关闭 | 字符串元组/JSON数组；名称已知且唯一，必须满足资源与协议依赖；显式空集合只保留协议工具 | 与排除列表合并后保存为`launch.tools`；恢复不重新取默认、不接受覆盖 |
+| `exclude_tools` | CLI `--exclude-tools`；Web本次`options.exclude_tools`或服务启动输入 | 空集合 | 字符串元组/JSON数组；名称已知且唯一，排除优先；不能排除协议工具 | 只保存合并后的`launch.tools`；不另存选择规则或用户偏好 |
 | `static_preflight_mode` | `--static-preflight-mode` | `off` | `off/on`；只控制可选 BasedPyright，两个 Python runtime 的 3.10 语法检查始终存在 | `launch.static_preflight_mode`；固定，恢复显式 on/off 都拒绝 |
 | `knowledge_pack_ids` | `--knowledge-pack`（可重复）、`--no-knowledge-packs` | `()`，不启用私有包 | 最多32个、唯一、匹配 `[a-z0-9][a-z0-9-]{0,63}`；整体替换，空列表清空 | launch 保存实际 `domain_knowledge` 快照绑定；固定，不在恢复时重扫新选择 |
 
 保存来源路径与保存内容指纹各有用途，不能删除其中一项来“去重”。源码中 `ResolvedRunOptions` 是本次
 解析结果：`execution`、`runtime` 引用已有 typed 模型，其余字段传给装配；它本身不增加第三份配置文件。
+
+## 通用工具选择
+
+新普通会话按工具名称选择，不再接受`--api-catalog-mode`或`RunOptions.api_catalog_mode`。
+CLI逗号分隔文本由参数适配器规范化为元组，Web JSON数组经相同strict模型验证。未指定输入继承本次宿主启动值；
+显式空数组替换原选择。未知、重复或当前资源无法提供的工具拒绝，不静默忽略。
+
+默认功能工具包括文件读写/搜索/目录、受限Shell、三阶段Abaqus执行和`lookup_abaqus_api`；
+私有知识文件工具只在绑定知识包时加入，文档工具只在显式文档profile下加入，`discover_abaqus_api`默认关闭。
+若指定`tools`，它整体替换默认功能工具；`exclude_tools`最后排除。目录发现要求同时保留精确查询；
+bounded document profile必须保留search与assessment工具。这里的可见性不授权执行：原runtime权限、额度和校验继续生效。
+
+`ask_user`在其问答协议下始终保留，`load_capability`和`read_tool_result`保留；typed output也不受功能开关控制。
+`--tools ""`不是取消问答或完成协议。代码复用Pydantic AI原生筛选，禁用的工具不会出现在模型schema中，误调用也不能执行。
+
+报错后的Catalog自动提示不属于工具选择，不增加新字段。新产品固定沿用最新评测的提示行为；
+即使关闭主动查询，非超时且可确定API上下文的失败仍可能附加相关卡片、已验证说明或受限替代名称。
+Catalog资源始终绑定到会话。`launch.tools`保存解析后的集合，`--resume`拒绝重新指定两个选择参数；
+原输入规则不重新计算，不读取用户/项目偏好文件。旧评测worker、seal和成绩保持原值。
 
 ## 运行权限与限制：逐字段
 
@@ -317,7 +337,7 @@ diagnostic advisory。CLI 根据这些 profile 决定问答/输出合同，不�
 
 | `LaunchManifest` 字段 | 来源与用途 |
 |---|---|
-| `schema_version` | 普通产品写 `coding-run-launch-v10`；模型还可解析 v9 用于有限历史场景，产品恢复入口拒绝 v9 |
+| `schema_version` | 普通产品写`coding-run-launch-v11`；v10显式拒绝。v9仅供显式任务基线评测记录合同，产品恢复拒绝v9 |
 | `question_protocol` | 普通会话 `ask_user_v1`；CLI 显式 legacy profile 可为 None，由装配决定 |
 | `document_policy` | 与 request 的同一文档绑定；重复保存必须一致，不是第二个覆盖源 |
 | `response_enabled` | 普通会话 True；CLI 随其问答/profile 合同决定；不是独立用户默认 |
@@ -333,7 +353,8 @@ diagnostic advisory。CLI 根据这些 profile 决定问答/输出合同，不�
 | `http_retries` | 公共配置的实际 HTTP retry 值 |
 | `skill_library` | 实际 Skill 绝对路径 |
 | `api_catalog_dir` | 程序定位的包内 Catalog 实际路径，仅作为会话记录；恢复核对原内容身份 |
-| `api_catalog_mode` | 实际 Catalog 模式 |
+| `tools` | v11必须保存实际工具名称元组，含所需协议工具；恢复不读取新默认 |
+| `api_catalog_mode` | 仅v9评测合同保留；v11禁止提交此字段且不序列化它 |
 | `concept_index_dir` | 显式 profile 的索引路径或 None |
 | `concept_retrieval_mode` | 显式 profile 的 off/tool |
 | `diagnostic_retrieval_mode` | 显式 profile 的 off/advisory |
@@ -366,11 +387,11 @@ planning_enabled、interaction_policy、context_window、provider_environment。
 | `knowledge_resources_dir` | None | 已物化的只读资料目录；普通产品来自私有包快照，直接工厂调用由调用者负责证据 |
 | `knowledge_allowed_patterns` | `("*.md", "*.py")` | 只读资料工具的允许模式；普通产品装配传自己的固定规则 |
 | `product_coding_tools` | 底层 False；普通产品由问答/response profile 推导 | 决定受限 Shell 与后台 Solver 接线，不是用户偏好 |
-| `context_policy_enabled` | 底层 False；普通 launch v10 启用 | 由产品协议决定，不能由新偏好关闭原会话 context policy |
+| `context_policy_enabled` | 底层 False；普通 launch v11 启用 | 由产品协议决定，不能由新偏好关闭原会话 context policy |
 | `step_store` | 未注入时由 state 构建 | 宿主存储依赖；不是路径之外再一套可合并配置 |
 | `model`、`request`、`execution_config` | 依调用入口注入 | 已解析的对象；其字段语义按前述合同，不注册新的覆盖层 |
 
-其余工厂参数 skill_library、api_catalog_mode、concept_retrieval_mode、diagnostic_retrieval_mode、planning_enabled、
+普通产品工厂使用tools，api_catalog_mode仅供显式评测保留原合同。其余参数skill_library、concept_retrieval_mode、diagnostic_retrieval_mode、planning_enabled、
 question_protocol、response_enabled 已在前表逐项定义。实现：[agent.py](../../src/abaqus_sim_agent/coding/agent.py)。
 
 ## 旧评测 budget 与浏览器偏好

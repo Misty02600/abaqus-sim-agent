@@ -22,8 +22,6 @@ from abaqus_sim_agent.coding.amendments import (
     append_task_revision,
 )
 from abaqus_sim_agent.coding.api_lookup import (
-    DEFAULT_PRODUCT_API_CATALOG_MODE,
-    ProductApiCatalogMode,
     bind_api_catalog,
     load_product_api_catalog,
 )
@@ -91,6 +89,7 @@ from abaqus_sim_agent.coding.resume import (
 from abaqus_sim_agent.coding.static_preflight import (
     prepare_static_preflight_source as _prepare_static_preflight_source,
 )
+from abaqus_sim_agent.coding.tool_selection import resolve_tool_names
 from abaqus_sim_agent.coding.user_questions import (
     UserAnswerInput,
     UserQuestion,
@@ -466,10 +465,6 @@ def _run_cli_once(
             http_retries = launch.http_retries
             skill_library = launch.skill_library
             api_catalog_dir = launch.api_catalog_dir
-            requested_api_catalog_mode = cast(
-                ProductApiCatalogMode,
-                launch.api_catalog_mode,
-            )
             concept_index_dir = launch.concept_index_dir
             requested_concept_mode = launch.concept_retrieval_mode
             diagnostic_retrieval_mode = launch.diagnostic_retrieval_mode
@@ -523,7 +518,6 @@ def _run_cli_once(
             http_retries = execution.http_retries
             skill_library = settings.skill_library
             api_catalog_dir = settings.api_catalog_dir
-            requested_api_catalog_mode = settings.api_catalog_mode
             concept_index_dir = args.concept_index_dir
             if (
                 args.document_policy_spec is not None
@@ -557,10 +551,6 @@ def _run_cli_once(
 
         api_catalog = _load_api_catalog(api_catalog_dir)
         assert api_catalog_dir is not None
-        api_catalog_mode = _resolve_api_catalog_mode(
-            requested_api_catalog_mode,
-            api_catalog,
-        )
         if document_policy_mode == "bounded_v1":
             if requested_concept_mode != "tool":
                 raise ValueError("bounded_v1 requires --concept-retrieval-mode tool")
@@ -651,7 +641,7 @@ def _run_cli_once(
                 state_dir=request.state_dir,
                 workspace=request.workspace,
             )
-            schema_version = "coding-run-launch-v10"
+            schema_version = "coding-run-launch-v11"
             resolved_skill_library = skill_library.resolve(strict=True)
             assert execution is not None
             launch = _LaunchManifest(
@@ -678,7 +668,16 @@ def _run_cli_once(
                 ),
                 skill_library=resolved_skill_library,
                 api_catalog_dir=api_catalog_dir.resolve(strict=True),
-                api_catalog_mode=api_catalog_mode,
+                tools=resolve_tool_names(
+                    settings.tools,
+                    settings.exclude_tools,
+                    shell=use_questions,
+                    runtime=request.edit_scope is None,
+                    questions=use_questions,
+                    knowledge=domain_knowledge is not None,
+                    documents=concept_retrieval_mode == "tool",
+                    bounded_documents=document_binding is not None,
+                ),
                 concept_index_dir=(
                     concept_index_dir.resolve(strict=True)
                     if concept_index_dir is not None
@@ -788,7 +787,8 @@ def _validate_resume_arguments(args: argparse.Namespace) -> None:
         "--edit-scope-file": args.edit_scope_file,
         "--knowledge-pack": args.knowledge_pack,
         "--list-knowledge-packs": args.list_knowledge_packs or None,
-        "--api-catalog-mode": args.api_catalog_mode,
+        "--tools": args.tools,
+        "--exclude-tools": args.exclude_tools,
         "--concept-index-dir": args.concept_index_dir,
         "--concept-retrieval-mode": args.concept_retrieval_mode,
         "--diagnostic-retrieval-mode": args.diagnostic_retrieval_mode,
@@ -932,7 +932,7 @@ def _load_launch_manifest(state_dir: Path) -> _LaunchManifest:
     if not path.is_file():
         raise ValueError("run predates resumable CLI state: launch.json is missing")
     launch = _LaunchManifest.model_validate_json(path.read_text(encoding="utf-8"))
-    if launch.schema_version != "coding-run-launch-v10":
+    if launch.schema_version != "coding-run-launch-v11":
         raise ValueError("pre-release CodingRun launch schema is not supported")
     return launch
 
@@ -971,15 +971,6 @@ def _load_api_catalog(directory: Path | None) -> ApiCatalog:
 
 def _product_verifier() -> ExecutionEvidenceVerifier:
     return ExecutionEvidenceVerifier()
-
-
-def _resolve_api_catalog_mode(
-    requested: ProductApiCatalogMode | None,
-    catalog: ApiCatalog | None,
-) -> ProductApiCatalogMode:
-    if catalog is None:
-        raise ValueError("product runs require an API catalog")
-    return requested or DEFAULT_PRODUCT_API_CATALOG_MODE
 
 
 def _load_concept_index(

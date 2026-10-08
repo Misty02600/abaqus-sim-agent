@@ -2,7 +2,7 @@
 
 ## 这条流程保证什么
 
-宿主拥有请求、limits、runtime policy 与终态；Agent 提出代码、问题、文字答复和验收请求。新普通 CLI/Web 使用 launch v10
+宿主拥有请求、limits、runtime policy 与终态；Agent 提出代码、问题、文字答复和验收请求。新普通 CLI/Web 使用 launch v11
 与 `ask_user_v1`；显式固定 profile 可使用 legacy 问答协议，不兼容的旧 state 明确拒绝。以下状态是宿主语义，不是
 LangGraph 节点。
 
@@ -25,7 +25,7 @@ CLI 当前自行准备 request/launch，Web 经 `application` 准备，二者进
 
 ## 当前请求范围与文字答复
 
-launch v10 的 `ResponseDecision` 可以直接交付问题、讨论或局部步骤的完整文字答案；该路径保存
+launch v11 的 `ResponseDecision` 可以直接交付问题、讨论或局部步骤的完整文字答案；该路径保存
 `completion_kind=response`，不运行 verifier，也不声称文件、执行或物理验收通过。当前请求若需要文件或
 Abaqus 执行，仍须返回非空 manifest 并经过对应执行验收；当前 revision 已记录 runtime 或终态工作区变化时，
 宿主拒绝用文字答复绕过验收。澄清只围绕当前请求实际依赖的缺失事实，不要求补齐无关阶段参数。

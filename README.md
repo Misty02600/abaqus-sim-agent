@@ -18,7 +18,7 @@
 - 工作区必须是已解析的 ASCII 路径，state/evidence 位于工作区之外。宿主约束路径、Job 名、调用预算、
   超时进程树和 artifact freshness，并保留原始 stdout/stderr bytes 与执行记录。
 - 缺少会改变物理问题的输入时必须澄清，不能从模板或检索结果补造材料、尺寸、载荷等参数。
-- 新普通会话通过 `ask_user(question)`交接必要输入；launch v10 可直接交付 typed 文字答复，并绑定 context policy、Skill digest、UTF-8/CP936 文件策略、必选 API Catalog 与可选私有知识快照；文件/执行请求仍返回`ready_for_verification`或`failed`；
+- 新普通会话通过 `ask_user(question)`交接必要输入；launch v11 可直接交付 typed 文字答复，并绑定 context policy、Skill digest、UTF-8/CP936 文件策略、必选 API Catalog 与可选私有知识快照；文件/执行请求仍返回`ready_for_verification`或`failed`；
   未迁移的固定评测profile按各自合同使用`needs_input`协议。普通 CLI 的
   `execution_evidence` 验收 fresh 交付物、Python 3.10 语法和最后一次已使用的 runtime stage，
   **不证明物理正确，也不覆盖全部自然语言语义**。固定 evaluator 才使用独立 INP/ODB `task_oracle`。
@@ -229,7 +229,7 @@ uv run --no-sync abaqus-sim-agent --resume <STATE_DIR> --cancel-question <QUESTI
 
 答复ID必须匹配该run当前问题；同ID同答复幂等，不同答复不覆盖。待答期间修改goal/配置须先显式撤销问题。
 已执行Abaqus后收到新工程答复，会形成新task revision，旧产物不能验收新要求；未决runtime reconcile优先。
-新普通 CLI/Web 会话使用 launch v10，绑定 Catalog、context policy、文件编码策略与实际 filesystem Skill digest；不兼容的开发期
+新普通 CLI/Web 会话使用 launch v11，绑定 Catalog、context policy、文件编码策略与实际 filesystem Skill digest；不兼容的开发期
 state 显式拒绝。显式评测profile的历史证据不回填新默认。
 这证明问答交接可运行，不保证模型一定识别缺参，也不构成外部Job恢复；见[ADR-0024](docs/adr/0024-host-owned-user-question-waiting.md)。
 
@@ -288,7 +288,7 @@ Catalog 是随应用包安装的新普通会话必选资源；其余能力默认
 
 | 能力 | 启用方式与边界 |
 |---|---|
-| Exact API Catalog | 随应用包安装并自动定位，无目录配置；默认 `automatic_verified_only`，不暴露主动查询工具，只在符合条件的错误后附 verified note。可显式选择 `automatic_exact_signature`、`full` 或 `full_with_discovery`。 |
+| Exact API Catalog | 随应用包安装并自动定位，无目录配置；默认开放精确查询、关闭目录发现；工具由通用白名单/排除列表选择，报错后的自动提示固定保留。 |
 | 官方文档工具 | `--concept-index-dir <索引> --concept-retrieval-mode tool`；`search_abaqus_docs` 按需查询，也允许零查询，普通产品不设调用次数上限。 |
 | Solver diagnostic advisory | `--diagnostic-retrieval-mode advisory --concept-index-dir <含BM25的索引>`；仅为符合条件的Solver诊断附加RRF证据，不替换原runtime状态。 |
 | 静态反馈 | `--static-preflight-mode on` 启用固定 abqpy/BasedPyright 分析；默认 off。诊断随运行结果返回，语法错误始终在 Python runtime 前阻断。 |
@@ -346,12 +346,26 @@ resume、Web continuation 和 task revision 继续使用原快照，不能重新
 [ADR-0029](docs/adr/0029-discover-private-knowledge-from-user-data.md)。
 
 新 CLI/Web 始终绑定 Catalog 并支持 ask_user_v1，查询 usage、去重和证据随问答恢复累计。
-`full_with_discovery` 已接入产品 CLI 和恢复：`discover_abaqus_api` 按已知 receiver 列出方法名称与 Card ID，
+`discover_abaqus_api` 可通过通用工具选择启用，按已知 receiver 列出方法名称与 Card ID，
 模型应继续 `lookup_abaqus_api` 读取证据；候选不会记为已读卡片。journal 保留查询、
 计数与实际交付内容。历史 BM25/E5 自然语言发现实验已退出维护；当前目录工具的语义见
 [知识接入与恢复边界](docs/architecture/knowledge-access.md)。
 没有Python异常类型的CAE错误，只有在宿主确认非超时失败、frame指向本次执行hash匹配的工作区脚本，
-且调用可以唯一定位时才进入API提示；歧义或源码变化时不推断修复。默认模式不会向模型暴露主动 Catalog 工具。
+且调用可以唯一定位时才进入API提示；歧义或源码变化时不推断修复。主动查询工具是否开启不影响这条自动提示路径。
+
+工具选择使用本次`--tools`白名单及`--exclude-tools`排除列表，名称用逗号分隔，排除优先。
+不指定时保留当前可用的默认功能工具，仅默认关闭API目录发现。显式空白名单关闭功能工具；
+问答、能力加载、长工具结果读取及最终输出协议继续保留。工具可见性不授予Abaqus/Solver执行权限。
+
+```powershell
+# 只保留文件读取及API查证；协议工具由程序保留。
+uv run abaqus-sim-agent --tools read_file,list_directory,lookup_abaqus_api,discover_abaqus_api --model-provider <提供商> --model <型号> --goal "检查已有脚本的API用法"
+# 在默认集合中关闭主动查证；运行报错后的自动提示仍然保留。
+uv run abaqus-sim-agent --exclude-tools lookup_abaqus_api --model-provider <提供商> --model <型号> --goal "完成已有任务"
+```
+
+CLI/Web共用`tools`和`exclude_tools`输入，Web可在创建请求的`options`中传数组；不新增偏好文件或开关界面。
+launch v11保存实际集合，恢复不接受覆盖。旧产品v10须新建会话，原文件保留；冻结评测仍使用原worker。
 
 可选静态反馈示例（文件 allowlist 是独立的可选执行限制）：
 

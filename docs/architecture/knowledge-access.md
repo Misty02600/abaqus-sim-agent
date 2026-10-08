@@ -4,18 +4,18 @@
 
 | 入口 | 当前接线 | 返回什么 / 由谁使用 |
 |---|---|---|
-| `lookup_abaqus_api` | CLI/Web 显式 `full` / `full_with_discovery` | qualified method、parameter、member 或 `Method.__doc__` 的精确证据 |
-| `discover_abaqus_api` | CLI/Web 显式 `full_with_discovery` | 已知 receiver 下的方法名称和 Card ID；供 Coder 选择后精确查证 |
-| automatic Catalog | 产品默认 `automatic_verified_only`；可选 `automatic_exact_signature` | 在可确定的错误上下文中附 verified note 或紧凑签名，不暴露主动查询工具 |
+| `lookup_abaqus_api` | 新会话默认开启；可由通用工具选择排除 | qualified method、parameter、member 或 `Method.__doc__` 的精确证据 |
+| `discover_abaqus_api` | 默认关闭；可由通用工具选择启用 | 已知 receiver 下的方法名称和 Card ID；供 Coder 选择后精确查证 |
+| automatic Catalog | 固定保留报错后的自动提示，与主动工具开关独立 | 在可确定的错误上下文中附相关卡片及匹配的已验证说明；必要时给出受限替代名称 |
 | `search_abaqus_docs` | 显式 Concept `tool`；默认 off | 本地官方文档候选；普通模式按需查询，允许零查询 |
 | Solver diagnostic advisory | 独立、默认 off 的模式 | 非超时结构化 Solver warning/error 后附有界文档候选，不覆盖原运行结果 |
 | `bounded_v1` document policy | 显式 policy spec + Concept tool，已接入同一 Coder；默认 off | need、receipt、assessment 与逐链预算；运行和 ready 前有宿主证据门禁 |
 | 力学 Skill 与只读参考资料 | 显式 Agent 工厂 / 评测入口 | 基础层 `foundation_skill_profile="linear_structural_fea_v1"`；专题层 `structural_topic_skill_profile="structural_mechanics_v1"`；参考脚本仍由独立 `knowledge_resources_dir` 提供，普通 CLI/launch 尚无资料选择和快照绑定 |
-| 本机私有领域知识包 | CLI `--knowledge-pack` / Web 新会话显式选择；默认 off | 从用户级应用数据根发现 strict manifest，launch v10 绑定 state 快照；模型只经两个只读文件工具按需读取 |
+| 本机私有领域知识包 | CLI `--knowledge-pack` / Web 新会话显式选择；默认 off | 从用户级应用数据根发现 strict manifest，launch v11 绑定 state 快照；模型只经两个只读文件工具按需读取 |
 
 新普通 CLI/Web 会话自动读取随应用安装的 Catalog，不再接收 Catalog 目录配置，产品也不提供 `off`。
 包内 `api_catalog/data` 保留 manifest、methods/members JSONL 的原始 bytes，locator 从安装包位置确定路径，
-不依赖 cwd，也不复制到 AppData。launch v10 记录实际路径与模式，request 保存 schema、card/member hash 和
+不依赖 cwd，也不复制到 AppData。launch v11 记录实际路径与工具集合，request 保存 schema、card/member hash 和
 runtime release。创建和恢复均核对绑定；缺失、损坏或升级后内容与原会话不同，在模型调用前明确拒绝。
 旧冻结报告和 evaluator 的显式 artifact 路径及 `off` 条件不回填。源码安装位于工程内时，包内资源也可能位于
 workspace 下，因此不再用“必须在 workspace 外”判断 Catalog 可用性；此处不宣称隔离或不可被本机修改。
@@ -24,8 +24,10 @@ workspace 下，因此不再用“必须在 workspace 外”判断 Catalog 可�
 继续分别标来源；本次接线不重建卡片、不更新验证结论。公开再分发许可尚未确认，见
 [来源与许可说明](../../src/abaqus_sim_agent/api_catalog/data/THIRD_PARTY_NOTICES.md)。
 
-底层 `create_abaqus_coding_agent()` 只接受 `api_catalog_mode`，不提供旧式 `api_catalog_enabled`
-开关或兼容转换。工厂默认 `off` 供显式评测等调用使用；普通产品装配始终传入 launch 中已启用的模式。
+普通CLI/Web使用`tools`白名单和`exclude_tools`排除列表，保存解析后的`launch.tools`。
+不提供普通产品的`api_catalog_mode`；工厂中该参数仅供显式评测继续解释原profile，
+普通产品传入保存的工具集合，报错提示固定沿用最新测评的行为。旧产品v10显式拒绝，不自动迁移。
+工具名称、依赖、协议工具和恢复边界见[配置合同](configuration-reference.md#通用工具选择)。
 
 当前Catalog保留精确卡片与对象方法目录；旧BM25/E5意图搜索及Catalog多子命令CLI已删除。
 两者不能仅因都叫discovery就视为同一产品接口。早期 [API 方案实验](../../benchmarks/api_catalog/api_discovery_loop_v1_20260915.md)
@@ -51,10 +53,9 @@ Region的完整返回因增加逐定义参数解释，从约13222字符变为150
 
 ## 产品 API discovery
 
-CLI/Web 参数 `--api-catalog-mode full_with_discovery` 同时注册 discovery 和 exact lookup。默认
-`automatic_verified_only` 不注册这两个工具，只在符合条件的 runtime failure 后附 verified note；因此
-“必须绑定 Catalog”不等于每轮都让模型主动检索。显式模式可以和普通 `ask_user_v1` 一起使用，旧冻结 run
-仍按自己的实验合同解释。
+新普通会话默认提供`lookup_abaqus_api`，不提供`discover_abaqus_api`。开启目录发现时必须同时保留精确查询，
+因为候选本身不含卡片证据。关闭主动查询不关闭自动报错提示；Catalog资源仍然绑定到会话。
+实际工具集合经Pydantic AI原生筛选，同时控制模型schema和可执行映射，提示同步反映选中的工具。
 
 调用顺序：
 
@@ -87,7 +88,7 @@ junction、路径越界、未列出文件、重复 ID、单文件/整包超限�
 
 发现不等于启用。CLI 用可重复的 `--knowledge-pack <pack_id>`，Web 在创建新会话时选择包；空列表保持原产品
 行为。宿主按 `pack_id` 找到源目录，读取实际 bytes，生成逐文件 hash、pack digest 和按 ID 排序的 bundle
-digest，并把 `pack.json` 与所列资源复制到 state 的 `domain-knowledge/`。launch v10 保存完整 binding；普通
+digest，并把 `pack.json` 与所列资源复制到 state 的 `domain-knowledge/`。launch v11 保存完整 binding；普通
 恢复、Web continuation 和 task revision 只校验原 state 快照，不回读已变化或已删除的用户级源目录，也不允许
 通过 amendment 换包。
 

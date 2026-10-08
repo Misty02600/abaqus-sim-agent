@@ -27,13 +27,10 @@ def add_run_arguments(
         "--reasoning-policy", choices=("provider_default", "enabled_high")
     )
     parser.add_argument(
-        "--api-catalog-mode",
-        choices=(
-            "full",
-            "full_with_discovery",
-            "automatic_verified_only",
-            "automatic_exact_signature",
-        ),
+        "--tools", help="本次功能工具白名单，逗号分隔；空字符串关闭功能工具"
+    )
+    parser.add_argument(
+        "--exclude-tools", help="排除这些功能工具，逗号分隔；不关闭问答等协议工具"
     )
     parser.add_argument("--static-preflight-mode", choices=("off", "on"))
     knowledge = parser.add_mutually_exclusive_group()
@@ -57,7 +54,8 @@ def options_from_args(args: argparse.Namespace) -> RunOptions:
             "http_timeout_seconds": "http_timeout_seconds",
             "max_tokens": "max_tokens",
             "reasoning_policy": "reasoning_policy",
-            "api_catalog_mode": "api_catalog_mode",
+            "tools": "tools",
+            "exclude_tools": "exclude_tools",
             "static_preflight_mode": "static_preflight_mode",
             "knowledge_pack_ids": "knowledge_pack",
         }.items()
@@ -65,4 +63,12 @@ def options_from_args(args: argparse.Namespace) -> RunOptions:
     }
     if "knowledge_pack_ids" in values:
         values["knowledge_pack_ids"] = tuple(values["knowledge_pack_ids"])
+    for name in ("tools", "exclude_tools"):
+        if name in values:
+            value = values[name]
+            values[name] = (
+                tuple(part.strip() for part in value.split(","))
+                if value.strip()
+                else ()
+            )
     return RunOptions.model_validate(values)

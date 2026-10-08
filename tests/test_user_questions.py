@@ -148,8 +148,8 @@ def test_cli_catalog_questions_resume_preserves_schema_binding_and_lookup_usage(
                 str(workspace),
                 "--state-dir",
                 str(state),
-                "--api-catalog-mode",
-                mode,
+                "--exclude-tools",
+                "" if mode == "full" else "lookup_abaqus_api",
             ]
         )
         == 2

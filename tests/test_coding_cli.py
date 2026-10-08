@@ -24,7 +24,6 @@ from abaqus_sim_agent.coding.cli import (
     _load_launch_manifest,
     _prepare_static_preflight_source,
     _product_verifier,
-    _resolve_api_catalog_mode,
     _resolve_concept_retrieval_mode,
     _resolve_goal,
     _runtime_script_policy,
@@ -55,7 +54,8 @@ def test_parser_leaves_workspace_unset_for_cwd_default() -> None:
     assert args.model is None
     assert args.http_retries is None
     assert not hasattr(args, "api_catalog_dir")
-    assert args.api_catalog_mode is None
+    assert args.tools is None
+    assert args.exclude_tools is None
     assert args.diagnostic_retrieval_mode is None
     assert args.static_preflight_mode is None
     assert args.allowed_cae_script is None
@@ -251,7 +251,7 @@ def test_cli_binds_and_reads_selected_private_knowledge_pack(
 
     assert result == 0
     launch = _load_launch_manifest(state)
-    assert launch.schema_version == "coding-run-launch-v10"
+    assert launch.schema_version == "coding-run-launch-v11"
     assert launch.domain_knowledge is not None
     assert launch.domain_knowledge.packs[0].pack_id == "private-fea"
     assert "knowledge_read_file" in observed["tools"]
@@ -828,26 +828,6 @@ def test_cli_loads_catalog_without_workspace_location_restrictions(
     nested_catalog = workspace / "catalog"
     ApiCatalog([], runtime_release="2024").write(nested_catalog)
     assert _load_api_catalog(nested_catalog).cards == ()
-
-
-def test_cli_catalog_mode_defaults_and_validates_catalog_presence() -> None:
-    catalog = ApiCatalog([], runtime_release="2024")
-
-    assert _resolve_api_catalog_mode(None, catalog) == "automatic_verified_only"
-    assert (
-        _resolve_api_catalog_mode("full_with_discovery", catalog)
-        == "full_with_discovery"
-    )
-    assert (
-        _resolve_api_catalog_mode("automatic_verified_only", catalog)
-        == "automatic_verified_only"
-    )
-    assert (
-        _resolve_api_catalog_mode("automatic_exact_signature", catalog)
-        == "automatic_exact_signature"
-    )
-    with pytest.raises(ValueError, match="require"):
-        _resolve_api_catalog_mode("automatic_verified_only", None)
 
 
 def test_cli_static_preflight_requires_explicit_external_source(

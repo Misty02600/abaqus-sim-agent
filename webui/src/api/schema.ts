@@ -1310,8 +1310,10 @@ export interface components {
             http_timeout_seconds?: number | null;
             /** Reasoning Policy */
             reasoning_policy?: ("provider_default" | "enabled_high") | null;
-            /** Api Catalog Mode */
-            api_catalog_mode?: ("full" | "full_with_discovery" | "automatic_verified_only" | "automatic_exact_signature") | null;
+            /** Tools */
+            tools?: string[] | null;
+            /** Exclude Tools */
+            exclude_tools?: string[] | null;
             /** Static Preflight Mode */
             static_preflight_mode?: ("off" | "on") | null;
             /** Knowledge Pack Ids */

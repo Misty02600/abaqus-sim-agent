@@ -56,7 +56,9 @@ def test_product_defaults_bind_bundled_catalog_without_path_configuration(
     )
 
     assert prepared.launch.api_catalog_dir == bundled_catalog_path()
-    assert prepared.launch.api_catalog_mode == "automatic_verified_only"
+    assert "lookup_abaqus_api" in prepared.launch.tools
+    assert "discover_abaqus_api" not in prepared.launch.tools
+    assert "api_catalog_mode" not in prepared.launch.model_dump()
     assert prepared.request.api_catalog == bind_api_catalog(
         ApiCatalog.open(bundled_catalog_path())
     )

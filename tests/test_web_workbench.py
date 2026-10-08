@@ -21,6 +21,56 @@ from tests.support.web import (
 )
 
 
+def test_create_persists_tool_selection_and_rejects_unavailable_tools(tmp_path):
+    app, calls = configured_app(tmp_path)
+    workspace = tmp_path / "tools-workspace"
+    workspace.mkdir()
+    with TestClient(app, base_url="http://127.0.0.1") as client:
+        login(client)
+        base = {
+            "goal": "Inspect API evidence",
+            "workspace": str(workspace),
+        }
+        model = {"model_provider": "deepseek", "model_name": "deepseek-v4-flash"}
+        for selected in (["unknown"], ["discover_abaqus_api"], ["knowledge_read_file"]):
+            response = client.post(
+                "/api/v1/runs",
+                json={
+                    **base,
+                    "idempotency_key": str(uuid4()),
+                    "options": {**model, "tools": selected},
+                },
+            )
+            assert response.status_code == 422, response.text
+        response = client.post(
+            "/api/v1/runs",
+            json={
+                **base,
+                "idempotency_key": str(uuid4()),
+                "options": {
+                    **model,
+                    "tools": ["read_file", "lookup_abaqus_api", "discover_abaqus_api"],
+                    "exclude_tools": ["read_file"],
+                },
+            },
+        )
+        assert response.status_code == 201, response.text
+        run_id = response.json()["view"]["run_id"]
+        launch = app.state.controller.registry.load(run_id).launch.model_dump(
+            mode="json"
+        )
+        assert set(launch["tools"]) == {
+            "lookup_abaqus_api",
+            "discover_abaqus_api",
+            "ask_user",
+            "load_capability",
+            "read_tool_result",
+        }
+        assert "api_catalog_mode" not in launch
+        assert "exclude_tools" not in launch
+        assert calls == []
+
+
 def test_create_requires_a_selected_workspace(tmp_path) -> None:
     app, calls = configured_app(tmp_path)
     with TestClient(app, base_url="http://127.0.0.1") as client:
@@ -138,11 +188,12 @@ def test_commands_questions_and_read_only_state(tmp_path):
             == 409
         )
         assert "run_command" in calls[0]
-        assert "lookup_abaqus_api" not in calls[0]
+        assert "lookup_abaqus_api" in calls[0]
         assert "discover_abaqus_api" not in calls[0]
         launch = json.loads((state / "launch.json").read_bytes())
-        assert launch["api_catalog_mode"] == "automatic_verified_only"
-        assert launch["schema_version"] == "coding-run-launch-v10"
+        assert "api_catalog_mode" not in launch
+        assert set(launch["tools"]) == set(calls[0])
+        assert launch["schema_version"] == "coding-run-launch-v11"
         assert all(names == calls[0] for names in calls)
 
 

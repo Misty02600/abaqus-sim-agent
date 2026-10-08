@@ -229,7 +229,7 @@ def test_prepare_new_run_binds_selected_pack_to_launch_v7(
         knowledge_packs_root=root,
     )
 
-    assert prepared.launch.schema_version == "coding-run-launch-v10"
+    assert prepared.launch.schema_version == "coding-run-launch-v11"
     assert prepared.launch.allows_response()
     assert prepared.launch.domain_knowledge is not None
     assert prepared.launch.domain_knowledge.packs[0].pack_id == (

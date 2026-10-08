@@ -3556,22 +3556,33 @@
             ],
             "title": "Reasoning Policy"
           },
-          "api_catalog_mode": {
+          "tools": {
             "anyOf": [
               {
-                "type": "string",
-                "enum": [
-                  "full",
-                  "full_with_discovery",
-                  "automatic_verified_only",
-                  "automatic_exact_signature"
-                ]
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Api Catalog Mode"
+            "title": "Tools"
+          },
+          "exclude_tools": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exclude Tools"
           },
           "static_preflight_mode": {
             "anyOf": [

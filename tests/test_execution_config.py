@@ -14,6 +14,7 @@ from abaqus_sim_agent.coding.model import (
     ModelExecutionConfig,
     new_run_execution_config,
 )
+from abaqus_sim_agent.coding.tool_selection import resolve_tool_names
 from tests.test_coding_amendments import _persist_base_state
 
 
@@ -27,7 +28,7 @@ def target_config(**changes):
 
 def launch(tmp_path):
     return LaunchManifest(
-        schema_version="coding-run-launch-v10",
+        schema_version="coding-run-launch-v11",
         question_protocol="ask_user_v1",
         response_enabled=True,
         capability_definitions=(
@@ -39,14 +40,14 @@ def launch(tmp_path):
         context_policy_version=CONTEXT_POLICY_VERSION,
         skill_library=tmp_path,
         api_catalog_dir=(tmp_path / "catalog").resolve(),
-        api_catalog_mode="automatic_verified_only",
+        tools=resolve_tool_names(),
         **target_config().model_dump(),
     )
 
 
 def test_launch_binds_workspace_text_policy(tmp_path) -> None:
     manifest = launch(tmp_path)
-    assert manifest.schema_version == "coding-run-launch-v10"
+    assert manifest.schema_version == "coding-run-launch-v11"
     assert manifest.filesystem_policy_version == "utf8-cp936-preserve-v1"
 
 
@@ -69,17 +70,17 @@ def test_current_launch_roundtrip_and_question_protocol(tmp_path):
         LaunchManifest.model_validate(without_question_protocol)
 
 
-def test_product_launch_v10_requires_enabled_catalog(tmp_path) -> None:
+def test_product_launch_v11_requires_catalog_and_saved_tools(tmp_path) -> None:
     values = launch(tmp_path).model_dump(mode="python")
 
     current = LaunchManifest.model_validate(values)
-    assert current.api_catalog_mode == "automatic_verified_only"
-    for invalid in (
-        values | {"api_catalog_dir": None},
-        values | {"api_catalog_mode": "off"},
-    ):
-        with pytest.raises(ValidationError, match="requires an enabled API catalog"):
-            LaunchManifest.model_validate(invalid)
+    assert "lookup_abaqus_api" in current.tools
+    with pytest.raises(ValidationError, match="requires an API catalog"):
+        LaunchManifest.model_validate(values | {"api_catalog_dir": None})
+    with pytest.raises(ValidationError, match="requires saved tools"):
+        LaunchManifest.model_validate(values | {"tools": None})
+    with pytest.raises(ValidationError, match="uses tools"):
+        LaunchManifest.model_validate(values | {"api_catalog_mode": "full"})
 
 
 def test_current_launch_rejects_missing_and_null_required_execution_field(tmp_path):
@@ -186,7 +187,8 @@ def test_foundation_profile_adds_decision_owned_skill_routing_rule(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "version", [None, "coding-run-launch-v7", "coding-run-launch-v8"]
+    "version",
+    [None, "coding-run-launch-v7", "coding-run-launch-v8", "coding-run-launch-v10"],
 )
 def test_launch_rejects_missing_or_old_execution_contract(tmp_path, version):
     data = launch(tmp_path).model_dump(mode="json")

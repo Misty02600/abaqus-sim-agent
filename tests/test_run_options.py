@@ -93,8 +93,8 @@ def test_cli_and_web_share_run_arguments(tmp_path, monkeypatch):
     args = [
         "--http-retries",
         "0",
-        "--api-catalog-mode",
-        "full",
+        "--tools",
+        "read_file,lookup_abaqus_api",
         "--knowledge-pack",
         "custom-fea",
     ]
@@ -131,6 +131,7 @@ def test_cli_and_web_share_run_arguments(tmp_path, monkeypatch):
         "--context-window",
         "--model-base-url",
         "--api-catalog-dir",
+        "--api-catalog-mode",
         "--skills-dir",
         "--abqpy-static-wheel",
         "--static-preflight-cache-dir",

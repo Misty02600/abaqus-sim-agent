@@ -566,7 +566,7 @@ def test_cli_bounded_profile_persists_launch_and_ignores_edited_spec_on_resume(
         (state / "request.json").read_bytes(),
         (state / "launch.json").read_bytes(),
     )
-    assert json.loads(original_launch)["schema_version"] == "coding-run-launch-v10"
+    assert json.loads(original_launch)["schema_version"] == "coding-run-launch-v11"
     assert json.loads(original_launch)["reasoning_policy"] == "provider_default"
     assert json.loads(original_launch)["planning_enabled"] is False
     assert json.loads(original_request)["document_policy"]["mode"] == "bounded_v1"

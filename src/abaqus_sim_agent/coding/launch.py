@@ -16,6 +16,7 @@ from .document_policy_binding import DocumentPolicyBinding
 from .domain_knowledge import DomainKnowledgeBundleBinding
 from .model import DeepSeekGateway, ModelExecutionConfig
 from .text_encoding import TEXT_ENCODING_POLICY_VERSION
+from .tool_selection import validate_tool_names
 
 if TYPE_CHECKING:
     from .amendments import CodingRunAmendmentLedger
@@ -23,7 +24,7 @@ if TYPE_CHECKING:
 
 class LaunchManifest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
-    schema_version: Literal["coding-run-launch-v9", "coding-run-launch-v10"]
+    schema_version: Literal["coding-run-launch-v9", "coding-run-launch-v11"]
     question_protocol: Literal["ask_user_v1"] | None = Field(
         default=None, exclude_if=lambda v: v is None
     )
@@ -55,7 +56,11 @@ class LaunchManifest(BaseModel):
     http_retries: int | None = Field(ge=0)
     skill_library: Path
     api_catalog_dir: Path | None = None
-    api_catalog_mode: ApiCatalogMode = "off"
+    tools: tuple[str, ...] | None = Field(default=None, exclude_if=lambda v: v is None)
+    # v9仍被任务基线评测用于保存实验合同，普通产品不接受或恢复它。
+    api_catalog_mode: ApiCatalogMode | None = Field(
+        default=None, exclude_if=lambda v: v is None
+    )
     concept_index_dir: Path | None = None
     concept_retrieval_mode: ConceptRetrievalMode = "off"
     diagnostic_retrieval_mode: DiagnosticRetrievalMode = "off"
@@ -69,6 +74,18 @@ class LaunchManifest(BaseModel):
 
     @model_validator(mode="after")
     def valid_version(self):
+        if self.schema_version == "coding-run-launch-v11":
+            if "api_catalog_mode" in self.model_fields_set:
+                raise ValueError("product launch uses tools, not api_catalog_mode")
+        else:
+            if "tools" in self.model_fields_set:
+                raise ValueError("evaluation launch v9 does not accept product tools")
+            if self.api_catalog_mode is None:
+                if "api_catalog_mode" in self.model_fields_set:
+                    raise ValueError(
+                        "evaluation launch requires an explicit catalog mode"
+                    )
+                object.__setattr__(self, "api_catalog_mode", "off")
         if self.model_base_url is not None:
             raise ValueError(
                 "自定义 API 地址会话已不再支持，请使用提供商端点新建会话。"
@@ -100,13 +117,27 @@ class LaunchManifest(BaseModel):
             and self.context_window is None
         ):
             raise ValueError("model-window policy requires a saved context_window")
-        if self.schema_version == "coding-run-launch-v10":
-            if self.api_catalog_dir is None or self.api_catalog_mode == "off":
-                raise ValueError("launch v10 requires an enabled API catalog")
+        if self.schema_version == "coding-run-launch-v11":
+            if self.api_catalog_dir is None:
+                raise ValueError("launch v11 requires an API catalog")
             if not self.api_catalog_dir.is_absolute():
                 raise ValueError("launch API catalog directory must be absolute")
             if self.api_catalog_dir.resolve() != self.api_catalog_dir:
                 raise ValueError("launch API catalog directory must be resolved")
+            if self.tools is None:
+                raise ValueError("launch v11 requires saved tools")
+            validate_tool_names(self.tools)
+            if (
+                "discover_abaqus_api" in self.tools
+                and "lookup_abaqus_api" not in self.tools
+            ):
+                raise ValueError("discover_abaqus_api requires lookup_abaqus_api")
+            if not {"load_capability", "read_tool_result"}.issubset(self.tools):
+                raise ValueError(
+                    "launch requires capability and tool-result protocol tools"
+                )
+            if self.question_protocol == "ask_user_v1" and "ask_user" not in self.tools:
+                raise ValueError("launch requires ask_user for its question protocol")
         if self.document_policy is not None and self.concept_retrieval_mode != "tool":
             raise ValueError("bounded documents require concept tool mode")
         self.effective_execution()

@@ -11,6 +11,7 @@
 
 | 决定 | 状态与作用域 |
 |---|---|
+| [0052：按名称选择工具与固定Catalog报错提示](0052-select-tools-by-name-and-fix-catalog-error-hints.md) | 新产品使用工具集合和launch v11；默认精确查询开启、目录发现关闭；部分替代0040的产品模式，冻结评测不回填 |
 | [0051：测评直接启停 Phoenix](0051-manage-phoenix-lifecycle-for-evaluation.md) | 显式测评启动本次服务、收尾后关闭；固定6006与原生默认数据库，不复用进程或新增补传；部分替代0044并具体化0050 |
 | [0050：自动记录 Phoenix 题集与实验](0050-record-evals-as-phoenix-experiments.md) | 保留 Evals 执行与判分；显式启用后先检查平台，逐题写入派生记录；不增加补传队列，部分替代0044的评测范围 |
 | [0049：普通产品只从可选目录选择模型](0049-select-product-models-only-from-available-catalog.md) | 已采纳；新会话必须显式选择，取消默认/首项自动选择与目录外输入；既有会话恢复不重新筛选 |

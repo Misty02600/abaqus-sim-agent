@@ -143,7 +143,7 @@ def test_text_question_finishes_without_files_or_verification_and_restores(tmp_p
         launch = LaunchManifest.model_validate_json(
             (tmp_path / "web/states" / rid / "launch.json").read_bytes()
         )
-        assert launch.schema_version == "coding-run-launch-v10"
+        assert launch.schema_version == "coding-run-launch-v11"
         assert launch.capability_definitions
         assert launch.context_policy_version == "model-window-tiered-summary-v1"
     assert launch.context_window == 1_000_000
@@ -253,4 +253,4 @@ async def test_response_output_is_enabled_only_for_open_request_agent(tmp_path):
     assert "final_result_ResponseDecision" in observed[1][0]
     assert "CURRENT requested action" in observed[1][1]
     assert "creating only geometry needs no material or load" in observed[1][1]
-    assert prepared.launch.schema_version == "coding-run-launch-v10"
+    assert prepared.launch.schema_version == "coding-run-launch-v11"

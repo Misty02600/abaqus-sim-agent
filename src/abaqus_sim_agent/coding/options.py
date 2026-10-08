@@ -10,7 +10,6 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from ..api_catalog.bundled import bundled_catalog_path
 from ..execution.abaqus2024 import ABAQUS_2024_COMMAND
 from ..skills import skill_library_path
-from .api_lookup import DEFAULT_PRODUCT_API_CATALOG_MODE, ProductApiCatalogMode
 from .contracts import RuntimeProfile
 from .model import (
     DEFAULT_MODEL_HTTP_RETRIES,
@@ -26,6 +25,7 @@ from .model_selection import (
     select_model,
 )
 from .static_preflight import managed_static_paths
+from .tool_selection import validate_tool_names
 
 
 class RunOptions(BaseModel):
@@ -37,7 +37,8 @@ class RunOptions(BaseModel):
     http_retries: int | None = Field(default=None, ge=0)
     http_timeout_seconds: float | None = Field(default=None, gt=0, allow_inf_nan=False)
     reasoning_policy: Literal["provider_default", "enabled_high"] | None = None
-    api_catalog_mode: ProductApiCatalogMode | None = None
+    tools: tuple[str, ...] | None = None
+    exclude_tools: tuple[str, ...] | None = None
     static_preflight_mode: Literal["off", "on"] | None = None
     knowledge_pack_ids: tuple[str, ...] | None = Field(default=None, max_length=32)
 
@@ -47,6 +48,9 @@ class RunOptions(BaseModel):
             raise ValueError("omit an unspecified option instead of setting null")
         if self.model_name is not None and self.model_name != self.model_name.strip():
             raise ValueError("model_name must be normalized")
+        for names in (self.tools, self.exclude_tools):
+            if names is not None:
+                validate_tool_names(names)
         if self.knowledge_pack_ids is not None:
             if len(set(self.knowledge_pack_ids)) != len(self.knowledge_pack_ids) or any(
                 re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", item) is None
@@ -62,7 +66,8 @@ class ResolvedRunOptions:
     runtime: RuntimeProfile
     skill_library: Path
     api_catalog_dir: Path
-    api_catalog_mode: ProductApiCatalogMode
+    tools: tuple[str, ...] | None
+    exclude_tools: tuple[str, ...]
     static_preflight_mode: Literal["off", "on"]
     abqpy_static_wheel: Path | None
     static_preflight_cache_dir: Path | None
@@ -163,7 +168,8 @@ def resolve_run_config(
         runtime=RuntimeProfile(launcher_path=Path(ABAQUS_2024_COMMAND)),
         skill_library=skill_library_path().resolve(),
         api_catalog_dir=bundled_catalog_path().resolve(strict=True),
-        api_catalog_mode=options.api_catalog_mode or DEFAULT_PRODUCT_API_CATALOG_MODE,
+        tools=options.tools,
+        exclude_tools=options.exclude_tools or (),
         static_preflight_mode=mode,
         abqpy_static_wheel=wheel,
         static_preflight_cache_dir=cache.resolve() if cache is not None else None,

@@ -35,7 +35,7 @@
 - 恢复必须保留累计 usage/allowance、原始 freshness 基线、execution provenance、协议、context policy 和知识/Skill 绑定。同一 state 使用 OS 独占锁；未决 Abaqus tool effect 停在 `needs_reconcile`，禁止盲目重跑。不得把文件后端续跑称为外部 Job exactly-once、PID 重新附着或完整 durable workflow。
 - Task revision 与 operational amendment 分开：新任务建立新验收基线，旧 outcome 归档；runtime policy 或 provider 修订不能清零已消耗用量。损坏 ledger 不猜测修复，不用 event log 推断缺失的副作用记录。
 - Web 会话在无活动/待核查执行时可用 operational amendment 修改 Abaqus/Solver 权限；待答问题保持，修改不自动继续也不取消已有执行，只影响未来提交。有限次数是累计总上限，usage/allowance 不清零。
-- 新普通会话使用 launch v10，绑定按实际模型窗口选择的 context policy、filesystem Skill digest、UTF-8/CP936 文件策略与必选 API Catalog：当前请求可以交付 `ResponseDecision` 文字答复，文件或执行请求仍须走非空 manifest 与宿主 verifier；当前 revision 已有执行或终态工作区变化时不能用文字答复绕过验收。
+- 新普通会话使用 launch v11，绑定按实际模型窗口选择的 context policy、filesystem Skill digest、UTF-8/CP936 文件策略与必选 API Catalog：当前请求可以交付 `ResponseDecision` 文字答复，文件或执行请求仍须走非空 manifest 与宿主 verifier；当前 revision 已有执行或终态工作区变化时不能用文字答复绕过验收。
 - Harness Planning 适配只为解释冻结历史轨迹保留；新产品和新评测不得启用，也不新增重新开启入口。历史 manifest 中的 `planning_enabled=true` 保留原值。
 - 本地 Web 工作台复用 `coding/application.py`、`composition.py` 和 `CodingRunService`。命令使用 REST，SSE 只通知重取；Web registry、Thread、invocation 和 `ToolExecution` 是管理记录，不覆盖 CodingRun 的 request、limits/runtime policy、runtime evidence、verification 或 outcome。
 - Web CLI 固定回环监听，服务 started 后默认打开普通本机 URL，`--no-open` 可关闭；页面通过 GET session 无感建立 HttpOnly cookie 与 CSRF，不使用终端 fragment token。非回环部署仍未开放；见 ADR-0037。
@@ -47,8 +47,8 @@
 
 ## 知识与评测
 
-- 新普通产品自动绑定随应用安装的 Catalog，不要求用户选择目录；默认 `automatic_verified_only` 且不暴露主动查询工具；`full`、`full_with_discovery`、`automatic_exact_signature` 由显式 profile 选择。Concept、diagnostic advisory、bounded document policy、ACI、typed probe 和纯编辑限制仍按显式 profile 启用；旧冻结评测的 `off` 条件不回填。当前入口与组合见 [知识接入](docs/architecture/knowledge-access.md)。
-- `full_with_discovery` 已接入产品：discovery 返回候选名称，必须继续 exact lookup 才有卡片证据；候选、静态声明、runtime note 和实际运行成功不能互相替代。检索不能补造缺失物理输入。
+- 新普通产品自动绑定随应用安装的 Catalog，不要求用户选择目录；普通产品按工具名统一选择，默认开放精确查询、关闭目录发现；自动报错提示固定保留，不再暴露 Catalog 模式。工具集合保存于 launch v11，恢复不套用新默认；见 [ADR-0052](docs/adr/0052-select-tools-by-name-and-fix-catalog-error-hints.md)。Concept、diagnostic advisory、bounded document policy、ACI、typed probe 和纯编辑限制仍按显式 profile 启用；旧冻结评测的 `off` 条件不回填。当前入口与组合见 [知识接入](docs/architecture/knowledge-access.md)。
+- 目录发现工具可经通用工具选择启用：discovery 返回候选名称，必须继续 exact lookup 才有卡片证据；候选、静态声明、runtime note 和实际运行成功不能互相替代。检索不能补造缺失物理输入。
 - 2026 官方文档、2024 abqpy 静态声明与 Abaqus 2024 runtime evidence 分别标来源；不能把文档命中视为版本兼容或任务收益。不自动将 probe、失败修复或单题解法写入全局 Skill、Catalog 或跨 run Memory。
 - 公开力学、verified-seed change、API repair、检索评测和开放产品任务分开。领域仿真按物理Case计数，输入变体不增加题目权重。变更任务先重新验证 source 合同、验收与 hash，再缓存种子 bytes；共享执行证据不能代替逐 Case oracle。suite 按每个 Case 的 gate 验收，不能用总通过数掩盖失败 Case。
 - 旧 request、Prompt/Skill、profile、预算、source/lock/index 绑定、trial、seal 和报告保留原值；新配置或新合同使用新批次，不能回填旧成绩。失败、Provider 中断、人工干预和 post-hoc replay 必须保留并区分。
