@@ -6,6 +6,7 @@ from types import SimpleNamespace
 import pytest
 
 from abaqus_sim_agent.evaluation import api_repair as repair
+from abaqus_sim_agent.evaluation import public_mechanics_cli as mechanics_cli
 from abaqus_sim_agent.evaluation import public_mechanics_suite as suite
 
 
@@ -18,11 +19,11 @@ def test_mechanics_foreground_run_owns_tracing(tmp_path, monkeypatch, enabled):
         runs.append(args)
 
     @contextmanager
-    def session(active, *, environment):
-        sessions.append((active, environment))
+    def session(active):
+        sessions.append(active)
         yield
 
-    monkeypatch.setattr(suite.telemetry, "telemetry_session", session)
+    monkeypatch.setattr(mechanics_cli, "evaluation_telemetry_session", session)
     monkeypatch.setattr(suite, "run", run)
     argv = [
         "worker.py",
@@ -36,7 +37,7 @@ def test_mechanics_foreground_run_owns_tracing(tmp_path, monkeypatch, enabled):
         argv.append("--phoenix")
     monkeypatch.setattr(sys, "argv", argv)
     suite.main()
-    assert sessions == [(enabled, "evaluation")]
+    assert sessions == [enabled]
     assert runs == [(tmp_path.resolve(), "resume", ["circular-shaft-pure-torsion"])]
 
 
