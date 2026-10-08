@@ -240,6 +240,8 @@ exporter；原始 stdout/stderr、state 和 oracle 继续由原路径保存。�
   这不提供跨 CLI、其他 Web 根或外部编辑器的工作区锁。
 - 普通 Web 消息先保存 Thread，再以 `continuation_id` 调用同一 CodingRun；消息与 terminal execution link 间的
   短双写窗口通过显式 continue 补链，不重新调用模型。
+- 追加消息的执行段被用户停止后，显式继续建立新的 invocation，恢复同一 continuation；原停止记录保留，
+  不重复追加用户消息，也不清零累计用量。
 - Web Solver 由 `ToolExecution` 在专用事件循环运行；submit 立即把 execution ID 返回仍活动的 Agent，wait
   再消费终态结果并写入 execution journal。宿主重启把未完成记录转为 `needs_reconcile`。
 - atomic JSON、append journal 与 Harness snapshot 分别保存宿主状态和步骤证据；它们不是一个数据库事务。

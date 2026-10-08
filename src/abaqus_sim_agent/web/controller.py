@@ -2429,7 +2429,8 @@ class RunController:
             if action in {"answer", "continue"}
             else None
         )
-        if existing is None:
+        # 停止结束的是执行记录；显式继续仍恢复同一条待完成消息。
+        if existing is None or (action == "continue" and existing.status == "stopped"):
             created = self._new_invocation(
                 run_id,
                 registration,

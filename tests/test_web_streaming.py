@@ -133,6 +133,100 @@ def test_stop_closes_request_preserves_partial_and_allows_followup(
         flow.finish.set()
 
 
+def test_stopped_followup_continues_after_restart_without_replaying_message(tmp_path):
+    flow = Flow()
+
+    def factory(**kwargs):
+        async def stream(messages, info):
+            flow.calls.append(messages)
+            if len(flow.calls) == 2:
+                yield {
+                    1: DeltaToolCall(
+                        name="final_result_ResponseDecision",
+                        json_args='{"summary":"未完成',
+                        tool_call_id="followup",
+                    )
+                }
+                await flow.next.wait()
+                yield {1: DeltaToolCall(json_args='"}')}
+            else:
+                yield {
+                    1: DeltaToolCall(
+                        name="final_result_ResponseDecision",
+                        json_args='{"summary":"完成。"}',
+                        tool_call_id=f"reply-{len(flow.calls)}",
+                    )
+                }
+
+        return FunctionModel(stream_function=stream), Client()
+
+    def app():
+        instance = streaming_app(tmp_path, flow)
+        instance.state.controller.model_factory = factory
+        return instance
+
+    first_app = app()
+    try:
+        with TestClient(first_app, base_url="http://127.0.0.1") as client:
+            login(client)
+            rid = launch(client)
+            first = settled(client, rid, status="completed")
+            followup = message_body(first, "继续解释这个结果。")
+            response = client.post(f"/api/v1/runs/{rid}/messages", json=followup)
+            assert response.status_code == 202, response.text
+            active = poll(
+                client,
+                rid,
+                lambda value: (
+                    value["can_stop"] and bool(value["view"].get("live_reply"))
+                ),
+            )
+            response = client.post(
+                f"/api/v1/runs/{rid}/stop",
+                json={
+                    "command_id": str(uuid4()),
+                    "expected_operation_id": active["active_operation_id"],
+                },
+            )
+            assert response.status_code == 202, response.text
+            stopped = settled(client, rid, status="interrupted")
+            assert stopped["can_continue"]
+            old = first_app.state.controller.invocations.list(rid)[-1]
+            assert old.status == "stopped"
+            assert old.source_message_id is not None
+
+        restored_app = app()
+        with TestClient(restored_app, base_url="http://127.0.0.1") as client:
+            login(client)
+            response = client.post(
+                f"/api/v1/runs/{rid}/continue", json={"command_id": str(uuid4())}
+            )
+            assert response.status_code == 202, response.text
+            done = settled(client, rid, status="completed")
+            assert done["view"]["usage"]["model_requests"] == 3
+            assert done["view"]["task_revision"] == first["view"]["task_revision"]
+            assert (
+                sum(
+                    m["role"] == "user" and m["text"] == followup["text"]
+                    for m in done["view"]["messages"]
+                )
+                == 1
+            )
+            assert len(flow.calls) == 3
+            controller = restored_app.state.controller
+            assert controller.invocations.load(rid, old.invocation_id) == old
+            current = controller.invocations.latest_for_message(
+                rid, old.source_message_id
+            )
+            assert current is not None
+            assert current.invocation_id != old.invocation_id
+            assert current.origin_action == "continue"
+            assert current.status == "completed"
+            assert controller.threads.pending(rid) is None
+    finally:
+        flow.next.set()
+
+
 def test_rename_while_streaming_is_cosmetic_versioned_and_persistent(tmp_path):
     flow = Flow()
     app = streaming_app(tmp_path, flow)
