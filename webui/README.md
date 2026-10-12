@@ -25,7 +25,8 @@ the first session GET establishes the local browser cookie and CSRF automaticall
 - `WorkspaceExplorer.tsx` refreshes expanded folders when the host file manifest
   changes and discards superseded directory responses, so new files appear after
   a run settles without a manual refresh. It is the single file surface: tree,
-  search, `@` mention and live preview. Tool-card file buttons open this same view.
+  search and `@` mention. File selections and tool-card file buttons open the
+  shared `WorkspaceFilePreview.tsx` in `RightPanel.tsx`.
 - `Composer.tsx` wraps native Composer Root/Input/Send primitives; keyboard, IME, resizing and send availability come from the library. It only hydrates/persists the scoped draft and renders question context.
   The Pi-inspired input starts at one line with the send action beside it, grows
   with the draft, then scrolls internally at 200px (or 30dvh in short windows).
@@ -37,7 +38,7 @@ the first session GET establishes the local browser cookie and CSRF automaticall
 - `ConversationList.tsx` uses native ThreadList and ThreadListItem primitives for listing, selection, titles and keyboard navigation.
 - `useRun.ts` fetches snapshots after SSE notifications; stale responses cannot
   overwrite another selected task. It never starts model work.
-- `SidePanel.tsx` and `TurnWrittenFiles.tsx` expose workspace files on demand without
+- `WorkspaceFilePreview.tsx` and `TurnWrittenFiles.tsx` expose workspace files on demand without
   a duplicate artifact list or freshness badge. `Conversation.tsx` and
   `ModelPreview.tsx` render fresh OBJ artifacts from the current CAE
   tool card through Online 3D Viewer. They never infer freshness locally or read
@@ -55,8 +56,12 @@ the first session GET establishes the local browser cookie and CSRF automaticall
 - `api/client.ts` handles session/CSRF and retry IDs; generated types are the API
   contract. Browser session storage contains retry IDs and unsent drafts, not authoritative task history or outcomes.
 
-The desktop sidebar participates in the page grid at widths of 900px and above;
-collapsing it leaves a single content column. Below 900px it is an overlay.
+The left sidebar participates in the page grid at widths of 900px and above;
+below 900px it is an overlay. At widths of 960px and above, `RightPanel.tsx`
+shows either run details or a file preview beside the conversation. It supports
+collapse, pointer/keyboard resizing and browser-local width persistence, while
+keeping at least 360px for the conversation. Below 960px it uses `SidePanel.tsx`.
+Settings, directory selection and permission editing remain modal dialogs.
 SidePanel dialogs render through a portal outside the sidebar so resizing cannot
 hide an open modal and leave the page blocked. Start errors, including errors in
 accepted HTTP receipts, remain visible across snapshot refreshes until the user

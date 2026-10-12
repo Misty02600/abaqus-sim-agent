@@ -42,12 +42,6 @@ export function RunDetails({
               : "执行证据未通过"
             : "尚未完成验证"}
       </p>
-      <p className="muted small">
-        {responseOnly
-          ? "本次交付为文字回答，未声明文件、运行或物理验证通过。"
-          : "仅按本次请求检查交付物和已使用的运行阶段，不代表物理正确性验收。"}
-      </p>
-      {view.outcome && !responseOnly && <p>{view.outcome.summary}</p>}
       {view.verification && !view.verification.passed && (
         <pre>{view.verification.feedback}</pre>
       )}
@@ -142,9 +136,6 @@ export function RunDetails({
         <summary>运行详情</summary>
         <p>{snapshot.model}</p>
         <p>推理配置：{snapshot.reasoning_policy}</p>
-        <p>请求数为框架已记录值，可能不含最后失败的逻辑请求。</p>
-        <p>上下文数字取最近一次带真实用量的模型响应，不是 CodingRun 累计 input tokens。</p>
-        <p>提醒阈值用于界面提示，不声明模型提供方的硬上下文上限。</p>
         <code>{view.run_id}</code>
         <p>任务修订 {view.task_revision ?? 0}</p>
         <p>

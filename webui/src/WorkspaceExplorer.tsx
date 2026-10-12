@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { errorText, request, runPath } from "./api/client";
 import { FolderIcon, getFileIcon } from "./FileIcons";
-import { SidePanel } from "./SidePanel";
 
 type WorkspaceEntry = {
   relative_path: string;
@@ -31,13 +30,6 @@ type DirectoryState = {
   truncated: boolean;
 };
 
-export type WorkspaceOpenFile = {
-  runId: string;
-  path: string;
-  sizeBytes: number | null;
-  nonce: number;
-};
-
 const EMPTY_DIRECTORY: DirectoryState = {
   loading: false,
   error: "",
@@ -45,27 +37,18 @@ const EMPTY_DIRECTORY: DirectoryState = {
   truncated: false,
 };
 
-function formatSize(bytes: number | null) {
-  if (bytes === null) return "";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
-
-function isImage(path: string) {
-  return /\.(png|jpe?g|webp)$/i.test(path);
-}
-
 export function WorkspaceExplorer({
   runId,
   filesVersion,
   onMention,
-  openFile,
+  selectedPath,
+  onOpenFile,
 }: {
   runId: string;
   filesVersion: string;
   onMention: (path: string) => void;
-  openFile?: WorkspaceOpenFile | null;
+  selectedPath?: string;
+  onOpenFile: (path: string, sizeBytes: number | null) => void;
 }) {
   const [directories, setDirectories] = useState<Record<string, DirectoryState>>({});
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set([""]));
@@ -73,10 +56,6 @@ export function WorkspaceExplorer({
   const [search, setSearch] = useState<WorkspaceSearch | null>(null);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
-  const [selected, setSelected] = useState<WorkspaceEntry | null>(null);
-  const [previewText, setPreviewText] = useState("");
-  const [previewError, setPreviewError] = useState("");
-  const [previewLoading, setPreviewLoading] = useState(false);
   const searchSequence = useRef(0);
   const directorySequence = useRef(new Map<string, number>());
 
@@ -121,22 +100,10 @@ export function WorkspaceExplorer({
     setQuery("");
     setSearch(null);
     setSearchError("");
-    setSelected(null);
     loadDirectory("", true);
     // loadDirectory intentionally uses the fresh runId after a session switch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId]);
-
-  useEffect(() => {
-    if (!openFile || openFile.runId !== runId) return;
-    const name = openFile.path.replaceAll("\\", "/").split("/").at(-1);
-    setSelected({
-      relative_path: openFile.path,
-      name: name || openFile.path,
-      kind: "file",
-      size_bytes: openFile.sizeBytes,
-    });
-  }, [openFile, runId]);
 
   useEffect(() => {
     for (const path of expanded) loadDirectory(path, true);
@@ -173,42 +140,6 @@ export function WorkspaceExplorer({
     return () => window.clearTimeout(timer);
   }, [query, runId]);
 
-  useEffect(() => {
-    setPreviewText("");
-    setPreviewError("");
-    setPreviewLoading(false);
-    if (!selected || isImage(selected.relative_path)) return;
-    const abort = new AbortController();
-    setPreviewLoading(true);
-    void fetch(
-      `/api/v1${runPath(runId)}/workspace/file?path=${encodeURIComponent(selected.relative_path)}`,
-      { credentials: "same-origin", signal: abort.signal },
-    )
-      .then(async (response) => {
-        if (!response.ok) {
-          let message = `无法预览（${response.status}）`;
-          try {
-            const body = (await response.json()) as { message?: string };
-            if (body.message) message = body.message;
-          } catch {
-            // Non-JSON failures still have a useful HTTP status fallback.
-          }
-          throw new Error(message);
-        }
-        return response.text();
-      })
-      .then((text) => {
-        if (!abort.signal.aborted) setPreviewText(text);
-      })
-      .catch((previewFailure) => {
-        if (!abort.signal.aborted) setPreviewError(errorText(previewFailure));
-      })
-      .finally(() => {
-        if (!abort.signal.aborted) setPreviewLoading(false);
-      });
-    return () => abort.abort();
-  }, [runId, selected]);
-
   function toggleDirectory(path: string) {
     const next = new Set(expanded);
     if (next.has(path)) next.delete(path);
@@ -238,7 +169,7 @@ export function WorkspaceExplorer({
           return (
             <div key={entry.relative_path}>
               <div
-                className={`workspace-tree-row ${selected?.relative_path === entry.relative_path ? "selected" : ""}`}
+                className={`workspace-tree-row ${selectedPath === entry.relative_path ? "selected" : ""}`}
                 style={{ paddingLeft: 6 + depth * 14 }}
                 title={entry.relative_path}
               >
@@ -246,7 +177,7 @@ export function WorkspaceExplorer({
                   type="button"
                   className="workspace-entry"
                   onClick={() =>
-                    folder ? toggleDirectory(entry.relative_path) : setSelected(entry)
+                    folder ? toggleDirectory(entry.relative_path) : onOpenFile(entry.relative_path, entry.size_bytes)
                   }
                 >
                   {folder ? (
@@ -316,7 +247,7 @@ export function WorkspaceExplorer({
           ) : searchItems.length ? (
             searchItems.map((entry) => (
               <div className="workspace-search-result" key={entry.relative_path}>
-                <button className="workspace-entry" onClick={() => setSelected(entry)}>
+                <button className="workspace-entry" onClick={() => onOpenFile(entry.relative_path, entry.size_bytes)}>
                   {getFileIcon(entry.name, 14)}
                   <span className="workspace-entry-name">{entry.relative_path}</span>
                 </button>
@@ -341,35 +272,6 @@ export function WorkspaceExplorer({
           <p className="workspace-tree-note">匹配结果较多，仅显示前 50 项</p>
         )}
       </div>
-      {selected && (
-        <SidePanel title={selected.relative_path} onClose={() => setSelected(null)}>
-          <div className="preview workspace-preview">
-            {selected.size_bytes !== null && (
-              <p className="preview-meta">{formatSize(selected.size_bytes)}</p>
-            )}
-            <button
-              type="button"
-              className="workspace-preview-mention"
-              onClick={() => onMention(selected.relative_path)}
-            >
-              @{selected.relative_path}
-            </button>
-            {previewError ? (
-              <p role="alert" className="error">
-                {previewError}
-              </p>
-            ) : isImage(selected.relative_path) ? (
-              <img
-                alt={selected.relative_path}
-                src={`/api/v1${runPath(runId)}/workspace/file?path=${encodeURIComponent(selected.relative_path)}`}
-                onError={() => setPreviewError("图片无法显示，文件可能正在变化或格式不受支持")}
-              />
-            ) : (
-              <pre>{previewLoading ? "正在读取…" : previewText || "（空文件）"}</pre>
-            )}
-          </div>
-        </SidePanel>
-      )}
     </div>
   );
 }

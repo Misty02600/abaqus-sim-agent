@@ -21,6 +21,7 @@ import { WorkbenchRuntime, type Delivery } from "./WorkbenchRuntime";
 import { ConversationList } from "./ConversationList";
 import { Icon } from "./Icon";
 import { SidePanel } from "./SidePanel";
+import { RightPanel, RIGHT_PANEL_MIN_WIDTH } from "./RightPanel";
 import { RunDetails } from "./RunDetails";
 import { RunSummary } from "./RunSummary";
 import { RunStatusBar } from "./RunStatusBar";
@@ -29,10 +30,8 @@ import {
   type RuntimePermission,
 } from "./RuntimePolicyEditor";
 import { CommandPalette, type QuickAction } from "./CommandPalette";
-import {
-  WorkspaceExplorer,
-  type WorkspaceOpenFile,
-} from "./WorkspaceExplorer";
+import { WorkspaceExplorer } from "./WorkspaceExplorer";
+import { WorkspaceFilePreview, type WorkspaceOpenFile } from "./WorkspaceFilePreview";
 import { DirectoryPicker } from "./DirectoryPicker";
 import { ModelPicker, type ModelSelection } from "./ModelPicker";
 import { SettingsPanel, type SettingsSection } from "./SettingsPanel";
@@ -46,6 +45,7 @@ function permission(mode: PermissionMode, limit: number) {
   return mode === "allow_with_limit" ? { mode, limit } : { mode };
 }
 
+const CHAT_MIN_WIDTH = 360;
 const SIDEBAR_MIN = 220;
 const SIDEBAR_MAX = 520;
 const SIDEBAR_DEFAULT = 280;
@@ -96,6 +96,8 @@ export default function App() {
   );
   const [sidebarOpen, setSidebarOpen] = useState(desktop);
   const [sidebarWidth, setSidebarWidth] = useState(initialSidebarWidth);
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
+  const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [filesOpen, setFilesOpen] = useState(true),
     [detailsOpen, setDetailsOpen] = useState(false),
     [query, setQuery] = useState("");
@@ -104,6 +106,16 @@ export default function App() {
     [notice, setNotice] = useState("");
   const [workspaceOpenFile, setWorkspaceOpenFile] =
     useState<WorkspaceOpenFile | null>(null);
+  const rightPanelDocked = viewportWidth >= 960;
+  const sidebarMax = rightPanelOpen && rightPanelDocked
+    ? Math.min(SIDEBAR_MAX, viewportWidth - RIGHT_PANEL_MIN_WIDTH - CHAT_MIN_WIDTH) : SIDEBAR_MAX;
+  const visibleSidebarWidth = Math.min(sidebarWidth, sidebarMax);
+  const rightPanelMax = viewportWidth - (desktop && sidebarOpen ? visibleSidebarWidth : 0) - CHAT_MIN_WIDTH;
+
+  const openDetails = useCallback(() => {
+    setDetailsOpen(true);
+    setRightPanelOpen(true);
+  }, []);
   const [composerMention, setComposerMention] =
     useState<ComposerMention | null>(null);
   const [knowledgeInventory, setKnowledgeInventory] =
@@ -232,7 +244,13 @@ export default function App() {
     return () => desktop.removeEventListener("change", update);
   }, []);
   useEffect(() => {
+    const resize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
+  useEffect(() => {
     setDetailsOpen(false);
+    setRightPanelOpen(false);
     setDirectoryPickerOpen(false);
     setDirectoryPickerForSidebar(false);
     setDeleteTarget(null);
@@ -584,7 +602,6 @@ export default function App() {
   }
   function openRuntimePolicy() {
     if (!snapshot?.can_update_runtime_policy || busy) return;
-    setDetailsOpen(false);
     setRuntimePolicyError("");
     setRuntimePolicyOpen(true);
   }
@@ -652,12 +669,16 @@ export default function App() {
       setError(`当前修订的可见文件中找不到 ${path}`);
       return;
     }
-    setSidebarOpen(true);
-    setFilesOpen(true);
+    openWorkspaceEntry(path, file.size_bytes);
+  }
+  function openWorkspaceEntry(path: string, sizeBytes: number | null) {
+    if (!snapshot) return;
+    setDetailsOpen(false);
+    setRightPanelOpen(true);
     setWorkspaceOpenFile((current) => ({
       runId: snapshot.view.run_id,
       path,
-      sizeBytes: file.size_bytes,
+      sizeBytes,
       nonce: (current?.nonce ?? 0) + 1,
     }));
   }
@@ -665,10 +686,10 @@ export default function App() {
     if (!desktop || !sidebarOpen) return;
     event.preventDefault();
     const startX = event.clientX;
-    const startWidth = sidebarWidth;
+    const startWidth = visibleSidebarWidth;
     document.body.classList.add("sidebar-resizing");
     const move = (pointer: PointerEvent) => {
-      const next = clampSidebarWidth(startWidth + pointer.clientX - startX);
+      const next = Math.min(sidebarMax, clampSidebarWidth(startWidth + pointer.clientX - startX));
       setSidebarWidth(next);
       localStorage.setItem(SIDEBAR_STORAGE_KEY, String(next));
     };
@@ -727,7 +748,7 @@ export default function App() {
       label: "查看运行详情",
       keywords: "验收 结果 模型 推理 预算 配置",
       disabled: !snapshot,
-      run: () => setDetailsOpen(true),
+      run: openDetails,
     },
     {
       id: "runtime-policy",
@@ -815,7 +836,7 @@ export default function App() {
         className={`app ${sidebarOpen ? "" : "sidebar-collapsed"}`}
         style={
           desktop && sidebarOpen
-            ? { gridTemplateColumns: `${sidebarWidth}px minmax(0, 1fr)` }
+            ? { gridTemplateColumns: `${visibleSidebarWidth}px minmax(0, 1fr) auto` }
             : undefined
         }
       >
@@ -930,7 +951,8 @@ export default function App() {
                     .map((file) => file.id)
                     .join(",")}
                   onMention={mentionWorkspaceFile}
-                  openFile={workspaceOpenFile}
+                  selectedPath={detailsOpen ? undefined : workspaceOpenFile?.path}
+                  onOpenFile={openWorkspaceEntry}
                 />
               ) : (
                 <p className="empty">选择会话后查看文件</p>
@@ -942,8 +964,8 @@ export default function App() {
             aria-label="调整侧栏宽度"
             aria-orientation="vertical"
             aria-valuemin={SIDEBAR_MIN}
-            aria-valuemax={SIDEBAR_MAX}
-            aria-valuenow={sidebarWidth}
+            aria-valuemax={sidebarMax}
+            aria-valuenow={visibleSidebarWidth}
             onPointerDown={startSidebarResize}
           />
         </aside>
@@ -1005,7 +1027,8 @@ export default function App() {
               className="toolbar-action"
               disabled={!snapshot}
               aria-label="查看运行详情"
-              onClick={() => setDetailsOpen(true)}
+              aria-expanded={detailsOpen && rightPanelOpen}
+              onClick={() => detailsOpen && rightPanelOpen ? setRightPanelOpen(false) : openDetails()}
             >
               <Icon name="info" />
               <span>详情</span>
@@ -1013,6 +1036,18 @@ export default function App() {
             <button className="toolbar-action" aria-label="打开设置" title="设置" onClick={openGeneralSettings}>
               <Icon name="settings" /><span>设置</span>
             </button>
+            <button
+              className="icon-button right-panel-toggle"
+              disabled={!snapshot}
+              aria-label={rightPanelOpen ? "收起右侧面板" : "展开右侧面板"}
+              title={rightPanelOpen ? "收起右侧栏" : "展开右侧栏"}
+              aria-expanded={rightPanelOpen}
+              onClick={() => {
+                if (rightPanelOpen) setRightPanelOpen(false);
+                else if (detailsOpen || workspaceOpenFile) setRightPanelOpen(true);
+                else openDetails();
+              }}
+            ><Icon name="panel" /></button>
           </header>
           <main className={!id ? "new-task-main" : undefined}>
             {!id ? (
@@ -1183,7 +1218,7 @@ export default function App() {
                 <section className="conversation">
                   <RunSummary
                     snapshot={snapshot}
-                    onDetails={() => setDetailsOpen(true)}
+                    onDetails={openDetails}
                   />
                   {renaming && (
                     <form
@@ -1270,7 +1305,7 @@ export default function App() {
                   <RunStatusBar
                     snapshot={snapshot}
                     connected={connected}
-                    onDetails={() => setDetailsOpen(true)}
+                    onDetails={openDetails}
                     onCancelSolver={() => void cancelSolver()}
                     cancellingSolver={busy}
                   />
@@ -1294,6 +1329,28 @@ export default function App() {
             )}
           </main>
         </div>
+        {snapshot && (detailsOpen || workspaceOpenFile) && (
+          <RightPanel
+            open={rightPanelOpen}
+            docked={rightPanelDocked}
+            maxWidth={rightPanelMax}
+            title={detailsOpen ? "运行详情" : workspaceOpenFile!.path}
+            onClose={() => setRightPanelOpen(false)}
+          >
+            {detailsOpen ? (
+              <RunDetails snapshot={snapshot} onEditRuntimePolicy={openRuntimePolicy} />
+            ) : (
+              <WorkspaceFilePreview
+                key={`${workspaceOpenFile!.runId}:${workspaceOpenFile!.path}:${workspaceOpenFile!.nonce}`}
+                file={workspaceOpenFile!}
+                onMention={path => {
+                  mentionWorkspaceFile(path);
+                  if (!rightPanelDocked) setRightPanelOpen(false);
+                }}
+              />
+            )}
+          </RightPanel>
+        )}
         {commandOpen && (
           <CommandPalette
             actions={actions}
@@ -1309,14 +1366,6 @@ export default function App() {
             onSelect={directoryPickerForSidebar ? switchWorkspace : selectWorkspace}
             onClose={() => setDirectoryPickerOpen(false)}
           />
-        )}
-        {detailsOpen && snapshot && (
-          <SidePanel title="运行详情" onClose={() => setDetailsOpen(false)}>
-            <RunDetails
-              snapshot={snapshot}
-              onEditRuntimePolicy={openRuntimePolicy}
-            />
-          </SidePanel>
         )}
         {runtimePolicyOpen && snapshot && (
           <SidePanel

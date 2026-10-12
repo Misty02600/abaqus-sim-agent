@@ -43,6 +43,13 @@ Reused or adapted source:
   - Adapted the per-conversation delete/confirm interaction using our dialog and
     host DELETE receipt. Pi's runtime shutdown and session-file deletion code
     were not copied; the Python host owns execution cleanup.
+- `components/AppShell.tsx`, `hooks/useResizablePanel.ts`, `app/globals.css`
+  -> right-panel layout in `src/App.tsx`, `src/RightPanel.tsx`, `src/style.css`
+  - Used the same audited commit as the behavioral reference for desktop split
+    layout, narrow-screen overlay, and a resizable panel with remembered width.
+  - Implemented with this project's existing grid, modal, file preview and details;
+    retained a single active panel instead of importing Pi's tabs or terminal.
+  - Kept at least 360px for the conversation and added keyboard resizing.
 
 Assets:
 
