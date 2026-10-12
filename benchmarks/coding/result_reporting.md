@@ -188,7 +188,7 @@ teardown直接使用原生ReportCase/ReportCaseFailure及已有判定更新`prog
 
 ## Phoenix追踪与评分
 
-新准备批次的冻结 worker 支持以下显式入口；加上 `--phoenix` 后由命令自动启动并收尾本次服务，无需提前手动启动。使用说明见[README](../../README.md#按需查看本地-phoenix-trace)：
+新准备批次的冻结 worker 支持以下显式入口；加上 `--phoenix` 后由命令自动启动并收尾本次服务，无需提前手动启动。使用说明见[使用指南](../../docs/usage.md#按需查看本地-phoenix-trace)：
 
 ```powershell
 uv run --no-sync python D:/abaqus-runs/my-batch/worker.py run --root D:/abaqus-runs/my-batch --phoenix
